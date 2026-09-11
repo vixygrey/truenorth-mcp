@@ -1,0 +1,11 @@
+# Code owners for truenorth-mcp.
+#
+# GitHub auto-requests a review from the owner on every pull request that changes a
+# matching path. Combined with the repository ruleset that requires code-owner review,
+# this makes every pull request from another author need the owner's approval. The owner
+# is a bypass actor in that ruleset, so the owner can still self-merge.
+#
+# The last matching pattern wins. This single catch-all makes the owner the reviewer for
+# the whole repository.
+
+* @vixygrey
