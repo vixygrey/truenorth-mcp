@@ -1,0 +1,56 @@
+name: Rust CI
+
+# Build, format, lint, and test the truenorth-mcp crate. Runs only when the crate
+# or this workflow changes.
+on:
+  push:
+    paths:
+      - "truenorth-mcp/**"
+      - ".github/workflows/rust-ci.yml"
+  pull_request:
+    paths:
+      - "truenorth-mcp/**"
+      - ".github/workflows/rust-ci.yml"
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref to save runner time.
+concurrency:
+  group: rust-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: truenorth-mcp
+
+jobs:
+  check:
+    name: fmt, clippy, build, test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install the stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: truenorth-mcp
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run tests
+        run: cargo test --verbose
