@@ -1,17 +1,12 @@
 name: Rust CI
 
-# Build, format, lint, and test the truenorth-mcp crate. Runs only when the crate
-# or this workflow changes. The job is a no-op when the crate is not present on the
-# branch, so the workflow stays green on branches that predate the crate.
+# Build, format, lint, and test the truenorth-mcp crate. The workflow runs on every push
+# and pull request so it always reports the required CI Gate status. The cargo steps run
+# only when the crate is present, so the job stays cheap and green on branches or changes
+# that do not touch the crate.
 on:
   push:
-    paths:
-      - "truenorth-mcp/**"
-      - ".github/workflows/rust-ci.yml"
   pull_request:
-    paths:
-      - "truenorth-mcp/**"
-      - ".github/workflows/rust-ci.yml"
   workflow_dispatch:
 
 # Cancel superseded runs on the same ref to save runner time.
@@ -71,3 +66,22 @@ jobs:
         if: steps.crate.outputs.present == 'true'
         working-directory: truenorth-mcp
         run: cargo test --verbose
+
+  # A single, stable status to require in branch protection. It always runs, so every PR
+  # reports it, including docs-only changes that skip the cargo steps. It passes only when
+  # the check job passed.
+  gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    needs: [check]
+    if: always()
+    steps:
+      - name: Confirm the check job passed
+        run: |
+          result="${{ needs.check.result }}"
+          echo "check job result: ${result}"
+          if [ "${result}" != "success" ]; then
+            echo "The check job did not pass. Failing the gate."
+            exit 1
+          fi
+          echo "The check job passed. The gate is green."
