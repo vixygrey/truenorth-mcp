@@ -23,12 +23,18 @@ P5 (no dangling references).
 
 ## Tasks
 
-- [ ] 1. Rust crate scaffold and stdio server boot
+- [x] 1. Rust crate scaffold and stdio server boot
   - Create `Cargo.toml` with dependencies: rmcp, serde, serde_yaml, schemars, tokio, notify, regex, anyhow, and tree-sitter as an optional feature
   - Create the module skeleton: `src/index.rs`, `src/config.rs`, `src/resources/mod.rs`, `src/tools/mod.rs`, `src/engine/mod.rs` (with empty submodule stubs for `spec`, `validate`, `gate_runner`, `tier`, `watcher`, `git`, `ontology_scan`)
   - Implement `src/index.rs` entrypoint that builds the server over the rmcp `StdioServerTransport` and responds to the MCP `initialize` handshake
   - If the stdio transport fails to initialize, make sure that startup terminates with a non-zero exit status and an error indication
   - _Requirements: 1.1, 1.2, 1.3_
+  - Done: merged to `main` in PR #1. Notes for later tasks:
+    - The crate lives in a new `truenorth-mcp/` directory. The old `bigpowers-mcp/` stays until parity (task 21).
+    - Pinned rmcp 3.3 and schemars 1, edition 2024 (the design cited rmcp 0.16 and edition 2021 as illustrative only).
+    - The entrypoint is `src/main.rs`, not `src/index.rs`.
+    - The `#[tool_router]` and `#[tool_handler]` macros need at least one `#[tool]` method, so they arrive with the first tool (task 8).
+    - Verified: `cargo build`, `cargo fmt --check`, `cargo clippy -D warnings` clean; a real `initialize` request returns server info; a closed transport returns a non-zero exit.
 
 - [ ] 2. Engine config: root resolution, denylist, git scope, sandbox config
   - [ ] 2.1 Implement `engine::config` (`config.rs`)
