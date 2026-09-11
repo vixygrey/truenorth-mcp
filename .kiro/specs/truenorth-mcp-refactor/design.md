@@ -9,42 +9,42 @@
 
 ## Overview
 
-TrueNorth-MCP is "spec-driven engineering discipline for AI agents — protocol-first,
+TrueNorth-MCP is "spec-driven engineering discipline for AI agents: protocol-first,
 token-lean, and model-agnostic." It replaces the existing TypeScript `bigpowers-mcp`
 server (a passive catalog that dumps `SKILL.md` markdown and skill graphs) with a
 compiled Rust binary that turns the spec cockpit into a set of **live MCP Resources**
-and exposes **active tool contracts** — strict JSON-Schema calls that advance lifecycle
+and exposes **active tool contracts**. These are strict JSON-Schema calls that advance lifecycle
 state, run quality gates locally, enforce a shared domain ontology, and drive a
 Red-Green-Refactor TDD loop.
 
 The refactor pursues three shifts while staying 100% backward-compatible with existing
 `specs/` cockpits:
 
-1. **Passive → Active.** Tools stop returning markdown blobs for the model to interpret.
+1. **Passive to Active.** Tools stop returning markdown blobs for the model to interpret.
    They perform work: advancing phases, recording tasks, running verify/test commands
    in a sandbox, and rejecting ontology violations with remediation hints.
-2. **cat/grep → Resources.** `specs/state.yaml`, `release-plan.yaml`, conventions, and a
+2. **cat/grep to Resources.** `specs/state.yaml`, `release-plan.yaml`, conventions, and a
    new `ontology.yaml` are served as MCP Resources with `resources/updated` notifications
    so agents read structured, live state instead of shelling out.
-3. **Anthropic-coupled → Agnostic.** All Anthropic-specific XML / meta-instruction
+3. **Anthropic-coupled to Agnostic.** All Anthropic-specific XML and meta-instruction
    scaffolding is removed. Skills ship in tiered payloads (`full | reasoning | lean`) so
    the same discipline drops into OpenAI o-series, Gemini, DeepSeek, and local weights,
    across Kiro, Cursor, Claude Code, Zed, and Neovim harnesses.
 
-The runtime preserves the upstream lifecycle: **Discover → Design → Plan → Execute →
-Review & Harden → Integrate**. The server is Rust; the _projects it governs may be any
+The runtime preserves the upstream lifecycle: **Discover, Design, Plan, Execute,
+Review & Harden, Integrate**. The server is Rust. The _projects it governs may be any
 language_, so all target-code analysis is language-agnostic by default.
 
 ### External references (attribution)
 
-- **rmcp — official Rust MCP SDK** ([modelcontextprotocol/rust-sdk](https://github.com/modelcontextprotocol/rust-sdk)).
+- **rmcp, the official Rust MCP SDK** ([modelcontextprotocol/rust-sdk](https://github.com/modelcontextprotocol/rust-sdk)).
   We use its `#[tool_router]` / `#[tool]` / `Parameters<T>` macro surface with `schemars`
   for tool input schemas, over `StdioServerTransport`. Exact crate version is pinned at
-  implementation time (the SDK is pre-/early-1.x and evolving); treat any version string
+  implementation time (the SDK is pre-/early-1.x and evolving). Treat any version string
   here as illustrative, not load-bearing.
-- **MCP Resources & notifications** — the protocol's `resources/list`, `resources/read`,
+- **MCP Resources and notifications**: the protocol's `resources/list`, `resources/read`,
   and `notifications/resources/updated` primitives ([Model Context Protocol spec](https://modelcontextprotocol.io)).
-- **biome / oxlint distribution pattern** — the "thin JS runner + per-platform
+- **biome / oxlint distribution pattern**: the "thin JS runner + per-platform
   `optionalDependencies` with `os`/`cpu` fields" npm layout used by
   [biome](https://github.com/biomejs/biome) and [oxc/oxlint](https://github.com/oxc-project/oxc).
 
@@ -53,7 +53,7 @@ are pointers for implementers to verify at build time, not verified guarantees._
 
 ---
 
-# Part I — High-Level Design
+# Part I: High-Level Design
 
 ## Architecture
 
@@ -92,7 +92,7 @@ graph TD
 **Boundary decisions:**
 
 - The server is **not the sole writer**. Humans and other tools edit `specs/` and
-  `skills/` directly; the server reads them live and writes _through_ to disk, then emits
+  `skills/` directly. The server reads them live and writes _through_ to disk, then emits
   `resources/updated`. Disk is the source of truth.
 - The governed project is decoupled from the server's own language. Gate execution and
   ontology scanning treat target code as opaque text/AST by default.
@@ -137,11 +137,11 @@ graph LR
 
 ## Components and Interfaces
 
-This section defines the MCP interface surface — the tools and resources the server
-exposes. The high-level catalog below is the contract summary; the detailed JSON-Schema
+This section defines the MCP interface surface: the tools and resources the server
+exposes. The high-level catalog below is the contract summary. The detailed JSON-Schema
 tool contracts, tiered `get_skill`, ported legacy catalog tools, gate execution, the
 ontology scan/resource-notification mechanism, and the npm wrapper/runner/CI are
-specified at the interface level in **Part II — Low-Level Design** (§1 module layout,
+specified at the interface level in **Part II, Low-Level Design** (§1 module layout,
 §2 per-tool JSON-Schema contracts, §4 tiered skill rendering, §5 gate execution, §6
 ontology scan + resource notification, §7 npm distribution).
 
@@ -167,7 +167,7 @@ ontology scan + resource notification, §7 npm distribution).
 | `get_git_context`                            | legacy catalog   | Git status/log/diff scoped to skills/ + specs/            |
 | `validate_skill`                             | legacy catalog   | Lint a SKILL.md against conventions                       |
 
-Legacy catalog tools are **kept alongside** the active tools (extend, don't replace) so
+Legacy catalog tools are **kept alongside** the active tools (extend, do not replace) so
 existing agent flows keep working during migration.
 
 #### Resources
@@ -228,7 +228,7 @@ sequenceDiagram
 
 ### Key Architectural Decisions (ADR-style)
 
-#### ADR-1 (DECISION POINT): Verify-gate execution strategy — run locally by default
+#### ADR-1 (DECISION POINT): Verify-gate execution strategy, run locally by default
 
 **Context.** `truenorth_verify_gate` must confirm that a phase's quality bar is met. The
 options are (a) execute the project's verify/test command _inside the server_ and judge
@@ -241,13 +241,13 @@ opt-out** (`mode: "evidence"`) for environments where in-server execution is und
 (no toolchain, hosted sandbox, security policy).
 
 **Rationale.** Evidence-only lets a model hallucinate a green build. Local execution is
-the whole point of an _active_ runtime — the gate is trustworthy because the server, not
+the whole point of an _active_ runtime. The gate is trustworthy because the server, not
 the model, observed the exit code. Sandboxing bounds the blast radius.
 
 **Consequences.** The server needs a subprocess sandbox and an allowlist config. Hosted
 deployments must be able to disable execution cleanly (opt-out mode).
 
-#### ADR-2 (DECISION POINT): Ontology analysis strategy — regex heuristic baseline + AST plug-in
+#### ADR-2 (DECISION POINT): Ontology analysis strategy, regex heuristic baseline + AST plug-in
 
 **Context.** `truenorth_verify_ontology` scans target-project code for `prohibited_aliases`
 and constraint violations. Target projects may be any language. Options: (a) full AST
@@ -260,7 +260,7 @@ all projects, with a **pluggable AST-analyzer extension point** for supported la
 analyzed project is Rust.
 
 **Rationale.** A refactor runtime that only governs Rust projects would be useless for
-the model-agnostic, polyglot audience. Regex gives universal coverage on day one; AST
+the model-agnostic, polyglot audience. Regex gives universal coverage on day one. AST
 plug-ins add precision where a grammar exists without blocking the baseline.
 
 **Consequences.** Regex has false positives/negatives (comments, strings). Remediation
@@ -278,7 +278,7 @@ Disk stays authoritative and co-editable. The server reads live, writes through,
 notifies. This removes the need for `sync-skills.sh` (skills/resources are served
 dynamically at runtime) while keeping humans and other tools first-class editors.
 
-#### ADR-5: Distribution — recommend manual platform packages
+#### ADR-5: Distribution, recommend manual platform packages
 
 Two viable npm distribution paths (detailed in Part II §7). We **recommend the
 biome/oxlint-style manual platform packages** under `optionalDependencies` over a
@@ -287,7 +287,7 @@ locked-down CI and offline installs) and lets pnpm resolve only the matching bin
 
 ---
 
-# Part II — Low-Level Design
+# Part II: Low-Level Design
 
 ## §1. Rust Crate Module Layout
 
@@ -510,13 +510,13 @@ Result: `{ "passed": true }` or `{ "error": "...", "remediation_hints": ["..."] 
 The runtime's data models are the YAML cockpit files, all typed via `serde` in
 `engine::spec` (§1). Three model groups matter:
 
-1. **`specs/state.yaml` + `release-plan.yaml`** — the existing bigpowers cockpit shapes,
-   modelled with unknown-field preservation. Their fields and the backward-compat
+1. **`specs/state.yaml` + `release-plan.yaml`**: the existing bigpowers cockpit shapes,
+   modeled with unknown-field preservation. Their fields and the backward-compat
    validation layer are specified in **§3.1 Cockpit state models** and
    **§8 Backward Compatibility & Migration** (schema tolerance, `bigpowers_version`,
    legacy phase-name mapping, `#[serde(flatten)]` catch-all).
-2. **`specs/ontology.yaml`** — the new domain-ontology schema (§3.2 below).
-3. **Backward-compat schema/validation layer** — `engine::validate`, which validates
+2. **`specs/ontology.yaml`**: the new domain-ontology schema (§3.2 below).
+3. **Backward-compat schema/validation layer**: `engine::validate`, which validates
    reads/writes against the existing bigpowers schemas so tool mutations never corrupt
    human-authored state (detailed in §8).
 
@@ -524,7 +524,7 @@ The runtime's data models are the YAML cockpit files, all typed via `serde` in
 
 `engine::spec` models the observed bigpowers shapes. `state.yaml` carries
 `active_epic`, `active_story`, `handoff.{next_skill,context,epic}`,
-`metrics.skill_timings`, `release.*`, and `git.branch`; `release-plan.yaml` carries
+`metrics.skill_timings`, `release.*`, and `git.branch`. The `release-plan.yaml` file carries
 `release.*`, `build_order[]`, and `done_epics_summary`. Unknown fields are preserved via
 a `#[serde(flatten)]` catch-all so writes never drop human edits. The validation rules
 and legacy-version tolerance are specified in §8.
@@ -590,7 +590,7 @@ constraints:
 
 ## §4. Tier-Transform Algorithms
 
-`TRUENORTH_TIER` env sets the default; `get_skill(tier=...)` overrides per call.
+`TRUENORTH_TIER` env sets the default. `get_skill(tier=...)` overrides per call.
 
 ```rust
 pub enum Tier { Full, Reasoning, Lean }
@@ -607,7 +607,7 @@ pub fn render_skill(md: &str, tier: Tier) -> String {
 
 ### `strip_meta_steps` (reasoning tier)
 
-Targets native reasoning models (o1/o3, DeepSeek-R1) that don't need hand-held
+Targets native reasoning models (o1/o3, DeepSeek-R1) that do not need hand-held
 chain-of-thought scaffolding. Ports the intent of the TS `stripMetaSteps`.
 
 ```pseudo
@@ -629,7 +629,7 @@ ALGORITHM strip_meta_steps(md) -> String
 
 ### `compress_for_local_context` (lean tier)
 
-Targets local 7B–70B weights with tight context budgets. Ports `compressForLocalContext`.
+Targets local 7B to 70B weights with tight context budgets. Ports `compressForLocalContext`.
 
 ```pseudo
 ALGORITHM compress_for_local_context(md) -> String
@@ -643,8 +643,8 @@ ALGORITHM compress_for_local_context(md) -> String
   END
 ```
 
-Both transforms are pure functions (input md → output md); no I/O, unit-testable with
-golden fixtures.
+Both transforms are pure functions (input md maps to output md). They have no I/O and are
+unit-testable with golden fixtures.
 
 ## §5. Gate Execution Sandboxing (ADR-1)
 
@@ -674,8 +674,12 @@ ALGORITHM run_gate(cmd, cfg) -> GateOutcome
   END
 ```
 
-Sandbox properties: wall-clock timeout with hard kill; `cwd` pinned under repo root;
-binary allowlist; environment sanitized (drop tokens/secrets matching the denylist).
+Sandbox properties:
+
+- wall-clock timeout with hard kill
+- `cwd` pinned under repo root
+- binary allowlist
+- environment sanitized (drop tokens/secrets matching the denylist)
 
 ## §6. Ontology Scan + Resource Notification
 
@@ -732,7 +736,7 @@ sequenceDiagram
 ```
 
 Tool writes follow the same path: a tool mutates the file, the watcher (or an explicit
-post-write hook) fires `resources/updated`. Debounce coalesces rapid edits; validation
+post-write hook) fires `resources/updated`. Debounce coalesces rapid edits. Validation
 failures surface as a resource read error, not a crash.
 
 ## §7. npm / pnpm Binary Distribution
@@ -753,7 +757,7 @@ failures surface as a resource read error, not a crash.
 }
 ```
 
-Each platform stub, e.g. `@truenorth-mcp/darwin-arm64/package.json`:
+Each platform stub, for example `@truenorth-mcp/darwin-arm64/package.json`:
 
 ```json
 {
@@ -794,8 +798,8 @@ MCP client config uses `command: "pnpm", args: ["dlx", "truenorth-mcp"]`.
 
 | Option                                        | Mechanism                                                                    | Pros                                                                                       | Cons                                                                        |
 | --------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **A. Manual platform packages (recommended)** | biome/oxlint pattern: per-platform npm packages under `optionalDependencies` | No postinstall network call; offline/locked-CI friendly; pnpm fetches only matching binary | Must publish N packages per release                                         |
-| B. cargo-dist / postinstall fetch             | postinstall script downloads binary from GitHub Releases                     | One npm package; simpler publish                                                           | Postinstall network call (blocked in some CI); checksum/verification burden |
+| **A. Manual platform packages (recommended)** | biome/oxlint pattern: per-platform npm packages under `optionalDependencies` | No postinstall network call. Offline/locked-CI friendly. pnpm fetches only matching binary | Must publish N packages per release                                         |
+| B. cargo-dist / postinstall fetch             | postinstall script downloads binary from GitHub Releases                     | One npm package. Simpler publish                                                           | Postinstall network call (blocked in some CI). Checksum/verification burden |
 
 **Recommendation: Option A.** It avoids postinstall side effects and integrates cleanly
 with pnpm's platform resolution.
@@ -822,20 +826,20 @@ strategy:
 ## §8. Backward Compatibility & Migration
 
 - **Read/validate existing schemas.** `engine::spec` models `state.yaml` and
-  `release-plan.yaml` with the observed shapes (e.g. `active_epic`, `active_story`,
+  `release-plan.yaml` with the observed shapes (for example `active_epic`, `active_story`,
   `handoff.{next_skill,context,epic}`, `metrics.skill_timings`, `release.*`,
-  `git.branch`; release-plan `release.*`, `build_order[]`, `done_epics_summary`). Unknown
-  fields are preserved (`#[serde(flatten)]` catch-all) so writes don't drop human edits.
+  `git.branch`, release-plan `release.*`, `build_order[]`, `done_epics_summary`). Unknown
+  fields are preserved (`#[serde(flatten)]` catch-all) so writes do not drop human edits.
 - **`bigpowers_version` tolerated.** The version key and legacy phase names (`Build`,
-  `Verify`, `Release`, `Sustain` from `phase-map.ts`) are mapped onto the 6-phase model;
+  `Verify`, `Release`, `Sustain` from `phase-map.ts`) are mapped onto the 6-phase model:
   `Build→Execute`, `Verify→Review`, `Release/Sustain→Integrate`.
 - **`sync-skills.sh` retired.** Skills and resources are served dynamically at runtime, so
   no build-step markdown fan-out is needed.
 - **Migration path.**
-  1. Install `truenorth-mcp`; point MCP client at it.
+  1. Install `truenorth-mcp`, then point MCP client at it.
   2. Existing `specs/` works unchanged (validated read).
   3. Run `truenorth_generate_ontology` once to seed `specs/ontology.yaml` (new file only).
-  4. Optionally regenerate skills at `lean`/`reasoning` tiers; `full` remains the source.
+  4. Optionally regenerate skills at `lean`/`reasoning` tiers. `full` remains the source.
   5. Legacy catalog tools keep answering existing flows during the transition.
 
 ## §9. Repository Structure & Cleanup
@@ -845,7 +849,7 @@ sync/generation pipeline and a fan-out of per-harness skill mirrors. Under the M
 Rust runtime, skills and cockpit state are served **dynamically at runtime** (tools +
 resources), so that static machinery becomes dead weight. This section defines the lean
 target layout and an explicit disposition inventory. Cleanup is tied to the migration
-path in §8: removals that back live behaviour happen only **after** the Rust crate + npm
+path in §8: removals that back live behavior happen only **after** the Rust crate + npm
 wrapper reach parity.
 
 ### §9.1. Target Repository Layout
@@ -886,22 +890,22 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 
 | Path                                                                                                                                                                                      | Disposition        | Rationale                                                                                                                                                                                                     |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.cline/ .codebuddy/ .codex/ .continue/ .copilot/ .cursor/ .gemini/ .kilocode/ .opencode/ .pi/ .qwen/ .trae/ .windsurf/` (13 mirrors)                                                     | Consolidate        | Per-harness static skill mirrors; MCP + tiered rendering make model/harness agnosticism dynamic, so mirrors are obsolete → single `skills/`                                                                   |
-| `ANALISE_CONSOLIDACAO.md`, `GSD_WORKFLOW_ANALYSIS_VS_BIGPOWERS.md`, `VALIDACAO_CONTRA_GSD.md`                                                                                             | Remove             | One-off upstream analysis/planning docs; superseded by this design + the ADRs                                                                                                                                 |
-| `CLAUDE.md`, `GEMINI.md`, `opencode.json`, `.mcp.json`                                                                                                                                    | Remove             | Vendor-coupled prompt scaffolding / per-tool agent config; refactor drops Anthropic/Gemini coupling (see Overview shift 3)                                                                                    |
-| `bigpowers-mcp/` (old TypeScript server)                                                                                                                                                  | Remove (sequenced) | Replaced by the Rust crate; **only after** crate reaches parity (§9.3, §8)                                                                                                                                    |
-| `scripts/` (~120 shell/python: `sync-skills.sh`, `generate-skill-index.sh`, `build-skill-graph.sh`, `golden-g*.sh`, `generate-*-wiki.sh`, `validate-*.sh`)                                | Remove (sequenced) | Old markdown-sync + skill-index + golden-suite + validate/generate pipeline; redundant under dynamic serving. `install.sh`, `mcp-server.js` superseded by npm wrapper + Rust binary. Remove only after parity |
-| `kernel/` (src+templates), `profiles/` (`node-service.md`, `solo-git.md`, `swift.md`, `typescript-vue.md`), `extensions/`, `hooks/` (`pre/`, `pre-tool-use.sh`), `dashboard/`, `website/` | Remove             | Upstream infra with no runtime counterpart; the runtime governs projects via tools/resources, not kernel templates or web UI                                                                                  |
+| `.cline/ .codebuddy/ .codex/ .continue/ .copilot/ .cursor/ .gemini/ .kilocode/ .opencode/ .pi/ .qwen/ .trae/ .windsurf/` (13 mirrors)                                                     | Consolidate        | Per-harness static skill mirrors. MCP + tiered rendering make model/harness agnosticism dynamic, so mirrors are obsolete. A single `skills/` remains                                                          |
+| `ANALISE_CONSOLIDACAO.md`, `GSD_WORKFLOW_ANALYSIS_VS_BIGPOWERS.md`, `VALIDACAO_CONTRA_GSD.md`                                                                                             | Remove             | One-off upstream analysis/planning docs. Superseded by this design + the ADRs                                                                                                                                 |
+| `CLAUDE.md`, `GEMINI.md`, `opencode.json`, `.mcp.json`                                                                                                                                    | Remove             | Vendor-coupled prompt scaffolding / per-tool agent config. Refactor drops Anthropic/Gemini coupling (see Overview shift 3)                                                                                    |
+| `bigpowers-mcp/` (old TypeScript server)                                                                                                                                                  | Remove (sequenced) | Replaced by the Rust crate. Remove **only after** crate reaches parity (§9.3, §8)                                                                                                                             |
+| `scripts/` (~120 shell/python: `sync-skills.sh`, `generate-skill-index.sh`, `build-skill-graph.sh`, `golden-g*.sh`, `generate-*-wiki.sh`, `validate-*.sh`)                                | Remove (sequenced) | Old markdown-sync + skill-index + golden-suite + validate/generate pipeline. Redundant under dynamic serving. `install.sh`, `mcp-server.js` superseded by npm wrapper + Rust binary. Remove only after parity |
+| `kernel/` (src+templates), `profiles/` (`node-service.md`, `solo-git.md`, `swift.md`, `typescript-vue.md`), `extensions/`, `hooks/` (`pre/`, `pre-tool-use.sh`), `dashboard/`, `website/` | Remove             | Upstream infra with no runtime counterpart. The runtime governs projects via tools/resources, not kernel templates or web UI                                                                                  |
 | `bin/` (`bigpowers.js`, `bigspec`, `init.js`, `setup.js`), `index.js`                                                                                                                     | Consolidate        | Superseded by `npm/bin/truenorth.js` runner + `init` scaffold (§7)                                                                                                                                            |
 | `requirements.txt`                                                                                                                                                                        | Remove             | Python dependency manifest for the retired script pipeline                                                                                                                                                    |
-| `skills-lock.json`, `SKILL-INDEX.md`, `templates/`                                                                                                                                        | Remove             | Auto-generated index/lock + upstream templates; regenerable/obsolete under dynamic `get_skill` / `index_skills`                                                                                               |
-| `specs/IMPACT-*.md`, `REBORN-*.md`, `PLAN-*.md`, `RESEARCH-*.md`, `STOCKTAKE-*.md`, `TRACEABILITY*.md`, `*_LATEST.md`                                                                     | Remove             | Upstream process artifacts; not read by the runtime                                                                                                                                                           |
-| `specs/*.json` side-cars (`blind-spots`, `drift-report`, `skill-graph`, `receipts`, `rule-matrix`, `traceability-matrix`, `import-boundaries`)                                            | Remove             | Regenerable graph/report state; the graph is rebuilt on demand by `build_skill_graph`, not persisted upstream-style                                                                                           |
-| `specs/adr-wiki/ epics-wiki/ skills-wiki/ codebase-wiki/ conventions-wiki/`                                                                                                               | Remove             | Generated wiki output from `generate-*-wiki.sh`; obsolete without the generator pipeline                                                                                                                      |
+| `skills-lock.json`, `SKILL-INDEX.md`, `templates/`                                                                                                                                        | Remove             | Auto-generated index/lock + upstream templates. Regenerable/obsolete under dynamic `get_skill` / `index_skills`                                                                                               |
+| `specs/IMPACT-*.md`, `REBORN-*.md`, `PLAN-*.md`, `RESEARCH-*.md`, `STOCKTAKE-*.md`, `TRACEABILITY*.md`, `*_LATEST.md`                                                                     | Remove             | Upstream process artifacts. Not read by the runtime                                                                                                                                                           |
+| `specs/*.json` side-cars (`blind-spots`, `drift-report`, `skill-graph`, `receipts`, `rule-matrix`, `traceability-matrix`, `import-boundaries`)                                            | Remove             | Regenerable graph/report state. The graph is rebuilt on demand by `build_skill_graph`, not persisted upstream-style                                                                                           |
+| `specs/adr-wiki/ epics-wiki/ skills-wiki/ codebase-wiki/ conventions-wiki/`                                                                                                               | Remove             | Generated wiki output from `generate-*-wiki.sh`. Obsolete without the generator pipeline                                                                                                                      |
 | `specs/state.yaml`, `release-plan.yaml`, `execution-status.yaml`, `ontology.yaml`, `product/`, `adr/`                                                                                     | Keep               | Load-bearing cockpit the runtime reads/writes (Resources layer, §3.1/§3.2)                                                                                                                                    |
-| `allure-results/`                                                                                                                                                                         | Gitignore          | Test/build artifact; belongs in `.gitignore`, not version control                                                                                                                                             |
-| `skills/` (canonical `SKILL.md`)                                                                                                                                                          | Keep               | Source-of-truth for tiered rendering; mirrors are dropped, sources retained                                                                                                                                   |
-| `README.md`, `LICENSE` (MIT, danielvm-git ©), `CHANGELOG.md`, `CONTRIBUTING.md`, `CONTRIBUTORS.md`, `NOTICES.md`, `CONVENTIONS.md`, `constitution.md`                                     | Keep               | Standard project docs (README already rewritten for truenorth; LICENSE retains upstream copyright)                                                                                                            |
+| `allure-results/`                                                                                                                                                                         | Gitignore          | Test/build artifact. Belongs in `.gitignore`, not version control                                                                                                                                             |
+| `skills/` (canonical `SKILL.md`)                                                                                                                                                          | Keep               | Source-of-truth for tiered rendering. Mirrors are dropped, sources retained                                                                                                                                   |
+| `README.md`, `LICENSE` (MIT, danielvm-git ©), `CHANGELOG.md`, `CONTRIBUTING.md`, `CONTRIBUTORS.md`, `NOTICES.md`, `CONVENTIONS.md`, `constitution.md`                                     | Keep               | Standard project docs (README already rewritten for truenorth. LICENSE retains upstream copyright)                                                                                                            |
 | `.github/`, `.gitignore`, `.gitattributes`, `.gitmessage`, `.releaserc.json`, `package.json`, `.kiro/`                                                                                    | Keep               | Standard VCS/CI config, retooled `package.json`, and the spec workspace                                                                                                                                       |
 
 ### §9.3. Sequencing & Safety
@@ -909,9 +913,9 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 - **Parity before removal.** `bigpowers-mcp/` and any `scripts/` referenced by a retained
   skill must be removed **only after** the Rust crate + npm wrapper reach parity, per the
   §8 migration path (legacy catalog tools answer existing flows during the transition).
-- **Reversible deletions.** Deletions are destructive; stage each removal batch as its own
+- **Reversible deletions.** Deletions are destructive. Stage each removal batch as its own
   git commit so cleanup is reversible via history rather than an atomic mass delete.
-- **Artifacts, not source.** `allure-results/` is gitignored rather than tracked;
+- **Artifacts, not source.** `allure-results/` is gitignored rather than tracked.
   `SKILL-INDEX.md` and the skill-graph / JSON side-cars are regenerable and obsolete under
   dynamic serving, so they are removed rather than re-synced.
 
@@ -920,7 +924,7 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 | Removed                                                             | Replaced by                                                                                               |
 | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `sync-skills.sh`, `generate-skill-index.sh`, `build-skill-graph.sh` | Dynamic MCP tools/resources: `get_skill` (tiered), `index_skills`, `build_skill_graph` at runtime (ADR-4) |
-| 13 per-harness skill mirror directories                             | One canonical `skills/` served through tiered rendering (§4) — agnosticism is runtime, not static fan-out |
+| 13 per-harness skill mirror directories                             | One canonical `skills/` served through tiered rendering (§4). Agnosticism is runtime, not static fan-out  |
 | `bin/*.js`, `install.sh`, `mcp-server.js`                           | `npm/bin/truenorth.js` runner + platform packages + `init` scaffold (§7)                                  |
 | Static full-markdown mirrors                                        | Tiered rendering (`full \| reasoning \| lean`) computed per call (§4)                                     |
 
@@ -956,7 +960,7 @@ writes a cockpit file and every valid pre-state `S`, applying `t` yields a post-
 
 For every skill `md` and tier
 `∈ {reasoning, lean}`, `render_skill(md, tier)` never removes or alters directive
-content that encodes invariants or acceptance criteria; only meta/guardrail scaffolding
+content that encodes invariants or acceptance criteria. Only meta/guardrail scaffolding
 is stripped or compressed. `render_skill(md, full) == md` (identity).
 
 ### Property 5: No dangling references after cleanup
@@ -976,7 +980,7 @@ reference.
 | Sandbox timeout                   | wall-clock kill in `wait_with_timeout`                             | `fail("gate timed out …", hints=["reduce test scope or raise timeout"])`                    | Narrow test scope or raise `SandboxConfig.timeout`             |
 | Command not in allowlist          | `bin ∉ cfg.allowlist`                                              | `fail("command '<bin>' not in allowlist", hints=["add to allowlist or use mode=evidence"])` | Add binary to allowlist or switch to `mode=evidence`           |
 | Unsupported platform (npm runner) | `require.resolve` throws in `bin/truenorth.js`                     | stderr `no prebuilt binary for <platform>-<arch>`, `exit 1`                                 | Install a supported platform package or build from source      |
-| Malformed / missing spec file     | YAML parse or schema validation fails in `engine::spec`/`validate` | resource read returns an error (not a crash); tool writes are rejected pre-write            | Fix the YAML; watcher re-validates on next edit                |
+| Malformed / missing spec file     | YAML parse or schema validation fails in `engine::spec`/`validate` | resource read returns an error (not a crash). Tool writes are rejected pre-write            | Fix the YAML. Watcher re-validates on next edit                |
 | Ontology violation                | `verify_ontology` finds a `Violation`                              | `Error [Ontology Gate C-NN]: … Use … instead. (path:line)`                                  | Rename per remediation, or override by editing `ontology.yaml` |
 
 Design principle: every failure carries an actionable remediation hint and, where a
@@ -984,26 +988,26 @@ constraint is involved, cites the constraint id so a human can locate and overri
 
 ## Testing Strategy
 
-- **Unit (tools/engine).** `serde` round-trip on the real `specs/*.yaml` fixtures (compat);
-  pure-function golden tests for `strip_meta_steps` / `compress_for_local_context`
-  (validates P4); `run_gate` with a fake command runner covering pass / fail / timeout /
+- **Unit (tools/engine).** `serde` round-trip on the real `specs/*.yaml` fixtures (compat).
+  Pure-function golden tests for `strip_meta_steps` / `compress_for_local_context`
+  (validates P4). `run_gate` with a fake command runner covering pass / fail / timeout /
   allowlist-reject / evidence-only (validates P2).
 - **Gate sandbox tests.** Assert timeout hard-kill, `cwd` pinning under repo root,
   allowlist enforcement, and environment sanitization (secret denylist) behave per §5.
-- **Ontology scan tests.** `RegexAnalyzer` fixtures asserting `is_deleted` → C-02 with the
-  exact remediation string; transition/invariant violation cases (validates P1).
+- **Ontology scan tests.** `RegexAnalyzer` fixtures asserting `is_deleted` maps to C-02 with the
+  exact remediation string. Transition/invariant violation cases (validates P1).
 - **Backward-compat fixture tests.** Round-trip and mutate the existing bigpowers
   `state.yaml` / `release-plan.yaml` fixtures through each writing tool and assert the
   result still validates and preserves unknown fields (validates P3).
 - **Integration.** In-process MCP client drives `resources/list` + `resources/read` and a
-  full Discover→Integrate tool sequence against a temp repo; assert `resources/updated`
+  full Discover-to-Integrate tool sequence against a temp repo. Assert `resources/updated`
   fires after a disk edit (watcher) and after a tool write.
 - **npm wrapper resolution tests.** Verify `bin/truenorth.js` resolves the correct
   `@truenorth-mcp/<platform>-<arch>` package and exits `1` with a clear message on
   unsupported platforms.
 - **CI cross-compile matrix.** The release matrix (§7) builds every target
   (`aarch64-apple-darwin`, `x86_64-apple-darwin`, `x86_64-unknown-linux-gnu`,
-  `aarch64-unknown-linux-gnu`) and publishes per-platform packages, ensuring each binary
+  `aarch64-unknown-linux-gnu`) and publishes per-platform packages. This makes sure that each binary
   compiles and packages before the root wrapper is published.
 - **Contract.** Snapshot each tool's derived JSON Schema to catch accidental breaking
   changes.

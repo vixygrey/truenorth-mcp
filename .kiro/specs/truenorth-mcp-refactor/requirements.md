@@ -4,7 +4,7 @@
 
 TrueNorth-MCP is a fork of `danielvm-git/bigpowers` that rebrands and re-architects the passive `bigpowers-mcp` TypeScript catalog server into an active, protocol-first Rust MCP execution runtime. The runtime exposes spec-driven engineering discipline to AI agents as live MCP resources and active tool contracts: strict JSON-Schema calls that advance lifecycle phases, record tasks, run quality gates locally in a sandbox, enforce a shared domain ontology, and drive a Red-Green-Refactor TDD loop.
 
-The refactor pursues three shifts while remaining backward-compatible with existing `specs/` cockpits: passive-to-active tools, cat/grep-to-resources, and Anthropic-coupled-to-agnostic skill delivery. The server is written in Rust; the projects it governs may be written in any language, so all target-code analysis is language-agnostic by default. The runtime preserves the upstream six-phase lifecycle (Discover, Design, Plan, Execute, Review & Harden, Integrate).
+The refactor pursues three shifts while remaining backward-compatible with existing `specs/` cockpits: passive-to-active tools, cat/grep-to-resources, and Anthropic-coupled-to-agnostic skill delivery. The server is written in Rust. The projects it governs can be written in any language, so all target-code analysis is language-agnostic by default. The runtime preserves the upstream six-phase lifecycle (Discover, Design, Plan, Execute, Review & Harden, Integrate).
 
 These requirements are derived from the approved design document (`design.md`). They cover the Rust runtime, active and legacy tool contracts, quality-gate execution, ontology generation and enforcement, the live resource cockpit, tiered skill payloads, npm/pnpm binary distribution, backward compatibility and migration, repository cleanup, and model/harness agnosticism. Design correctness properties P1 through P5 map onto acceptance criteria below so later property annotations can reference specific requirement clauses.
 
@@ -12,16 +12,16 @@ These requirements are derived from the approved design document (`design.md`). 
 
 - **MCP tool**: A callable, active contract exposed by the server over the Model Context Protocol with a strict JSON Schema input, invoked by an agent to perform work (advance a phase, record a task, run a gate, transform a skill).
 - **MCP resource**: A read-addressable artifact served by the server under a `truenorth://` URI (for example `truenorth://state`) that agents fetch via `resources/read` and that emits `notifications/resources/updated` when its backing file changes.
-- **Cockpit**: The set of load-bearing `specs/` files the runtime reads and writes — `state.yaml`, `release-plan.yaml`, `execution-status.yaml`, `ontology.yaml`, and the `product/` and `adr/` directories — representing the live spec-driven state of a governed project.
-- **Tier**: A rendering level for a skill payload — `full`, `reasoning`, or `lean` — that controls how much scaffolding is retained when a skill is returned to a model.
+- **Cockpit**: The set of load-bearing `specs/` files the runtime reads and writes: `state.yaml`, `release-plan.yaml`, `execution-status.yaml`, `ontology.yaml`, and the `product/` and `adr/` directories. This set represents the live spec-driven state of a governed project.
+- **Tier**: A rendering level for a skill payload, one of `full`, `reasoning`, or `lean`. The tier controls how much scaffolding is retained when a skill is returned to a model.
 - **Ontology**: The domain model stored in `specs/ontology.yaml`, containing entities (with invariants, states, transitions, and prohibited aliases) and global constraints, used to detect and reject lexical and semantic drift.
 - **Prohibited alias**: A forbidden synonym for an ontology entity or concept whose appearance as an identifier in scanned code signals lexical drift and constitutes an ontology violation.
 - **Quality gate**: A checkpoint that confirms a phase's quality bar is met before the lifecycle proceeds.
 - **Verify gate**: The specific quality gate implemented by `truenorth_verify_gate`, which by default runs the project's verify/test command in a sandbox and passes only on a real exit-0 observation, with an evidence-only opt-out mode.
 - **TDD cycle**: The enforced Red-Green-Refactor step sequence driven by `truenorth_tdd_cycle`.
 - **Sandbox**: The bounded subprocess execution environment used by gate runs, constrained by a wall-clock timeout, a working directory scoped under the repo root, a command allowlist, and a sanitized environment.
-- **Parity-before-removal**: The cleanup sequencing rule that destructive removals backing live behaviour occur only after the Rust crate and npm wrapper reach functional parity with the legacy machinery.
-- **Syncing peer**: The server's role relative to disk — it reads live, writes through, and emits notifications, but is not the sole writer; humans and other tools co-edit `specs/` and `skills/` and disk remains the source of truth.
+- **Parity-before-removal**: The cleanup sequencing rule that destructive removals backing live behavior occur only after the Rust crate and npm wrapper reach functional parity with the legacy machinery.
+- **Syncing peer**: The server's role relative to disk. The server reads live, writes through, and emits notifications, but is not the sole writer. Humans and other tools co-edit `specs/` and `skills/`, and disk remains the source of truth.
 
 ## Requirements
 
@@ -182,9 +182,9 @@ These requirements are derived from the approved design document (`design.md`). 
 2. THE Repository SHALL remove the upstream one-off analysis documents, the vendor-coupled agent files `CLAUDE.md`, `GEMINI.md`, `opencode.json`, and `.mcp.json`, the bash and python script pipeline, and the `kernel/`, `profiles/`, `extensions/`, `hooks/`, `dashboard/`, and `website/` directories such that none of the enumerated files or directories resolve on disk after removal.
 3. THE Repository SHALL remove the superseded `bin/*.js` entrypoints, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, the upstream templates, and the regenerable `specs/` process artifacts and side-car reports such that none of the enumerated files resolve on disk after removal.
 4. THE Repository SHALL include a `.gitignore` entry matching `allure-results/` such that `git status` reports zero tracked or untracked files under `allure-results/`.
-5. IF the legacy TypeScript server or any skill-referenced script backs live behaviour, THEN THE Repository SHALL retain that file until both the Rust crate and the npm wrapper pass their full parity test suites with zero failures, and SHALL remove it only after that condition holds.
+5. IF the legacy TypeScript server or any skill-referenced script backs live behavior, THEN THE Repository SHALL retain that file until both the Rust crate and the npm wrapper pass their full parity test suites with zero failures, and SHALL remove it only after that condition holds.
 6. WHEN performing cleanup, THE Repository SHALL record each removal batch as a separate git commit containing only that batch's deletions, such that each batch is individually revertable from git history.
-7. WHEN the cleanup completes, THE Repository SHALL ensure that every path referenced by a retained skill or by the runtime resolves on disk, with zero unresolved references remaining. (Property 5)
+7. WHEN the cleanup completes, THE Repository SHALL make sure that every path referenced by a retained skill or by the runtime resolves on disk, with zero unresolved references remaining. (Property 5)
 
 ### Requirement 11: Model and Harness Agnosticism
 
