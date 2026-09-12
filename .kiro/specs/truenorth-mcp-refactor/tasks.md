@@ -179,13 +179,13 @@ P5 (no dangling references).
     - Test ordering enforcement, invalid-transition rejection with unchanged state, and both red-stage exit-code outcomes
     - _Requirements: 2.6, 2.7, 2.8, 2.9, 2.10_
 
-- [ ] 12. Ontology tools: generate_ontology and verify_ontology
-  - [ ] 12.1 Implement `tools/ontology.rs`
+- [x] 12. Ontology tools: generate_ontology and verify_ontology
+  - [x] 12.1 Implement `tools/ontology.rs`
     - `truenorth_generate_ontology` (schemars contract: `domain` 1–200 chars, `source_paths` at least 1 entry). On success, write `specs/ontology.yaml` with entities (invariants, states, transitions, prohibited aliases) and global constraints. Reject invalid input identifying the parameter without writing. On write failure, leave any existing file unchanged. Seed as a new file only, and error when `specs/ontology.yaml` already exists
     - `truenorth_verify_ontology` (schemars contract: optional `scope_paths`) delegates to `engine::ontology_scan`. Default scope to git-changed files in scope. Return passed with zero files scanned when scope is empty. Return passed when no violations. Otherwise return the formatted first-violation error
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.7, 4.8, 4.10, 9.9, 9.10_
 
-  - [ ]* 12.2 Write unit tests for ontology tools
+  - [x]\* 12.2 Write unit tests for ontology tools
     - Test generate invalid-input, write-failure, and already-exists error paths. Test verify default-scope, empty-scope pass, and no-violation pass
     - _Requirements: 4.1, 4.2, 4.4, 4.7, 4.8, 4.10, 9.9, 9.10_
 
