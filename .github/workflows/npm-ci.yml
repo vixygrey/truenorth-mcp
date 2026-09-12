@@ -1,0 +1,46 @@
+name: npm CI
+
+# Test the npm distribution wrapper. The workflow runs on every push and pull request.
+# The node steps run only when the wrapper is present, so the job stays cheap and green on
+# branches or changes that do not touch the wrapper.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref to save runner time.
+concurrency:
+  group: npm-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: wrapper test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Detect the wrapper
+        id: wrapper
+        run: |
+          if [ -f npm/package.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "The npm wrapper is not present on this branch. Skipping the node tests."
+          fi
+
+      - name: Set up Node.js
+        if: steps.wrapper.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run the wrapper tests
+        if: steps.wrapper.outputs.present == 'true'
+        working-directory: npm
+        run: node --test
