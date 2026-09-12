@@ -1,42 +1,42 @@
 ---
-# story: e45s37
 name: run-evals
-description: Eval-Driven Development — define capability and regression evals before building; code graders use verify commands, model graders use explicit rubrics; log pass@k. Use before develop-tdd on new features, or when measuring agent capability over runs.
-model: sonnet
-effort: standard
+description: 'Eval-driven development. Define capability and regression evals before building. A code grader uses a verify command, a model grader uses an explicit rubric. Log pass@k. Use it before develop-tdd on a new feature, or when measuring agent capability over runs.'
 ---
 
 # Run Evals
 
-> **HARD GATE** — Define evals before implementation. Code graders = runnable `verify:` commands; model graders = explicit rubric with pass/fail criteria.
+> **HARD GATE**: define the evals before implementation. A code grader is a runnable verify command. A model grader is an explicit rubric with pass and fail criteria.
 
 ## Process
 
-1. Name the capability under test (one sentence).
-2. Write `specs/EVALS-<feature>.md` with:
-   - **Capability evals** (does it do the job?)
-   - **Regression evals** (did we break anything?)
-3. Assign grader type per eval: `code` (shell verify) or `model` (rubric).
-4. Assign **strictness tier** per eval (graduated promotion — e45s37):
+1. Name the capability under test in one sentence.
+2. Write an evals document with:
+   - **Capability evals** (does it do the job?).
+   - **Regression evals** (did anything break?).
+3. Assign a grader type per eval: `code` (a shell verify) or `model` (a rubric).
+4. Assign a strictness tier per eval, with graduated promotion:
 
-   | Tier | Meaning | Promotion rule |
-   |------|---------|------------------|
-   | `EXPERIMENTAL` | New eval, may flake | Not gating |
-   | `USUALLY_PASSES` | Stable in dev; ≥2/3 recent runs pass | Blocks BUILD only when combined with ALWAYS_PASSES suite |
-   | `ALWAYS_PASSES` | Zero tolerance; required for release | Any single failure blocks BUILD and merge |
+   | Tier             | Meaning                                        | Promotion rule                                              |
+   | ---------------- | ---------------------------------------------- | ----------------------------------------------------------- |
+   | `EXPERIMENTAL`   | A new eval, it can flake                       | Not gating                                                  |
+   | `USUALLY_PASSES` | Stable in dev, 2 of 3 recent runs pass or more | Blocks the build only combined with the ALWAYS_PASSES suite |
+   | `ALWAYS_PASSES`  | Zero tolerance, required for release           | Any single failure blocks the build and the merge           |
 
-   Promote: `EXPERIMENTAL → USUALLY_PASSES` after 3 consecutive passes; `USUALLY_PASSES → ALWAYS_PASSES` after 5 consecutive passes with zero flakes documented in `specs/state.yaml`.
+   Promote `EXPERIMENTAL` to `USUALLY_PASSES` after 3 consecutive passes. Promote
+   `USUALLY_PASSES` to `ALWAYS_PASSES` after 5 consecutive passes with zero flakes
+   documented in `specs/state.yaml`.
 
-5. Run evals; log results table with pass@k (e.g. 3/3 runs) and tier per eval.
-6. Block BUILD phase until all `ALWAYS_PASSES` evals pass at agreed k. `USUALLY_PASSES` failures warn; `EXPERIMENTAL` failures log only.
+5. Run the evals. Log the results table with pass@k (for example 3 of 3 runs) and
+   the tier per eval. Run a code grader through the `truenorth_verify_gate` tool.
+6. Block the build until every `ALWAYS_PASSES` eval passes at the agreed k. A
+   `USUALLY_PASSES` failure warns. An `EXPERIMENTAL` failure logs only.
 
-## Artefact
+## Artifact
 
-`specs/verifications/eNNsYY-eval-report.md` — see [REFERENCE.md](REFERENCE.md) for template. Eval reports are stored alongside verification evidence in `specs/verifications/`, keyed by story ID for traceability.
+Write the eval report alongside the verification evidence, keyed by story id for
+traceability. See [REFERENCE.md](REFERENCE.md) for the template.
 
 ## Verify
 
-→ verify: `test -d specs/benchmarks && test -f specs/benchmarks/SCHEMA.md`
-
-
-<!-- story: e02s01 -->
+Confirm the eval report exists for the story. Run each code grader through the
+`truenorth_verify_gate` tool. A pass returns exit 0.

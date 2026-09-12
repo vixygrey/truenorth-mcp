@@ -1,31 +1,30 @@
 ---
-# story: e80s02
 name: validate-contracts
-phase: verify
-description: "Assert data shape consistency across system boundaries — live API responses against JSON Schema, key-set comparison across layers, data shape validation for migrations and exports. Catches silent data corruption before deploy."
-model: sonnet
-effort: standard
+description: 'Assert data-shape consistency across system boundaries. Live API responses against a JSON schema, a key-set comparison across layers, and data-shape validation for migrations and exports. Catches silent data corruption before a deploy.'
 ---
 
 # Validate Contracts
 
-> **HARD GATE** — Do NOT deploy or migrate data without running `validate-contracts` first. Silent data divergence between system boundaries causes the hardest-to-debug production bugs.
+> **HARD GATE**: Do NOT deploy or migrate data without running validate-contracts first. Silent data divergence between system boundaries causes the hardest production bugs to debug.
 >
-> **HARD GATE** — Contract files MUST be version-controlled alongside code. Outdated contracts are worse than no contracts. If a contract hasn't been reviewed in 30 days, flag it as stale.
+> **HARD GATE**: a contract file MUST be version-controlled alongside the code. An outdated contract is worse than no contract. When a contract has not been reviewed in 30 days, flag it as stale.
 
-Validate that data structures stay in sync across system boundaries — front-end vs back-end, API responses vs expected schemas, config files vs code assumptions, migration output vs target shape.
+Validate that data structures stay in sync across a system boundary: front end
+versus back end, an API response versus its expected schema, a config file versus
+the code assumptions, and migration output versus the target shape.
 
 ## Contract types
 
-| Mode | What it catches | When to use |
-|------|----------------|-------------|
-| **Schema** | API response shape mismatches | Before every deploy, after API changes |
-| **Key-set** | Missing/unexpected keys across two data sources | Translation files, configs, enum definitions |
-| **Shape** | Column type or format violations | After migrations, before consuming exports |
+| Mode        | What it catches                                     | When to use                                   |
+| ----------- | --------------------------------------------------- | --------------------------------------------- |
+| **Schema**  | An API response shape mismatch                      | Before every deploy, after an API change      |
+| **Key-set** | A missing or unexpected key across two data sources | Translation files, configs, enum definitions  |
+| **Shape**   | A column type or format violation                   | After a migration, before consuming an export |
 
 ## Contract file convention
 
-All contract files live in `specs/contracts/` as YAML. See [REFERENCE.md](REFERENCE.md) for extended examples.
+Every contract file lives in `specs/contracts/` as YAML. See
+[REFERENCE.md](REFERENCE.md) for extended examples.
 
 ### Key-set example
 
@@ -39,44 +38,38 @@ mode: subset
 
 ## Process
 
-### 1. Define contract
+### 1. Define the contract
 
-Create a YAML file in `specs/contracts/` following the schema for the mode.
+Create a YAML file in `specs/contracts/` that follows the schema for the mode.
 
-### 2. Run validation
+### 2. Run the validation
 
-```bash
-bash scripts/validate-contracts.sh specs/contracts/<contract>.yaml
-```
-
-The runner auto-detects key-set contracts (`sources:` block). Schema and shape modes are documented in REFERENCE.md for consumer projects.
+Validate the contract file against its sources. A key-set contract has a
+`sources:` block. The schema and shape modes are documented in REFERENCE.md for a
+consumer project.
 
 ### 3. Read the report
 
-```
-PASS: key-set contract
-# or
-FAIL: key-set — N keys in reference missing from target
-```
+A pass reports the satisfied contract. A failure names the divergence, for example
+"key-set: N keys in reference missing from target". A key-set failure exits
+non-zero.
 
-JSON Lines output for CI is planned for schema/shape modes; key-set failures exit non-zero.
+### 4. Fix the divergence
 
-### 4. Fix divergence
-
-- **Missing keys** → add to target source
-- **Type mismatches** → update schema or fix producer
-- **Shape violations** → fix migration or consumer
+- A missing key: add it to the target source.
+- A type mismatch: update the schema or fix the producer.
+- A shape violation: fix the migration or the consumer.
 
 ### 5. Re-validate
 
-```bash
-bash scripts/validate-contracts.sh specs/contracts/<contract>.yaml
-```
+Run the validation again and confirm the pass.
 
 ## Verify arc
 
-Part of **★ VERIFY ★**: `verify-work` → `validate-contracts` → `smoke-test` → `run-evals` → `audit-code`
+Part of VERIFY: `verify-work`, then `validate-contracts`, then `smoke-test`, then
+`run-evals`, then `audit-code`.
 
 ## Verify
 
-→ verify: `test -x scripts/validate-contracts.sh && bash scripts/validate-contracts.sh --self-test && grep -q 'validate-contracts.sh' skills/validate-contracts/SKILL.md && echo OK`
+Confirm the contract validation passes for every contract in `specs/contracts/`.
+Run it through the `truenorth_verify_gate` tool. A pass returns exit 0.
