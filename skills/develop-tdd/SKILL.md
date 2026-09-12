@@ -1,140 +1,130 @@
 ---
-# story: e80s01
-# story: e80s03
-# story: e51s04
-# story: e45s06
-# story: e45s08
-# story: e45s34
 name: develop-tdd
-model: sonnet
-effort: standard
-description: Test-driven development with red-green-refactor loop using vertical slices. Use for features (epic tasks) or bugs (specs/bugs/BUG-*.md).
+description: Test-driven development with a red-green-refactor loop using vertical slices. Use it for a feature (an epic task) or a bug (a BUG report).
 ---
 
 # Develop TDD
 
-> **HARD GATE** — Do NOT proceed if on `main` or `master`. Run `kickoff-branch` first to create a feature branch or worktree.
+> **HARD GATE**: Do NOT proceed on `main` or `master`. Run `kickoff-branch` first to create a feature branch or worktree.
 >
-> **HARD GATE** — Do NOT write code before you have a plan. New feature: `plan-work` → epic capsule tasks. Bug: `investigate-bug` → `specs/bugs/BUG-*.md` (or use `fix-bug` orchestrator).
+> **HARD GATE**: Do NOT write code before you have a plan. New feature: `plan-work` to epic capsule tasks. Bug: `investigate-bug` to a BUG report, or use the `fix-bug` orchestrator.
 >
-> **RECURSIVE DISCIPLINE** — This lifecycle applies to EVERY task, including updating these skills. Never skip planning because a task is "meta" or "just documentation."
+> **RECURSIVE DISCIPLINE**: this lifecycle applies to every task, including updating these skills. Never skip planning because a task is meta or documentation.
 
 ## Philosophy
 
-Tests verify behavior through public interfaces, not implementation details. A good test reads like a specification. See [REFERENCE.md](REFERENCE.md) for the horizontal-slice anti-pattern and TDD phase detail.
+A test verifies behavior through the public interface, not an implementation
+detail. A good test reads like a specification. See [REFERENCE.md](REFERENCE.md)
+for the horizontal-slice anti-pattern and the TDD phase detail.
 
-## Red Flags
+## Red flags
 
-If you catch yourself thinking these, stop and reconsider — you are likely deviating from production-grade craft.
+When you catch yourself thinking one of these, stop and reconsider. You are likely
+deviating from production-grade craft.
 
-| Red Flag | Reality |
-| :--- | :--- |
-| "This is too simple to need tests." | Simple code is where bugs hide. If it's simple, the test is cheap. |
-| "I'll refactor this later." | "Later" is when technical debt becomes bankruptcy. Refactor while Green. |
-| "The tests are already comprehensive." | If you're adding behavior, you need a new test. Coverage ≠ Correctness. |
-| "I'm just fixing a small bug." | Small bugs often indicate deep interface flaws. Investigate root cause. |
-| "I need to mock this internal class." | Mocking internals couples tests to implementation. Mock only I/O. |
-| "This refactor is out of scope." | Leave the code cleaner than you found it (Boy Scout Rule). |
-| "Preflight failed but it's unrelated." | **Always Green:** any reproducible gate failure routes **quick-fix → fix-bug** before forward work. Session boundaries do not waive Preflight. |
-| "I'll note the red gate and continue." | Narrating a failure is banned. fix-or-log is mandatory per CONVENTIONS § Discovered Defects. |
+| Red flag                                 | Reality                                                                                        |
+| :--------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| "This is too simple to need a test."     | Simple code is where a bug hides. When it is simple, the test is cheap.                        |
+| "I will refactor this later."            | Later is when technical debt becomes bankruptcy. Refactor while green.                         |
+| "The tests are already comprehensive."   | When you add behavior, you need a new test. Coverage is not correctness.                       |
+| "I am just fixing a small bug."          | A small bug often indicates a deep interface flaw. Investigate the root cause.                 |
+| "I need to mock this internal class."    | Mocking an internal couples the test to the implementation. Mock only I/O.                     |
+| "This refactor is out of scope."         | Leave the code cleaner than you found it.                                                      |
+| "Preflight failed but it is unrelated."  | Always green: any reproducible gate failure routes quick-fix then fix-bug before forward work. |
+| "I will note the red gate and continue." | Narrating a failure is banned. Fix-or-log is mandatory.                                        |
 
 ## Workflow
 
-> **Timing:** `bash scripts/bp-timing.sh start develop-tdd` at invocation; `bash scripts/bp-timing.sh end develop-tdd` before handoff.
-
 ### 1. Planning
 
-- [ ] Read active `specs/epics/*/epic.yaml` story tasks or `specs/bugs/BUG-*.md` — understand verify steps
-- [ ] If `specs/tech-architecture/eNN-TEST_PLAN_LATEST.md` exists for the active epic, read it before writing the first test. Implement P0 scenarios (`SC-*-P0-*`) before P1. P2/P3 scenarios are optional per time budget.
-- [ ] Confirm interface changes and behaviors to test (prioritize)
-- [ ] Design interfaces for testability — identify [deep modules](deep-modules.md) opportunities
-- [ ] Get user approval on the plan
+- [ ] Read the active epic story tasks or the BUG report. Understand the verify steps.
+- [ ] When a test plan exists for the active epic, read it before the first test. Implement the P0 scenarios before P1. P2 and P3 are optional per the time budget.
+- [ ] Confirm the interface changes and the behaviors to test. Prioritize them.
+- [ ] Design the interfaces for testability. Identify deep-module opportunities.
+- [ ] Get user approval on the plan.
 
-Apply the **enforce-first** F.I.R.S.T rubric: Fast, Independent, Repeatable, Self-Validating, Timely.
+Apply the enforce-first F.I.R.S.T rubric: Fast, Independent, Repeatable,
+Self-Validating, Timely.
 
-### 2. Tracer Bullet
+### 2. Tracer bullet
 
-Write ONE test that confirms ONE thing about the system:
+Write ONE test that confirms ONE thing about the system. Drive the cycle through
+the `truenorth_tdd_cycle` tool, which enforces the red-green-refactor order and the
+red-stage exit-code semantics.
 
-```
-RED:    Write test for first behavior → test fails → commit: test(<scope>): ...  (test-only; red in CI)
-GREEN:  Write minimal code to pass → test passes → commit: feat(<scope>): ...   (fix commit; green)
-REFACTOR (optional): clean up → commit: refactor(<scope>): ...
-```
-
-> **Two-commit red/green policy (HARD GATE — e45s08)** — Each behavior cycle requires **two separate commits**: (1) test-only commit that fails in CI (RED), then (2) implementation commit that makes it pass (GREEN). Never combine test + fix in one commit. Before proceeding, run the mechanical RED isolation check:
-
-```bash
-bash scripts/verify-tdd-red-commit.sh
+```text
+RED:      write a test for the first behavior, the test fails, commit test(<scope>): ...  (test-only, red in CI)
+GREEN:    write the minimal code to pass, the test passes, commit feat(<scope>): ...      (fix commit, green)
+REFACTOR: (optional) clean up, commit refactor(<scope>): ...
 ```
 
-Show `git log -2 --oneline` **and** the script output as evidence. If the test-only commit passes in isolation, the RED gate is violated — stop and fix before GREEN.
+> **Two-commit red/green policy** (HARD GATE): each behavior cycle requires two separate commits. First a test-only commit that fails in CI (RED), then an implementation commit that makes it pass (GREEN). Never combine a test and a fix in one commit.
 
-> **tasks.yaml ledger (e45s06)** — After each task's `verify:` exits 0, update `eNNsYY-tasks.yaml`: set that task's `status: passing`. Story-level `status: passing` only when all tasks pass.
+Run the RED stage through `truenorth_tdd_cycle`. It reports RED passed only when
+the failing test command exits non-zero. When the test-only commit passes in
+isolation, the RED gate is violated. Stop and fix it before GREEN. Show
+`git log -2 --oneline` and the tool result as evidence.
 
-### 3. Incremental Loop
+> **tasks ledger**: after each task's `verify:` exits 0, set that task's `status: passing`. The story-level status is `passing` only when every task passes.
 
-> **Snapshot-before-transition (e45s34):** Before each RED → GREEN or GREEN → REFACTOR transition, create a checkpoint so a failed transition can be rolled back cleanly:
+### 3. Incremental loop
 
-```bash
-bash scripts/bp-yaml-snapshot.sh specs/state.yaml   # if state changed this cycle
-git stash push -m "tdd-checkpoint-$(git rev-parse --short HEAD)-red" --keep-index 2>/dev/null || true
-```
+Before each RED-to-GREEN or GREEN-to-REFACTOR transition, create a checkpoint, so
+a failed transition rolls back cleanly. Never refactor while RED.
 
-After GREEN passes and is committed, drop the stash (`git stash drop` if empty). Never refactor while RED.
+For each remaining behavior: RED, then GREEN, then REFACTOR (optional). One test at
+a time. Two commits per behavior, test-only RED then fix GREEN. Commit after every
+GREEN phase.
 
-For each remaining behavior: RED → GREEN → REFACTOR (optional). One test at a time. **Two commits per behavior** (test-only RED, then fix GREEN). Commit after every GREEN phase.
+### 4. Visual slices (UI alternate workflow)
 
-### 4. Visual Slices (UI alternate workflow)
-
-For UI components where behavioral unit testing is brittle: extract logic into a Controller/ViewModel/Hook (pure TDD), then use Visual Slices for the View layer. See [REFERENCE.md](REFERENCE.md) for the full Visual Slices procedure.
+For a UI component where behavioral unit testing is brittle, extract the logic into
+a controller, view model, or hook (pure TDD), then use visual slices for the view
+layer. See [REFERENCE.md](REFERENCE.md) for the full procedure.
 
 ### 5. Refactor
 
-After all tests pass: extract duplication, deepen modules, apply SOLID principles. **Never refactor while RED.**
+After every test passes, extract duplication, deepen modules, and apply SOLID
+principles. Never refactor while RED.
 
 ### 6. Verify
 
-After every behavior cycle, run the verify command from the active epic task. Show evidence before declaring the step done.
-
-### 7. Manual Verification Handover
-
-Once all tests pass: locate the Verification Script in the active epic capsule, present it to the user step-by-step, and wait for confirmation of behavioral correctness.
-
+After every behavior cycle, run the verify command from the active epic task
+through the `truenorth_verify_gate` tool. Show the evidence before you declare the
+step done.
 
 ### 6a. CI dry-run sub-step
 
-If this cycle modified files in `.github/workflows/`, run the CI dry-run procedure documented in [REFERENCE.md](REFERENCE.md#ci-dry-run).
+When this cycle modified a file under `.github/workflows/`, run the CI dry-run
+procedure in [REFERENCE.md](REFERENCE.md#ci-dry-run).
 
-## Checklist Per Cycle
+### 7. Manual verification handover
 
-```
-[ ] Test describes behavior, not implementation
-[ ] No test is ignored without an explicit ambiguity note (T4)
-[ ] Boundary conditions tested: empty, max, min, off-by-one (T5)
-[ ] Tests verify behavior through public interface only — no private methods (T8)
-[ ] Test would survive internal refactor
-[ ] Code is minimal for this test
-[ ] No speculative features added
-[ ] Every new abstraction has an explicit "Reason for Depth" justification
+Once every test passes, locate the verification script in the active epic capsule,
+present it to the user step by step, and wait for confirmation of behavioral
+correctness.
+
+## Checklist per cycle
+
+```text
+[ ] The test describes behavior, not implementation
+[ ] No test is ignored without an explicit ambiguity note
+[ ] Boundary conditions tested: empty, max, min, off-by-one
+[ ] The test verifies behavior through the public interface only, no private methods
+[ ] The test would survive an internal refactor
+[ ] The code is minimal for this test
+[ ] No speculative feature added
+[ ] Every new abstraction has an explicit reason-for-depth justification
 [ ] Progress committed (Conventional Commits)
-[ ] verify: command passes
+[ ] The verify command passes
 ```
-
-
-
-## Handoff
-
-Gate: READY -> next: verify-work
-Writes: state.yaml handoff.next_skill = verify-work
-
-## BCP Plus Integration
-
-At story completion, if the story was sized with BCP Plus (13-dimension breakdown), log the `bcp_plus.total` alongside the standard `bcps:` count in the story's tasks.yaml. The breakdown is available from the epic capsule's `bcp_plus_breakdown` field. See `docs/references/bcp-plus.md` for the full methodology and NFR Gate pattern.
 
 ## Verify
 
-→ verify: `test -x scripts/verify-tdd-red-commit.sh && bash scripts/verify-tdd-red-commit.sh --self-test && grep -q 'verify-tdd-red-commit' skills/develop-tdd/SKILL.md && echo OK`
+Run the verify command from the active epic task through the `truenorth_verify_gate`
+tool. A pass returns exit 0.
 
+## Handoff
 
-<!-- story: e02s04 -->
+Gate: READY. Next: verify-work.
+Writes: `state.yaml` `handoff.next_skill = verify-work`.

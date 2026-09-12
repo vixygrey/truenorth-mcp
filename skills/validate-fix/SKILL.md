@@ -1,118 +1,107 @@
 ---
-# story: e80s01
-# story: e80s04
-# story: e45s08
 name: validate-fix
-model: haiku
-effort: standard
-description: Prove a fix works before declaring done — re-run the failing test, run the full suite, typecheck, lint, and harden against recurrence. Use after implementing a bug fix, when user says "is this fixed?", or before closing an investigation.
+description: Prove a fix works before you declare it done. Re-run the failing test, run the full suite, typecheck, lint, and harden against recurrence. Use it after implementing a bug fix, when the user asks "is this fixed?", or before closing an investigation.
 ---
 
 # Validate Fix
-> **HARD GATE** — Fix must not regress. Run full test suite and manual UAT before declaring success.
 
+> **HARD GATE**: the fix must not regress. Run the full test suite and manual UAT before you declare success.
 
-Prove the fix works. "I think it works" is not evidence. Run the suite, show the output, then harden against recurrence.
+Prove the fix works. "I think it works" is not evidence. Run the suite, show the
+output, then harden against recurrence.
 
-> **Two-commit red/green policy (e45s08)** — Bug fixes follow the same two-commit discipline as `develop-tdd`: first commit adds/adjusts the failing test (`test(<scope>): …`), second commit applies the fix (`fix(<scope>): …`). Do not squash RED and GREEN before review.
+> **Two-commit red/green policy**: a bug fix follows the same two-commit discipline as `develop-tdd`. The first commit adds or adjusts the failing test (`test(<scope>): ...`). The second commit applies the fix (`fix(<scope>): ...`). Do not squash RED and GREEN before review.
 
 ## Checklist
 
 ### 1. Re-run the originally failing test
 
-```bash
-# Run the specific test that captured the bug
-<test command for the failing test>
-```
+Run the specific test that captured the bug.
 
-- [ ] Previously failing test now passes
+- [ ] The previously failing test now passes.
 
 ### 2. Run the full test suite
 
-```bash
-# Run all tests — no filtering
-<full test command from CLAUDE.md>
-```
+Run every test with no filtering, through the `truenorth_verify_gate` tool.
 
-- [ ] All tests pass (zero regressions)
+- [ ] All tests pass, zero regressions.
 
-### 3. Type check
+### 3. Typecheck
 
-```bash
-<typecheck command>
-```
-
-- [ ] No type errors introduced
+- [ ] No type error introduced.
 
 ### 4. Lint
 
-```bash
-<lint command>
-```
-
-- [ ] No lint violations introduced
+- [ ] No lint violation introduced.
 
 ### 5. Harden against recurrence
 
-For every bug fixed, add at least one prevention layer:
+For every bug fixed, add at least one prevention layer.
 
-| Mechanism | When to use |
-|-----------|-------------|
-| Type guard | Input could be the wrong shape |
-| Schema validation (Zod, Pydantic, etc.) | External data crossing a boundary |
-| Invariant assertion | Internal state that must always hold |
-| Lint rule | Pattern that's easy to repeat by mistake |
-| Environment check at startup | Missing config causes silent failure |
+| Mechanism                 | When to use                                 |
+| ------------------------- | ------------------------------------------- |
+| Type guard                | The input could be the wrong shape          |
+| Schema validation         | External data crosses a boundary            |
+| Invariant assertion       | Internal state that must always hold        |
+| Lint rule                 | A pattern that is easy to repeat by mistake |
+| Startup environment check | A missing config causes a silent failure    |
 
-- [ ] At least one hardening mechanism added
-- [ ] Hardening mechanism is tested
+- [ ] At least one hardening mechanism added.
+- [ ] The hardening mechanism is tested.
 
-### 5b. Generalize-fix (HARD GATE — e80s04 / GH #98)
+### 5b. Generalize the fix (HARD GATE)
 
-Sweep the **defect class** across the codebase after local hardening — see [REFERENCE-generalize-fix.md](REFERENCE-generalize-fix.md).
+Sweep the defect class across the codebase after the local hardening. See
+[REFERENCE-generalize-fix.md](REFERENCE-generalize-fix.md).
 
-- [ ] Defect class documented (not just the one-line root cause)
-- [ ] Grep sweep run and `match_count` recorded
-- [ ] `verify-generalize-sweep.sh` passes on the artifact
+- [ ] The defect class is documented, not just the one-line root cause.
+- [ ] A codebase sweep is run and the match count is recorded.
+- [ ] The generalize sweep passes on the artifact.
 
-### 6. Update the bug file and registry.yaml
+### 6. Update the bug file and the registry
 
-Find the most recent `specs/bugs/BUG-*.md` file and append the resolution:
+Find the most recent BUG report and append the resolution.
 
 ```markdown
 ## Resolution
 
 **Fixed:** [date]
 **Root cause confirmed:** [one sentence]
-**Fix applied:** [what was changed]
+**Fix applied:** [what changed]
 **Hardening added:** [type guard / schema / assertion / lint rule]
-**Evidence:** all tests pass (`<verify command>`)
+**Evidence:** all tests pass
 **Commit:** `fix(<scope>): <description>`
 ```
 
-Also update the corresponding row in `specs/bugs/registry.yaml`: set `status` to `fixed`, fill in `files_changed`, `approach`, `risk_level`, `commit_message`, and any other resolution fields.
+Update the corresponding row in the bug registry: set `status` to `fixed`, and
+fill in `files_changed`, `approach`, `risk_level`, and `commit_message`.
 
-- [ ] specs/bugs/BUG-*.md updated with resolution
-- [ ] specs/bugs/registry.yaml row updated with resolution fields
+- [ ] The BUG report is updated with the resolution.
+- [ ] The bug registry row is updated with the resolution fields.
 
-### 7. Behavioral Proof (HARD GATE)
+### 7. Behavioral proof (HARD GATE)
 
-Mechanical verification (tests passing) is only half the fix. You must prove **behavioral correctness**.
+Mechanical verification (the tests passing) is only half the fix. You must prove
+behavioral correctness.
 
-- [ ] Manually demonstrate the fixed behavior (e.g., via `run_shell_command` or `web_fetch`)
-- [ ] Compare the output/state against the "Expected Behavior" in the bug file
-- [ ] Show the user evidence of the behavior, not just the test logs
+- [ ] Manually demonstrate the fixed behavior.
+- [ ] Compare the output or state against the expected behavior in the bug file.
+- [ ] Show the user evidence of the behavior, not just the test logs.
 
 ## Rules
 
-- **Loop until behavioral correctness is verified**: if any checklist item fails, or if the behavior is still incorrect despite passing tests, return to step 1 and run all checks again from the top — do not declare done until every item is green and the behavior is proven correct in a single run.
-- **Never use `@ts-ignore`, `as any`, or `// eslint-disable`** to "fix" a bug — these suppress the symptom without fixing the root cause
-- **Never mark the task done if any test is still failing**
-- **The verify command from specs/bugs/BUG-*.md or the active epic task `verify` field must pass**
+- **Loop until behavioral correctness is verified**: when any checklist item
+  fails, or the behavior is still incorrect despite passing tests, return to step
+  1 and run every check again from the top. Do not declare done until every item
+  is green and the behavior is proven correct in a single run.
+- **Never use a type-ignore, an `as any`, or a lint-disable to fix a bug.** These
+  suppress the symptom without fixing the root cause.
+- **Never mark the task done while any test is failing.**
+- **The verify command from the BUG report or the active epic task must pass.**
 
-Suggest next skill: `audit-code` → `commit-message`.
+Suggest the next skill: `audit-code`, then `commit-message`.
 
 ## Verify
 
-→ verify: `grep -q 'generalize-fix' skills/validate-fix/SKILL.md && test -x scripts/verify-generalize-sweep.sh && bash scripts/verify-generalize-sweep.sh --self-test && echo OK`
-
+Run the full test suite through the `truenorth_verify_gate` tool. A pass returns
+exit 0.
