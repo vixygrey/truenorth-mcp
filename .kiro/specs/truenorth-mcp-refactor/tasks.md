@@ -111,7 +111,7 @@ P5 (no dangling references).
     - Assert every prohibited alias that occurs as an identifier yields at least one violation citing the owning constraint id. Include the `is_deleted` maps to C-02 case with the exact remediation string
     - **Validates: Requirements 4.5, 4.6**
 
-  - [ ]* 6.3 Implement the tree-sitter AST analyzer (optional)
+  - [x]\* 6.3 Implement the tree-sitter AST analyzer (optional)
     - `AstAnalyzer` behind the tree-sitter feature for supported languages, plugged in via `pick_analyzer`, adding precision without blocking the regex baseline
     - _Requirements: 4.9_
 
