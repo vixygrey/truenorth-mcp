@@ -182,8 +182,19 @@ workaround as if it were the solution.
   squash-commit subject and body must follow Conventional Commits and the house writing
   rules, because that message is the permanent `main` history entry. This keeps `main`
   linear and one-commit-per-change, which pairs with the atomic-commit rule above.
+- **Trunk-based development.** `main` is the trunk and is always releasable. Work on
+  short-lived branches off `main` and merge back through a squash-merge PR. Keep a branch
+  small and merge it fast, so the trunk stays close to every branch. Do not run long-lived
+  divergent branches.
 - **No direct commits to `main`/`master`;** work on feature branches. Only commit when the
   user asks. Stage specific files, not `git add .`.
+- **Issue first, then code.** Every unit of work starts as a GitHub issue. Open the issue
+  before you branch, so the intent is recorded before the change exists. Name the branch
+  and PR after the issue, and reference the issue in the PR body. On merge, close the issue
+  with a reference to the PR that resolved it. A spec task maps to one issue.
+- **Link the PR to its issue.** Put `Closes #NN` in the PR body, so the squash-merge closes
+  the issue and records the link in `main` history. When a PR resolves part of an issue,
+  write `Refs #NN` instead and close the issue by hand once every part lands.
 - **Never add AI-attribution footers** (`Co-authored-by`, etc.). Commits are authored by
   the human user.
 - **Destructive git ops** (force push, `reset --hard`, `clean -f`, `branch -D`) require
