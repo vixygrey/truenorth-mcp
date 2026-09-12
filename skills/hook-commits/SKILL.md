@@ -1,13 +1,11 @@
 ---
 name: hook-commits
-model: haiku
-effort: standard
-description: Set up pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing.
+description: Set up a pre-commit hook with lint-staged (Prettier), type checking, and tests in the current repo. Use it when the user wants to add a pre-commit hook, set up Husky, configure lint-staged, or add commit-time formatting, type checking, or testing.
 ---
 
 # Hook Commits
-> **HARD GATE** — **HARD GATE** — Pre-commit and commit-msg hooks must run before any commit lands. Skipping hooks (`--no-verify`) is forbidden unless explicitly authorized for a specific commit and documented.
 
+> **HARD GATE**: the pre-commit and commit-msg hooks MUST run before any commit lands. Skipping a hook (`--no-verify`) is forbidden unless it is explicitly authorized for a specific commit and documented.
 
 ## What This Sets Up
 
@@ -93,4 +91,3 @@ This will run through the new pre-commit hooks — a good smoke test that everyt
 - Husky v9+ doesn't need shebangs in hook files
 - `prettier --ignore-unknown` skips files Prettier can't parse (images, etc.)
 - The pre-commit runs lint-staged first (fast, staged-only), then full typecheck and tests
-

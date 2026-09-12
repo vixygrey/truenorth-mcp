@@ -1,8 +1,6 @@
 ---
 name: publish-package
-description: "Package registry publishing for npm, crates.io, PyPI, and Homebrew. Verifies prerequisites, runs the publish command, confirms success, and surfaces actionable error hints on failure."
-model: sonnet
-effort: standard
+description: 'Package-registry publishing for npm, crates.io, PyPI, and Homebrew. Verifies prerequisites, runs the publish command, confirms success, and surfaces actionable error hints on failure.'
 ---
 
 # Publish Package
@@ -19,13 +17,13 @@ Publish packages to language-specific registries. Detects package type from mani
 
 Read the project root for manifest files to determine the package type:
 
-| Manifest | Registry | Publish command |
-|----------|----------|----------------|
-| `package.json` | npm | `npm publish --access public` |
-| `Cargo.toml` | crates.io | `cargo publish` |
-| `setup.py` / `pyproject.toml` | PyPI | `twine upload dist/*` or `flit publish` |
-| `Formula/<name>.rb` | Homebrew | `brew bump-formula-pr` |
-| Multiple detected | Polyglot | Error: specify registry with `--registry <npm|crates.io|pypi|brew>` |
+| Manifest                      | Registry  | Publish command                               |
+| ----------------------------- | --------- | --------------------------------------------- | --------- | ---- | ------ |
+| `package.json`                | npm       | `npm publish --access public`                 |
+| `Cargo.toml`                  | crates.io | `cargo publish`                               |
+| `setup.py` / `pyproject.toml` | PyPI      | `twine upload dist/*` or `flit publish`       |
+| `Formula/<name>.rb`           | Homebrew  | `brew bump-formula-pr`                        |
+| Multiple detected             | Polyglot  | Error: specify registry with `--registry <npm | crates.io | pypi | brew>` |
 
 If no manifest is found, prompt the user to specify the type or pass `--type <npm|crates.io|pypi|brew>`.
 
@@ -70,7 +68,13 @@ See [REFERENCE.md](REFERENCE.md)
 
 See [REFERENCE.md](REFERENCE.md)
 
+### 8. Tag-driven publishing
+
+When the project publishes from CI, prefer a tag-driven release over a manual
+publish. A `v*` tag triggers the release workflow, which builds and publishes. Use
+a manual publish only for a registry the workflow does not cover.
+
 ## Verify
 
-→ verify: `test -f skills/publish-package/SKILL.md && test -f package.json`
-→ verify: `grep -q publish-package SKILL-INDEX.md`
+Confirm the dry-run passes for the detected registry before any real publish. A
+successful dry-run reports the package and version that would publish.

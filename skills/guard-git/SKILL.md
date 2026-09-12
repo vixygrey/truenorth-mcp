@@ -1,49 +1,48 @@
 ---
 name: guard-git
-model: haiku
-effort: standard
-description: Block dangerous git commands (push, force push, reset --hard, clean, branch -D, checkout/restore .) and enforce Conventional Commits & Branch Protection before an AI agent runs them. Installs hook scripts for Claude Code, Cursor, Cursor CLI, and Gemini CLI; documents Google Antigravity Terminal deny lists. Use when the user wants git safety hooks, to block git push or destructive git in agents, or to mirror the same policy across AI coding tools.
+description: Block a dangerous git command (push, force push, reset --hard, clean, branch -D, checkout or restore of a path) and enforce Conventional Commits and branch protection before an agent runs it. Install a pre-command hook for the agent harness in use. Use it when the user wants git-safety hooks, to block a destructive git command in an agent, or to mirror the same policy across coding tools.
 ---
 
 # Guard Git
-> **HARD GATE** — **HARD GATE** — Before committing, verify: branch is not main/master, author is correct, git user is configured. Bad commits are hard to fix.
 
+> **HARD GATE**: before committing, verify the branch is not `main` or `master`, the author is correct, and the git user is configured. A bad commit is hard to fix.
 
-Installs a shared hook that blocks destructive git operations and enforces workflow discipline. **Requires `jq` on the agent's PATH** when the hook runs.
+Install a shared hook that blocks a destructive git operation and enforces workflow
+discipline. The hook needs `jq` on the PATH when it runs.
 
-## What gets blocked/enforced
+## What gets blocked or enforced
 
 - **Safety**: `git push --force`, `git reset --hard`, `git clean -f`, `git branch -D`, `git checkout .`, `git restore .`.
-- **Discipline**: Blocks direct commits or pushes to protected branches (`main`, `master`) unless `GIT_BIGPOWERS_LAND=1` (set only by `scripts/land-branch.sh`).
-- **Allows**: `git push origin <feature-branch>` for backup/CI; solo land push to `main` only inside `land-branch.sh`.
-- **Standardization**: Enforces [Conventional Commits](https://www.conventionalcommits.org/) for all `git commit` commands.
-- **Secrets**: Blocks commits containing common secret patterns (`sk-`, `ghp_`, `AKIA`, `xoxb-`, `-----BEGIN` private keys) — see [REFERENCE.md](REFERENCE.md).
+- **Discipline**: block a direct commit or push to a protected branch (`main`, `master`), except the deliberate solo land to `main`.
+- **Allow**: `git push origin <feature-branch>` for backup or CI.
+- **Standardization**: enforce Conventional Commits for every `git commit`.
+- **Secrets**: block a commit that contains a common secret pattern (`sk-`, `ghp_`, `AKIA`, `xoxb-`, a `-----BEGIN` private key). See [REFERENCE.md](REFERENCE.md).
 
 ## Quick start
 
-1. **Scope**: ask project-only vs global (paths differ per product).
-2. **Write the hook bundle** from [REFERENCE.md](REFERENCE.md) into the client's hooks directory.
-3. **Run `chmod +x`** on `pre-tool-use.sh`.
-4. **Merge** the hook snippet from [REFERENCE.md](REFERENCE.md) into the right settings file — do not wipe unrelated keys.
+1. **Scope**: ask project-only versus global. The paths differ per tool.
+2. **Write the hook bundle** from [REFERENCE.md](REFERENCE.md) into the harness hooks directory.
+3. **Make it executable** with `chmod +x` on the hook script.
+4. **Merge** the hook snippet into the correct settings file. Do not wipe an unrelated key.
 5. **Verify** with the tests in [REFERENCE.md](REFERENCE.md).
 
-| Client | Mechanism | Config |
-|--------|-----------|--------|
-| Claude Code | `PreToolUse` (Bash) | `.claude/settings.json` or `~/.claude/settings.json` |
-| Cursor / Cursor CLI | `beforeShellExecution` | `.cursor/hooks.json` or `~/.cursor/hooks.json` |
-| Gemini CLI | `BeforeTool` + `run_shell_command` | `.gemini/settings.json` or `~/.gemini/settings.json` |
-| Google Antigravity | Built-in Terminal **Deny list** | Settings UI (no shell hook) |
+The hook mechanism is harness-specific. The policy is identical across harnesses.
+This table records the pre-command hook point for common harnesses, as reference.
+The skill does not depend on any one harness.
 
-**Modes (env on the hook command):** `GIT_GUARDRAILS_MODE` is `claude` (default) or `cursor` → stderr + exit `2` on block. Set `gemini` for Gemini CLI → JSON `decision` on stdout.
+| Harness                             | Mechanism                                               | Config                             |
+| ----------------------------------- | ------------------------------------------------------- | ---------------------------------- |
+| Pre-command hook (generic)          | A before-shell-execution hook that inspects the command | The harness hooks or settings file |
+| A hook that blocks on non-zero exit | stderr plus exit `2` on a block                         | The harness hooks file             |
+| A hook that reads a JSON decision   | A `decision` object on stdout                           | The harness settings file          |
+
+Set the hook mode to match the harness contract: a stderr-plus-exit-2 block, or a
+JSON decision on stdout.
 
 ## Customization
 
-To add or remove patterns or protected branches, edit `pre-tool-use.sh`.
+To add or remove a pattern or a protected branch, edit the hook script.
 
 ## Advanced
 
-Full JSON examples, merge rules, Antigravity deny-list entries, and test commands: [REFERENCE.md](REFERENCE.md).
-
-
-
-<!-- story: e01s03 -->
+Full JSON examples, merge rules, and test commands: [REFERENCE.md](REFERENCE.md).

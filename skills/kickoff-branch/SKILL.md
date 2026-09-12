@@ -1,149 +1,94 @@
 ---
 name: kickoff-branch
-model: haiku
-effort: standard
-description: Create an isolated Git worktree/branch or Jujutsu workspace, then verify a clean test baseline before code. Use when starting a feature or task.
+description: Create an isolated Git worktree or branch, or a Jujutsu workspace, then verify a clean test baseline before code. Use it when starting a feature or task.
 ---
-
-# story: e51s03
-# story: e20s03
-# story: e82s02
-
 
 # Kickoff Branch
 
-> **HARD GATE** — Direct Git work on `main`/`master` or reuse of an unrelated Jujutsu change is prohibited. Create a feature branch/worktree or Jujutsu workspace/change.
+> **HARD GATE**: direct Git work on `main` or `master`, or reuse of an unrelated Jujutsu change, is prohibited. Create a feature branch or worktree, or a Jujutsu workspace or change.
 >
-> **HARD GATE** — Do NOT proceed with development until **Preflight** passes on the default branch. Red Preflight blocks branch creation and all forward work — invoke `quick-fix` or `fix-bug` per CONVENTIONS § Discovered Defects.
+> **HARD GATE**: Do NOT proceed with development until preflight passes on the default branch. A red preflight blocks branch creation and all forward work. Invoke `quick-fix` or `fix-bug`.
 
-Create an isolated Git worktree or Jujutsu workspace before code. **Preflight must be green** first — solo-default owns the whole tree.
+Create an isolated Git worktree or Jujutsu workspace before code. Preflight must be
+green first.
 
 ## Process
 
-### 1. Confirm task name
+### 1. Confirm the task name
 
-Ask if not already known: "What's the name of this feature or task?" Use it as the branch name slug (kebab-case, max 40 chars).
+Ask when it is not known: "What is the name of this feature or task?". Use it as
+the branch-name slug (kebab-case, at most 40 characters).
 
 ### 2. Select the VCS procedure
 
-Read `state.yaml` `vcs.kind`. For `jj`, do not run the Git blocks below: verify with `jj status` and `jj log -r '::@' -n 5`, create isolation with `jj workspace add ../<task-slug> -r @`, then run `jj -R ../<task-slug> describe -m "feat: <task>"`. Record the new stable change ID. For `git`, continue below.
+Read the `vcs.kind` value from `state.yaml`. For `jj`, do not run the Git blocks
+below. Verify with `jj status` and `jj log -r '::@' -n 5`, create isolation with
+`jj workspace add ../<task-slug> -r @`, then run
+`jj -R ../<task-slug> describe -m "feat: <task>"`. Record the new stable change id.
+For `git`, continue below.
 
-### 2a. Anchor Git on the default branch (main or master)
+### 2a. Anchor Git on the default branch
 
-> **HARD GATE** — Git kickoff MUST start from an updated, clean default branch in the **primary** repository root (not a linked worktree).
+> **HARD GATE**: Git kickoff MUST start from an updated, clean default branch in the primary repository root, not a linked worktree.
 
 ```bash
-# Detect default branch
 DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo main)
-
 git checkout "$DEFAULT"
 git pull --ff-only origin "$DEFAULT"   # skip if no remote
-git status                             # working tree MUST be clean
+git status                             # the working tree MUST be clean
 git log --oneline -5
 ```
 
-**Spec-only pre-kickoff** — before enforcing the clean-tree gate, check whether dirty files are spec artifacts:
+**Spec-only pre-kickoff**: before you enforce the clean-tree gate, check whether
+the dirty files are spec artifacts. A dirty tree of only `specs/` files can be
+committed as a checkpoint after you confirm. A dirty tree with a non-spec file
+(under `src/`, a SKILL.md, and so on) still enforces the full clean-tree gate.
+When it is not clean and not spec-only, stash or commit before you proceed.
+
+### 3. Git pre-flight and conflict resolution
+
+Before you create the worktree, verify the target is clean: check for an existing
+directory, an existing branch, and a ghost worktree (metadata present but the
+directory is gone).
+
+- Directory exists: ask the user to use it or delete it.
+- Branch exists with no worktree: ask to use the existing branch
+  (`git worktree add ../<task-slug> <task-slug>`) or delete it.
+- Ghost worktree: run `git worktree prune` to clear the stale metadata.
+
+### 4. Create the Git worktree and branch
 
 ```bash
-DIRTY=$(git status --porcelain | awk '{print $2}')
-NON_SPEC=$(echo "$DIRTY" | grep -v '^specs/' || true)
-
-if [ -z "$DIRTY" ]; then
-  : # clean — proceed
-elif [ -z "$NON_SPEC" ]; then
-  # spec-only dirty tree — offer auto-commit
-  echo "Dirty spec artifacts: $(echo $DIRTY | tr '\n' ' ')"
-  read -p "Commit spec artifacts before kickoff? [Y/n]: " CONFIRM
-  CONFIRM=${CONFIRM:-Y}
-  if [[ "$CONFIRM" =~ ^[Yy] ]]; then
-    git add specs/
-    git commit -m "chore(state): checkpoint before kickoff"
-  fi
-else
-  echo "Dirty tree: $NON_SPEC (not a spec artifact). Stash or commit before proceeding."
-  exit 1
-fi
-```
-
-- **Spec artifacts** match `specs/` — state.yaml, epics YAMLs, execution-status.yaml, etc.
-- **Non-spec dirty files** (src/, scripts/, SKILL.md, …) still enforce the full clean-tree gate.
-- If not on `$DEFAULT` after checkout, stop and fix before continuing.
-
-### 3. Git pre-flight & conflict resolution
-
-Before creating the worktree, verify the target environment is clean:
-
-```bash
-# 1. Check for existing directory
-ls -d ../<task-slug> 2>/dev/null
-
-# 2. Check for existing branch
-git branch --list <task-slug>
-
-# 3. Check for "ghost" worktrees (metadata exists but directory is gone)
-git worktree list | grep "<task-slug>"
-```
-
-**Handling Conflicts:**
-- **Directory exists:** If `../<task-slug>` already exists, ask the user if they want to use it or delete it.
-- **Branch exists:** If the branch exists but no worktree is attached, ask to use the existing branch (`git worktree add ../<task-slug> <task-slug>`) or delete it.
-- **Ghost worktree:** If `git worktree list` shows the path but the directory is missing, run `git worktree prune` to clear the stale metadata. `bash scripts/cleanup-worktrees.sh` does this plus reports any worktree whose branch is already merged or deleted — advisory only, it prints the `git worktree remove`/`git branch -d` commands rather than running them, so review before acting.
-
-### 4. Create Git worktree + branch
-
-```bash
-# From the main repo root (not another worktree)
 git worktree add ../<task-slug> -b <task-slug>
 cd ../<task-slug>
 ```
 
-If the user prefers a branch without a worktree:
+When the user prefers a branch without a worktree:
+
 ```bash
 git checkout -b <task-slug>
 ```
 
-### 4. Verify clean baseline
+### 4a. Verify a clean baseline
 
-> **HARD GATE (e39s02):** Acquire story lock in `specs/agent-locks.yaml` before running tests.
+> **HARD GATE**: acquire the story lock in `specs/agent-locks.yaml` before you run the tests. When the story is already locked, abort. When it is unlocked, add the entry and proceed.
 
-```bash
-LOCK="specs/agent-locks.yaml"; STORY="<story-id>"
-if [ -f "$LOCK" ]; then
-  python3 -c "
-import yaml,sys,datetime
-d=yaml.safe_load(open('$LOCK'))or{'locks':[]}
-for l in d['locks']:
-  if l['story_id']=='$STORY':print(f'LOCKED by {l[\"locked_by\"]} at {l[\"locked_at\"]}');sys.exit(1)
-d['locks'].append({'story_id':'$STORY','locked_by':'agent: build-epic','locked_at':datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),'files_touched':[]})
-yaml.dump(d,open('$LOCK','w'),default_flow_style=False)
-print(f'LOCK ACQUIRED: $STORY')
-"
-fi
-```
+Run preflight, the project's full local verification stack, through the
+`truenorth_verify_gate` tool, and confirm green before you write any code.
 
-If locked: abort. If unlocked: entry added, proceed.
+- [ ] Preflight passes, every chained gate green.
+- [ ] No type error.
+- [ ] No lint error.
 
-Run **Preflight** (from `CLAUDE.md` Commands table, or `BP_PREFLIGHT` from `bash scripts/bp-read-agents.sh`) and confirm green before writing any code:
-
-```bash
-# Preflight — project's full local verification stack
-# bigpowers example:
-npm run compliance && bash scripts/run-verification-gates.sh
-
-# Or project-specific from CLAUDE.md / AGENTS.md
-```
-
-- [ ] Preflight passes (all chained gates green)
-- [ ] No type errors (`npm run typecheck` or equivalent, if not in Preflight)
-- [ ] No lint errors (`npm run lint` or equivalent, if not in Preflight)
-
-If Preflight is red, **stop** — route to `quick-fix` or `fix-bug`. Fix before kickoff continues.
+When preflight is red, stop. Route to `quick-fix` or `fix-bug`. Fix it before
+kickoff continues.
 
 ### 5. Confirm readiness
 
-Report: `✓ Preflight green` + branch + worktree. Suggest next: `develop-tdd` or `execute-plan`.
+Report the green preflight, the branch, and the worktree. Suggest the next skill:
+`develop-tdd` or `execute-plan`.
 
 ## Handoff
 
-Gate: READY -> next: develop-tdd
-Writes: state.yaml handoff.next_skill = develop-tdd
+Gate: READY. Next: develop-tdd.
+Writes: `state.yaml` `handoff.next_skill = develop-tdd`.

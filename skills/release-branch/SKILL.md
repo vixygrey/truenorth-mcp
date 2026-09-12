@@ -1,148 +1,138 @@
 ---
 name: release-branch
-# story: e14s01 e15s03
-model: haiku
-effort: standard
-description: Make the merge/PR/keep/discard decision for a feature branch, verify coverage gates, create the PR with gh, and clean up the worktree. Use when a feature is done and ready to ship, or when user says "release", "merge", or "open a PR".
+description: Make the merge, PR, keep, or discard decision for a feature branch, verify the coverage gates, create the PR, and clean up the worktree. Use it when a feature is done and ready to ship, or when the user says "release", "merge", or "open a PR".
 ---
-
-<!-- story: e38s07 -->
-<!-- story: e45s15 -->
-<!-- story: e45s32 -->
-<!-- story: e45s39 -->
-<!-- story: e82s02 -->
-<!-- story: e20s02 -->
-
 
 # Release Branch
 
-> **HARD GATE** — Do NOT merge or release if tests fail or if coverage gates are not met. If the branch is red, return to `develop-tdd` to fix regressions or add missing tests before proceeding.
+> **HARD GATE**: Do NOT merge or release when tests fail or a coverage gate is not met. When the branch is red, return to `develop-tdd` to fix a regression or add a missing test before you proceed.
 
-Finalize a completed feature branch: verify coverage gates, integrate onto `main`, and clean up the worktree.
+Finalize a completed feature branch: verify the coverage gates, integrate onto
+`main`, and clean up the worktree.
 
 ## Additional modes
-- `--hotfix`: Cherry-pick to main + tag. Skip PR in solo.
-- `--squash-state`: Squash `chore(state):` commits before merge.
+
+- `--hotfix`: cherry-pick to main and tag. Skip the PR in solo mode.
+- `--squash-state`: squash the `chore(state):` commits before the merge.
 
 ## Integrate mode
 
-Read `specs/state.yaml` key `workflow_mode` (`team-pr` | `solo-git`). Fall back to `profiles/solo-git.md`.
+Read the `workflow_mode` key from `specs/state.yaml` (`team-pr` or `solo-git`).
 
-| Mode | When | Ship path |
-|------|------|-----------|
-| **solo-local** | `workflow_mode: solo-git` | Auto: `scripts/land-branch.sh` if present, else fallback (Step 5) |
-| **team-pr** | `workflow_mode: team-pr` (default) | `gh pr create` → `gh pr merge --squash` |
+| Mode           | When                               | Ship path                                   |
+| -------------- | ---------------------------------- | ------------------------------------------- |
+| **solo-local** | `workflow_mode: solo-git`          | Fast-forward the default branch locally     |
+| **team-pr**    | `workflow_mode: team-pr` (default) | `gh pr create`, then `gh pr merge --squash` |
 
-If unsure, prefer **solo-local**. Also read `state.yaml` `vcs.kind`: Git follows the procedures below; Jujutsu uses workspaces/bookmarks and must not call Git-only landing scripts.
+When unsure, prefer solo-local. Also read the `vcs.kind` value. Git follows the
+procedures below. Jujutsu uses workspaces and bookmarks, and must not call a
+Git-only landing step.
 
 ## Process
 
-> **Timing:** `bash scripts/bp-timing.sh start release-branch` at invocation; `bash scripts/bp-timing.sh end release-branch` before handoff.
-
 ### 1. Final verification
 
-```bash
-<full test command> && <typecheck command> && <lint command>
-git log main...HEAD --oneline | grep -vE "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+$" && echo "❌ Non-conventional commits found" || echo "✅ Commits verified"
-# Block AI agent attribution (P1)
-git log main...HEAD --format="%B" | grep -qiE 'co[- ]authored[- ]by' && echo "❌ Co-authored-by footer found — blocked" || echo "✅ No AI attribution"
-```
+Run the full test, typecheck, and lint through the `truenorth_verify_gate` tool.
+Then confirm the commits.
 
-- [ ] All tests pass, no type errors, no lint violations, all commits follow Conventional Commits
-- [ ] **NO `Co-authored-by` or `Co-Authored-By`** in any commit body — P1 rule (CONVENTIONS.md § Git Attribution). `land-branch.sh` blocks the merge if found.
+- [ ] All tests pass, no type error, no lint violation.
+- [ ] Every commit follows Conventional Commits.
+- [ ] No `Co-authored-by` footer in any commit body. The human author owns the commit.
+
+Check the commit range against the Conventional Commits format and reject an
+AI-attribution footer:
+
+```bash
+git log main...HEAD --oneline | grep -vE "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+$" && echo "Non-conventional commit found" || echo "Commits verified"
+git log main...HEAD --format="%B" | grep -qiE 'co[- ]authored[- ]by' && echo "Co-authored-by footer found, blocked" || echo "No AI attribution"
+```
 
 ### 2. Coverage check
 
-- [ ] Overall coverage ≥ 80%; business logic coverage ≥ 95%
+- [ ] Overall coverage 80% or more. Business-logic coverage 95% or more.
 
 ### 2a. Security gate
 
-- [ ] `specs/security/REVIEW.md` exists and is fresh (matches current branch diff)
-- [ ] No unresolved HIGH findings with confidence ≥ 8 (or all documented in `specs/security/EXCEPTIONS.md` with sign-off rationale)
+- [ ] A security review exists and is fresh, matching the current branch diff.
+- [ ] No unresolved HIGH finding with confidence 8 or more, or every one is documented with a sign-off rationale.
 
-If REVIEW.md is missing or stale → run `security-review` inline. Findings block the merge unless documented in EXCEPTIONS.md.
+When the review is missing or stale, run `security-review` inline. A finding
+blocks the merge unless it is documented.
 
 ### 2b. Traceability gate
 
-Run `gate-trace` before merge. FAIL blocks merge; CONCERNS requires explicit override in `specs/state.yaml` (`traceability_override: CONCERNS accepted, reason: <explanation>`). WAIVED if no matrix available.
+Run `gate-trace` before the merge. A FAIL blocks the merge. A CONCERNS requires an
+explicit override in `specs/state.yaml`. A WAIVED applies when no matrix is
+available.
 
-> **Adversarial refute framing (e45s32):** The final pre-merge check is **refute, not rubber-stamp**. Before declaring ready, actively try to disprove traceability completeness — missing story tags, absent verify evidence, stale security review. Only proceed when refutation fails.
+> **Adversarial refute framing**: the final pre-merge check refutes, it does not rubber-stamp. Before you declare ready, actively try to disprove traceability completeness: a missing story tag, absent verify evidence, a stale security review. Proceed only when the refutation fails.
 
 ### 3. Diff review
 
-- [ ] All commits intentional, no secrets, CONVENTIONS.md compliance
+- [ ] Every commit is intentional, no secret, convention-compliant.
 
 ### 4. Decision
 
-Options: **Release (solo-local)** / **Open PR** / **Keep branch** / **Discard**
+Options: release (solo-local), open PR, keep the branch, or discard.
 
 ### 5. Integrate
 
-Run `commit-message` first. Git solo-local uses `land-branch.sh`. Jujutsu team mode explicitly advances and pushes a bookmark; `-m` is mandatory for commit/describe operations:
+Run `commit-message` first. Git solo-local fast-forwards the default branch.
+Jujutsu team mode advances and pushes a bookmark. The `-m` flag is mandatory for a
+commit or describe operation.
 
 ```bash
-# Git solo-local
-bash scripts/land-branch.sh <task-slug> "feat(scope): description"
 # Jujutsu team PR
 jj describe -m "feat(scope): description"
 jj bookmark set <task-slug> -r @
 jj git push -b <task-slug>
 ```
 
-Jujutsu solo-local landing is unsupported: run `bp_require_vcs_operation "$PWD" land-branch` and stop with its remediation instead of invoking the Git backend.
+### 6. Create the PR (team-pr only)
 
-### 6. Create PR (team-pr only)
-
-Create the pull request with a **literal provenance marker** in the body so agent-generated PRs are identifiable and do not rot silently:
-
-```markdown
-<!-- bigpowers-provenance: agent-generated -->
-```
-
-Place the marker on its own line immediately after the `## Summary` heading. Then merge via `gh`:
+Create the pull request, then squash-merge it, so each PR becomes one commit on
+`main`.
 
 ```bash
 gh pr create --title "..." --body "$(cat <<'EOF'
 ## Summary
-<!-- bigpowers-provenance: agent-generated -->
 
 - ...
 
 ## Test plan
 - [ ] ...
-
 EOF
 )"
 gh pr merge --squash --delete-branch
 ```
 
-`semantic-release` auto-detects the commit, bumps SemVer, tags the repo, generates release notes.
+The release itself is tag-driven. A `v*` tag triggers the release workflow, which
+builds and publishes. The merge does not publish on its own.
 
-### 7a. Archive completed epic capsule
+### 7a. Archive the completed epic capsule
 
-> **HARD GATE** — When all epic stories are done (all `done` in `execution-status.yaml`), archive the capsule:
+> **HARD GATE**: when every epic story is done, archive the capsule.
 
 ```bash
 mv specs/epics/eNN-slug specs/epics/archive/
 ```
 
-### 7b. CI verification & agent lock release (e39s02)
+### 7b. CI verification and agent-lock release
 
-> **HARD GATE** — Do NOT declare success until CI completes. **Three-independent-facts** (e45s15): commit landed, workflow green, registry visible — see [REFERENCE.md](REFERENCE.md#three-independent-facts-release).
+> **HARD GATE**: Do NOT declare success until CI completes. Confirm three independent facts: the commit landed, the workflow is green, and the release is visible. See [REFERENCE.md](REFERENCE.md#three-independent-facts-release).
 
-```bash
-bash scripts/wait-for-ci.sh --timeout 600 --interval 30
-```
+- [ ] CI passes. Set `release.ci_verified: true` in `state.yaml`.
+- On failure: set `handoff.next_skill = fix-bug`.
 
-- [ ] CI passes; `release.ci_verified: true` in state.yaml
-- On failure: `handoff.next_skill = fix-bug`
+### 8. Clean up and return
 
-### 8. Clean up & return
+Git: prune the worktree, delete the branch, return to main. Jujutsu:
+`jj workspace forget <workspace>` only after integration. Do not delete its
+bookmark implicitly.
 
-Git: prune worktree, delete branch, return to main. Jujutsu: `jj workspace forget <workspace>` only after integration; do not delete its bookmark implicitly. Cycle-time: see [REFERENCE.md](REFERENCE.md#cycle-time).
-
-Report: "Branch released."
+Report: "Branch released.".
 
 ## Verify
 
-→ verify: `command -v gh >/dev/null 2>&1 && test -f specs/state.yaml && test -d skills/verify-work`
+Confirm `gh` is available, `specs/state.yaml` exists, and the verify-work skill is
+present. Run the final verification through the `truenorth_verify_gate` tool.
