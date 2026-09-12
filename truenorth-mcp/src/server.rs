@@ -31,8 +31,6 @@ impl ServerContext {
     }
 
     /// The persisted skill-graph path, `<repo_root>/truenorth-mcp/graph.jsonl`.
-    // Consumed by the legacy graph tools in task 8b. Remove this allow once those land.
-    #[allow(dead_code)]
     pub fn graph_path(&self) -> PathBuf {
         self.repo_root.join("truenorth-mcp").join("graph.jsonl")
     }
@@ -58,7 +56,7 @@ impl TrueNorthServer {
     pub fn new(repo_root: PathBuf) -> Self {
         Self {
             ctx: Arc::new(ServerContext::new(repo_root)),
-            tool_router: Self::skills_router(),
+            tool_router: Self::skills_router() + Self::catalog_router(),
         }
     }
 
