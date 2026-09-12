@@ -1,13 +1,11 @@
 ---
 name: plan-refactor
-model: sonnet
-effort: standard
-description: Create a detailed refactor plan with tiny commits via user interview, then save it as specs/REFACTOR_LATEST.md. Use when user wants to plan a refactor, create a refactoring RFC, or break a refactor into safe incremental steps.
+description: 'Create a detailed refactor plan with tiny commits through a user interview, then save it as the refactor plan. Use it to plan a refactor, create a refactoring RFC, or break a refactor into safe incremental steps.'
 ---
 
 # Plan Refactor
-> **HARD GATE** — **HARD GATE** — Before refactoring, document the current behavior and why it is wrong. Extract one invariant that must be preserved. If you skip this, you will break things you don't expect.
 
+> **HARD GATE** — **HARD GATE** — Before refactoring, document the current behavior and why it is wrong. Extract one invariant that must be preserved. If you skip this, you will break things you don't expect.
 
 Create a detailed refactor plan through a user interview. Save output to `specs/REFACTOR_LATEST.md`.
 
@@ -44,6 +42,7 @@ The solution to the problem, from the developer's perspective.
 A LONG, detailed implementation plan. Write the plan in plain English, breaking down the implementation into the tiniest commits possible. Each commit should leave the codebase in a working state.
 
 Each commit entry follows this format:
+
 ```
 N. <commit description> → verify: <runnable command>
 ```
@@ -86,4 +85,3 @@ After writing `specs/REFACTOR_LATEST.md`, suggest running `kickoff-branch` next 
 - [Beck's Tidy First?](../../docs/references/kent-beck.md) — structural change before behavioral change
 
 ## Verify
-

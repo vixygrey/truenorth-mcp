@@ -1,79 +1,65 @@
 ---
 name: extract-design
-description: "Extract a Google DESIGN.md file from an HTML prototype (claude.ai/design or any styled page) using Puppeteer, producing machine-readable tokens and AI-generated prose. Use when the user has an HTML prototype and wants a DESIGN.md to anchor their project's visual identity, or when seed-conventions has just scaffolded a new project."
-model: sonnet
-effort: standard
+description: 'Extract a DESIGN.md file from an HTML prototype (a design tool export or any styled page) using a headless browser, producing machine-readable tokens and generated prose. Use it when the user has an HTML prototype and wants a DESIGN.md to anchor the project visual identity, or right after a new project is scaffolded.'
 ---
 
 # Extract DESIGN.md from HTML
 
-> **HARD GATE** — Do NOT write DESIGN.md without Puppeteer dual-pass extraction. Tokens from static HTML (Cheerio, regex, string scanning) are invalid — they miss cascade, custom properties, and Tailwind resolution.
+> **HARD GATE**: Do NOT write DESIGN.md without a headless-browser dual-pass extraction. Tokens from static HTML (a DOM scan, regex, or string scanning) are invalid. They miss the cascade, the custom properties, and the utility-class resolution.
 >
-> **HARD GATE** — Do NOT claim certainty where evidence is thin. Low-confidence color roles, component classifications, and prose assertions MUST be flagged with `<!-- AGENT NOTE: uncertain — validate during grill-me. Evidence: [what was observed] -->`.
+> **HARD GATE**: Do NOT claim certainty where the evidence is thin. Flag a low-confidence color role, component classification, or prose assertion with an agent note that states what was observed and asks for validation during grill-me.
 >
-> **HARD GATE** — Do NOT ship DESIGN.md without running `npx @google/design.md lint`. Unvalidated output is unverified output. If lint is unavailable (offline), flag prominently in terminal and in DESIGN.md prose.
-
-## Quick Start
-
-```bash
-# First run — extract from HTML prototype
-node extract-design/scripts/extract.js --source ./prototype.html
-
-# From a published URL
-node extract-design/scripts/extract.js --source https://my-prototype.example.com
-
-# With a custom name
-node extract-design/scripts/extract.js --source ./proto.html --name "My Design System"
-
-# Update — re-extract from new HTML, diff against existing
-node extract-design/scripts/extract.js --source ./proto-v2.html
-
-# Lint-only — validate existing DESIGN.md without re-extraction
-node extract-design/scripts/extract.js --lint-only
-```
+> **HARD GATE**: Do NOT ship DESIGN.md without running the design-token linter. Unvalidated output is unverified output. When the linter is unavailable offline, flag it prominently in the terminal and in the DESIGN.md prose.
 
 ## Flow
 
-1. **Launch Puppeteer** — dual-pass (light + dark) with retry + timeout. CI flags: `--headless=new --no-sandbox --disable-gpu --disable-dbus --use-gl=angle --use-angle=swiftshader`.
-2. **Collect styles** — `page.evaluate()` collects computed styles from every element. Returns raw JSON to Node.js. Browser = sensor; Node = brain.
-3. **Classify tokens** — modular pipeline: colors (Material 3 roles), typography (scale detection), spacing (tolerance GCD), rounded (clustering), components (visual signature + pseudo-state variants).
-4. **Generate prose** — AI heuristics produce all 8 DESIGN.md sections. Overview and Do's/Don'ts flagged with agent notes.
-5. **Write + validate** — serialize to `specs/tech-architecture/DESIGN_LATEST.md`, run `npx @google/design.md lint`, report to terminal.
-6. **Handoff** — writes `handoff.next_skill: grill-me` to `specs/state.yaml` with uncertain decisions context.
+1. **Launch the headless browser**: a dual pass, light and dark, with retry and
+   timeout. The browser is the sensor. The analysis code is the brain.
+2. **Collect the styles**: collect the computed styles from every element. Return
+   the raw JSON to the analysis step.
+3. **Classify the tokens**: a modular pipeline. Colors (Material 3 roles),
+   typography (scale detection), spacing (tolerance GCD), rounding (clustering), and
+   components (a visual signature plus pseudo-state variants).
+4. **Generate the prose**: heuristics produce all eight DESIGN.md sections. Flag the
+   overview and the do's-and-don'ts with an agent note.
+5. **Write and validate**: serialize to the project design artifact, run the linter,
+   and report to the terminal.
+6. **Handoff**: write `handoff.next_skill: grill-me` to `specs/state.yaml` with the
+   uncertain-decisions context.
 
 ## Inputs
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `--source <file\|url>` | First run: yes. Update: optional | HTML prototype path or URL |
-| `--name <string>` | No | Design system name (defaults to `<title>` or directory name) |
-| `--lint-only` | No | Validate existing DESIGN.md without re-extraction |
+| Parameter            | Required                         | Description                                                          |
+| -------------------- | -------------------------------- | -------------------------------------------------------------------- |
+| Source (file or URL) | First run: yes. Update: optional | The HTML prototype path or URL                                       |
+| Name                 | No                               | The design-system name, default the page title or the directory name |
+| Lint-only            | No                               | Validate an existing DESIGN.md without re-extraction                 |
 
 ## Output
 
-- `specs/tech-architecture/DESIGN_LATEST.md` — replaces `DESIGN_PLAN_LATEST.md` as the canonical design artifact
-- Terminal summary: token counts, component count, lint result, uncertain decisions
-- Structured JSON log to stderr: extraction events, timing, counts
-- `specs/state.yaml` → `handoff.next_skill: grill-me` with context
+- The project design artifact, the canonical design document.
+- A terminal summary: the token counts, the component count, the lint result, and
+  the uncertain decisions.
+- A structured JSON log to stderr: the extraction events, timing, and counts.
+- `specs/state.yaml` `handoff.next_skill: grill-me` with the context.
 
-## Error Tiers
+## Error tiers
 
-| Tier | Condition | Response |
-|------|-----------|----------|
-| Fatal | No Chrome, page load timeout after retries | Exit non-zero, suggest fixes |
-| Degraded | Zero colors, zero typography, SPA shell | Write DESIGN.md with degradation warning |
-| Warned | Lint errors, uncertain decisions | Write DESIGN.md, flag in terminal, hand off to grill-me |
+| Tier     | Condition                                        | Response                                                       |
+| -------- | ------------------------------------------------ | -------------------------------------------------------------- |
+| Fatal    | No browser, or a page-load timeout after retries | Exit non-zero, suggest fixes                                   |
+| Degraded | Zero colors, zero typography, an SPA shell       | Write DESIGN.md with a degradation warning                     |
+| Warned   | A lint error, an uncertain decision              | Write DESIGN.md, flag it in the terminal, hand off to grill-me |
 
 ## Dependencies
 
-- **Puppeteer** (Chrome binary) — wrapped behind `BrowserExtractor` interface for testability
-- **`@google/design.md`** (soft, via `npx`) — wrapped behind `DesignValidator` interface. Warns and skips if offline.
+- A headless browser (a Chrome binary), wrapped behind a browser-extractor
+  interface for testability.
+- A design-token linter (soft dependency). Warn and skip when offline.
 
-## verify
+## Verify
 
-```bash
-node extract-design/tests/test-extraction.js
-```
+Confirm the extraction produced a valid design artifact and the linter passed, or
+that a degradation was flagged when the linter was unavailable.
 
-See [REFERENCE.md](REFERENCE.md) for extraction algorithms and heuristics.
-
+See [REFERENCE.md](REFERENCE.md) for the extraction algorithms and heuristics.
