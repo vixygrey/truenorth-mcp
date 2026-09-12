@@ -168,14 +168,14 @@ P5 (no dangling references).
     - Test default-execute delegation, evidence-mode opt-out, and the missing-evidence rejection
     - _Requirements: 3.1, 3.7, 3.8_
 
-- [ ] 11. TDD tool: tdd_cycle
-  - [ ] 11.1 Implement `tools/tdd.rs`
+- [x] 11. TDD tool: tdd_cycle
+  - [x] 11.1 Implement `tools/tdd.rs`
     - `truenorth_tdd_cycle` (schemars contract: `step` red|green|refactor, `failing_test_cmd` 1–1000 chars, `files_to_modify` 1–100 non-empty entries)
     - Enforce Red then Green then Refactor ordering. Reject out-of-order transitions with an invalid-transition error that leaves recorded TDD state unchanged
     - Red-stage semantics: report red passed when the failing test command exits non-zero. Report red failed with a "test did not fail as required" error when it exits 0
     - _Requirements: 2.1, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11_
 
-  - [ ]* 11.2 Write unit tests for tdd_cycle
+  - [x]\* 11.2 Write unit tests for tdd_cycle
     - Test ordering enforcement, invalid-transition rejection with unchanged state, and both red-stage exit-code outcomes
     - _Requirements: 2.6, 2.7, 2.8, 2.9, 2.10_
 
