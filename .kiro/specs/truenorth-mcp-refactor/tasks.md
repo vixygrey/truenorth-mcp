@@ -215,16 +215,16 @@ P5 (no dangling references).
     - In-process MCP client drives `resources/list` + `resources/read` and a full Discover to Integrate tool sequence against a temp repo. Assert `resources/updated` fires after a disk edit (watcher) and after a tool write
     - _Requirements: 1.1, 2.1, 2.3, 5.3, 5.4, 11.1_
 
-- [ ] 16. Model and harness agnosticism verification
-  - [ ] 16.1 Confirm agnostic delivery in emitted payloads
+- [x] 16. Model and harness agnosticism verification
+  - [x] 16.1 Confirm agnostic delivery in emitted payloads
     - Make sure that emitted skills/instructions contain no Anthropic-specific XML tags or vendor-directed meta-instruction scaffolding. Apply language-agnostic gate/ontology processing with no per-language configuration. When the requesting model family or harness cannot be identified, deliver default language-agnostic content and indicate no model/harness adaptation was applied
     - _Requirements: 11.1, 11.4, 11.5_
 
-  - [ ]* 16.2 Write tests for agnostic content identity
+  - [x]\* 16.2 Write tests for agnostic content identity
     - Assert no Anthropic XML/meta scaffolding in emitted payloads. Assert identical content across simulated model families and harnesses. Assert the unidentified-client default path indicates no adaptation
     - _Requirements: 11.1, 11.2, 11.3, 11.5_
 
-- [ ] 17. Checkpoint - Make sure that the runtime parity suite passes
+- [x] 17. Checkpoint - Make sure that the runtime parity suite passes
   - Make sure that all tests pass. Ask the user if questions arise.
 
 - [ ] 18. npm distribution wrapper
