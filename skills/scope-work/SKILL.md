@@ -1,11 +1,10 @@
 ---
 name: scope-work
-description: "PLANNING SPINE STEP 1 of 3 — Scope the work: define what is in and out of scope and save as specs/product/SCOPE_LATEST.yaml. Use before slice-tasks or plan-release on any new initiative. Not a substitute for slice-tasks (step 2) or plan-work (step 3)."
-model: sonnet
-effort: standard
+description: 'Planning spine step 1 of 3. Scope the work: define what is in and out of scope, and save the product scope. Use it before slice-tasks or plan-release on a new initiative. Not a substitute for slice-tasks or plan-work.'
 ---
 
 # story: e03s01
+
 # story: e24s02
 
 # Scope Work
@@ -23,9 +22,11 @@ Turn the current conversation into a bounded PRD at `specs/product/SCOPE_LATEST.
 ## Process
 
 0. **Read planning-context.yaml** — If `specs/planning-context.yaml` exists, read it before doing anything else:
+
    ```bash
    test -f specs/planning-context.yaml && echo "Context found" || echo "No context — starting fresh"
    ```
+
    Pre-populate `feature_name`, `constraints`, and `out_of_scope` from the file. Skip re-asking questions already answered by elaborate-spec. If the file is absent, proceed normally.
 
 1. **Gather context** — Read existing `specs/` artifacts (`release-plan.yaml`, `plans/TECH_STACK_LATEST.md`, `requirements/VISION_LATEST.yaml` if any). Understand what the project is building and why.
@@ -41,13 +42,13 @@ Turn the current conversation into a bounded PRD at `specs/product/SCOPE_LATEST.
    - `success_criteria` — observable outcomes that prove the scope is delivered
    - `references` — links to related specs, ADRs, or documents
 
-4. **Lightweight trade-off analysis** — For each `out_of_scope` item, note *why* it's excluded (deferred, not valuable, too risky, depends on external factor). This protects against "what about X?" questions later.
+4. **Lightweight trade-off analysis** — For each `out_of_scope` item, note _why_ it's excluded (deferred, not valuable, too risky, depends on external factor). This protects against "what about X?" questions later.
 
 5. **Run `research-first`** if external dependencies are proposed — verify the dependency exists, is maintained, and fits the scope before committing to it.
 
 > **HARD GATE** — Every `in_scope` item must map to a future epic/story ID or explicit deferred note in `out_of_scope`. If an item can't be mapped, the scope is too vague — refine before proceeding.
 
-> **HARD GATE** — Do NOT include implementation details in SCOPE_LATEST.yaml. Scope is *what* and *why*, not *how*. Implementation detail belongs in epic capsules and slice-tasks.
+> **HARD GATE** — Do NOT include implementation details in SCOPE_LATEST.yaml. Scope is _what_ and _why_, not _how_. Implementation detail belongs in epic capsules and slice-tasks.
 
 ## Common Anti-Patterns
 
