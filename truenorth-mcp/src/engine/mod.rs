@@ -14,6 +14,7 @@ pub mod skill;
 pub mod skill_parser;
 pub mod skill_validate;
 pub mod spec;
+pub mod tdd;
 pub mod tier;
 pub mod validate;
 pub mod watcher;
