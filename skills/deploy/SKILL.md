@@ -1,9 +1,6 @@
 ---
-# story: e45s15
 name: deploy
-description: "Build → verify artifact → deploy → wait → smoke deployment pipeline. Platform-agnostic (MCP or CLI), with configurable timeout, retry with exponential backoff, and integrated health-check. The deploy half of CI/CD: run after build to push to production."
-model: sonnet
-effort: standard
+description: 'Build, verify the artifact, deploy, wait, then smoke the deployment. Platform-agnostic (MCP or CLI), with a configurable timeout, retry with exponential backoff, and an integrated health check. The deploy half of CI/CD: run it after the build to push to production.'
 ---
 
 # Deploy
@@ -22,13 +19,13 @@ Orchestrate a full build-to-deployment pipeline: build the artifact, verify it e
 build → verify artifact → deploy → wait/retry → smoke
 ```
 
-| Stage | Description | Failure mode |
-|-------|-------------|-------------|
-| Build | Execute the project's build command | Non-zero exit: report build error |
-| Verify | Check artifact exists and is non-empty | Missing/empty: report artifact path |
-| Deploy | Invoke platform deploy tool (MCP, Vercel CLI, rsync, etc.) | Non-zero exit: report deploy error |
-| Wait | Poll deploy status every 30s up to `DEPLOY_TIMEOUT` (default 5 min) | Timeout: report exceeded |
-| Smoke | `curl -sSf $DEPLOY_URL` as baseline health check | Non-200: report failure |
+| Stage  | Description                                                         | Failure mode                        |
+| ------ | ------------------------------------------------------------------- | ----------------------------------- |
+| Build  | Execute the project's build command                                 | Non-zero exit: report build error   |
+| Verify | Check artifact exists and is non-empty                              | Missing/empty: report artifact path |
+| Deploy | Invoke platform deploy tool (MCP, Vercel CLI, rsync, etc.)          | Non-zero exit: report deploy error  |
+| Wait   | Poll deploy status every 30s up to `DEPLOY_TIMEOUT` (default 5 min) | Timeout: report exceeded            |
+| Smoke  | `curl -sSf $DEPLOY_URL` as baseline health check                    | Non-200: report failure             |
 
 ## Process
 
@@ -36,13 +33,13 @@ build → verify artifact → deploy → wait/retry → smoke
 
 Read project manifest files in order to determine the build command:
 
-| Manifest | Build command |
-|----------|--------------|
-| `package.json` | `npm run build` (or `scripts.build` value) |
-| `Cargo.toml` | `cargo build --release` |
+| Manifest                      | Build command                                                       |
+| ----------------------------- | ------------------------------------------------------------------- |
+| `package.json`                | `npm run build` (or `scripts.build` value)                          |
+| `Cargo.toml`                  | `cargo build --release`                                             |
 | `pyproject.toml` / `setup.py` | Depends on build backend (`poetry build`, `pip install -e .`, etc.) |
-| `Makefile` | `make build` or first target named `build` |
-| `AGENTS.md` / `CLAUDE.md` | Look for `build:` in project commands section |
+| `Makefile`                    | `make build` or first target named `build`                          |
+| The project agent guide       | Look for `build:` in the project commands section                   |
 
 If no manifest is found, prompt the user with: "No detected build command. Pass `--build 'npm run build'` or specify the command."
 
@@ -70,13 +67,13 @@ Configurable via `$ARTIFACT_DIR` environment variable (default: `dist/`).
 
 Platform-agnostic — supports multiple deployment targets via environment variables:
 
-| Platform | Env var | Example |
-|----------|---------|---------|
-| Vercel | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID` | `vercel deploy --prod --token $VERCEL_TOKEN` |
-| Netlify | `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID` | `netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --dir $ARTIFACT_DIR` |
-| Platform MCP | MCP tool call | `mcp deploy` via your platform MCP server |
-| rsync/SSH | `DEPLOY_SSH_USER`, `DEPLOY_SSH_HOST`, `DEPLOY_SSH_PATH` | `rsync -avz $ARTIFACT_DIR/ $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:$DEPLOY_SSH_PATH` |
-| Custom | `DEPLOY_COMMAND` | Run any deploy command string |
+| Platform     | Env var                                                 | Example                                                                        |
+| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Vercel       | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`                     | `vercel deploy --prod --token $VERCEL_TOKEN`                                   |
+| Netlify      | `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`                 | `netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --dir $ARTIFACT_DIR`         |
+| Platform MCP | MCP tool call                                           | `mcp deploy` via your platform MCP server                                      |
+| rsync/SSH    | `DEPLOY_SSH_USER`, `DEPLOY_SSH_HOST`, `DEPLOY_SSH_PATH` | `rsync -avz $ARTIFACT_DIR/ $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:$DEPLOY_SSH_PATH` |
+| Custom       | `DEPLOY_COMMAND`                                        | Run any deploy command string                                                  |
 
 The deploy tool is selected by which environment variables are set. If none are configured:
 
@@ -99,18 +96,15 @@ See [REFERENCE.md](REFERENCE.md)
 
 See [REFERENCE.md](REFERENCE.md)
 
-For comprehensive health-checking, chain to the `smoke-test` skill:
+For a comprehensive health check, chain to the `smoke-test` skill against the
+deployed URL.
 
-```bash
-# After deploy success
-bash scripts/run-smoke.sh "$DEPLOY_URL"
-```
+### 7. Three-independent-facts verification
 
-### 7. Three-independent-facts verification (e45s15)
-
-Before declaring deploy success, verify **three independent facts** — build artifact, platform accept, live/registry reachability. See [REFERENCE.md](REFERENCE.md#three-independent-facts).
+Before you declare a deploy successful, verify three independent facts: the build
+artifact, the platform accept, and the live or registry reachability. See
+[REFERENCE.md](REFERENCE.md#three-independent-facts).
 
 ## Verify
 
 → verify: `command -v curl >/dev/null 2>&1 && test -f skills/smoke-test/SKILL.md`
-

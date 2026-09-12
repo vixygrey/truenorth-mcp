@@ -1,40 +1,25 @@
 ---
 name: setup-environment
-description: Pre-install dependencies and configure tools before development work begins. Use at session start on a fresh clone, before kickoff-branch, or when user says setup environment or install deps.
-model: haiku
-effort: standard
+description: Pre-install dependencies and configure tools before development begins. Use it at session start on a fresh clone, before kickoff-branch, or when the user says "setup environment" or "install deps".
 ---
 
 # Setup Environment
-> **HARD GATE** — **HARD GATE** — Environment setup must be idempotent and reproducible. If setup fails, provide clear error messages and remediation steps. Do NOT assume prior state.
 
+> **HARD GATE**: environment setup MUST be idempotent and reproducible. When setup fails, give a clear error message and remediation steps. Do NOT assume a prior state.
 
-Idempotent prep so BUILD phase commands succeed on first run.
+Idempotent prep, so the build-phase commands succeed on the first run.
 
 ## Checklist
 
-1. Read `CLAUDE.md` / `CONVENTIONS.md` for required runtimes and commands.
-2. Verify runtime versions (`node -v`, `swift --version`, etc.).
-3. Install dependencies (`npm ci`, `bundle install`, etc.) — prefer lockfile installs.
-4. Copy `.env.example` → `.env` if documented; never commit secrets.
-5. Run smoke: lint + one fast test or `--version` on key tools.
-6. Record versions in `specs/state.yaml` under Environment.
-
-## BCP Plus Counter (optional)
-
-The `big-counter` tool is an optional dependency for BCP Plus 13-dimension story sizing:
-
-```bash
-# Install from PyPI (recommended)
-pip install big-counter
-
-# Or from npm
-npm install -g big-counter
-```
-
-Verify the install: `big-counter --version`
-Skip if BCP Plus sizing is not needed for this project.
+1. Read the project agent guide and conventions for the required runtimes and
+   commands.
+2. Verify the runtime versions (`node -v`, `swift --version`).
+3. Install the dependencies (`npm ci`, `bundle install`). Prefer a lockfile install.
+4. Copy `.env.example` to `.env` when documented. Never commit a secret.
+5. Run a smoke check: lint plus one fast test, or `--version` on the key tools.
+6. Record the versions in `specs/state.yaml` under the environment section.
 
 ## Verify
 
-→ verify: `test -f CLAUDE.md && grep -q Test CLAUDE.md`
+Confirm the runtimes and the key tool versions resolve. A pass means every required
+command is present and reports its version.
