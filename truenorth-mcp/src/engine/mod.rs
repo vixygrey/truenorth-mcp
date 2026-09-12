@@ -6,9 +6,12 @@
 
 pub mod gate_runner;
 pub mod git;
+pub mod graph;
 pub mod ontology_scan;
 pub mod phase;
 pub mod skill;
+pub mod skill_parser;
+pub mod skill_validate;
 pub mod spec;
 pub mod tier;
 pub mod validate;

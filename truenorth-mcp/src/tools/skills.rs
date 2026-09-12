@@ -1,5 +1,7 @@
 //! Skills tools: the tiered `get_skill` tool (task 8a) plus the ported legacy catalog
-//! tools (task 8b).
+//! Skills tools: the tiered `get_skill` tool (task 8a).
+//!
+//! The legacy catalog tools live in the sibling `catalog` module (task 8b).
 //!
 //! `get_skill` renders a skill at the full, reasoning, or lean tier. The effective tier
 //! resolves from the per-call argument, then the `TRUENORTH_TIER` environment variable,
