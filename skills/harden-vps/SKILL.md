@@ -1,8 +1,6 @@
 ---
 name: harden-vps
-description: "Harden a production Linux VPS for your application across three layers — application (systemd hardening, monitoring alerts, backup automation), Ubuntu OS (UFW firewall, fail2ban SSH, unattended-upgrades, SSH hardening), and VPS provider (health checks, daily backups, monthly snapshots). Use when the user wants to secure a production server, harden a VPS, audit server security, or mentions production hardening, VPS security, or harden the server."
-model: haiku
-effort: standard
+description: 'Harden a production Linux VPS across three layers: the application (systemd hardening, monitoring alerts, backup automation), the Ubuntu OS (UFW firewall, fail2ban SSH, unattended-upgrades, SSH hardening), and the VPS provider (health checks, daily backups, monthly snapshots). Use it to secure a production server, harden a VPS, or audit server security.'
 ---
 
 # Harden VPS
@@ -40,7 +38,7 @@ apt install -y unattended-upgrades && dpkg-reconfigure -plow unattended-upgrades
 # Crontab: */5 * * * * /opt/your-app/scripts/healthcheck.sh
 ```
 
-## Layer 2 — applicationlication
+## Layer 2 — application
 
 ```bash
 # systemd: User=your-app, NoNewPrivileges=yes, ProtectSystem=full,
