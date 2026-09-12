@@ -11,6 +11,12 @@ rust-version = "1.88"
 name = "truenorth-mcp"
 path = "src/main.rs"
 
+[features]
+# Off by default. The regex baseline is the shipped, language-agnostic analyzer. Enable
+# `tree-sitter` to add the AST analyzer for languages with a bundled grammar (Rust today).
+default = []
+tree-sitter = ["dep:tree-sitter", "dep:tree-sitter-rust"]
+
 [dependencies]
 rmcp = { version = "3.3", features = ["server", "macros", "schemars", "transport-io"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "signal"] }
@@ -22,6 +28,11 @@ notify = "6"
 regex = "1"
 wait-timeout = "0.2"
 pulldown-cmark = { version = "0.13", default-features = false }
+# The AST ontology analyzer is optional (ADR-2, task 6.3). It adds identifier-precise
+# scanning for languages with a grammar. It is gated behind the `tree-sitter` feature, so
+# the default build and the shipped binary stay regex-only and language-agnostic.
+tree-sitter = { version = "0.25", optional = true }
+tree-sitter-rust = { version = "0.24", optional = true }
 anyhow = "1"
 thiserror = "2"
 tracing = "0.1"

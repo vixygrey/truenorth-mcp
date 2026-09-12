@@ -72,13 +72,129 @@ impl OntologyAnalyzer for RegexAnalyzer {
     }
 }
 
+/// The AST-based analyzer for languages with a tree-sitter grammar (ADR-2, Requirement
+/// 4.9).
+///
+/// It parses the file and reports a prohibited alias only where the alias is a real
+/// identifier token in the syntax tree. It skips comments and string literals, so it does
+/// not raise the false violations the regex baseline can raise for an alias mentioned in
+/// prose or a string. It reuses [`ConstraintLinks`], so the constraint attribution and the
+/// message match the regex path exactly. Only the detection precision differs.
+///
+/// The analyzer is optional and compiles only under the `tree-sitter` feature.
+#[cfg(feature = "tree-sitter")]
+pub struct AstAnalyzer {
+    /// The grammar for the file's language.
+    language: tree_sitter::Language,
+}
+
+#[cfg(feature = "tree-sitter")]
+impl AstAnalyzer {
+    /// Build an analyzer for a supported file, selected by extension.
+    ///
+    /// Return `None` when no bundled grammar covers the file, so the caller falls back to
+    /// the regex baseline.
+    pub fn for_path(path: &Path) -> Option<Self> {
+        let language = grammar_for_extension(path)?;
+        Some(Self { language })
+    }
+}
+
+/// Return the bundled grammar for a file extension, or `None` when none applies.
+///
+/// Rust is the first supported grammar. The seam grows by adding an arm here and the
+/// matching optional grammar dependency.
+#[cfg(feature = "tree-sitter")]
+fn grammar_for_extension(path: &Path) -> Option<tree_sitter::Language> {
+    match path.extension().and_then(|ext| ext.to_str()) {
+        Some("rs") => Some(tree_sitter_rust::LANGUAGE.into()),
+        _ => None,
+    }
+}
+
+#[cfg(feature = "tree-sitter")]
+impl OntologyAnalyzer for AstAnalyzer {
+    fn scan(&self, path: &Path, contents: &str, ontology: &Ontology) -> Vec<Violation> {
+        let links = ConstraintLinks::from_ontology(ontology);
+        let aliases = links.aliases();
+        if aliases.is_empty() {
+            return Vec::new();
+        }
+
+        let mut parser = tree_sitter::Parser::new();
+        // A grammar-set failure or a parse failure is not a scan error. Fall back to the
+        // regex baseline, so a supported file is never left unscanned (Requirement 4.9).
+        if parser.set_language(&self.language).is_err() {
+            return RegexAnalyzer.scan(path, contents, ontology);
+        }
+        let Some(tree) = parser.parse(contents, None) else {
+            return RegexAnalyzer.scan(path, contents, ontology);
+        };
+
+        let bytes = contents.as_bytes();
+        let mut violations = Vec::new();
+        let mut cursor = tree.walk();
+        let mut stack = vec![tree.root_node()];
+
+        // Walk every node. Report an alias only at an identifier-like leaf, so a comment or
+        // a string that contains the alias does not trigger a violation.
+        while let Some(node) = stack.pop() {
+            for child in node.children(&mut cursor) {
+                stack.push(child);
+            }
+            if !is_identifier_node(node.kind()) {
+                continue;
+            }
+            let Ok(text) = node.utf8_text(bytes) else {
+                continue;
+            };
+            if let Some(alias) = aliases.iter().find(|alias| alias.as_str() == text) {
+                let link = links.owning_constraint(alias);
+                // tree-sitter rows are 0-based; the violation line is 1-based.
+                let line = node.start_position().row + 1;
+                violations.push(Violation {
+                    constraint_id: link.constraint_id.clone(),
+                    path: path.to_path_buf(),
+                    line,
+                    message: link.message(alias, path, line),
+                });
+            }
+        }
+
+        violations.sort_by_key(|violation| violation.line);
+        violations
+    }
+}
+
+/// Report whether a tree-sitter node kind names an identifier token.
+///
+/// The ontology gate matches an alias only at an identifier, not inside a comment or a
+/// string. The identifier node kinds cover the positions where a field, variable, type,
+/// or shorthand names the alias.
+#[cfg(feature = "tree-sitter")]
+fn is_identifier_node(kind: &str) -> bool {
+    matches!(
+        kind,
+        "identifier" | "field_identifier" | "type_identifier" | "shorthand_field_identifier"
+    )
+}
+
 /// Select an analyzer for a file (Requirement 4.9).
 ///
-/// The regex baseline is always returned today. When the tree-sitter AST analyzer lands
-/// (optional task 6.3), this seam returns it for a file whose language has a grammar and
-/// the regex baseline otherwise. The parameter is retained so the signature is stable
-/// across that change.
-pub fn pick_analyzer(_path: &Path) -> Box<dyn OntologyAnalyzer> {
+/// With the `tree-sitter` feature on, the AST analyzer is returned for a file whose
+/// language has a bundled grammar, adding identifier precision. Every other file, and
+/// every file when the feature is off, uses the language-agnostic regex baseline. The
+/// baseline is never blocked (ADR-2).
+pub fn pick_analyzer(path: &Path) -> Box<dyn OntologyAnalyzer> {
+    #[cfg(feature = "tree-sitter")]
+    {
+        if let Some(analyzer) = AstAnalyzer::for_path(path) {
+            return Box::new(analyzer);
+        }
+    }
+    // Referenced by the AST arm only when the feature is off; name it to avoid an
+    // unused-variable warning in that build.
+    let _ = path;
     Box::new(RegexAnalyzer)
 }
 
@@ -159,6 +275,12 @@ impl ConstraintLinks {
         self.links
             .get(alias)
             .expect("every scanned alias has a link built from the same ontology")
+    }
+
+    /// Every prohibited alias, used by the AST analyzer to match identifier tokens.
+    #[cfg(feature = "tree-sitter")]
+    fn aliases(&self) -> Vec<String> {
+        self.links.keys().cloned().collect()
     }
 
     /// The alias identifier matchers, one per prohibited alias.
