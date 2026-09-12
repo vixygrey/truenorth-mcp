@@ -1,97 +1,93 @@
 ---
-# story: e80s01
-# story: e45s05
 name: gate-trace
-description: "Deterministic traceability quality gate — reads coverage matrix + blind-spot data, applies decision rules with oracle confidence downgrade, emits PASS/CONCERNS/FAIL/WAIVED verdict. Use before release-branch to gate merges on traceability."
-# story: e38s06
-# story: e45s32
+description: 'Deterministic traceability quality gate. Reads the coverage matrix and blind-spot data, applies decision rules with an oracle-confidence downgrade, and emits a PASS, CONCERNS, FAIL, or WAIVED verdict. Use it before release-branch to gate a merge on traceability.'
 model: haiku
 effort: light
 ---
 
 # Gate Trace
 
-Deterministic quality gate that combines traceability coverage and blind-spot data into a single PASS/FAIL/CONCERNS/WAIVED decision before release.
+A deterministic quality gate. It combines traceability coverage and blind-spot
+data into a single PASS, FAIL, CONCERNS, or WAIVED decision before a release.
 
-## Decision Rules
+## Decision rules
 
-| Rule | Condition | Verdict |
-|------|-----------|---------|
-| R1 | Any undone story with 0 code tags | FAIL |
-| R2 | Any story done but no verify evidence | CONCERNS |
-| R3 | P0 story (top WSJF quartile) with 0% coverage | FAIL |
-| R4 | Overall coverage < 60% | CONCERNS |
-| R6 | P0 story + eNN-TEST_PLAN_LATEST.md exists + zero SC-eNNsYY-P0-* in test files | CONCERNS |
-| R5 | Overall ≥ 80% + no critical gaps + all verify → PASS | PASS |
+| Rule | Condition                                                                            | Verdict  |
+| ---- | ------------------------------------------------------------------------------------ | -------- |
+| R1   | Any undone story with 0 code tags                                                    | FAIL     |
+| R2   | Any story done but no verify evidence                                                | CONCERNS |
+| R3   | A P0 story (top WSJF quartile) with 0% coverage                                      | FAIL     |
+| R4   | Overall coverage less than 60%                                                       | CONCERNS |
+| R6   | A P0 story with a test plan present and zero `SC-eNNsYY-P0-*` tags in the test files | CONCERNS |
+| R5   | Overall coverage 80% or more, no critical gaps, all verify passed                    | PASS     |
 
-## Oracle Confidence Downgrade
+## Oracle confidence downgrade
 
-TEA-inspired: if trace links rely on heuristics rather than explicit tags, confidence drops.
+TEA-inspired: when trace links rely on heuristics rather than explicit tags, the
+confidence drops.
 
-| Heuristic Ratio | Downgrade |
-|-----------------|-----------|
-| > 50% links from heuristics (file-name or task-reference) | One level (PASS→CONCERNS, CONCERNS→FAIL) |
-| > 80% links from heuristics | Two levels (PASS→FAIL, CONCERNS→FAIL) |
+| Heuristic ratio                                                      | Downgrade                                      |
+| -------------------------------------------------------------------- | ---------------------------------------------- |
+| More than 50% of links from heuristics (file name or task reference) | One level (PASS to CONCERNS, CONCERNS to FAIL) |
+| More than 80% of links from heuristics                               | Two levels (PASS to FAIL, CONCERNS to FAIL)    |
 
 ## Process
 
-1. **Pre-flight:** Ensure `scripts/trace-stories.sh --json` has been run (produces `specs/traceability-matrix.json`). If not present, run it.
-2. Ensure `scripts/check-blind-spots.sh` has been run (produces `specs/blind-spots.json`). If not present, run it.
-3. Read `specs/traceability-matrix.json` and `specs/blind-spots.json`.
-4. Apply decision rules R1–R5 in order (first match wins).
-5. Apply oracle confidence downgrade based on the heuristic link ratio from the matrix's `oracle_stats`.
-6. **Drift check (e39s03):** If `specs/drift-report.json` exists and has suspect links, mark verdict as CONCERNS with note: "Drift detected — some implementing files are newer than their specs. Run scripts/check-spec-drift.sh for details."
-7. Output verdict + rationale to stdout.
-8. **Adversarial refute check (e45s32):** Before emitting PASS, attempt to **refute** the verdict — list at least one concrete traceability gap that would block merge if it were real. If the gap is real, downgrade the verdict. Rubber-stamping is prohibited; every PASS must survive one refutation attempt.
-9. **Completeness critic (e45s05)** — Run adversarial gap-finding:
+The gate reads two inputs: a traceability matrix and blind-spot data. Both are
+project data the caller provides or maintains. This skill does not run a build
+pipeline. When an input is absent, the gate emits WAIVED.
 
-```bash
-bash scripts/lib/completeness-critic.sh
-```
+1. Read the traceability matrix and the blind-spot data for the project.
+2. When either input is absent, emit WAIVED and stop. The gate cannot evaluate
+   without its inputs.
+3. Apply the decision rules R1 to R6 in order. The first match wins.
+4. Apply the oracle-confidence downgrade from the matrix `oracle_stats`
+   heuristic ratio.
+5. When drift data is present and shows suspect links, set the verdict to
+   CONCERNS. Add the note "Drift detected: some implementing files are newer than
+   their specs."
+6. Attempt to refute a PASS before you emit it. State at least one concrete
+   traceability gap that would block a merge if it were real. When the gap is
+   real, downgrade the verdict. Every PASS must survive one refutation attempt.
+7. Run an adversarial gap-finding pass. Classify each finding as BLOCKER,
+   WARNING, or FILLED. A BLOCKER overrides any PASS and forces FAIL. Add the
+   summary to the rationale.
+8. Record the gate-trace result in the project status.
 
-Classify output as **BLOCKER / WARNING / FILLED**. **BLOCKER overrides any PASS verdict → FAIL.** Append critic summary to rationale.
-10. Update `specs/execution-status.yaml` with gate-trace result.
+To verify the outcome, run the project verify command through the
+`truenorth_verify_gate` tool. Do not shell out to a repository script.
 
-## Verdict Semantics
+## Verdict semantics
 
-| Verdict | Meaning | Action |
-|---------|---------|--------|
-| PASS | All gates satisfied | Proceed with merge |
-| CONCERNS | Non-critical issues found | Requires explicit human override in `state.yaml` |
-| FAIL | Critical traceability gap | Block merge — fix gap first |
-| WAIVED | Cannot evaluate (missing inputs) | Skip gate — data not available |
+| Verdict  | Meaning                          | Action                                              |
+| -------- | -------------------------------- | --------------------------------------------------- |
+| PASS     | Every gate is satisfied          | Proceed with the merge                              |
+| CONCERNS | Non-critical issues found        | Requires an explicit human override in `state.yaml` |
+| FAIL     | A critical traceability gap      | Block the merge. Fix the gap first                  |
+| WAIVED   | Cannot evaluate (missing inputs) | Skip the gate. The data is not available            |
 
-## Output Format
+## Output format
 
 ```yaml
 gate_trace:
   verdict: PASS|CONCERNS|FAIL|WAIVED
-  generated_at: "<ISO 8601>"
-  rationale: "<human-readable explanation>"
-  heuristic_ratio: <0.0–1.0>
+  generated_at: '<ISO 8601>'
+  rationale: '<human-readable explanation>'
+  heuristic_ratio: <0.0-1.0>
   downgrade_applied: <true|false>
 ```
 
-## Integration Points
+## Integration points
 
-- **release-branch SKILL.md** — pre-PR gate (FAIL blocks merge).
-- **sync-skills.yml** — runs `trace-stories.sh --strict` as its "Traceability gate" step (FAIL
-  blocks pipeline), which shares this skill's coverage data (`traceability-matrix.json`) but
-  does not invoke a gate-trace PASS/CONCERNS/FAIL/WAIVED verdict directly.
-- **verify-work SKILL.md** — runs blind-spot checks; gate-trace consumes the result.
-
-## References
-
-- BMAD TEA traceability approach (market survey 2026-07-02).
-- scripts/trace-stories.sh (e38s01) — produces traceability-matrix.json.
-- scripts/check-blind-spots.sh (e38s04) — produces blind-spots.json.
-- specs/execution-status.yaml — output target for gate result.
+- `release-branch`: the pre-PR gate. A FAIL blocks the merge.
+- `verify-work`: runs the blind-spot checks. Gate-trace consumes the result.
 
 ## Handoff
 
-Gate: READY → next: release-branch (final step before merge)
-Writes: state.yaml handoff.next_skill = release-branch
+Gate: READY. Next: release-branch, the final step before a merge.
+Writes: `state.yaml` `handoff.next_skill = release-branch`.
 
 ## Verify
 
-→ verify: `test -x scripts/run-gate-trace-verify.sh && bash scripts/run-gate-trace-verify.sh --self-test && echo OK`
+Run the project verify command through the `truenorth_verify_gate` tool. A pass
+returns exit 0.
