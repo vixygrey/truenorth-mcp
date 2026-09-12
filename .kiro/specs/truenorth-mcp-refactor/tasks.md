@@ -146,14 +146,14 @@ P5 (no dangling references).
     - Test `read_skill`, `search_skills`, `get_git_context`, and graph tools including their error paths
     - _Requirements: 6.2, 6.3, 6.4, 6.5, 7.3, 7.4, 7.5, 7.7, 7.9_
 
-- [ ] 9. Lifecycle tools: advance_phase and record_task
-  - [ ] 9.1 Implement `tools/lifecycle.rs`
+- [x] 9. Lifecycle tools: advance_phase and record_task
+  - [x] 9.1 Implement `tools/lifecycle.rs`
     - `truenorth_advance_phase` (schemars contract: `from_phase`, `to_phase` each one of the six phases, `artifacts_summary` 1–4000 chars). On success, write `state.yaml` and record git-scoped context, emit `resources/updated` for `truenorth://state`
     - `truenorth_record_task` (schemars contract: `epic_id` matching `^e[0-9]+([a-z0-9-]*)?$`, `task_name` 1–200 chars, `verify_command` 1–1000 chars). On success, append to `release-plan.yaml`, emit `resources/updated` for `truenorth://cockpit`
     - Reject schema-violating input identifying the offending field with no partial mutation. On write failure, report it and leave the target file in its pre-invocation state
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.11, 2.12_
 
-  - [ ]* 9.2 Write unit tests for lifecycle tools
+  - [x]\* 9.2 Write unit tests for lifecycle tools
     - Test schema validation rejection (missing/invalid fields) with no partial mutation and the write-failure pre-state guarantee
     - Test successful `state.yaml` write and `release-plan.yaml` append
     - _Requirements: 2.2, 2.3, 2.4, 2.5, 2.11, 2.12_
