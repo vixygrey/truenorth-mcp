@@ -227,19 +227,19 @@ P5 (no dangling references).
 - [x] 17. Checkpoint - Make sure that the runtime parity suite passes
   - Make sure that all tests pass. Ask the user if questions arise.
 
-- [ ] 18. npm distribution wrapper
-  - [ ] 18.1 Create the root and platform package manifests
+- [x] 18. npm distribution wrapper
+  - [x] 18.1 Create the root and platform package manifests
     - `npm/package.json` (root `truenorth-mcp` with `bin/truenorth.js` and the four `@truenorth-mcp/<platform>` packages as optionalDependencies)
     - Platform stub `package.json` files for darwin-arm64, darwin-x64, linux-x64, linux-arm64 each declaring matching `os` and `cpu` fields, with windows-x64 left out of scope
     - _Requirements: 8.1, 8.2, 8.6, 8.8_
 
-  - [ ] 18.2 Implement `npm/bin/truenorth.js` runner and init scaffold
+  - [x] 18.2 Implement `npm/bin/truenorth.js` runner and init scaffold
     - Resolve the single platform-native binary from `process.platform`/`process.arch`, spawn with stdio passthrough, and propagate the child's exit code
     - Print an error to stderr and exit 1 on unsupported platform and on spawn failure
     - `init` scaffolds `specs/` from the crate template when none exists. When `specs/` already exists, leave it unchanged and print a skip message to stderr
     - _Requirements: 8.3, 8.4, 8.5, 8.9, 8.10_
 
-  - [ ]* 18.3 Write wrapper resolution tests
+  - [x]\* 18.3 Write wrapper resolution tests
     - Verify the runner resolves the correct `@truenorth-mcp/<platform>-<arch>` package and exits 1 with a clear message on unsupported platforms and spawn failure
     - _Requirements: 8.3, 8.4, 8.9_
 
