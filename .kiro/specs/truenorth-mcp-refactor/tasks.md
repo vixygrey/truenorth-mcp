@@ -36,8 +36,8 @@ P5 (no dangling references).
     - The `#[tool_router]` and `#[tool_handler]` macros need at least one `#[tool]` method, so they arrive with the first tool (task 8).
     - Verified: `cargo build`, `cargo fmt --check`, `cargo clippy -D warnings` clean; a real `initialize` request returns server info; a closed transport returns a non-zero exit.
 
-- [ ] 2. Engine config: root resolution, denylist, git scope, sandbox config
-  - [ ] 2.1 Implement `engine::config` (`config.rs`)
+- [x] 2. Engine config: root resolution, denylist, git scope, sandbox config
+  - [x] 2.1 Implement `engine::config` (`config.rs`)
     - `get_repo_root()` evaluates candidates in order: `TRUENORTH_ROOT` env (when set and non-empty), then cwd, then parent-of-package, selecting the first that directly contains both `skills/` and `specs/`
     - Terminate with a non-zero exit status and a "no valid repository root" error when no candidate satisfies the rule
     - `secret_denylist()` covering `.env`, `*.pem`, and any path containing a `secret` or `credentials` marker
@@ -45,7 +45,7 @@ P5 (no dangling references).
     - `SandboxConfig { timeout, working_dir, allowlist, execution_enabled }`
     - _Requirements: 1.4, 1.5, 1.6, 1.7, 1.8_
 
-  - [ ]* 2.2 Write unit tests for config
+  - [x]\* 2.2 Write unit tests for config
     - Test root resolution precedence (env over cwd over parent) and marker-directory validation
     - Test the no-valid-root error path
     - Test denylist matching for `.env`, `*.pem`, `secret`, and `credentials` paths
