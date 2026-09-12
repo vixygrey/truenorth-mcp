@@ -41,3 +41,6 @@ bigpowers-showcase/
 .hermes/
 .mimocode/
 .zcode/
+
+# Allure test/build artifacts (Req 10.4)
+allure-results/
