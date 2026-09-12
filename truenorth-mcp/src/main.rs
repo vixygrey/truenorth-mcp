@@ -68,6 +68,18 @@ async fn main() -> std::process::ExitCode {
         .with_writer(std::io::stderr)
         .init();
 
+    // Resolve the governed repository root before serving. Termination here satisfies
+    // Requirement 1.6: no valid root is a non-zero exit with an error indication.
+    let repo_root = match config::get_repo_root() {
+        Ok(root) => root,
+        Err(error) => {
+            tracing::error!(%error, "could not resolve the repository root");
+            eprintln!("truenorth-mcp: {error}");
+            return std::process::ExitCode::FAILURE;
+        }
+    };
+    tracing::info!(repo_root = %repo_root.display(), "resolved repository root");
+
     let server = TrueNorthServer::new();
 
     // Serve over stdio. `serve` fails when the transport cannot initialize.
