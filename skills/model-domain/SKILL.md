@@ -1,8 +1,6 @@
 ---
 name: model-domain
-model: sonnet
-effort: standard
-description: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates specs/tech-architecture/tech-stack.md and specs/adr/ inline as decisions crystallise. Use when user wants to stress-test a plan against their project's domain language and documented decisions.
+description: 'A grilling session that challenges a plan against the existing domain model, sharpens terminology, and updates the tech-architecture notes and the ADRs inline as decisions crystallize. Use it to stress-test a plan against the project domain language and documented decisions.'
 ---
 
 # Model Domain
@@ -95,9 +93,16 @@ When the plan touches shared state, async, or multi-threaded code:
 
 - [ ] List every **shared mutable** location (globals, singletons, module-level caches).
 - [ ] For each: who reads, who writes, synchronization mechanism (lock, actor, immutable copy).
-- [ ] Flag **race risks** (check-then-act, non-atomic read-modify-write) with severity.
-- [ ] Record findings in `specs/tech-architecture/tech-stack.md` under `## Concurrency` or in an ADR if architectural.
+- [ ] Flag a race risk (check-then-act, a non-atomic read-modify-write) with a severity.
+- [ ] Record the findings in the tech-architecture notes under a concurrency section, or in an ADR when architectural.
 
+## Feed the ontology
 
+The canonical terms and the invariants you capture here are the raw material for
+the project ontology. When the session resolves a canonical term or a prohibited
+alias for a core entity, seed or update the ontology with the
+`truenorth_generate_ontology` tool, then check the codebase against it with the
+`truenorth_verify_ontology` tool. This turns the agreed domain language into an
+enforced gate, not just prose.
 
 <!-- story: e07s03 -->

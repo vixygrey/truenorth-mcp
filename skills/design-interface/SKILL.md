@@ -1,8 +1,6 @@
 ---
 name: design-interface
-model: opus
-effort: standard
-description: Generate multiple radically different interface designs for a module using parallel sub-agents, then compare trade-offs. Based on "Design It Twice" from A Philosophy of Software Design. Use when user wants to design an API, explore interface options, compare module shapes, or mentions "design it twice".
+description: 'Generate multiple radically different interface designs for a module using parallel sub-agents, then compare the trade-offs. Based on "Design It Twice" from A Philosophy of Software Design. Use it to design an API, explore interface options, or compare module shapes.'
 ---
 
 # Design Interface
@@ -96,4 +94,3 @@ From "A Philosophy of Software Design":
 - Don't skip comparison — the value is in contrast
 - Don't implement — this is purely about interface shape
 - Don't evaluate based on implementation effort
-
