@@ -11,7 +11,7 @@ dashes.
 
 ## Format
 
-```
+```text
 <type>(<scope>): <description>
 
 [body]
@@ -48,8 +48,8 @@ A `!` after the scope or a `BREAKING CHANGE:` footer forces a major bump, whatev
 the type.
 
 Note: SemVer maps from the commit type, but the release itself is tag-driven. The
-`release.yml` workflow runs on a `v*` tag. It does not parse commits to compute the
-version.
+`release.yml` workflow runs on a `v*` tag. It does not parse commits to
+compute the version.
 
 ## Scopes
 
@@ -71,7 +71,7 @@ Be specific. Write `fix(engine)`, not `fix(core)`.
 
 A feature (0.1.0 to 0.2.0):
 
-```
+```text
 feat(tools): add truenorth_verify_ontology
 
 Scan the changed files against the ontology baseline. Return the first violation
@@ -82,7 +82,7 @@ Closes #22
 
 A fix (0.1.0 to 0.1.1):
 
-```
+```text
 fix(resources): retain the last good cache on a parse failure
 
 A malformed cockpit file returned a read error and dropped the cache. Keep the
@@ -93,7 +93,7 @@ Refs #24
 
 A breaking change (0.1.0 to 1.0.0):
 
-```
+```text
 feat(tools)!: rename the phase-advance tool
 
 BREAKING CHANGE: `truenorth_advance` is now `truenorth_advance_phase`. Update the
