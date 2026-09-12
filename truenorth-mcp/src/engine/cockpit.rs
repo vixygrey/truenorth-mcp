@@ -19,6 +19,7 @@ use serde_yaml::Value;
 use thiserror::Error;
 
 use crate::engine::spec::{Phase, ReleasePlanFile, StateFile};
+use crate::engine::tdd::TddStep;
 use crate::engine::validate::{
     ValidationError, validate_release_plan, validate_release_plan_for_write, validate_state,
     validate_state_for_write,
@@ -100,6 +101,50 @@ pub fn record_task(
     let yaml = validate_release_plan_for_write(&plan)?;
     write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
         file: "release-plan.yaml".to_string(),
+        source,
+    })
+}
+
+/// Read the recorded TDD step from `state.yaml`, or `None` when unset (Requirement 2.8).
+///
+/// # Errors
+///
+/// Returns [`CockpitError`] when the file exists but fails validation.
+pub fn read_tdd_step(repo_root: &Path) -> Result<Option<TddStep>, CockpitError> {
+    let state = read_state(&state_path(repo_root))?;
+    let step = state
+        .get("tdd")
+        .and_then(|v| v.get("step"))
+        .and_then(|v| v.as_str())
+        .and_then(TddStep::parse);
+    Ok(step)
+}
+
+/// Write the recorded TDD step into `state.yaml`, preserving every other field
+/// (Requirements 2.8, 9.3).
+///
+/// On any failure the file is left unchanged (Requirement 2.12).
+///
+/// # Errors
+///
+/// Returns [`CockpitError`] on a read, validation, or write failure.
+pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitError> {
+    let path = state_path(repo_root);
+    let mut state = read_state(&path)?;
+
+    let mut tdd = state
+        .get("tdd")
+        .and_then(|v| v.as_mapping().cloned())
+        .unwrap_or_default();
+    tdd.insert(
+        Value::String("step".to_string()),
+        Value::String(step.as_str().to_string()),
+    );
+    state.set("tdd", Value::Mapping(tdd));
+
+    let yaml = validate_state_for_write(&state)?;
+    write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
+        file: "state.yaml".to_string(),
         source,
     })
 }
