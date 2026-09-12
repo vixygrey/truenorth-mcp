@@ -1,1 +1,50 @@
-.github/workflows/*.lock.yml linguist-generated=true merge=ours
+# Line-ending policy: LF everywhere, except Windows-specific files and binaries.
+#
+# `* text=eol=lf` normalizes every text file to LF in the repository and checks it
+# out as LF on all platforms. The explicit rules below document intent and override
+# the default for the exceptions.
+
+* text=eol=lf
+
+# Source and text files. These are LF by the default above; listed for clarity.
+*.rs      text eol=lf
+*.toml    text eol=lf
+*.js      text eol=lf
+*.mjs     text eol=lf
+*.cjs     text eol=lf
+*.ts      text eol=lf
+*.json    text eol=lf
+*.jsonl   text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.md      text eol=lf
+*.sh      text eol=lf
+*.py      text eol=lf
+*.svg     text eol=lf
+
+# Windows-specific files keep CRLF, so they work with native Windows tools.
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
+*.ps1     text eol=crlf
+*.psm1    text eol=crlf
+*.psd1    text eol=crlf
+*.sln     text eol=crlf
+*.vcxproj text eol=crlf
+
+# Binaries: git must never normalize or diff these.
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.webp    binary
+*.ico     binary
+*.pdf     binary
+*.zip     binary
+*.gz      binary
+*.tar     binary
+*.wasm    binary
+*.woff    binary
+*.woff2   binary
+*.ttf     binary
+*.otf     binary
+*.eot     binary
