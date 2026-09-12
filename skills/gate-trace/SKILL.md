@@ -1,7 +1,6 @@
 ---
 name: gate-trace
 description: 'Deterministic traceability quality gate. Reads the coverage matrix and blind-spot data, applies decision rules with an oracle-confidence downgrade, and emits a PASS, CONCERNS, FAIL, or WAIVED verdict. Use it before release-branch to gate a merge on traceability.'
-effort: light
 ---
 
 # Gate Trace

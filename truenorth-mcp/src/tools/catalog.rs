@@ -106,7 +106,7 @@ impl TrueNorthServer {
     }
 
     /// Search skills by metadata.
-    #[tool(description = "Search skills by name, phase, description, model, or effort.")]
+    #[tool(description = "Search skills by name, phase, or description.")]
     pub async fn search_skills(
         &self,
         params: Parameters<SearchSkillsArgs>,
@@ -262,8 +262,6 @@ impl TrueNorthServer {
                 entry.name.clone(),
                 entry.phase.clone(),
                 fm_str(fm, "description"),
-                fm_str(fm, "model"),
-                fm_str(fm, "effort"),
             ]
             .join(" ")
             .to_lowercase();
