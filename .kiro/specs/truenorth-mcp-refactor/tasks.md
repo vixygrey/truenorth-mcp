@@ -131,7 +131,7 @@ P5 (no dangling references).
     - _Requirements: 1.8, 5.6_
 
 - [ ] 8. Skills tools: tiered get_skill and ported legacy catalog
-  - [ ] 8.1 Implement `get_skill` (tiered) in `tools/skills.rs`
+  - [x] 8.1 Implement `get_skill` (tiered) in `tools/skills.rs`
     - Require `name`, accept optional `tier`. Resolve effective tier from the per-call arg, else `TRUENORTH_TIER`, else `full`
     - Reject unrecognized `tier` values and unresolved `name` without returning a payload. Apply `engine::tier` rendering
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
