@@ -115,17 +115,17 @@ P5 (no dangling references).
     - `AstAnalyzer` behind the tree-sitter feature for supported languages, plugged in via `pick_analyzer`, adding precision without blocking the regex baseline
     - _Requirements: 4.9_
 
-- [ ] 7. Engine git context and file watcher
-  - [ ] 7.1 Implement `engine::git`
+- [x] 7. Engine git context and file watcher
+  - [x] 7.1 Implement `engine::git`
     - Git `status` / `log` / `diff` scoped to `GIT_SCOPE_DIRS` (`skills/`, `specs/`), excluding changes outside those directories
     - `git_changed_files_in_scope()` helper for ontology default scope
     - _Requirements: 1.8, 4.7_
 
-  - [ ] 7.2 Implement `engine::watcher`
+  - [x] 7.2 Implement `engine::watcher`
     - notify-based file watch that debounces edits within a 200 ms window and coalesces them, emitting `notifications/resources/updated` for the affected resource URI within 1 second of detecting a change
     - _Requirements: 5.3, 5.6_
 
-  - [ ]* 7.3 Write unit tests for git scope and watcher debounce
+  - [x]\* 7.3 Write unit tests for git scope and watcher debounce
     - Assert git output excludes paths outside `skills/`/`specs/`
     - Assert two edits within the debounce window coalesce into a single notification
     - _Requirements: 1.8, 5.6_
