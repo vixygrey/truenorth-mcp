@@ -192,13 +192,13 @@ P5 (no dangling references).
 - [x] 13. Checkpoint - Make sure that all engine and tool tests pass
   - Make sure that all tests pass. Ask the user if questions arise.
 
-- [ ] 14. Resources layer: cockpit and ontology resources
+- [x] 14. Resources layer: cockpit and ontology resources
   - [x] 14.1 Implement `resources/cockpit.rs` and `resources/ontology.rs`
     - Serve `truenorth://state` (backed by `state.yaml`), `truenorth://cockpit` (release plan + product boundary), `truenorth://conventions` (coding standards), and `truenorth://ontology` (`ontology.yaml`)
     - Read current on-disk content on `resources/read`, treating disk as source of truth. Support `resources/list`, `resources/read`, and subscribe
     - _Requirements: 5.1, 5.2, 5.5_
 
-  - [ ] 14.2 Wire resource change notifications
+  - [x] 14.2 Wire resource change notifications
     - Emit `notifications/resources/updated` on watcher-detected disk change and on tool-driven write. On YAML parse/schema-validation failure, return a resource read error identifying the file and failure, retain the last successfully parsed content, and continue serving other resources without terminating
     - _Requirements: 5.3, 5.4, 5.7_
 
@@ -206,12 +206,12 @@ P5 (no dangling references).
     - Test on-disk-read source-of-truth behavior and the parse-failure read-error (non-crash, last-good retention) path
     - _Requirements: 5.5, 5.7_
 
-- [ ] 15. Wire the server and drive an end-to-end lifecycle
-  - [ ] 15.1 Aggregate tools and resources in `src/index.rs`
+- [x] 15. Wire the server and drive an end-to-end lifecycle
+  - [x] 15.1 Aggregate tools and resources in `src/index.rs`
     - Assemble the `#[tool_router]` (active + legacy tools) and `ServerHandler` (resources), spawn the watcher, and serve over stdio
     - _Requirements: 1.1, 2.1, 5.1_
 
-  - [ ]* 15.2 Write integration test for the full lifecycle
+  - [x]\* 15.2 Write integration test for the full lifecycle
     - In-process MCP client drives `resources/list` + `resources/read` and a full Discover to Integrate tool sequence against a temp repo. Assert `resources/updated` fires after a disk edit (watcher) and after a tool write
     - _Requirements: 1.1, 2.1, 2.3, 5.3, 5.4, 11.1_
 
