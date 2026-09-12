@@ -87,9 +87,9 @@ impl GraphRelation {
 
 /// Build the graph from parsed skills (ports `buildGraphFromSkills`).
 ///
-/// Each skill becomes an entity with `model`, `effort`, and `description` observations.
-/// Relations are mined from the joined prose with the legacy regexes: `depends_on`,
-/// `gates`, `references`, `enforces`, and `handoff_to`.
+/// Each skill becomes an entity with a `description` observation. Relations are mined
+/// from the joined prose with the legacy regexes: `depends_on`, `gates`, `references`,
+/// `enforces`, and `handoff_to`.
 pub fn build_graph(skills: &[ParsedSkill]) -> SkillGraph {
     let mut graph = SkillGraph::default();
 
@@ -109,7 +109,7 @@ pub fn build_graph(skills: &[ParsedSkill]) -> SkillGraph {
 /// The observations for a skill, drawn from its frontmatter.
 fn observations_from(skill: &ParsedSkill) -> Vec<String> {
     let mut observations = Vec::new();
-    for field in ["model", "effort", "description"] {
+    for field in ["description"] {
         if let Some(value) = skill.frontmatter.get(field)
             && let Some(text) = scalar_string(value)
         {

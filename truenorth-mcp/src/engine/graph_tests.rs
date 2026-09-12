@@ -21,7 +21,10 @@ fn parsed(name: &str, markdown: &str) -> ParsedSkill {
 }
 
 #[test]
-fn builds_entity_with_frontmatter_observations() {
+fn builds_entity_with_description_observation() {
+    // The skill graph records only the `description` observation. The vendor `model` tier
+    // and the `effort` tag are dropped from skills (model-agnostic decoupling, #52), so
+    // they never become observations even when present in stale frontmatter.
     let skill = parsed(
         "develop-tdd",
         "---\nmodel: sonnet\neffort: standard\ndescription: TDD loop.\n---\n\n# TDD\n",
@@ -29,16 +32,18 @@ fn builds_entity_with_frontmatter_observations() {
     let graph = build_graph(&[skill]);
     let entity = graph.entities.get("develop-tdd").expect("entity built");
     assert_eq!(entity.entity_type, "Skill");
-    assert!(entity.observations.contains(&"model: sonnet".to_string()));
-    assert!(
-        entity
-            .observations
-            .contains(&"effort: standard".to_string())
-    );
     assert!(
         entity
             .observations
             .contains(&"description: TDD loop.".to_string())
+    );
+    assert!(
+        !entity.observations.iter().any(|o| o.starts_with("model:")),
+        "the vendor model tier must not become an observation"
+    );
+    assert!(
+        !entity.observations.iter().any(|o| o.starts_with("effort:")),
+        "the effort tag must not become an observation"
     );
 }
 
@@ -117,10 +122,15 @@ fn from_jsonl_skips_malformed_lines() {
 
 #[test]
 fn search_and_open_nodes() {
-    let skill = parsed("develop-tdd", "---\nmodel: sonnet\n---\n\n# TDD\n");
+    // The graph records the description observation. Search matches on it. The vendor
+    // model tier is no longer an observation, so search by description, not by a model.
+    let skill = parsed(
+        "develop-tdd",
+        "---\ndescription: The red-green-refactor loop.\n---\n\n# TDD\n",
+    );
     let graph = build_graph(&[skill]);
 
-    let hits = search_nodes(&graph, "sonnet");
+    let hits = search_nodes(&graph, "red-green-refactor");
     assert_eq!(hits.len(), 1);
 
     let opened = open_nodes(&graph, &["develop-tdd".to_string(), "absent".to_string()]);
