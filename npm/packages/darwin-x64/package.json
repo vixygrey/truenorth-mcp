@@ -1,0 +1,9 @@
+{
+  "name": "@truenorth-mcp/darwin-x64",
+  "version": "0.1.0",
+  "description": "TrueNorth-MCP native binary for macOS on x64.",
+  "license": "MIT",
+  "os": ["darwin"],
+  "cpu": ["x64"],
+  "files": ["truenorth-mcp"]
+}
