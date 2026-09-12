@@ -1,0 +1,156 @@
+name: Release
+
+# Cross-compile the native binaries, publish the per-platform npm packages, then publish
+# the root wrapper. The root wrapper publishes only after every per-platform package
+# publishes, so a single per-platform failure aborts the release (Requirements 8.7, 8.11).
+#
+# The workflow runs on a release tag. The npm publishes need the NPM_TOKEN secret.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version to publish, without the leading v (for example 0.1.0)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-publish-platform:
+    name: build and publish ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Do not cancel the other legs when one fails, so the failure is visible per
+      # platform. Any failed leg still fails the job, which gates the root wrapper below.
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-14
+            platform: darwin-arm64
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+            platform: darwin-x64
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            platform: linux-x64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            platform: linux-arm64
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Resolve the release version
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Publishing version ${version} for ${{ matrix.platform }}"
+
+      - name: Install the Rust toolchain for the target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install the aarch64 Linux cross-linker
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: truenorth-mcp
+
+      - name: Build the release binary
+        working-directory: truenorth-mcp
+        env:
+          # The aarch64 Linux target needs its cross-linker; the others use the default.
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Stage the binary into the platform package
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkg_dir="npm/packages/${{ matrix.platform }}"
+          cp "truenorth-mcp/target/${{ matrix.target }}/release/truenorth-mcp" "${pkg_dir}/truenorth-mcp"
+          chmod +x "${pkg_dir}/truenorth-mcp"
+
+      - name: Set the package version
+        working-directory: npm/packages/${{ matrix.platform }}
+        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Set up Node.js for publishing
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish the platform package
+        working-directory: npm/packages/${{ matrix.platform }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+  publish-root:
+    name: publish the root wrapper
+    runs-on: ubuntu-latest
+    # The root wrapper publishes only after every per-platform package publishes. A single
+    # failed leg fails `build-and-publish-platform`, which skips this job and aborts the
+    # release (Requirement 8.11).
+    needs: build-and-publish-platform
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Resolve the release version
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Set the root and optionalDependencies versions
+        working-directory: npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ steps.version.outputs.version }}"
+          npm version "${version}" --no-git-tag-version --allow-same-version
+          # Pin each optionalDependency to the freshly published platform version.
+          node -e '
+            const fs = require("node:fs");
+            const v = process.argv[1];
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            for (const dep of Object.keys(pkg.optionalDependencies ?? {})) {
+              pkg.optionalDependencies[dep] = v;
+            }
+            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");
+          ' "${version}"
+
+      - name: Set up Node.js for publishing
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish the root wrapper
+        working-directory: npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
