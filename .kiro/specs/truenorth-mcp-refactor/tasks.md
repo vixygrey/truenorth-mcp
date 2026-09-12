@@ -243,8 +243,8 @@ P5 (no dangling references).
     - Verify the runner resolves the correct `@truenorth-mcp/<platform>-<arch>` package and exits 1 with a clear message on unsupported platforms and spawn failure
     - _Requirements: 8.3, 8.4, 8.9_
 
-- [ ] 19. CI cross-compile and publish matrix
-  - [ ] 19.1 Add the release GitHub Actions workflow
+- [x] 19. CI cross-compile and publish matrix
+  - [x] 19.1 Add the release GitHub Actions workflow
     - On release tags, cross-compile `aarch64-apple-darwin`, `x86_64-apple-darwin`, `x86_64-unknown-linux-gnu`, and `aarch64-unknown-linux-gnu`. Package each per-platform binary and publish per-platform packages. Publish the root wrapper only after all per-platform packages publish successfully. If any per-platform publish fails, abort the release and skip the root wrapper
     - _Requirements: 8.7, 8.11_
 
