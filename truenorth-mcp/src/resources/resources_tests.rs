@@ -1,0 +1,144 @@
+//! Tests for the resources layer (task 14.3).
+//!
+//! Included from `resources/mod.rs` via `#[path]`, so `super` is the resources module.
+//!
+//! Requirements: 5.5, 5.7.
+
+use super::*;
+use std::fs;
+use tempfile::tempdir;
+
+/// Seed a file under the repo root at `rel`.
+fn seed(root: &std::path::Path, rel: &str, content: &str) {
+    let path = root.join(rel);
+    fs::create_dir_all(path.parent().unwrap()).expect("parent dir");
+    fs::write(path, content).expect("write file");
+}
+
+#[test]
+fn uri_and_backing_paths_are_stable() {
+    assert_eq!(
+        ResourceDoc::from_uri("truenorth://state"),
+        Some(ResourceDoc::State)
+    );
+    assert_eq!(
+        ResourceDoc::from_uri("truenorth://cockpit"),
+        Some(ResourceDoc::Cockpit)
+    );
+    assert_eq!(
+        ResourceDoc::from_uri("truenorth://ontology"),
+        Some(ResourceDoc::Ontology)
+    );
+    assert_eq!(
+        ResourceDoc::from_uri("truenorth://conventions"),
+        Some(ResourceDoc::Conventions)
+    );
+    assert_eq!(ResourceDoc::from_uri("truenorth://nope"), None);
+}
+
+#[test]
+fn read_returns_current_on_disk_content() {
+    // Requirement 5.5: disk is the source of truth.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "active_epic: e01\n");
+
+    let content = ResourceDoc::State.read_current(root).expect("read state");
+    assert!(content.contains("active_epic: e01"));
+
+    // A later edit is reflected on the next read.
+    seed(root, "specs/state.yaml", "active_epic: e02\n");
+    let updated = ResourceDoc::State.read_current(root).expect("read updated");
+    assert!(updated.contains("active_epic: e02"));
+}
+
+#[test]
+fn absent_backing_file_is_not_found() {
+    let dir = tempdir().expect("temp dir");
+    let error = ResourceDoc::State
+        .read_current(dir.path())
+        .expect_err("absent");
+    assert!(matches!(error, ResourceReadError::NotFound(_)));
+}
+
+#[test]
+fn malformed_state_is_invalid() {
+    // Requirement 5.7: a malformed backing file yields an Invalid read error.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    let error = ResourceDoc::State
+        .read_current(root)
+        .expect_err("malformed");
+    assert!(matches!(error, ResourceReadError::Invalid(_)));
+}
+
+#[test]
+fn conventions_serves_raw_markdown() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "CONVENTIONS.md", "# Conventions\n\nBe kind.\n");
+    let content = ResourceDoc::Conventions
+        .read_current(root)
+        .expect("read conventions");
+    assert!(content.contains("# Conventions"));
+}
+
+#[test]
+fn cache_retains_last_good_on_parse_failure() {
+    // Requirement 5.7: a failed read retains the last successfully parsed content.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let cache = ResourceCache::new();
+
+    // First read succeeds and populates the cache.
+    seed(root, "specs/state.yaml", "active_epic: e01\n");
+    let good = cache.read(ResourceDoc::State, root).expect("first read");
+    assert!(good.contains("e01"));
+    assert_eq!(cache.last_good(ResourceDoc::State), Some(good));
+
+    // The file breaks on disk. The read errors, but the cache keeps the last good.
+    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    let error = cache
+        .read(ResourceDoc::State, root)
+        .expect_err("broken read");
+    assert!(matches!(error, ResourceReadError::Invalid(_)));
+    assert!(
+        cache
+            .last_good(ResourceDoc::State)
+            .expect("retained")
+            .contains("e01"),
+        "the last-good content is retained after a parse failure"
+    );
+}
+
+#[test]
+fn cache_updates_last_good_on_success() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let cache = ResourceCache::new();
+
+    seed(root, "specs/state.yaml", "active_epic: e01\n");
+    cache.read(ResourceDoc::State, root).expect("read one");
+    seed(root, "specs/state.yaml", "active_epic: e02\n");
+    cache.read(ResourceDoc::State, root).expect("read two");
+
+    assert!(
+        cache
+            .last_good(ResourceDoc::State)
+            .expect("cached")
+            .contains("e02")
+    );
+}
+
+#[test]
+fn one_broken_resource_does_not_block_others() {
+    // Requirement 5.7: other resources keep serving when one is broken.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    seed(root, "specs/ontology.yaml", "version: '1'\ndomain: d\n");
+
+    assert!(ResourceDoc::State.read_current(root).is_err());
+    assert!(ResourceDoc::Ontology.read_current(root).is_ok());
+}
