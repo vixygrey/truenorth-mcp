@@ -56,7 +56,10 @@ impl TrueNorthServer {
     pub fn new(repo_root: PathBuf) -> Self {
         Self {
             ctx: Arc::new(ServerContext::new(repo_root)),
-            tool_router: Self::skills_router() + Self::catalog_router() + Self::lifecycle_router(),
+            tool_router: Self::skills_router()
+                + Self::catalog_router()
+                + Self::lifecycle_router()
+                + Self::gates_router(),
         }
     }
 
