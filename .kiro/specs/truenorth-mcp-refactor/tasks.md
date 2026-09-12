@@ -248,11 +248,11 @@ P5 (no dangling references).
     - On release tags, cross-compile `aarch64-apple-darwin`, `x86_64-apple-darwin`, `x86_64-unknown-linux-gnu`, and `aarch64-unknown-linux-gnu`. Package each per-platform binary and publish per-platform packages. Publish the root wrapper only after all per-platform packages publish successfully. If any per-platform publish fails, abort the release and skip the root wrapper
     - _Requirements: 8.7, 8.11_
 
-- [ ] 20. Checkpoint - Confirm crate + npm wrapper parity before cleanup
+- [x] 20. Checkpoint - Confirm crate + npm wrapper parity before cleanup
   - Make sure that the full parity test suites (crate + npm wrapper) pass with zero failures. Ask the user if questions arise. Do not proceed to cleanup unless parity holds (Req 10.5, §9.3).
 
 - [ ] 21. Repository cleanup (parity-gated, one commit per batch)
-  - [ ] 21.1 Consolidate the 13 per-harness skill mirror directories into one `skills/`
+  - [x] 21.1 Consolidate the 13 per-harness skill mirror directories into one `skills/`
     - Fold `.cline/ .codebuddy/ .codex/ .continue/ .copilot/ .cursor/ .gemini/ .kilocode/ .opencode/ .pi/ .qwen/ .trae/ .windsurf/` skill mirrors into a single canonical `skills/`. Assert exactly one `skills/` remains and zero mirror directories remain. Commit as its own batch
     - _Requirements: 10.1, 10.6_
 
@@ -268,7 +268,7 @@ P5 (no dangling references).
     - Remove `bin/*.js`, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, upstream `templates/`, and the regenerable `specs/` process artifacts, JSON side-cars, and wiki directories. Commit as its own batch
     - _Requirements: 10.3, 10.6_
 
-  - [ ] 21.5 Gitignore allure-results and run the dangling-reference check
+  - [x] 21.5 Gitignore allure-results and run the dangling-reference check
     - Add a `.gitignore` entry matching `allure-results/` such that `git status` reports zero tracked/untracked files under it
     - **Property 5: No dangling references after cleanup**. Assert every path referenced by a retained skill or by the runtime (config, resource URIs, cockpit reads) still resolves on disk with zero unresolved references
     - Commit as its own batch
