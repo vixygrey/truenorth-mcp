@@ -12,8 +12,13 @@ mod resources;
 mod server;
 mod tools;
 
+#[cfg(test)]
+mod integration_tests;
+
+use rmcp::model::ResourceUpdatedNotificationParam;
 use rmcp::{ServiceExt, transport::stdio};
 
+use crate::engine::watcher::{ResourceUri, spawn_watcher};
 use crate::server::TrueNorthServer;
 
 #[tokio::main]
@@ -40,7 +45,7 @@ async fn main() -> std::process::ExitCode {
     };
     tracing::info!(repo_root = %repo_root.display(), "resolved repository root");
 
-    let server = TrueNorthServer::new(repo_root);
+    let server = TrueNorthServer::new(repo_root.clone());
 
     // Serve over stdio. `serve` fails when the transport cannot initialize.
     let running = match server.serve(stdio()).await {
@@ -55,12 +60,53 @@ async fn main() -> std::process::ExitCode {
         }
     };
 
+    // Spawn the file watcher. A debounced disk change to a cockpit file emits
+    // `resources/updated` for the affected resource (Requirements 5.3, 14.2). The watcher
+    // callback runs on a worker thread, so it bridges to the async peer through the tokio
+    // runtime handle. The `WatchHandle` lives until the server stops.
+    let peer = running.peer().clone();
+    let runtime = tokio::runtime::Handle::current();
+    let watch_handle = match spawn_watcher(&repo_root, move |uris| {
+        emit_resource_updates(&runtime, &peer, uris);
+    }) {
+        Ok(handle) => Some(handle),
+        Err(error) => {
+            // A watcher failure is not fatal: the server still serves tools and reads.
+            // Notifications will not fire until the next start.
+            tracing::warn!(%error, "the file watcher did not start; resource notifications are off");
+            None
+        }
+    };
+
     // Run until the client disconnects or the transport closes.
-    if let Err(error) = running.waiting().await {
+    let outcome = running.waiting().await;
+    drop(watch_handle);
+    if let Err(error) = outcome {
         tracing::error!(%error, "server stopped with an error");
         eprintln!("truenorth-mcp: the server stopped with an error: {error}.");
         return std::process::ExitCode::FAILURE;
     }
 
     std::process::ExitCode::SUCCESS
+}
+
+/// Emit a `resources/updated` notification for each affected resource URI.
+///
+/// The watcher callback is synchronous and runs on a worker thread, so this spawns the
+/// async notify onto the tokio runtime. A send failure is logged, not fatal, because the
+/// notification is advisory.
+fn emit_resource_updates(
+    runtime: &tokio::runtime::Handle,
+    peer: &rmcp::service::Peer<rmcp::RoleServer>,
+    uris: Vec<ResourceUri>,
+) {
+    for uri in uris {
+        let peer = peer.clone();
+        runtime.spawn(async move {
+            let param = ResourceUpdatedNotificationParam::new(uri.as_str());
+            if let Err(error) = peer.notify_resource_updated(param).await {
+                tracing::debug!(%error, uri = uri.as_str(), "resources/updated was not delivered");
+            }
+        });
+    }
 }
