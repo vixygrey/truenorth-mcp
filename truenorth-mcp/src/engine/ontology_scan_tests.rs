@@ -150,3 +150,139 @@ fn pick_analyzer_returns_a_working_analyzer() {
     let violations = analyzer.scan(Path::new("src/order.rs"), "is_deleted: bool\n", &ontology);
     assert!(!violations.is_empty());
 }
+
+// AST analyzer tests (task 6.3). These compile only under the `tree-sitter` feature. They
+// prove the precision win over the regex baseline: the AST analyzer flags an alias at a
+// real identifier, but not the same alias inside a comment or a string literal.
+#[cfg(feature = "tree-sitter")]
+mod ast {
+    use super::*;
+
+    #[test]
+    fn ast_flags_alias_at_an_identifier() {
+        // An alias used as a struct field identifier yields a violation.
+        let ontology = order_ontology();
+        let analyzer =
+            AstAnalyzer::for_path(Path::new("src/order.rs")).expect("Rust has a bundled grammar");
+        let code = "struct Order {\n    is_deleted: bool,\n}\n";
+        let violations = analyzer.scan(Path::new("src/order.rs"), code, &ontology);
+
+        let violation = violations
+            .iter()
+            .find(|v| v.message.contains("`is_deleted`"))
+            .expect("is_deleted at an identifier yields a violation");
+        assert_eq!(violation.constraint_id, "C-02");
+        assert_eq!(violation.line, 2);
+    }
+
+    #[test]
+    fn ast_does_not_flag_an_alias_in_a_comment() {
+        // The precision win: the regex baseline flags the alias in a comment, the AST
+        // analyzer does not.
+        let ontology = order_ontology();
+        let code = "struct Order {\n    // is_deleted is banned; use deleted_at\n    deleted_at: u64,\n}\n";
+        let path = Path::new("src/order.rs");
+
+        let regex_hits = RegexAnalyzer.scan(path, code, &ontology);
+        assert!(
+            regex_hits
+                .iter()
+                .any(|v| v.message.contains("`is_deleted`")),
+            "the regex baseline flags the alias in the comment"
+        );
+
+        let analyzer = AstAnalyzer::for_path(path).expect("Rust grammar");
+        let ast_hits = analyzer.scan(path, code, &ontology);
+        assert!(
+            ast_hits.is_empty(),
+            "the AST analyzer must not flag an alias inside a comment"
+        );
+    }
+
+    #[test]
+    fn ast_does_not_flag_an_alias_in_a_string_literal() {
+        // An alias inside a string literal is not an identifier, so the AST analyzer skips
+        // it while the regex baseline flags it.
+        let ontology = order_ontology();
+        let code = "fn log() {\n    println!(\"is_deleted was removed\");\n}\n";
+        let path = Path::new("src/log.rs");
+
+        let regex_hits = RegexAnalyzer.scan(path, code, &ontology);
+        assert!(
+            regex_hits
+                .iter()
+                .any(|v| v.message.contains("`is_deleted`")),
+            "the regex baseline flags the alias in the string"
+        );
+
+        let analyzer = AstAnalyzer::for_path(path).expect("Rust grammar");
+        let ast_hits = analyzer.scan(path, code, &ontology);
+        assert!(
+            ast_hits.is_empty(),
+            "the AST analyzer must not flag an alias inside a string literal"
+        );
+    }
+
+    #[test]
+    fn ast_does_not_flag_a_substring_of_a_longer_identifier() {
+        // `is_deleted` inside `is_deleted_at` is a different identifier token.
+        let ontology = order_ontology();
+        let analyzer = AstAnalyzer::for_path(Path::new("src/order.rs")).expect("Rust grammar");
+        let code = "struct Order {\n    is_deleted_at: Option<u64>,\n}\n";
+        let violations = analyzer.scan(Path::new("src/order.rs"), code, &ontology);
+        assert!(
+            violations
+                .iter()
+                .all(|v| !v.message.contains("`is_deleted`")),
+            "a substring of a longer identifier must not match"
+        );
+    }
+
+    #[test]
+    fn ast_attribution_matches_the_regex_baseline() {
+        // For an alias at a real identifier, the AST analyzer produces the same constraint
+        // id and message as the regex baseline. Only the detection precision differs.
+        let ontology = order_ontology();
+        let code = "let is_deleted = true;\n";
+        let path = Path::new("src/order.rs");
+
+        let regex_hit = RegexAnalyzer
+            .scan(path, code, &ontology)
+            .into_iter()
+            .find(|v| v.message.contains("`is_deleted`"))
+            .expect("regex flags the identifier");
+        let ast_hit = AstAnalyzer::for_path(path)
+            .expect("Rust grammar")
+            .scan(path, code, &ontology)
+            .into_iter()
+            .find(|v| v.message.contains("`is_deleted`"))
+            .expect("AST flags the identifier");
+
+        assert_eq!(ast_hit.constraint_id, regex_hit.constraint_id);
+        assert_eq!(ast_hit.message, regex_hit.message);
+        assert_eq!(ast_hit.line, regex_hit.line);
+    }
+
+    #[test]
+    fn pick_analyzer_selects_ast_for_rust_and_regex_otherwise() {
+        // A `.rs` file gets the AST analyzer: it skips a comment-only alias. A file with no
+        // grammar (`.txt`) falls back to the regex baseline, which flags it.
+        let ontology = order_ontology();
+        let comment_only = "// is_deleted\n";
+
+        let rust = pick_analyzer(Path::new("src/order.rs"));
+        assert!(
+            rust.scan(Path::new("src/order.rs"), comment_only, &ontology)
+                .is_empty(),
+            "the Rust file uses the AST analyzer, which skips the comment"
+        );
+
+        let text = pick_analyzer(Path::new("notes.txt"));
+        assert!(
+            !text
+                .scan(Path::new("notes.txt"), comment_only, &ontology)
+                .is_empty(),
+            "the unsupported file falls back to the regex baseline"
+        );
+    }
+}
