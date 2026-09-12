@@ -180,10 +180,10 @@ These requirements are derived from the approved design document (`design.md`). 
 
 1. THE Repository SHALL consolidate the 13 per-harness skill mirror directories into a single canonical `skills/` directory such that exactly one `skills/` directory remains and zero per-harness mirror directories remain after consolidation.
 2. THE Repository SHALL remove the upstream one-off analysis documents, the vendor-coupled agent files `CLAUDE.md`, `GEMINI.md`, `opencode.json`, and `.mcp.json`, the bash and python script pipeline, and the `kernel/`, `profiles/`, `extensions/`, `hooks/`, `dashboard/`, and `website/` directories such that none of the enumerated files or directories resolve on disk after removal.
-3. THE Repository SHALL remove the superseded `bin/*.js` entrypoints, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, the upstream templates, and the regenerable `specs/` process artifacts and side-car reports such that none of the enumerated files resolve on disk after removal.
+3. THE Repository SHALL remove the superseded `bin/*.js` entrypoints, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, the upstream templates, and the regeneratable `specs/` process artifacts and side-car reports such that none of the enumerated files resolve on disk after removal.
 4. THE Repository SHALL include a `.gitignore` entry matching `allure-results/` such that `git status` reports zero tracked or untracked files under `allure-results/`.
 5. IF the legacy TypeScript server or any skill-referenced script backs live behavior, THEN THE Repository SHALL retain that file until both the Rust crate and the npm wrapper pass their full parity test suites with zero failures, and SHALL remove it only after that condition holds.
-6. WHEN performing cleanup, THE Repository SHALL record each removal batch as a separate git commit containing only that batch's deletions, such that each batch is individually revertable from git history.
+6. WHEN performing cleanup, THE Repository SHALL record each removal batch as a separate git commit containing only that batch's deletions, such that each batch is individually revertible from git history.
 7. WHEN the cleanup completes, THE Repository SHALL make sure that every path referenced by a retained skill or by the runtime resolves on disk, with zero unresolved references remaining. (Property 5)
 
 ### Requirement 11: Model and Harness Agnosticism

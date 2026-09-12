@@ -14,7 +14,7 @@ pass this repo's own STE gate and adapted to the truenorth-mcp skill format.
 
 ### AminBlg/SimpleEnglish
 
-- Source: https://github.com/AminBlg/SimpleEnglish
+- Source: <https://github.com/AminBlg/SimpleEnglish>
 - License: MIT — Copyright (c) 2026 AminBlg
 - Absorbed: the 53-rule catalog, the slop-to-simple substitution table, the
   modal ladder, the doc-type adaptations, and the `ste_lint.py` regex checks
@@ -24,7 +24,7 @@ pass this repo's own STE gate and adapted to the truenorth-mcp skill format.
 
 ### JuanMarchetto/doc-standards-skill
 
-- Source: https://github.com/JuanMarchetto/doc-standards-skill
+- Source: <https://github.com/JuanMarchetto/doc-standards-skill>
 - License: MIT — Copyright (c) 2026 Juan Marchetto
 - Absorbed: the terminology-drift synonym-set detector, the Vale handoff
   pattern, the structural checks (heading hierarchy, non-descriptive link
@@ -32,7 +32,7 @@ pass this repo's own STE gate and adapted to the truenorth-mcp skill format.
 
 ### cfcosta/writing-styles
 
-- Source: https://github.com/cfcosta/writing-styles
+- Source: <https://github.com/cfcosta/writing-styles>
 - License: MIT — Copyright 2026 Cainã Costa
   <github.writing-styles@cfcosta.com>
 - Absorbed: the core-limits table, the word-selection decision flow, and the
@@ -60,4 +60,4 @@ reproduced or distributed in this repository.
 
 No tool can guarantee ASD-STE100 compliance. Final approval rests with the
 writer. The official standard is a free download at
-https://asd-ste100.org.
+<https://asd-ste100.org>.

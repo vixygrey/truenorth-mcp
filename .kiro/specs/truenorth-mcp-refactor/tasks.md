@@ -265,7 +265,7 @@ P5 (no dangling references).
     - _Requirements: 10.2, 10.6_
 
   - [ ] 21.4 Remove superseded entrypoints and generated artifacts
-    - Remove `bin/*.js`, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, upstream `templates/`, and the regenerable `specs/` process artifacts, JSON side-cars, and wiki directories. Commit as its own batch
+    - Remove `bin/*.js`, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, upstream `templates/`, and the regeneratable `specs/` process artifacts, JSON side-cars, and wiki directories. Commit as its own batch
     - _Requirements: 10.3, 10.6_
 
   - [x] 21.5 Gitignore allure-results and run the dangling-reference check
@@ -284,7 +284,7 @@ P5 (no dangling references).
 - Each task references specific requirement clauses for traceability.
 - Checkpoints give incremental validation. Task 20 is the parity gate that must hold before the destructive cleanup in task 21 begins (parity-before-removal, Req 10.5 / §9.3).
 - Property tests validate the five design correctness properties: P1 (6.2), P2 (5.2), P3 (3.3), P4 (4.2), P5 (21.5).
-- Each cleanup removal batch is its own git commit so it is individually revertable (Req 10.6).
+- Each cleanup removal batch is its own git commit so it is individually revertible (Req 10.6).
 
 ## Task Dependency Graph
 
