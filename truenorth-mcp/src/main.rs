@@ -9,52 +9,12 @@
 mod config;
 mod engine;
 mod resources;
+mod server;
 mod tools;
 
-use rmcp::{
-    ServerHandler, ServiceExt,
-    model::{Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
-    transport::stdio,
-};
+use rmcp::{ServiceExt, transport::stdio};
 
-/// The TrueNorth-MCP server.
-///
-/// It carries no state at the scaffold stage. Later tasks add the tool router, the
-/// resource handlers, and the engine context to this type.
-///
-/// # Example
-///
-/// ```no_run
-/// let server = TrueNorthServer::new();
-/// // `main` serves `server` over stdio.
-/// ```
-#[derive(Clone, Default)]
-struct TrueNorthServer;
-
-impl TrueNorthServer {
-    fn new() -> Self {
-        Self
-    }
-}
-
-impl ServerHandler for TrueNorthServer {
-    fn get_info(&self) -> ServerInfo {
-        // Report this crate's identity. `from_build_env()` reads the rmcp crate's build
-        // env, so set name and version from this crate explicitly.
-        let mut implementation = Implementation::from_build_env();
-        implementation.name = env!("CARGO_PKG_NAME").to_string();
-        implementation.version = env!("CARGO_PKG_VERSION").to_string();
-
-        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
-            .with_server_info(implementation)
-            .with_protocol_version(ProtocolVersion::LATEST)
-            .with_instructions(
-                "TrueNorth-MCP: spec-driven engineering discipline as active MCP tools \
-                 and resources."
-                    .to_string(),
-            )
-    }
-}
+use crate::server::TrueNorthServer;
 
 #[tokio::main]
 async fn main() -> std::process::ExitCode {
@@ -80,7 +40,7 @@ async fn main() -> std::process::ExitCode {
     };
     tracing::info!(repo_root = %repo_root.display(), "resolved repository root");
 
-    let server = TrueNorthServer::new();
+    let server = TrueNorthServer::new(repo_root);
 
     // Serve over stdio. `serve` fails when the transport cannot initialize.
     let running = match server.serve(stdio()).await {
