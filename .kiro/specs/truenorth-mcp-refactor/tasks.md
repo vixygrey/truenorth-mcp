@@ -99,14 +99,14 @@ P5 (no dangling references).
     - Assert `cwd` pinning under repo root and environment sanitization of denylist-matching values
     - **Validates: Requirements 3.2, 3.3, 3.4, 3.5, 3.6**
 
-- [ ] 6. Engine ontology scan
-  - [ ] 6.1 Implement `engine::ontology_scan` regex baseline
+- [x] 6. Engine ontology scan
+  - [x] 6.1 Implement `engine::ontology_scan` regex baseline
     - `OntologyAnalyzer` trait and `Violation { constraint_id, path, line, message }`
     - `RegexAnalyzer` (language-agnostic baseline, always available) detects prohibited aliases as identifiers and emits violations citing the owning constraint id with a remediation hint naming the correct term (for example, `is_deleted` maps to C-02)
     - Define the AST-analyzer plug-in seam (`pick_analyzer` selecting AST where a grammar exists, else regex baseline)
     - _Requirements: 4.5, 4.6, 4.9_
 
-  - [ ]* 6.2 Write property test for the ontology gate
+  - [x]\* 6.2 Write property test for the ontology gate
     - **Property 1: Ontology gate rejects prohibited aliases**
     - Assert every prohibited alias that occurs as an identifier yields at least one violation citing the owning constraint id. Include the `is_deleted` maps to C-02 case with the exact remediation string
     - **Validates: Requirements 4.5, 4.6**
