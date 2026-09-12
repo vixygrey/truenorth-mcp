@@ -1,15 +1,16 @@
 # Third-Party Notices
 
 This file credits the upstream sources that the `simple-english` skill absorbs
-and synthesizes. The bigpowers repository is MIT-licensed (see [LICENSE](LICENSE),
-© 2026 Daniel VM). The works below retain their original copyright notices under
-their MIT licenses.
+and synthesizes. truenorth-mcp is MIT-licensed (see [LICENSE](LICENSE), © 2026
+Daniel VM and © 2026 Grey Vixfen). It is a fork of the MIT-licensed bigpowers
+project (© 2026 Daniel VM). The works below retain their original copyright
+notices under their MIT licenses.
 
 ## skills/simple-english — ASD-STE100 Simplified Technical English synthesis
 
 The `simple-english` skill is a synthesis of three MIT-licensed skills. It
 combines the strongest parts of each into one canonical skill, rewritten to
-pass this repo's own STE gate and adapted to the bigpowers skill format.
+pass this repo's own STE gate and adapted to the truenorth-mcp skill format.
 
 ### AminBlg/SimpleEnglish
 

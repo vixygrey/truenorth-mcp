@@ -874,7 +874,7 @@ truenorth-mcp/                     # lean end-state
 ├── .github/                       # workflows, issue/PR templates, release matrix (§7)
 ├── .kiro/                         # spec workspace (this design lives here)
 ├── README.md CHANGELOG.md CONTRIBUTING.md CONTRIBUTORS.md
-├── NOTICES.md CONVENTIONS.md constitution.md LICENSE
+├── THIRD-PARTY-NOTICES.md CONVENTIONS.md constitution.md LICENSE
 ├── package.json                   # retooled for the npm wrapper
 ├── .releaserc.json
 └── .gitignore .gitattributes .gitmessage
@@ -905,7 +905,7 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 | `specs/state.yaml`, `release-plan.yaml`, `execution-status.yaml`, `ontology.yaml`, `product/`, `adr/`                                                                                     | Keep               | Load-bearing cockpit the runtime reads/writes (Resources layer, §3.1/§3.2)                                                                                                                                    |
 | `allure-results/`                                                                                                                                                                         | Gitignore          | Test/build artifact. Belongs in `.gitignore`, not version control                                                                                                                                             |
 | `skills/` (canonical `SKILL.md`)                                                                                                                                                          | Keep               | Source-of-truth for tiered rendering. Mirrors are dropped, sources retained                                                                                                                                   |
-| `README.md`, `LICENSE` (MIT, danielvm-git ©), `CHANGELOG.md`, `CONTRIBUTING.md`, `CONTRIBUTORS.md`, `NOTICES.md`, `CONVENTIONS.md`, `constitution.md`                                     | Keep               | Standard project docs (README already rewritten for truenorth. LICENSE retains upstream copyright)                                                                                                            |
+| `README.md`, `LICENSE` (MIT, danielvm-git ©), `CHANGELOG.md`, `CONTRIBUTING.md`, `CONTRIBUTORS.md`, `THIRD-PARTY-NOTICES.md`, `CONVENTIONS.md`, `constitution.md`                         | Keep               | Standard project docs (README already rewritten for truenorth. LICENSE retains upstream copyright)                                                                                                            |
 | `.github/`, `.gitignore`, `.gitattributes`, `.gitmessage`, `.releaserc.json`, `package.json`, `.kiro/`                                                                                    | Keep               | Standard VCS/CI config, retooled `package.json`, and the spec workspace                                                                                                                                       |
 
 ### §9.3. Sequencing & Safety
