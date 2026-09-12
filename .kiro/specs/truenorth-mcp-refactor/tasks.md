@@ -51,25 +51,25 @@ P5 (no dangling references).
     - Test denylist matching for `.env`, `*.pem`, `secret`, and `credentials` paths
     - _Requirements: 1.4, 1.5, 1.6, 1.7_
 
-- [ ] 3. Engine spec models and backward-compat validation
-  - [ ] 3.1 Implement `engine::spec` serde models
+- [x] 3. Engine spec models and backward-compat validation
+  - [x] 3.1 Implement `engine::spec` serde models
     - Model `state.yaml` (`active_epic`, `active_story`, `handoff.{next_skill,context,epic}`, `metrics.skill_timings`, `release.*`, `git.branch`) and `release-plan.yaml` (`release.*`, `build_order[]`, `done_epics_summary`) with a `#[serde(flatten)]` catch-all preserving unknown fields
     - Preserve a `bigpowers_version` key with its original value on read and write
     - Model `ontology.yaml` (`Ontology`, `Entity`, `Constraint`) per §3.2 with `schemars` derives
     - _Requirements: 9.1, 9.3, 9.4, 4.3_
 
-  - [ ] 3.2 Implement `engine::validate`
+  - [x] 3.2 Implement `engine::validate`
     - Validate `state.yaml` / `release-plan.yaml` reads and writes against the observed bigpowers schemas
     - Reject reads that fail validation with an error identifying the file and the failed constraint, leaving the file unmodified
     - Map legacy phase names: `Build→Execute`, `Verify→Review`, `Release/Sustain→Integrate`. Reject unrecognized legacy phase names with an identifying error
     - _Requirements: 9.1, 9.2, 9.5, 9.6_
 
-  - [ ]* 3.3 Write property test for state preservation
+  - [x]\* 3.3 Write property test for state preservation
     - **Property 3: State files stay schema-valid after any mutation**
     - Round-trip and mutate real `specs/*.yaml` fixtures. Assert every unknown field (including `bigpowers_version`) is preserved with original key and value and the post-state still validates
     - **Validates: Requirements 9.3, 9.4**
 
-  - [ ]* 3.4 Write unit tests for validation and phase mapping
+  - [x]\* 3.4 Write unit tests for validation and phase mapping
     - Test validation-failure read rejection and unchanged-file guarantee
     - Test legacy phase-name mapping and the unrecognized-phase rejection
     - Test ontology model round-trip against a fixture
