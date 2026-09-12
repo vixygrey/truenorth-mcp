@@ -1,0 +1,64 @@
+name: Feature request
+description: Propose a new capability or a change.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem first, then the change. Prefer a typed MCP tool or a
+        resource over a longer instruction file.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: State the problem this change solves.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the change and its interface.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: List the other approaches you considered and why you did not choose them.
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - engine
+        - tools
+        - resources
+        - distribution
+        - docs
+    validations:
+      required: true
+  - type: dropdown
+    id: property
+    attributes:
+      label: Correctness property touched
+      description: The design correctness property this change affects, if any.
+      options:
+        - "none"
+        - "P1 ontology gate"
+        - "P2 verify gate exit-0 semantics"
+        - "P3 state preservation"
+        - "P4 tier-transform invariant"
+        - "P5 no dangling references"
+    validations:
+      required: true
+  - type: textarea
+    id: compat
+    attributes:
+      label: Backward compatibility risk
+      description: State the risk to existing behavior, or write "none".
+    validations:
+      required: true

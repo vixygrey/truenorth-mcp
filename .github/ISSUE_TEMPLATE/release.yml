@@ -1,0 +1,46 @@
+name: Release checklist
+description: Track a release cut and its checks.
+title: "release: v"
+labels: ["distribution"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Track one release. The tag-driven workflow builds the four native targets,
+        publishes the per-platform packages, then the root wrapper.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The version to publish, without the leading v.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: highlights
+    attributes:
+      label: Highlights
+      description: List the notable changes in this release, one per line.
+    validations:
+      required: true
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight
+      options:
+        - label: "cargo fmt --check, clippy, and the full test suite pass on main."
+        - label: "The npm wrapper tests pass."
+        - label: "The version follows SemVer for the changes since the last release."
+        - label: "Breaking changes are documented, command first."
+    validations:
+      required: true
+  - type: checkboxes
+    id: publish
+    attributes:
+      label: Publish
+      options:
+        - label: "Tag v<version> is pushed."
+        - label: "All four per-platform packages published."
+        - label: "The root wrapper published after the platform packages."
+    validations:
+      required: false

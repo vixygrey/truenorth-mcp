@@ -1,0 +1,54 @@
+name: Compatibility issue
+description: Report a backward-compatibility break or a cockpit round-trip problem.
+title: "fix(compat): "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for a break in reading or writing existing cockpit files, a
+        dropped unknown field, or a legacy phase-name mapping problem.
+  - type: input
+    id: version
+    attributes:
+      label: truenorth-mcp version
+      placeholder: "0.1.0 or a commit SHA"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of break
+      options:
+        - "Unknown field dropped on write"
+        - "bigpowers_version not preserved"
+        - "Legacy phase name not mapped"
+        - "Cockpit file fails to parse"
+        - "Resource read returns stale or wrong content"
+        - "other"
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input document
+      description: Paste the cockpit file, or the relevant part. Do not paste secrets.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected round-trip
+      description: State what the file must look like after the operation.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual round-trip
+      description: State what the file looked like, or the error.
+      render: text
+    validations:
+      required: true

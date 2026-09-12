@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/vixygrey/truenorth-mcp/discussions
+    about: Ask a question or discuss an idea before you open an issue.
+  - name: Security report
+    url: https://github.com/vixygrey/truenorth-mcp/security/advisories/new
+    about: Report a vulnerability in private. Do not open a public issue.
