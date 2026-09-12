@@ -87,13 +87,13 @@ P5 (no dangling references).
     - Golden fixtures assert `full == md` identity. Assert reasoning/lean retain invariant and acceptance-criterion statements and remove only meta/guardrail (and, for lean, rationale/background/verbose examples within budget)
     - **Validates: Requirements 6.6, 6.7, 6.8**
 
-- [ ] 5. Engine gate runner (sandbox)
-  - [ ] 5.1 Implement `engine::gate_runner`
+- [x] 5. Engine gate runner (sandbox)
+  - [x] 5.1 Implement `engine::gate_runner`
     - `run_gate(cmd, cfg) -> GateOutcome` per §5: reject when execution disabled (evidence-only), allowlist check on the first token, spawn with `cwd` pinned under repo root and sanitized environment (drop denylist-matching values)
     - Wall-clock timeout (default 300s) with hard kill. Return `{passed:true}` only on exit code 0 within timeout. On non-zero exit, return an error with at most the final 2 KB of stderr plus remediation hints. On timeout, return a timeout error with reduce-scope/raise-timeout hints. On allowlist miss, return an error without executing
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-  - [ ]* 5.2 Write property/unit tests for the gate runner
+  - [x]\* 5.2 Write property/unit tests for the gate runner
     - **Property 2: verify_gate passes only on exit 0**
     - Using a fake command runner, cover pass (exit 0), fail (non-zero, stderr tail at most 2 KB), timeout (hard kill), allowlist-reject (no execution), and evidence-only paths
     - Assert `cwd` pinning under repo root and environment sanitization of denylist-matching values
