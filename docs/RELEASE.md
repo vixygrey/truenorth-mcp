@@ -81,7 +81,7 @@ docs: update README with examples
 feat(develop-tdd)!: redesign test structure  # Major bump (BREAKING)
 ```
 
-See `.github/CONVENTIONAL-COMMITS.md` for full format.
+See `.github/COMMIT_TEMPLATE.md` for full format.
 
 ## Manual Release (Local)
 
