@@ -53,7 +53,7 @@ are pointers for implementers to verify at build time, not verified guarantees._
 
 ---
 
-# Part I: High-Level Design
+## Part I: High-Level Design
 
 ## Architecture
 
@@ -97,7 +97,7 @@ graph TD
 - The governed project is decoupled from the server's own language. Gate execution and
   ontology scanning treat target code as opaque text/AST by default.
 
-### Component Diagram
+#### Component Diagram
 
 ```mermaid
 graph LR
@@ -226,9 +226,9 @@ sequenceDiagram
     S--)A: resources/updated truenorth://state
 ```
 
-### Key Architectural Decisions (ADR-style)
+#### Key Architectural Decisions (ADR-style)
 
-#### ADR-1 (DECISION POINT): Verify-gate execution strategy, run locally by default
+##### ADR-1 (DECISION POINT): Verify-gate execution strategy, run locally by default
 
 **Context.** `truenorth_verify_gate` must confirm that a phase's quality bar is met. The
 options are (a) execute the project's verify/test command _inside the server_ and judge
@@ -247,7 +247,7 @@ the model, observed the exit code. Sandboxing bounds the blast radius.
 **Consequences.** The server needs a subprocess sandbox and an allowlist config. Hosted
 deployments must be able to disable execution cleanly (opt-out mode).
 
-#### ADR-2 (DECISION POINT): Ontology analysis strategy, regex heuristic baseline + AST plug-in
+##### ADR-2 (DECISION POINT): Ontology analysis strategy, regex heuristic baseline + AST plug-in
 
 **Context.** `truenorth_verify_ontology` scans target-project code for `prohibited_aliases`
 and constraint violations. Target projects may be any language. Options: (a) full AST
@@ -266,19 +266,19 @@ plug-ins add precision where a grammar exists without blocking the baseline.
 **Consequences.** Regex has false positives/negatives (comments, strings). Remediation
 messages must be actionable and cite the constraint id so a human can override.
 
-#### ADR-3: Rust rewrite over TypeScript
+##### ADR-3: Rust rewrite over TypeScript
 
 Compiled single-file binary, ~5MB per platform, no Node runtime dependency at execution
 time, strong typing for the YAML cockpit via `serde`, and `schemars`-derived tool schemas.
 Trade-off: cross-compilation complexity, handled by a CI matrix (Part II).
 
-#### ADR-4: Server is a syncing peer, not sole writer
+##### ADR-4: Server is a syncing peer, not sole writer
 
 Disk stays authoritative and co-editable. The server reads live, writes through, and
 notifies. This removes the need for `sync-skills.sh` (skills/resources are served
 dynamically at runtime) while keeping humans and other tools first-class editors.
 
-#### ADR-5: Distribution, recommend manual platform packages
+##### ADR-5: Distribution, recommend manual platform packages
 
 Two viable npm distribution paths (detailed in Part II §7). We **recommend the
 biome/oxlint-style manual platform packages** under `optionalDependencies` over a
@@ -287,11 +287,11 @@ locked-down CI and offline installs) and lets pnpm resolve only the matching bin
 
 ---
 
-# Part II: Low-Level Design
+## Part II: Low-Level Design
 
-## §1. Rust Crate Module Layout
+### §1. Rust Crate Module Layout
 
-```
+```text
 truenorth-mcp/                     # Rust crate (replaces bigpowers-mcp/)
 ├── Cargo.toml                     # rmcp, serde, serde_yaml, schemars, tokio, tree-sitter (opt)
 ├── src/
@@ -325,7 +325,7 @@ truenorth-mcp/                     # Rust crate (replaces bigpowers-mcp/)
     └── packages/                  # @truenorth-mcp/<platform> stubs
 ```
 
-### Config (ports `config.ts`)
+#### Config (ports `config.ts`)
 
 ```rust
 /// Resolve repo root: TRUENORTH_ROOT env → cwd → parent-of-package.
@@ -349,7 +349,7 @@ pub struct SandboxConfig {
 }
 ```
 
-### Entrypoint
+#### Entrypoint
 
 ```rust
 // src/index.rs
@@ -364,12 +364,12 @@ async fn main() -> anyhow::Result<()> {
 }
 ```
 
-## §2. Per-Tool JSON-Schema Input Contracts
+### §2. Per-Tool JSON-Schema Input Contracts
 
 Schemas are derived from `schemars`-annotated structs and surfaced through rmcp's
 `Parameters<T>` wrapper. Each contract is shown as the derived JSON Schema.
 
-### `truenorth_advance_phase`
+#### `truenorth_advance_phase`
 
 ```rust
 #[derive(Deserialize, JsonSchema)]
@@ -398,7 +398,7 @@ pub enum Phase { Discover, Design, Plan, Execute, Review, Integrate }
 }
 ```
 
-### `truenorth_record_task`
+#### `truenorth_record_task`
 
 ```json
 {
@@ -416,7 +416,7 @@ pub enum Phase { Discover, Design, Plan, Execute, Review, Integrate }
 }
 ```
 
-### `truenorth_verify_gate` (ADR-1)
+#### `truenorth_verify_gate` (ADR-1)
 
 ```json
 {
@@ -435,7 +435,7 @@ pub enum Phase { Discover, Design, Plan, Execute, Review, Integrate }
 
 Result: `{ "passed": true }` or `{ "error": "...", "remediation_hints": ["..."] }`.
 
-### `truenorth_tdd_cycle`
+#### `truenorth_tdd_cycle`
 
 ```json
 {
@@ -449,7 +449,7 @@ Result: `{ "passed": true }` or `{ "error": "...", "remediation_hints": ["..."] 
 }
 ```
 
-### `truenorth_generate_ontology`
+#### `truenorth_generate_ontology`
 
 ```json
 {
@@ -467,7 +467,7 @@ Result: `{ "passed": true }` or `{ "error": "...", "remediation_hints": ["..."] 
 }
 ```
 
-### `truenorth_verify_ontology`
+#### `truenorth_verify_ontology`
 
 ```json
 {
@@ -482,7 +482,7 @@ Result: `{ "passed": true }` or `{ "error": "...", "remediation_hints": ["..."] 
 }
 ```
 
-### `get_skill` (tiered)
+#### `get_skill` (tiered)
 
 ```json
 {
@@ -498,7 +498,7 @@ Result: `{ "passed": true }` or `{ "error": "...", "remediation_hints": ["..."] 
 }
 ```
 
-### Legacy catalog tools (ported verbatim in contract)
+#### Legacy catalog tools (ported verbatim in contract)
 
 `index_skills{}`, `read_skill{name}`, `search_skills{query, exact?}`,
 `build_skill_graph{force?}`, `read_graph{}`, `search_nodes{query}`,
@@ -565,11 +565,11 @@ Example emitted file:
 
 ```yaml
 version: '1'
-domain: order-fulfilment
+domain: order-fulfillment
 last_updated: 2026-07-26T00:00:00Z
 entities:
   - name: Order
-    description: A customer purchase moving through fulfilment.
+    description: A customer purchase moving through fulfillment.
     primary_key: order_id
     invariants:
       - 'total_cents >= 0'
@@ -588,7 +588,7 @@ constraints:
     rule: 'Boolean state flags (is_*) are prohibited; model states explicitly.'
 ```
 
-## §4. Tier-Transform Algorithms
+### §4. Tier-Transform Algorithms
 
 `TRUENORTH_TIER` env sets the default. `get_skill(tier=...)` overrides per call.
 
@@ -605,7 +605,7 @@ pub fn render_skill(md: &str, tier: Tier) -> String {
 }
 ```
 
-### `strip_meta_steps` (reasoning tier)
+#### `strip_meta_steps` (reasoning tier)
 
 Targets native reasoning models (o1/o3, DeepSeek-R1) that do not need hand-held
 chain-of-thought scaffolding. Ports the intent of the TS `stripMetaSteps`.
@@ -627,7 +627,7 @@ ALGORITHM strip_meta_steps(md) -> String
   END
 ```
 
-### `compress_for_local_context` (lean tier)
+#### `compress_for_local_context` (lean tier)
 
 Targets local 7B to 70B weights with tight context budgets. Ports `compressForLocalContext`.
 
@@ -646,7 +646,7 @@ ALGORITHM compress_for_local_context(md) -> String
 Both transforms are pure functions (input md maps to output md). They have no I/O and are
 unit-testable with golden fixtures.
 
-## §5. Gate Execution Sandboxing (ADR-1)
+### §5. Gate Execution Sandboxing (ADR-1)
 
 ```rust
 pub struct GateOutcome { pub passed: bool, pub error: Option<String>,
@@ -681,9 +681,9 @@ Sandbox properties:
 - binary allowlist
 - environment sanitized (drop tokens/secrets matching the denylist)
 
-## §6. Ontology Scan + Resource Notification
+### §6. Ontology Scan + Resource Notification
 
-### `OntologyAnalyzer` trait (ADR-2)
+#### `OntologyAnalyzer` trait (ADR-2)
 
 ```rust
 pub trait OntologyAnalyzer {
@@ -713,12 +713,12 @@ ALGORITHM verify_ontology(scope) -> Result
 
 Formatted error example:
 
-```
+```text
 Error [Ontology Gate C-02]: 'is_deleted' violates specs/ontology.yaml.
 Use 'deleted_at: Option<DateTime<Utc>>' instead.  (src/models/order.rs:42)
 ```
 
-### Resource notification (write-through-notify)
+#### Resource notification (write-through-notify)
 
 ```mermaid
 sequenceDiagram
@@ -739,9 +739,9 @@ Tool writes follow the same path: a tool mutates the file, the watcher (or an ex
 post-write hook) fires `resources/updated`. Debounce coalesces rapid edits. Validation
 failures surface as a resource read error, not a crash.
 
-## §7. npm / pnpm Binary Distribution
+### §7. npm / pnpm Binary Distribution
 
-### Root wrapper `npm/package.json`
+#### Root wrapper `npm/package.json`
 
 ```json
 {
@@ -773,7 +773,7 @@ pnpm evaluates `os`/`cpu` and downloads **only** the ~5MB matching binary.
 `windows-x64` is an **open decision** (stdio + path semantics + `.exe` naming need a pass
 before committing).
 
-### `bin/truenorth.js` runner
+#### `bin/truenorth.js` runner
 
 ```js
 #!/usr/bin/env node
@@ -794,7 +794,7 @@ process.exit(res.status ?? 1);
 MCP client config uses `command: "pnpm", args: ["dlx", "truenorth-mcp"]`.
 `npx truenorth-mcp init` scaffolds the `specs/` cockpit from the crate's template.
 
-### Distribution options (ADR-5)
+#### Distribution options (ADR-5)
 
 | Option                                        | Mechanism                                                                    | Pros                                                                                       | Cons                                                                        |
 | --------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
@@ -804,7 +804,7 @@ MCP client config uses `command: "pnpm", args: ["dlx", "truenorth-mcp"]`.
 **Recommendation: Option A.** It avoids postinstall side effects and integrates cleanly
 with pnpm's platform resolution.
 
-### CI cross-compile matrix (GitHub Actions, on release tags)
+#### CI cross-compile matrix (GitHub Actions, on release tags)
 
 ```yaml
 strategy:
@@ -823,7 +823,7 @@ strategy:
 #        → publish root wrapper last
 ```
 
-## §8. Backward Compatibility & Migration
+### §8. Backward Compatibility & Migration
 
 - **Read/validate existing schemas.** `engine::spec` models `state.yaml` and
   `release-plan.yaml` with the observed shapes (for example `active_epic`, `active_story`,
@@ -842,7 +842,7 @@ strategy:
   4. Optionally regenerate skills at `lean`/`reasoning` tiers. `full` remains the source.
   5. Legacy catalog tools keep answering existing flows during the transition.
 
-## §9. Repository Structure & Cleanup
+### §9. Repository Structure & Cleanup
 
 The fork inherits a large upstream surface built for a **bash + markdown**
 sync/generation pipeline and a fan-out of per-harness skill mirrors. Under the MCP-first
@@ -852,9 +852,9 @@ target layout and an explicit disposition inventory. Cleanup is tied to the migr
 path in §8: removals that back live behavior happen only **after** the Rust crate + npm
 wrapper reach parity.
 
-### §9.1. Target Repository Layout
+#### §9.1. Target Repository Layout
 
-```
+```text
 truenorth-mcp/                     # lean end-state
 ├── Cargo.toml                     # Rust crate (§1)
 ├── src/                           # runtime: resources/, tools/, engine/ (§1)
@@ -882,7 +882,7 @@ truenorth-mcp/                     # lean end-state
 
 Everything not in this tree is upstream process exhaust or superseded by the runtime.
 
-### §9.2. Disposition Inventory
+#### §9.2. Disposition Inventory
 
 Dispositions: **Remove** (delete, staged in git for reversibility), **Consolidate** (fold
 into the runtime or a single source-of-truth), **Keep** (load-bearing or standard),
@@ -898,9 +898,9 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 | `kernel/` (src+templates), `profiles/` (`node-service.md`, `solo-git.md`, `swift.md`, `typescript-vue.md`), `extensions/`, `hooks/` (`pre/`, `pre-tool-use.sh`), `dashboard/`, `website/` | Remove             | Upstream infra with no runtime counterpart. The runtime governs projects via tools/resources, not kernel templates or web UI                                                                                  |
 | `bin/` (`bigpowers.js`, `bigspec`, `init.js`, `setup.js`), `index.js`                                                                                                                     | Consolidate        | Superseded by `npm/bin/truenorth.js` runner + `init` scaffold (§7)                                                                                                                                            |
 | `requirements.txt`                                                                                                                                                                        | Remove             | Python dependency manifest for the retired script pipeline                                                                                                                                                    |
-| `skills-lock.json`, `SKILL-INDEX.md`, `templates/`                                                                                                                                        | Remove             | Auto-generated index/lock + upstream templates. Regenerable/obsolete under dynamic `get_skill` / `index_skills`                                                                                               |
+| `skills-lock.json`, `SKILL-INDEX.md`, `templates/`                                                                                                                                        | Remove             | Auto-generated index/lock + upstream templates. Regeneratable/obsolete under dynamic `get_skill` / `index_skills`                                                                                             |
 | `specs/IMPACT-*.md`, `REBORN-*.md`, `PLAN-*.md`, `RESEARCH-*.md`, `STOCKTAKE-*.md`, `TRACEABILITY*.md`, `*_LATEST.md`                                                                     | Remove             | Upstream process artifacts. Not read by the runtime                                                                                                                                                           |
-| `specs/*.json` side-cars (`blind-spots`, `drift-report`, `skill-graph`, `receipts`, `rule-matrix`, `traceability-matrix`, `import-boundaries`)                                            | Remove             | Regenerable graph/report state. The graph is rebuilt on demand by `build_skill_graph`, not persisted upstream-style                                                                                           |
+| `specs/*.json` side-cars (`blind-spots`, `drift-report`, `skill-graph`, `receipts`, `rule-matrix`, `traceability-matrix`, `import-boundaries`)                                            | Remove             | Regeneratable graph/report state. The graph is rebuilt on demand by `build_skill_graph`, not persisted upstream-style                                                                                         |
 | `specs/adr-wiki/ epics-wiki/ skills-wiki/ codebase-wiki/ conventions-wiki/`                                                                                                               | Remove             | Generated wiki output from `generate-*-wiki.sh`. Obsolete without the generator pipeline                                                                                                                      |
 | `specs/state.yaml`, `release-plan.yaml`, `execution-status.yaml`, `ontology.yaml`, `product/`, `adr/`                                                                                     | Keep               | Load-bearing cockpit the runtime reads/writes (Resources layer, §3.1/§3.2)                                                                                                                                    |
 | `allure-results/`                                                                                                                                                                         | Gitignore          | Test/build artifact. Belongs in `.gitignore`, not version control                                                                                                                                             |
@@ -908,7 +908,7 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 | `README.md`, `LICENSE` (MIT, danielvm-git ©), `CHANGELOG.md`, `CONTRIBUTING.md`, `CONTRIBUTORS.md`, `THIRD-PARTY-NOTICES.md`, `CONVENTIONS.md`, `constitution.md`                         | Keep               | Standard project docs (README already rewritten for truenorth. LICENSE retains upstream copyright)                                                                                                            |
 | `.github/`, `.gitignore`, `.gitattributes`, `.gitmessage`, `.releaserc.json`, `package.json`, `.kiro/`                                                                                    | Keep               | Standard VCS/CI config, retooled `package.json`, and the spec workspace                                                                                                                                       |
 
-### §9.3. Sequencing & Safety
+#### §9.3. Sequencing & Safety
 
 - **Parity before removal.** `bigpowers-mcp/` and any `scripts/` referenced by a retained
   skill must be removed **only after** the Rust crate + npm wrapper reach parity, per the
@@ -916,10 +916,10 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 - **Reversible deletions.** Deletions are destructive. Stage each removal batch as its own
   git commit so cleanup is reversible via history rather than an atomic mass delete.
 - **Artifacts, not source.** `allure-results/` is gitignored rather than tracked.
-  `SKILL-INDEX.md` and the skill-graph / JSON side-cars are regenerable and obsolete under
+  `SKILL-INDEX.md` and the skill-graph / JSON side-cars are regeneratable and obsolete under
   dynamic serving, so they are removed rather than re-synced.
 
-### §9.4. What Replaces the Removed Machinery
+#### §9.4. What Replaces the Removed Machinery
 
 | Removed                                                             | Replaced by                                                                                               |
 | ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -941,6 +941,8 @@ entity alias `a ∈ ontology.prohibited_aliases`, if `a` appears as an identifie
 then `verify_ontology` returns at least one `Violation` citing the owning constraint id.
 Formally: `∀ f, a ∈ prohibited_aliases : occurs(a, f) ⟹ ∃ v ∈ verify_ontology().violations`.
 
+> **Validates: Requirements 4.5, 4.6**
+
 ### Property 2: verify_gate passes only on exit 0
 
 `truenorth_verify_gate(mode=execute)`
@@ -949,6 +951,8 @@ code `0` within the timeout. Timeouts, non-zero exits, and allowlist rejections 
 yield `{error, remediation_hints}`. The model can never induce a pass without a real
 exit-0 observation by the server.
 
+> **Validates: Requirements 3.2, 3.3, 3.4, 3.5**
+
 ### Property 3: State files stay schema-valid after any mutation
 
 For every tool `t` that
@@ -956,12 +960,16 @@ writes a cockpit file and every valid pre-state `S`, applying `t` yields a post-
 `S'` that still validates against the existing bigpowers schemas (via
 `engine::validate`), and every unknown field present in `S` is preserved in `S'`.
 
+> **Validates: Requirements 9.3**
+
 ### Property 4: Tier transforms preserve invariants
 
 For every skill `md` and tier
 `∈ {reasoning, lean}`, `render_skill(md, tier)` never removes or alters directive
 content that encodes invariants or acceptance criteria. Only meta/guardrail scaffolding
 is stripped or compressed. `render_skill(md, full) == md` (identity).
+
+> **Validates: Requirements 6.6, 6.7, 6.8**
 
 ### Property 5: No dangling references after cleanup
 
@@ -971,6 +979,8 @@ reads), after the §9 cleanup `p` still resolves on disk. Formally:
 `∀ p ∈ referenced_paths(retained_skills ∪ runtime) : exists(p)`. Removals in §9.2 target
 only paths in the unreferenced upstream-exhaust set, so cleanup never breaks a live
 reference.
+
+> **Validates: Requirements 10.7**
 
 ## Error Handling
 

@@ -32,8 +32,6 @@ body:
         - label: "The npm wrapper tests pass."
         - label: "The version follows SemVer for the changes since the last release."
         - label: "Breaking changes are documented, command first."
-    validations:
-      required: true
   - type: checkboxes
     id: publish
     attributes:
@@ -42,5 +40,3 @@ body:
         - label: "Tag v<version> is pushed."
         - label: "All four per-platform packages published."
         - label: "The root wrapper published after the platform packages."
-    validations:
-      required: false
