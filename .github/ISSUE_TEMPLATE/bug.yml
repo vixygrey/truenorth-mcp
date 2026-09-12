@@ -1,0 +1,77 @@
+name: Bug report
+description: Report a defect in the runtime, the wrapper, or the tools.
+title: "fix: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Fill in each field. Do not paste secrets.
+  - type: input
+    id: version
+    attributes:
+      label: truenorth-mcp version
+      description: The version or the commit SHA you ran.
+      placeholder: "0.1.0 or a1b2c3d"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: State the defect in one sentence.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the exact steps, commands, or tool calls.
+      placeholder: |
+        1. Run the command.
+        2. Give the input.
+        3. Observe the result.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: State what must happen.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: State what happened. Paste the exact error message.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - engine
+        - tools
+        - resources
+        - distribution
+        - docs
+        - unknown
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and architecture
+      placeholder: "macOS 14 arm64, Ubuntu 22.04 x86_64"
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client or harness
+      placeholder: "The client that drove the server."
+    validations:
+      required: false
