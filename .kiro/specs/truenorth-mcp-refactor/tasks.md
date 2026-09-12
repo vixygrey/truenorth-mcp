@@ -130,18 +130,18 @@ P5 (no dangling references).
     - Assert two edits within the debounce window coalesce into a single notification
     - _Requirements: 1.8, 5.6_
 
-- [ ] 8. Skills tools: tiered get_skill and ported legacy catalog
+- [x] 8. Skills tools: tiered get_skill and ported legacy catalog
   - [x] 8.1 Implement `get_skill` (tiered) in `tools/skills.rs`
     - Require `name`, accept optional `tier`. Resolve effective tier from the per-call arg, else `TRUENORTH_TIER`, else `full`
     - Reject unrecognized `tier` values and unresolved `name` without returning a payload. Apply `engine::tier` rendering
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 8.2 Port the legacy catalog tools in `tools/skills.rs`
+  - [x] 8.2 Port the legacy catalog tools in `tools/skills.rs`
     - `index_skills`, `read_skill`, `search_skills`, `build_skill_graph`, `read_graph`, `search_nodes`, `open_nodes`, `get_dependencies`, `get_git_context`, `validate_skill`, exposed concurrently with the active tools
     - `read_skill` parses frontmatter/headings/sections and errors on missing/unresolved/parse-failure. `search_skills` uses case-insensitive substring (whole-string when `exact`) with empty-query error and empty-result set. `get_git_context` action status|log|diff (default status) with unsupported-action error. `build_skill_graph` builds and persists the graph queried by `read_graph`/`search_nodes`/`open_nodes`, which error when no graph is persisted
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9_
 
-  - [ ]* 8.3 Write unit tests for skills and legacy catalog tools
+  - [x]\* 8.3 Write unit tests for skills and legacy catalog tools
     - Test tier resolution precedence and both error paths of `get_skill`
     - Test `read_skill`, `search_skills`, `get_git_context`, and graph tools including their error paths
     - _Requirements: 6.2, 6.3, 6.4, 6.5, 7.3, 7.4, 7.5, 7.7, 7.9_
