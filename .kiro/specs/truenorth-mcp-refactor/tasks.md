@@ -189,11 +189,11 @@ P5 (no dangling references).
     - Test generate invalid-input, write-failure, and already-exists error paths. Test verify default-scope, empty-scope pass, and no-violation pass
     - _Requirements: 4.1, 4.2, 4.4, 4.7, 4.8, 4.10, 9.9, 9.10_
 
-- [ ] 13. Checkpoint - Make sure that all engine and tool tests pass
+- [x] 13. Checkpoint - Make sure that all engine and tool tests pass
   - Make sure that all tests pass. Ask the user if questions arise.
 
 - [ ] 14. Resources layer: cockpit and ontology resources
-  - [ ] 14.1 Implement `resources/cockpit.rs` and `resources/ontology.rs`
+  - [x] 14.1 Implement `resources/cockpit.rs` and `resources/ontology.rs`
     - Serve `truenorth://state` (backed by `state.yaml`), `truenorth://cockpit` (release plan + product boundary), `truenorth://conventions` (coding standards), and `truenorth://ontology` (`ontology.yaml`)
     - Read current on-disk content on `resources/read`, treating disk as source of truth. Support `resources/list`, `resources/read`, and subscribe
     - _Requirements: 5.1, 5.2, 5.5_
@@ -202,7 +202,7 @@ P5 (no dangling references).
     - Emit `notifications/resources/updated` on watcher-detected disk change and on tool-driven write. On YAML parse/schema-validation failure, return a resource read error identifying the file and failure, retain the last successfully parsed content, and continue serving other resources without terminating
     - _Requirements: 5.3, 5.4, 5.7_
 
-  - [ ]* 14.3 Write unit tests for resources
+  - [x]\* 14.3 Write unit tests for resources
     - Test on-disk-read source-of-truth behavior and the parse-failure read-error (non-crash, last-good retention) path
     - _Requirements: 5.5, 5.7_
 
