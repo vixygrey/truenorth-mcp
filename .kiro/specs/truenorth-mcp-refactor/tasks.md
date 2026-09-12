@@ -158,13 +158,13 @@ P5 (no dangling references).
     - Test successful `state.yaml` write and `release-plan.yaml` append
     - _Requirements: 2.2, 2.3, 2.4, 2.5, 2.11, 2.12_
 
-- [ ] 10. Gate tool: verify_gate
-  - [ ] 10.1 Implement `tools/gates.rs`
+- [x] 10. Gate tool: verify_gate
+  - [x] 10.1 Implement `tools/gates.rs`
     - `truenorth_verify_gate` (schemars contract: required `phase`, optional `test_evidence`, `mode` execute|evidence default execute) delegating to `engine::gate_runner`
     - Default execute mode runs the project verify/test command in the sandbox. Evidence mode skips execution and requires `test_evidence`, and rejects the call when it is absent
     - _Requirements: 3.1, 3.7, 3.8_
 
-  - [ ]* 10.2 Write unit tests for verify_gate
+  - [x]\* 10.2 Write unit tests for verify_gate
     - Test default-execute delegation, evidence-mode opt-out, and the missing-evidence rejection
     - _Requirements: 3.1, 3.7, 3.8_
 
