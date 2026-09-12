@@ -1,8 +1,6 @@
 ---
 name: slice-tasks
-description: "PLANNING SPINE STEP 2 of 3 — Slice the work: break a scoped PRD into vertical-slice stories in specs/epics/. Use after scope-work (step 1), before plan-work (step 3). Not a substitute for scope-work or plan-work."
-model: sonnet
-effort: standard
+description: 'Planning spine step 2 of 3. Slice the work: break a scoped PRD into vertical-slice stories in the epic capsules. Use it after scope-work, before plan-work. Not a substitute for scope-work or plan-work.'
 ---
 
 # story: e45s29
@@ -22,9 +20,11 @@ Produce **epic capsule story tasks** in `specs/epics/eNN-slug/` — vertical sli
 ## Process
 
 0. **Read planning-context.yaml** — If `specs/planning-context.yaml` exists, read it first:
+
    ```bash
    test -f specs/planning-context.yaml && echo "Context found" || echo "No context — starting fresh"
    ```
+
    Use `feature_name`, `constraints`, and `out_of_scope` to inform slice boundaries. `key_decisions` in the file may constrain how stories are cut (e.g., "no external deps" constrains slice 2). If absent, proceed normally.
 
 1. **Read context** — Read `specs/product/SCOPE_LATEST.yaml` and/or `specs/release-plan.yaml`. Understand what the epic delivers end-to-end.
@@ -64,6 +64,5 @@ Produce **epic capsule story tasks** in `specs/epics/eNN-slug/` — vertical sli
 ## Verify
 
 → verify: `[ "$(find specs/epics -name '*-tasks.yaml' 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]`
-
 
 <!-- story: e03s01 -->

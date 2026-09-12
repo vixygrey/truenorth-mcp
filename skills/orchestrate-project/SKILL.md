@@ -1,28 +1,21 @@
 ---
 name: orchestrate-project
-model: sonnet
-effort: standard
-description: Meta-skill that enforces the 6-phase core loop (discover → elaborate → plan → build → verify → release) with hard gates. Use to coordinate multi-phase projects with guaranteed quality checkpoints. One-time command for the entire project lifecycle.
+description: 'A meta-skill that enforces the six-phase core loop (discover, elaborate, plan, build, verify, release) with hard gates. Use it to coordinate a multi-phase project with quality checkpoints across the lifecycle.'
 ---
 
 # Orchestrate
-> **HARD GATE** — **HARD GATE** — Do NOT invoke orchestrate-project unless you have a clear multi-phase workflow. Single-skill tasks should use dedicated skills instead. Orchestrate is for complex, multi-stage work that requires coordination across phases.
 
+> **HARD GATE**: Do NOT invoke orchestrate-project without a clear multi-phase workflow. A single-skill task uses a dedicated skill instead. Orchestrate is for complex, multi-stage work that needs coordination across phases.
 
 The orchestrate skill coordinates projects through a prescriptive 6-phase core loop with hard gates, ensuring consistent quality and preventing scope creep.
 
-## Quick Start
+## Quick start
 
-```bash
-# Start a new project (initializes specs/ YAML cockpit and begins discover phase)
-claude /orchestrate --mode standard
-
-# Or resume an existing project at the current phase
-claude /orchestrate --mode standard --resume
-
-# For low-risk scenarios (hotfixes, refactors on well-tested code)
-claude /orchestrate --mode fast-track
-```
+- Start a new project in standard mode. This initializes the `specs/` cockpit and
+  begins the discover phase.
+- Resume an existing project at the current phase.
+- For a low-risk scenario (a hotfix, a refactor on well-tested code), use
+  fast-track mode.
 
 ## The 6-Phase Core Loop
 
@@ -36,6 +29,7 @@ claude /orchestrate --mode fast-track
 ### Checkpoint / resume
 
 Track progress via `specs/state.yaml` `project_cycle`:
+
 - `project_cycle.current_phase`: current phase (1–6)
 - `project_cycle.completed_phases`: completed phase numbers
 - `handoff.next_skill`: skill for the current phase
@@ -45,13 +39,19 @@ See [REFERENCE.md](REFERENCE.md) for detailed phase specifications and gate type
 
 ## How Orchestrate Works
 
-1. **Maintains state.yaml** — Tracks current phase, `active_epic`, `active_flow`, decisions, risks.
-2. **Spawns appropriate skills** — Routes by `model:` frontmatter. Decisions pass only via `specs/state.yaml` `handoff` between spawns.
-3. **Methodology lenses** — If `specs/tech-architecture/e*-TEST_PLAN_LATEST.md` or ADRs exist, apply at phase gates.
-4. **Enforces gates** — Hard stops if success criteria not met.
-5. **The Gatekeeper** — Between stories in BUILD: read `specs/execution-status.yaml`; previous story must be `done` before starting the next; use `build-epic` for the 8-step epic cycle.
-6. **Pauses for confirmation** — After each phase, asks "Ready to proceed?".
-7. **Snapshots** — `bash scripts/bp-yaml-snapshot.sh` before major release cuts.
+1. **Maintains the state**: tracks the current phase, `active_epic`, `active_flow`,
+   decisions, and risks in `specs/state.yaml`.
+2. **Routes to the phase skill**: selects the skill for the current phase. A
+   decision passes only through the `handoff` block in `specs/state.yaml` between
+   steps.
+3. **Applies methodology lenses**: when a test plan or an ADR exists, apply it at
+   the phase gates.
+4. **Enforces the gates**: hard stops when a success criterion is not met.
+5. **The gatekeeper**: between stories in the build phase, read the execution
+   status. The previous story must be `done` before the next starts. Use
+   `build-epic` for the epic cycle.
+6. **Pauses for confirmation**: after each phase, ask "ready to proceed?".
+7. **Snapshots**: take a cockpit snapshot before a major release cut.
 
 ## Orchestration Modes
 
@@ -63,11 +63,7 @@ See [REFERENCE.md](REFERENCE.md) for full mode behaviors.
 
 ## Verification
 
-All phases complete with artifacts:
-```bash
-verify: test -f specs/state.yaml && test -f specs/release-plan.yaml && test -f specs/product/SCOPE_LATEST.yaml && ls specs/epics/*.yaml 1>/dev/null && echo "✅ All phases complete"
-```
-
-
+Confirm every phase completed with its artifacts: the state, the release plan, the
+product scope, and the epic capsules all exist.
 
 <!-- story: e05s03 -->
