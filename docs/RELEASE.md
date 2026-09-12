@@ -130,7 +130,6 @@ chore: update docs [skip ci]
 - `package.json` — version source of truth
 - `CHANGELOG.md` — auto-generated release notes
 
-See `.github/SEMANTIC-RELEASE.md` for detailed setup.
 
 ## v3.0 Launch Note — Semantic Bridge
 
