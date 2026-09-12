@@ -75,14 +75,14 @@ P5 (no dangling references).
     - Test ontology model round-trip against a fixture
     - _Requirements: 9.1, 9.2, 9.5, 9.6, 4.3_
 
-- [ ] 4. Engine tier transforms
-  - [ ] 4.1 Implement `engine::tier`
+- [x] 4. Engine tier transforms
+  - [x] 4.1 Implement `engine::tier`
     - `render_skill(md, tier)` with `Full` = byte-for-byte identity
     - `strip_meta_steps` (reasoning): remove meta/guardrail scaffolding and Anthropic-style XML wrappers while retaining every heading and invariant/acceptance-criterion statement
     - `compress_for_local_context` (lean): drop rationale/background/verbose-example sections, convert headings to imperative bullets, dedupe directives, and truncate to the configured lean token budget while retaining every invariant/acceptance-criterion statement
     - _Requirements: 6.6, 6.7, 6.8_
 
-  - [ ]* 4.2 Write property/golden test for tier transforms
+  - [x]\* 4.2 Write property/golden test for tier transforms
     - **Property 4: Tier transforms preserve invariants**
     - Golden fixtures assert `full == md` identity. Assert reasoning/lean retain invariant and acceptance-criterion statements and remove only meta/guardrail (and, for lean, rationale/background/verbose examples within budget)
     - **Validates: Requirements 6.6, 6.7, 6.8**
