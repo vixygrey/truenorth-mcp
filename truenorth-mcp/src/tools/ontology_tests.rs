@@ -29,8 +29,8 @@ fn seed_ontology_file(root: &Path) {
 #[test]
 fn seed_builds_valid_ontology() {
     // Requirement 4.3: entities and baseline constraints are present.
-    let ontology = seed_ontology("order-fulfilment", &["src/order.rs".to_string()]);
-    assert_eq!(ontology.domain, "order-fulfilment");
+    let ontology = seed_ontology("order-fulfillment", &["src/order.rs".to_string()]);
+    assert_eq!(ontology.domain, "order-fulfillment");
     assert_eq!(ontology.entities.len(), 1);
     assert_eq!(ontology.entities[0].name, "order");
     assert_eq!(ontology.constraints.len(), 2);

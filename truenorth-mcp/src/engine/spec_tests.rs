@@ -166,11 +166,11 @@ fn ontology_roundtrips_against_fixture() {
     // Requirement 4.3: the ontology model round-trips against the design's example.
     let yaml = r#"
 version: '1'
-domain: order-fulfilment
+domain: order-fulfillment
 last_updated: 2026-07-26T00:00:00Z
 entities:
   - name: Order
-    description: A customer purchase moving through fulfilment.
+    description: A customer purchase moving through fulfillment.
     primary_key: order_id
     invariants:
       - 'total_cents >= 0'
@@ -188,7 +188,7 @@ constraints:
     rule: 'Boolean state flags (is_*) are prohibited; model states explicitly.'
 "#;
     let ontology: Ontology = serde_yaml::from_str(yaml).expect("parse ontology fixture");
-    assert_eq!(ontology.domain, "order-fulfilment");
+    assert_eq!(ontology.domain, "order-fulfillment");
     assert_eq!(ontology.entities.len(), 1);
     assert_eq!(
         ontology.entities[0].prohibited_aliases,

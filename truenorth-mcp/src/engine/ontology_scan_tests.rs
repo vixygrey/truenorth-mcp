@@ -17,11 +17,11 @@ use std::collections::BTreeMap;
 fn order_ontology() -> Ontology {
     Ontology {
         version: "1".to_string(),
-        domain: "order-fulfilment".to_string(),
+        domain: "order-fulfillment".to_string(),
         last_updated: "2026-07-26T00:00:00Z".to_string(),
         entities: vec![Entity {
             name: "Order".to_string(),
-            description: "A customer purchase moving through fulfilment.".to_string(),
+            description: "A customer purchase moving through fulfillment.".to_string(),
             primary_key: "order_id".to_string(),
             invariants: vec!["total_cents >= 0".to_string()],
             states: vec!["draft".to_string(), "placed".to_string()],
