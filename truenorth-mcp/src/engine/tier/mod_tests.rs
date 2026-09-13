@@ -214,6 +214,41 @@ fn real_skill_reasoning_keeps_verify_line_when_present() {
     assert!(out.contains("verify:"), "reasoning dropped the verify line");
 }
 
+#[test]
+fn lean_keeps_wiring_lines_in_a_dropped_section() {
+    // Property 4 (#62): a dropped section removes its prose, but the wiring lines
+    // (`Next:`, `Writes:`, `Gate:`) survive, so a chaining agent still learns the next
+    // skill and the state writes. Rationale is a drop-body section today, so this test
+    // stands on its own before the Handoff title joins the set.
+    let md = "# Skill\n\n## Rationale\n\nThis section explains the downstream flow in prose.\nGate: READY. Next: kickoff-branch.\nWrites: `state.yaml` `handoff.next_skill = kickoff-branch`.\n";
+    let out = render_skill(md, Tier::Lean);
+    assert!(
+        out.contains("Next: kickoff-branch"),
+        "lean dropped the Next: wiring line"
+    );
+    assert!(
+        out.contains("Writes:"),
+        "lean dropped the Writes: wiring line"
+    );
+    assert!(out.contains("Gate: READY"), "lean dropped the Gate: line");
+    assert!(
+        !out.contains("explains the downstream flow"),
+        "lean kept the dropped-section prose body"
+    );
+}
+
+#[test]
+fn wiring_keyword_in_prose_is_not_preserved() {
+    // The anchor is the line start. A sentence that merely contains the word is prose,
+    // so a dropped section still removes it.
+    let md = "# Skill\n\n## Rationale\n\nThe planner writes to disk and moves next when ready.\n";
+    let out = render_skill(md, Tier::Lean);
+    assert!(
+        !out.contains("moves next when ready"),
+        "a mid-line keyword was wrongly preserved"
+    );
+}
+
 /// Resolve a path relative to the repo root (one level above the crate manifest dir).
 fn repo_root_file(relative: &str) -> Option<std::path::PathBuf> {
     let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));

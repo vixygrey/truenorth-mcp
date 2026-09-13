@@ -120,8 +120,27 @@ pub(super) fn encodes_invariant_or_ac(line: &str) -> bool {
     {
         return true;
     }
+    // Handoff wiring lines are load-bearing for a chaining agent.
+    if is_handoff_wiring_line(trimmed) {
+        return true;
+    }
     // Gate, invariant, and requirement markers carry load-bearing rules.
     marker_pattern().is_match(trimmed)
+}
+
+/// Report whether a trimmed line is a handoff wiring line (`Next:`, `Writes:`, `Gate:`).
+///
+/// A chaining agent reads these to know the next skill and the state writes, so they
+/// survive the lean tier even inside a dropped Handoff section (Property 4, #62). The
+/// match anchors to the line start, so prose that merely contains the word is not
+/// preserved.
+fn is_handoff_wiring_line(trimmed: &str) -> bool {
+    // Allow a leading list marker, for example `- Next: ...`, before the keyword.
+    let body = trimmed
+        .strip_prefix("- ")
+        .or_else(|| trimmed.strip_prefix("* "))
+        .unwrap_or(trimmed);
+    body.starts_with("Next:") || body.starts_with("Writes:") || body.starts_with("Gate:")
 }
 
 /// The invariant and acceptance-criterion marker pattern.
