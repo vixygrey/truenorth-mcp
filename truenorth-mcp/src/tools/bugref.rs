@@ -237,3 +237,9 @@ fn is_absolute_url(link: &str) -> bool {
 #[cfg(test)]
 #[path = "bugref_tests.rs"]
 mod tests;
+
+// Property tests (Property 14) live in a separate sibling so the example-based unit tests
+// stay focused. The `#[path]` include keeps them a child module of `bugref`.
+#[cfg(test)]
+#[path = "bugref_prop_tests.rs"]
+mod prop_tests;
