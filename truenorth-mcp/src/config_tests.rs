@@ -5,25 +5,36 @@
 //! `is_valid_repo_root` with fixed inputs, so they read no process-global state and
 //! stay independent under parallel execution.
 //!
-//! Requirements: 1.4, 1.5, 1.6, 1.7.
+//! Requirements: 1.4, 1.6, 1.7, 2.7, 2.8.
 
 use super::*;
 use std::fs;
 use tempfile::tempdir;
 
-/// Create a directory that contains both marker directories, so it is a valid root.
+/// Create a directory that contains all three marker directories, so it is a valid root.
 fn make_valid_root(base: &Path, name: &str) -> PathBuf {
     let root = base.join(name);
-    fs::create_dir_all(root.join("skills")).expect("create skills marker");
+    fs::create_dir_all(root.join(".agent")).expect("create .agent marker");
     fs::create_dir_all(root.join("specs")).expect("create specs marker");
+    fs::create_dir_all(root.join("skills")).expect("create skills marker");
     root
 }
 
 #[test]
-fn valid_root_needs_both_markers() {
+fn valid_root_needs_all_three_markers() {
     let dir = tempdir().expect("temp dir");
     let root = make_valid_root(dir.path(), "repo");
     assert!(is_valid_repo_root(&root));
+}
+
+#[test]
+fn root_missing_agent_marker_is_invalid() {
+    // A root with only the legacy two markers now fails, because `.agent/` is required.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().join("repo");
+    fs::create_dir_all(root.join("specs")).expect("create specs marker");
+    fs::create_dir_all(root.join("skills")).expect("create skills marker");
+    assert!(!is_valid_repo_root(&root));
 }
 
 #[test]
@@ -44,12 +55,22 @@ fn root_with_only_specs_is_invalid() {
 
 #[test]
 fn marker_as_file_does_not_satisfy_root() {
-    // A `specs` file, not a directory, must not count as a marker.
+    // A `.agent` file, not a directory, must not count as a marker.
     let dir = tempdir().expect("temp dir");
     let root = dir.path().join("repo");
+    fs::create_dir_all(root.join("specs")).expect("create specs marker");
     fs::create_dir_all(root.join("skills")).expect("create skills marker");
-    fs::write(root.join("specs"), b"not a dir").expect("write specs file");
+    fs::write(root.join(".agent"), b"not a dir").expect("write .agent file");
     assert!(!is_valid_repo_root(&root));
+}
+
+#[test]
+fn git_scope_covers_the_three_marker_dirs() {
+    // Git status, log, and diff scope to .agent/, specs/, and skills/ (Requirement 2.8).
+    assert!(GIT_SCOPE_DIRS.contains(&".agent"));
+    assert!(GIT_SCOPE_DIRS.contains(&"specs"));
+    assert!(GIT_SCOPE_DIRS.contains(&"skills"));
+    assert_eq!(GIT_SCOPE_DIRS.len(), 3);
 }
 
 #[test]
