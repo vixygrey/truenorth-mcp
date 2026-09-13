@@ -73,7 +73,8 @@ impl TrueNorthServer {
                 + Self::lifecycle_router()
                 + Self::gates_router()
                 + Self::tdd_router()
-                + Self::ontology_router(),
+                + Self::ontology_router()
+                + Self::bugref_router(),
         }
     }
 

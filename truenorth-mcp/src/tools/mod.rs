@@ -3,6 +3,7 @@
 //! Each submodule is a skeleton stub for the crate scaffold (task 1). The real logic
 //! lands in tasks 8 to 12, so the module tree matches the design (§1) up front.
 
+pub mod bugref;
 pub mod catalog;
 pub mod gates;
 pub mod lifecycle;
