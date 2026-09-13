@@ -1,6 +1,6 @@
 //! Property and golden tests for the tier transforms (task 4.2).
 //!
-//! Included from `tier.rs` via `#[path]`, so `super` is the tier module.
+//! Included from `tier/mod.rs` via `#[path]`, so `super` is the tier module.
 //!
 //! Property 4: `render_skill(md, Full) == md`. The reasoning and lean tiers retain every
 //! invariant and acceptance-criterion line and remove only meta and guardrail
