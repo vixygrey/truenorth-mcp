@@ -22,6 +22,11 @@ use serde::Deserialize;
 use crate::engine::agent_ws::{write_repo_seed, write_under_agent};
 use crate::engine::profile::{self, GroupingVocab, Profile};
 use crate::server::TrueNorthServer;
+use crate::tools::hooks::{commit_msg_hook, post_merge_hook};
+
+/// The command the scaffold prints for the human to run. The scaffold never runs it
+/// (Requirement 5.7).
+const HOOKS_PATH_COMMAND: &str = "git config core.hooksPath .githooks";
 
 /// The maximum length of the profile name argument (Requirement 5.1).
 const MAX_PROFILE_NAME: usize = 64;
@@ -62,6 +67,8 @@ impl TrueNorthServer {
         let mut emissions = Vec::new();
         emit_agent_tree(&self.ctx.repo_root, profile, &mut emissions)?;
         emit_root_docs(&self.ctx.repo_root, profile, &mut emissions)?;
+        emit_hooks(&self.ctx.repo_root, profile, &mut emissions)?;
+        emit_github(&self.ctx.repo_root, profile, &mut emissions)?;
 
         Ok(CallToolResult::success(vec![ContentBlock::text(
             result_json(profile, &emissions).to_string(),
@@ -149,6 +156,75 @@ fn emit_root_docs(
 ) -> Result<(), ErrorData> {
     seed_repo_root(repo_root, "AGENTS.md", &agents_md(profile), out)?;
     seed_repo_root(repo_root, "CONVENTIONS.md", &conventions_md(profile), out)?;
+    Ok(())
+}
+
+/// Emit the two git hooks into `.githooks/` through the audited repo-seed path.
+///
+/// The hooks are templated per profile (Requirement 5.6). The scaffold prints the
+/// `core.hooksPath` command in its result and never runs it (Requirement 5.7).
+fn emit_hooks(
+    repo_root: &Path,
+    profile: Profile,
+    out: &mut Vec<Emission>,
+) -> Result<(), ErrorData> {
+    seed_repo_root(
+        repo_root,
+        ".githooks/commit-msg",
+        &commit_msg_hook(profile),
+        out,
+    )?;
+    seed_repo_root(
+        repo_root,
+        ".githooks/post-merge",
+        &post_merge_hook(profile),
+        out,
+    )?;
+    Ok(())
+}
+
+/// Emit the `.github/` templates through the audited repo-seed path.
+///
+/// The commit and PR templates are neutral and profile-identical (Requirement 5.8). The
+/// issue forms are generic, with no copied domain content and no hardcoded URLs
+/// (Requirement 5.9, 5.10). The forms include a grouping field when the profile vocabulary
+/// is epic or milestone, and omit the issue-id field when the profile is kanban or generic
+/// (Requirement 5.11).
+fn emit_github(
+    repo_root: &Path,
+    profile: Profile,
+    out: &mut Vec<Emission>,
+) -> Result<(), ErrorData> {
+    seed_repo_root(
+        repo_root,
+        ".github/commit-template.md",
+        COMMIT_TEMPLATE,
+        out,
+    )?;
+    seed_repo_root(
+        repo_root,
+        ".github/pull-request-template.md",
+        PULL_REQUEST_TEMPLATE,
+        out,
+    )?;
+    seed_repo_root(
+        repo_root,
+        ".github/ISSUE_TEMPLATE/bug.md",
+        &bug_form(profile),
+        out,
+    )?;
+    seed_repo_root(
+        repo_root,
+        ".github/ISSUE_TEMPLATE/feature.md",
+        &feature_form(profile),
+        out,
+    )?;
+    seed_repo_root(
+        repo_root,
+        ".github/ISSUE_TEMPLATE/config.yml",
+        ISSUE_TEMPLATE_CONFIG,
+        out,
+    )?;
     Ok(())
 }
 
@@ -240,6 +316,72 @@ fn conventions_md(profile: Profile) -> String {
     )
 }
 
+/// The neutral commit-message template, identical for every profile (Requirement 5.8).
+const COMMIT_TEMPLATE: &str = "\
+# type(scope): description
+#
+# Commits are atomic and follow Conventional Commits.
+# type is one of: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.
+";
+
+/// The neutral pull-request template, identical for every profile (Requirement 5.8).
+const PULL_REQUEST_TEMPLATE: &str = "\
+## Summary
+
+## Changes
+
+## Tested
+
+<!-- Commits are atomic and follow Conventional Commits. Link the issue this PR resolves. -->
+";
+
+/// The issue-template config with placeholder contact links (Requirement 5.9, 5.10).
+const ISSUE_TEMPLATE_CONFIG: &str = "\
+blank_issues_enabled: false
+contact_links:
+  - name: Question
+    url: https://example.invalid/discussions
+    about: Ask a question here.
+";
+
+/// The bug issue form, generic and profile-aware (Requirements 5.9, 5.10, 5.11).
+fn bug_form(profile: Profile) -> String {
+    let mut form = String::from(
+        "---\nname: Bug report\nabout: Report a bug\nlabels: bug\n---\n\n\
+         ## What happened\n\n## Steps to reproduce\n\n## Expected behavior\n\n\
+         ## External tracker link\n\n",
+    );
+    push_grouping_and_id_fields(&mut form, profile);
+    form
+}
+
+/// The feature issue form, generic and profile-aware (Requirements 5.9, 5.10, 5.11).
+fn feature_form(profile: Profile) -> String {
+    let mut form = String::from(
+        "---\nname: Feature request\nabout: Request a feature\nlabels: enhancement\n---\n\n\
+         ## Problem\n\n## Proposed solution\n\n",
+    );
+    push_grouping_and_id_fields(&mut form, profile);
+    form
+}
+
+/// Append the profile-conditional grouping and issue-id fields to an issue form.
+///
+/// A grouping field appears when the profile vocabulary is epic or milestone
+/// (Requirement 5.11). The issue-id field is omitted when the profile does not require an
+/// id (kanban and generic), matching the commit-msg hook (Requirement 5.11).
+fn push_grouping_and_id_fields(form: &mut String, profile: Profile) {
+    if matches!(
+        profile.vocab,
+        GroupingVocab::Epic | GroupingVocab::Milestone
+    ) {
+        form.push_str(&format!("## {} id\n\n", grouping_label(profile.vocab)));
+    }
+    if profile.require_issue_id {
+        form.push_str("## Issue or ticket id\n\n");
+    }
+}
+
 /// The human-facing label for a profile's grouping vocabulary.
 fn grouping_label(vocab: GroupingVocab) -> &'static str {
     match vocab {
@@ -271,6 +413,8 @@ fn result_json(profile: Profile, emissions: &[Emission]) -> serde_json::Value {
         "profile": profile.name,
         "wrote": wrote,
         "skipped": skipped,
+        // The scaffold prints this command for the human to run; it never runs it (R5.7).
+        "next_step": HOOKS_PATH_COMMAND,
     })
 }
 

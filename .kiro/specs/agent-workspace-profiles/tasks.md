@@ -176,7 +176,7 @@ skill reference).
     - Register the tool in `src/tools/mod.rs`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.12_
 
-  - [ ] 9.2 Emit git hooks and `.github/` templates from the scaffold
+  - [x] 9.2 Emit git hooks and `.github/` templates from the scaffold
     - Emit `.githooks/commit-msg` and `.githooks/post-merge`, templated per profile, through `write_repo_seed`
     - Print `git config core.hooksPath .githooks` to standard output and do not run it
     - Emit `.github/commit-template.md` and `.github/pull-request-template.md` as neutral, profile-identical templates stating the atomic-and-conventional-commit rule
