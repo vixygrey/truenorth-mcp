@@ -88,7 +88,7 @@ Note: your application auth jail deferred — your application logs to journald,
 ## provider-snapshot.sh — worked example (Contabo API)
 
 > Snapshot APIs are provider-specific. This is one worked example, not a
-> bigpowers default; swap the auth and endpoint calls for your own provider.
+> project default; swap the auth and endpoint calls for your own provider.
 
 Deploy to `/opt/your-app/scripts/contabo-snapshot.sh`. Reads credentials from `/opt/your-app/.env` (same file used by your application systemd unit):
 

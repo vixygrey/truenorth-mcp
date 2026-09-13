@@ -3,6 +3,7 @@
 ## Naming Rules (full)
 
 Every skill name must be a **two-word verb-noun pair**:
+
 - First word: a verb (survey, model, define, develop, audit…)
 - Second word: a noun from PMBOK 6 / Agile vocabulary (context, domain, language, tdd, code…)
 - Pronounceable in any language, searchable, no noise words, no encodings
@@ -52,12 +53,14 @@ description: Brief description of capability. Use when [specific triggers].
 The description is **the only thing your agent sees** when deciding which skill to load.
 
 **Format**:
+
 - Max 1024 chars
 - Write in third person
 - First sentence: what it does
 - Second sentence: "Use when [specific triggers]"
 
 **Good example**:
+
 ```
 Investigate a bug by exploring the codebase to find root cause, then write a TDD-based fix plan to specs/bugs/BUG-*.md. Use when user reports a bug, wants to investigate a problem, or mentions "triage".
 ```
@@ -65,6 +68,7 @@ Investigate a bug by exploring the codebase to find root cause, then write a TDD
 ## When to Add Scripts
 
 Add utility scripts when:
+
 - Operation is deterministic (validation, formatting)
 - Same code would be generated repeatedly
 - Errors need explicit handling
@@ -72,17 +76,13 @@ Add utility scripts when:
 ## When to Split Files
 
 Split into separate files when:
+
 - SKILL.md exceeds 100 lines
 - Content has distinct domains
 - Advanced features are rarely needed
 
-## sync-skills.sh Propagation
+## Skill registration
 
-After adding a new skill directory with SKILL.md, run `scripts/sync-skills.sh` from the bigpowers repo root. This automatically generates:
-- `.cursor/rules/<name>.mdc` — for Cursor
-- `.gemini/extensions/bigpowers/skills/<name>/SKILL.md` — Agent Skill
-- `.gemini/extensions/bigpowers/commands/<name>.toml` — Slash Command
-- `.gemini/extensions/bigpowers/commands/prompts/<name>.md` — Command Prompt
-- Updated `gemini-extension.json`
+After adding a new skill directory with SKILL.md, register it through the `index_skills` tool so the runtime can resolve it.
 
-verify: `bash scripts/sync-skills.sh 2>&1 | grep "skills synced"`
+verify: confirm the new skill resolves through the `index_skills` tool.
