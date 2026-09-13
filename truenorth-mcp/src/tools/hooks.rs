@@ -125,3 +125,10 @@ exit 0
 #[cfg(test)]
 #[path = "hooks_tests.rs"]
 mod tests;
+
+// Property tests (Properties 11 and 12) run the emitted scripts against temp git repos.
+// They live in a separate sibling so the content unit tests stay focused. The `#[path]`
+// include keeps them a child module of `hooks`.
+#[cfg(test)]
+#[path = "hooks_prop_tests.rs"]
+mod prop_tests;
