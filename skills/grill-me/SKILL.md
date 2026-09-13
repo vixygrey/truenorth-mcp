@@ -1,8 +1,6 @@
 ---
 name: grill-me
-model: sonnet
-effort: standard
-description: Interactive assumption-surfacing Q&A that stress-tests a plan through relentless questioning until every decision is resolved. Use when user wants to challenge a plan, validate decisions from conversation/context, or mentions "grill me". For doc-grounded variant, use grill-with-docs.
+description: 'Interactive assumption-surfacing Q&A that stress-tests a plan through relentless questioning until every decision is resolved. Use it to challenge a plan or validate decisions from the conversation. For the doc-grounded variant, use grill-with-docs.'
 ---
 
 # Grill Me
@@ -22,6 +20,7 @@ If a question can be answered by exploring the codebase, explore it instead.
 ### Facts vs. Decisions Boundary
 
 Distinguish between **facts** and **decisions**:
+
 - **Facts** — things discoverable by exploring the codebase, reading docs, or checking APIs. Do not ask the user to confirm facts; find them yourself.
 - **Decisions** — choices that require user input (trade-offs, preferences, priorities). Always present options and ask the user to choose.
 
@@ -32,6 +31,7 @@ Never "grill yourself" — if the answer is in the code, go find it. Only ask qu
 Ground every challenge in real documentation — no assumption about a library's behavior goes unchecked. See [REFERENCE.md](REFERENCE.md) for the full process.
 
 Short form:
+
 1. List every external library, third-party API, and framework behavior relied upon.
 2. Fetch the actual docs for each (`WebFetch` the official API reference).
 3. Challenge each plan assumption against the real docs: correct method signature? right version? deprecated?
@@ -41,4 +41,3 @@ Short form:
 ## Confirmation Gate
 
 > **HARD GATE** — Do NOT enact the plan or generate specifications until the user explicitly confirms shared understanding. Wait for explicit approval (e.g., "looks good", "confirmed", "proceed") before transitioning to any implementation, spec-writing, or task-slicing step.
-

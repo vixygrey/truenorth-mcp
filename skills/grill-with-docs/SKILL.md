@@ -1,8 +1,6 @@
 ---
 name: grill-with-docs
-description: Doc-grounded variant of grill-me — stress-tests plan assumptions by fetching and citing real library or API documentation. Every challenge must cite a real URL. Use when the plan depends on a specific library or external API.
-model: opus
-effort: standard
+description: 'A doc-grounded variant of grill-me. Stress-tests plan assumptions by fetching and citing real library or API documentation. Every challenge must cite a real URL. Use it when the plan depends on a specific library or external API.'
 ---
 
 # Grill With Docs
@@ -27,6 +25,7 @@ effort: standard
 ## Facts vs. Decisions Boundary
 
 Distinguish between **facts** and **decisions**:
+
 - **Facts** — things discoverable by reading docs, checking APIs, or exploring the codebase. Do not ask the user to confirm facts; find them yourself.
 - **Decisions** — choices that require user input (trade-offs, preferences, priorities). Always present options and ask the user to choose.
 
@@ -41,6 +40,5 @@ Never "grill yourself" — if the answer is in the docs, go fetch it. Only ask q
 → verify: `test -f skills/grill-with-docs/SKILL.md && test -f skills/grill-with-docs/REFERENCE.md`
 
 See [REFERENCE.md](REFERENCE.md) for question templates.
-
 
 <!-- story: e03s01 -->

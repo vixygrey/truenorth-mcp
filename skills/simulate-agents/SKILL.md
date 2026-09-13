@@ -1,13 +1,11 @@
 ---
 name: simulate-agents
-description: Run Mock User and Auditor agents against a feature in fresh contexts before human review. Use after verify-work, before request-review, when user wants pre-review simulation.
-model: sonnet
-effort: standard
+description: 'Run a mock-user agent and an auditor agent against a feature in fresh contexts before human review. Use it after verify-work and before request-review, when the user wants a pre-review simulation.'
 ---
 
 # Simulate Agents
-> **HARD GATE** — **HARD GATE** — Simulations are hypothetical. Do NOT use sim results to make production decisions without validation on real agents. Sims help discover gaps, not replace testing.
 
+> **HARD GATE** — **HARD GATE** — Simulations are hypothetical. Do NOT use sim results to make production decisions without validation on real agents. Sims help discover gaps, not replace testing.
 
 Two roles, **isolated contexts** (no shared state with BUILD agent):
 
