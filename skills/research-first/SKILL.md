@@ -1,53 +1,33 @@
 ---
 name: research-first
-description: Look-before-build — search registries, repo, existing skills, and web for prior art before implementing. Appends Prior Art to the spec. Use after survey-context and before elaborate-spec, when adding dependencies, or when the task may already be solved.
-model: sonnet
-effort: standard
+description: 'Look before you build. Search the registries, the repo, the existing skills, and the web for prior art before implementing. Appends prior art to the spec. Use it after survey-context and before elaborate-spec, when adding a dependency, or when the task may already be solved.'
 ---
-
-# story: e03s01
-# story: e21s02
 
 # Research First
 
-> **HARD GATE** — Do NOT implement until prior art is searched. Minimum outcome: adopt, extend, compose, or build — with evidence.
+> **HARD GATE**: Do NOT implement until you search for prior art. The minimum outcome is one of adopt, extend, compose, or build, with evidence.
 
 ## Process
 
-1. Read `specs/product/SCOPE_LATEST.yaml`, `specs/release-plan.yaml + epic shards`, and the current task statement.
-2. Search in order: this repo → bigpowers skills (`search-skills`) → package registries → web docs.
-3. **Check opensrc cache** — if the task integrates an external library, run `bash scripts/bp-opensrc-check.sh` (or `npx opensrc search <pkg>`) to find locally-cached source. Read the `src/` directory for API shapes before writing any integration code.
-4. For each candidate: note name, URL/path, fit (adopt | extend | compose | build).
-5. Append `## Prior Art` to `requirements/SCOPE_LATEST.yaml` notes or the active epic story.
-
-## opensrc Integration
-
-`opensrc` is a local cache of 200+ open-source repos and npm/PyPI packages. Query it before building any external integration to avoid re-inventing documented API shapes.
-
-```bash
-# Check if a package is cached
-npx opensrc search <package-name>
-
-# Or use the bundled helper (checks all deps from package.json or requirements.txt)
-bash scripts/bp-opensrc-check.sh [package.json|requirements.txt]
-```
-
-If opensrc finds a match, read its `src/` or source directory and append findings to the **Prior Art** section:
-
-```
-opensrc: found <pkg> v<version> — exports <key classes/functions>
-```
-
-If opensrc is not installed or the package is not cached, fall through to web docs normally.
+1. Read the product scope, the release plan and epic capsules, and the current task
+   statement.
+2. Search in order: this repo, then the skill catalog with the `search_skills`
+   tool, then the package registries, then the web docs.
+3. Check for local source: when the task integrates an external library, find any
+   locally-cached source and read it for the API shapes before writing integration
+   code.
+4. For each candidate, note the name, the URL or path, and the fit (adopt, extend,
+   compose, or build).
+5. Append a prior-art section to the product-scope notes or the active epic story.
 
 ## Outcome matrix
 
-| Verdict | Action |
-|---------|--------|
-| **adopt** | Use as-is; link in plan; no new code |
-| **extend** | Wrap or configure existing solution |
-| **compose** | Chain existing skills/modules |
-| **build** | New implementation — justify why others failed |
+| Verdict     | Action                                         |
+| ----------- | ---------------------------------------------- |
+| **adopt**   | Use as-is; link in plan; no new code           |
+| **extend**  | Wrap or configure existing solution            |
+| **compose** | Chain existing skills/modules                  |
+| **build**   | New implementation — justify why others failed |
 
 ## Verify
 
