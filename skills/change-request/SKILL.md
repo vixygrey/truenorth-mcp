@@ -1,11 +1,10 @@
 ---
 name: change-request
-model: sonnet
-effort: standard
-description: Add a new requirement or reorder epics by WSJF against specs/release-plan.yaml and epic capsule directories. Modes Add and Reorder. Use when a new requirement arrives mid-release or the plan needs prioritization.
+description: 'Add a new requirement or reorder epics by WSJF against the release plan and the epic capsules. Modes: add and reorder. Use it when a new requirement arrives mid-release or the plan needs re-prioritization.'
 ---
 
 # story: e45s29
+
 # story: e20s01
 
 # Change Request
@@ -56,4 +55,5 @@ If the user's request is in natural language and does not match the structured f
 
 ## After either mode
 
-Run `bash scripts/sync-status-from-epics.sh`. Suggest `plan-work` or `build-epic` for the top-ranked unstarted story.
+Update `specs/execution-status.yaml` from the epic manifests. Suggest `plan-work` or
+`build-epic` for the top-ranked unstarted story.

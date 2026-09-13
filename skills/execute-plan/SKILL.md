@@ -1,8 +1,6 @@
 ---
 name: execute-plan
-model: haiku
-effort: standard
-description: Batch-execute tasks from the active epic capsule sequentially, with a human checkpoint after each step. Use when user has an approved plan and wants step-by-step oversight.
+description: 'Batch-execute the tasks from the active epic capsule sequentially, with a human checkpoint after each step. Use it when the user has an approved plan and wants step-by-step oversight.'
 ---
 
 # Execute Plan
@@ -41,7 +39,7 @@ For each task in the active story:
 
 On verify failure: fix and re-run; never advance on red.
 
-Update `specs/execution-status.yaml` when a story/epic completes (`bash scripts/sync-status-from-epics.sh` or direct edit).
+Update `specs/execution-status.yaml` when a story or epic completes.
 
 ### 3. Blockers
 
@@ -54,8 +52,6 @@ Suggest: `verify-work` → `run-evals` → `audit-code` → `simulate-agents` �
 ## Rules
 
 - **Loop until behavioral correctness is verified**: if a verify command passes but the observed behavior is still wrong, return to step 1 and run the execution cycle again.
-
-
 
 <!-- story: e02s03 -->
 <!-- story: e05s02 -->
