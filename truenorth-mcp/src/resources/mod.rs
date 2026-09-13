@@ -271,3 +271,9 @@ impl ResourceCache {
 #[cfg(test)]
 #[path = "resources_tests.rs"]
 mod tests;
+
+// Property tests (Property 7) live in a separate sibling so the example-based unit tests
+// stay focused. The `#[path]` include keeps them a child module of the resources module.
+#[cfg(test)]
+#[path = "resources_prop_tests.rs"]
+mod prop_tests;
