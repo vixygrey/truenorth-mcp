@@ -190,25 +190,25 @@ skill reference).
     - Assert that runtime tools never call `write_repo_seed`
     - **Validates: Requirements 5.2, 5.4, 5.7, 5.12**
 
-- [ ] 10. Emitted git hooks: content and behavior
-  - [ ] 10.1 Author the `commit-msg` hook template
+- [x] 10. Emitted git hooks: content and behavior
+  - [x] 10.1 Author the `commit-msg` hook template
     - Read the message file passed as `$1`; accept generated merge and revert messages with exit 0
     - Accept a subject that uses a type in {feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert} and matches `type(scope): description`; reject otherwise with a non-zero exit and the stated error
     - Template `REQUIRE_ISSUE_ID` to `yes` for epic-based, issue-per-task, milestone-based and `no` for kanban, generic; when `yes`, require an issue or ticket id reference and reject its absence with a non-zero exit; when `no`, accept a message with no id and exit 0
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10_
 
-  - [ ] 10.2 Author the `post-merge` hook template
+  - [x] 10.2 Author the `post-merge` hook template
     - Sweep only while on the trunk; exit 0 and delete nothing on a detached HEAD or an undeterminable current branch
     - Match candidate branches against the profile branch pattern; never delete the current branch or the trunk
     - Delete a local topic branch only when it is provably present on the trunk, where provably present means the branch tip is an ancestor of the trunk tip or `git diff trunk..branch` reports no differences; retain any branch not provably present
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8_
 
-  - [ ]\* 10.3 Write property test for the commit-msg hook decision
+  - [x]\* 10.3 Write property test for the commit-msg hook decision
     - **Property 12: Commit-msg hook decision**
     - Generate subjects (valid/invalid type, with/without scope, with/without id) across profiles and run the emitted hook against temp repos; assert the exit code matches the rule and merge/revert subjects always exit 0
     - **Validates: Requirements 6.3, 6.4, 6.5, 6.7, 6.8, 6.9, 6.10**
 
-  - [ ]\* 10.4 Write property test for the post-merge sweep safety
+  - [x]\* 10.4 Write property test for the post-merge sweep safety
     - **Property 11: Post-merge sweep safety**
     - Build temp repos with random branch and merge topologies and run the emitted hook; assert the current and trunk branches always survive, only ancestor-or-empty-diff matching branches are deleted, and a detached HEAD deletes nothing
     - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.8**
