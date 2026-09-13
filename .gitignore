@@ -1,34 +1,42 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
 
-# Environment files
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
-# Node (the npm wrapper)
-node_modules
+# Secrets — belt and braces alongside the gitleaks pre-commit hook
+*.pem
+*.key
+
+# Logs
+*.log
+
+# Node
+node_modules/
 
 # Agent-tool local dirs
 .agents
 .agent
 .claude
 .openhands
-.obsidian/
-specs/.obsidian/
-.ctxo/.cache/
-.ctxo/index/
-.bts.toml
-.envrc
-.rtk/
-.hermes/
-.mimocode/
-.zcode/
 
 # bigpowers-mcp generated artifacts (removed with the subproject in #51)
 bigpowers-mcp/graph.jsonl
 bigpowers-mcp/node_modules/
-
-# Allure test artifacts
-allure-results/
