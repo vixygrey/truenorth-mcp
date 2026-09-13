@@ -1,117 +1,109 @@
 ---
-# story: e45s07
-# story: e45s07
-# story: e45s17
 name: request-review
-model: opus
-effort: standard
-description: Dispatch a fresh reviewer agent with a clean context to critique the code after audit-code passes. The reviewer has no shared state with the coding agent and gives a genuine second opinion. Use after audit-code passes, before committing, or when user wants an independent code review.
+description: 'Dispatch a fresh reviewer agent with a clean context to critique the code after audit-code passes. The reviewer has no shared state with the coding agent and gives a genuine second opinion. Use it after audit-code passes, before committing, or when the user wants an independent code review.'
 ---
-
-# story: e45s28
 
 # Request Review
 
-Dispatch fresh reviewer agents with clean contexts. Reviewers have no shared state — they find what the coding agent missed.
+Dispatch a fresh reviewer agent with a clean context. A reviewer has no shared
+state, so it finds what the coding agent missed.
 
-**Distinct from `audit-code`:** `audit-code` is self-review (internal). This skill dispatches external agents.
+Distinct from `audit-code`. `audit-code` is self-review. This skill dispatches an
+external agent.
 
-**Solo developer note:** Reviewer agents replace the human reviewer.
+Run `audit-code` first. Do not waste reviewer attention on a hygiene issue you could
+have caught yourself.
 
-**Run `audit-code` first.** Don't waste reviewer attention on hygiene issues you could have caught yourself.
+## Dual-blind AND gate
 
-## Santa Method — Dual-Blind AND Gate (e45s07)
+Use two independent reviewers, A and B, with no shared context between them or the
+coding agent.
 
-Use **two independent reviewers** (Reviewer A and Reviewer B) with **no shared context** between them or the coding agent.
+| Parameter             | Value                                                        |
+| --------------------- | ------------------------------------------------------------ |
+| Reviewers             | 2 (mandatory)                                                |
+| Max review iterations | 5 (a hard cap, iteration 6 is forbidden)                     |
+| Pass rule             | An AND gate. Both reviewers must pass independently          |
+| Blindness             | Neither reviewer sees the other's report until both complete |
 
-| Parameter | Value |
-|-----------|-------|
-| Reviewers | 2 (mandatory) |
-| `MAX_REVIEW_ITERATIONS` | **5** (hard cap — e45s28; iteration 6 forbidden) |
-| Pass rule | **AND-gate** — both reviewers must pass independently |
-| Blindness | Neither reviewer sees the other's report until both complete |
+Iteration loop (at most 5):
 
-**Iteration loop (max `MAX_REVIEW_ITERATIONS`):**
+1. Dispatch reviewer A and reviewer B in parallel with identical briefs but separate
+   contexts.
+2. Collect both reports. Each categorizes findings: must-fix, should-fix, consider.
+3. AND gate: when either reviewer has a must-fix finding, the round fails. Run
+   `respond-review`, fix, and re-dispatch both reviewers.
+4. When both pass (zero must-fix, a score of 94% or more each), the review is
+   complete.
+5. After 5 iterations without a dual pass, stop and report "Review cap exhausted.
+   Human decision required.". Do not merge.
 
-1. Dispatch Reviewer A and Reviewer B in parallel with identical briefs but separate contexts.
-2. Collect both reports. Each categorizes findings: must-fix / should-fix / consider.
-3. **AND-gate:** If **either** reviewer has must-fix findings → FAIL round. Run `respond-review`, fix, re-dispatch both reviewers.
-4. If both pass (zero must-fix, score ≥ 94% each) → review complete.
-5. After **5** iterations without dual pass → **stop**; report "Review cap exhausted (5/5). Human decision required." Do not merge.
-
-> **HARD GATE** — Single-reviewer pass is insufficient. Partial agreement does not satisfy the AND-gate.
+> **HARD GATE**: a single-reviewer pass is insufficient. Partial agreement does not satisfy the AND gate.
 
 ## Process
 
 ### 1. Prepare the review brief
 
-Write a self-contained brief for each reviewer. Include:
+Write a self-contained brief for each reviewer. Include what was built (the feature,
+not the implementation), which files changed, the relevant `specs/` artifacts, what
+the conventions require, the verify command, and what you are most uncertain about.
 
-- What was built (feature description, not implementation)
-- Which files changed (the diff context)
-- What `specs/` artifacts are relevant (active `epics/eNN-*.yaml`, `requirements/SCOPE_LATEST.yaml`, `bugs/BUG-*.md`)
-- What CONVENTIONS.md requires
-- What the verify command is
-- What you're most uncertain about (where you want fresh eyes)
-- **Security focus** — If the epic has a `specs/security/epics/<id>/THREAT_MODEL.md`, include the relevant vulnerability categories as reviewer focal points. Also include the false-positive exclusion rules so the reviewer avoids known-safe patterns. Tag the review as `security-sensitive: true` if THREAT_MODEL risk is HIGH+.
+Security focus: when the epic has a threat model, include the relevant vulnerability
+categories as reviewer focal points, plus the false-positive exclusion rules. Tag
+the review as security-sensitive when the threat-model risk is HIGH or more.
 
-### 2. Fan-out parallel reviewers (e45s17)
+### 2. Fan out parallel reviewers
 
-Beyond the mandatory dual-blind pair (e45s07), optionally dispatch **N dimension-specific subagents in one message** — one check per agent for broader coverage (OpenAI Codex `code-review-*` pattern):
+Beyond the mandatory dual-blind pair, optionally dispatch several
+dimension-specific subagents in one message, one check per agent, for broader
+coverage.
 
-| Agent | Focus |
-|-------|-------|
-| R-correctness | Logic, edge cases, verify command result |
-| R-conventions | CONVENTIONS.md, test quality (F.I.R.S.T) |
-| R-security | Injection, auth, secrets (when `security-sensitive`) |
-| R-design | Simpler alternatives, API shape |
+| Agent       | Focus                                              |
+| ----------- | -------------------------------------------------- |
+| Correctness | Logic, edge cases, the verify-command result       |
+| Conventions | The project conventions, test quality (F.I.R.S.T)  |
+| Security    | Injection, auth, secrets (when security-sensitive) |
+| Design      | A simpler alternative, the API shape               |
 
-Santa Method still applies: each agent is blind; AND-gate uses Reviewer A + B scores. Fan-out agents feed findings into `respond-review` but do not replace the dual-blind pair.
+The dual-blind method still applies. Each agent is blind. The AND gate uses the A
+and B scores. A fan-out agent feeds findings into `respond-review`, but does not
+replace the dual-blind pair.
 
-### 2b. Dispatch both reviewer agents (parallel)
+### 2b. Dispatch both reviewer agents
 
-Use the Agent tool twice with completely fresh contexts. Each prompt must be self-contained — no references to "our conversation" or "what we discussed."
+Dispatch two agents with completely fresh contexts. Each prompt is self-contained,
+with no reference to the current conversation.
 
-```
-You are code reviewer [A|B]. Review the following code changes independently.
+```text
+You are code reviewer [A|B]. Review the following changes independently.
 
-Context: [feature description]
-CONVENTIONS.md rules: [paste relevant sections]
-Active epic shard: [paste or summarize from specs/epics/]
+Context: [the feature description]
+Conventions: [the relevant rules]
+Active epic: [the relevant capsule]
+Diff: [the changed files]
+Verify command: [a runnable command]
 
-Diff: [paste git diff or describe changed files]
-
-Verify command: [runnable command]
-
-Review for:
-1. Correctness — does the code do what was intended?
-2. CONVENTIONS.md compliance — are all rules followed?
-3. Test quality — do tests verify behavior (not implementation)?
-4. Design — are there simpler or more robust approaches?
-5. Edge cases — what inputs or states could cause failures?
-6. Security — any injection, auth, or data exposure risks?
-7. Refactoring smells — explicitly name any detected Fowler smells: Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, Primitive Obsession, Message Chains, Middle Man
-
-For each finding, categorize as: must-fix / should-fix / consider.
-Run the verify command and report the result.
+Review for correctness, convention compliance, test quality, design, edge cases,
+security, and refactoring smells. For each finding, categorize it as must-fix,
+should-fix, or consider. Run the verify command and report the result.
 ```
 
 ### 3. Collect both reports
 
-When reviewers return:
-- Read every finding from **both** reports before acting on any
-- Note each verify command result
-- Compute quality score per reviewer: `100 × (total_items − must_fix − should_fix) / total_items`
-- **AND-gate check:** both scores ≥ 94% and zero must-fix from **both**?
+When the reviewers return, read every finding from both reports before acting.
+Note each verify result. Compute a quality score per reviewer:
+`100 * (total - must_fix - should_fix) / total`. Then check the AND gate: both
+scores 94% or more and zero must-fix from both.
 
-> **HARD GATE** — If either score < 94% or either has must-fix → FAIL round. Run `respond-review` first. The 94% threshold also applies to `npm run compliance` (scripts/audit-compliance.sh).
+> **HARD GATE**: when either score is below 94% or either has a must-fix, the round fails. Run `respond-review` first.
 
 ### 4. Hand off to respond-review
 
-Pass combined findings to `respond-review` to categorize and apply fixes. Increment iteration counter. Re-dispatch both reviewers until AND-gate passes or iteration 3 exhausted.
-
-Report to user: "Review round [N/3]. Reviewer A: [score], Reviewer B: [score]. AND-gate: [PASS|FAIL]."
+Pass the combined findings to `respond-review` to categorize and apply the fixes.
+Increment the iteration counter. Re-dispatch both reviewers until the AND gate passes
+or the cap is exhausted. Report the round number and the two scores.
 
 ## Verify
 
-→ verify: `test -f scripts/lib/parallel-review-worktrees.sh && test -f skills/request-review/SKILL.md`
+Confirm both reviewers passed the AND gate for the current round, or that the
+iteration cap was reached.

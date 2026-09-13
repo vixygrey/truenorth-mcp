@@ -1,66 +1,41 @@
 ---
 name: maintain-wiki
-model: haiku
-effort: light
-description: "Agent-maintained OKF wiki — INGEST source docs, LINT for issues, QUERY across concept pages. Run as part of build-epic Step 8 and verify-work Phase 3."
-# story: e39s07
+description: 'Maintain the concept-wiki bundle so it stays consistent with its source docs. Ingest source docs, lint for issues, and query across the concept pages. Use it to keep the wiki current with the skills, the conventions, and the agent guide.'
 ---
 
 # Maintain Wiki
 
-Three operations for keeping the OKF wiki bundle consistent with its source docs.
+Three operations that keep the concept-wiki bundle consistent with its source docs.
 
-## INGEST
+## Ingest
 
-Read source doc (CLAUDE.md, CONVENTIONS.md, or SKILL.md) and write/update OKF concept pages:
+Read a source doc (the conventions, the agent guide, or a SKILL.md) and write or
+update the concept pages it maps to. Regenerate the skills wiki from the SKILL.md
+files, the conventions wiki from the conventions doc, and the agent-guide wiki from
+the agent guide.
 
-```bash
-# Regenerate skills-wiki from SKILL.md files
-bash scripts/sync-skills.sh --okf
+## Lint
 
-# Regenerate conventions-wiki from CONVENTIONS.md
-bash scripts/decompose-conventions.sh
+Check for common wiki issues.
 
-# Regenerate agent-guide from CLAUDE.md
-bash scripts/generate-agent-guide.sh
-```
+1. **Stale concept**: the source file is newer than its concept page. Compare the
+   modification times. When the source is newer, the concept is stale.
+2. **Orphan concept**: the concept page exists but the source section no longer does.
+3. **Missing cross-reference**: a skill concept page with no enforcing or referencing
+   link.
+4. **Contradiction**: two concept pages that make opposite claims about the same
+   topic.
+5. **Broken link**: an internal link that points to a non-existent concept page.
 
-## LINT
+For the stale check, compare each concept page's modification time against its source
+SKILL.md, and report a page that is older than its source.
 
-Check for common OKF issues:
+## Query
 
-1. **Stale concepts** — source file mtime vs concept page mtime. If source is newer, concept is stale.
-2. **Orphan concepts** — concept page exists but source doc section no longer exists.
-3. **Missing cross-references** — skill concept pages with no `enforced_by` or `references` links.
-4. **Contradictions** — two concept pages that make opposite claims about the same topic.
-5. **Broken links** — internal OKF links that point to non-existent concept pages.
-
-```bash
-# Quick stale check: compare source vs concept mtimes
-for page in specs/skills-wiki/skills/*.md; do
-  skill=$(basename "$page" .md)
-  source="skills/$skill/SKILL.md"
-  if [ -f "$source" ] && [ "$page" -ot "$source" ]; then
-    echo "STALE: $skill (SKILL.md newer than concept page)"
-  fi
-done
-```
-
-## QUERY
-
-Search across OKF concept pages to answer questions:
-
-```bash
-# Find all concepts about a topic
-grep -rl "topic" specs/skills-wiki/ specs/conventions-wiki/ specs/agent-guide/
-
-# Trace a convention → enforcing skills
-grep -A1 "enforced_by" specs/conventions-wiki/*.md
-
-# Find skill by description keyword
-grep -ril "keyword" specs/skills-wiki/skills/*.md
-```
+Search across the concept pages to answer a question. Find every concept about a
+topic, trace a convention to its enforcing skills, or find a skill by a description
+keyword. Use the git-context tool or a text search over the wiki directories.
 
 ## Verify
 
-→ verify: `test -d specs/skills-wiki && test -d specs/conventions-wiki && test -d specs/agent-guide`
+Confirm the wiki directories exist and no concept page is older than its source doc.

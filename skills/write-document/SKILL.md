@@ -1,77 +1,89 @@
 ---
 name: write-document
-model: sonnet
-effort: standard
-description: Write, organize, and sync high-integrity technical documents using the BMAD methodology. Ensures every document is Bold, Minimal, Actionable, and Durable. Use when creating architectural docs, technical guides, or organizing the specs/ directory.
+description: 'Write, organize, and sync a high-integrity technical document using the BMAD methodology. Makes every document Bold, Minimal, Actionable, and Durable. Use it to create an architectural doc, a technical guide, or to organize the specs/ directory.'
 ---
 
 # Write Document (BMAD)
 
-Create high-signal technical documentation that serves as an expert collaborator for both humans and AI. This skill enforces the BMAD principles to prevent context rot and ensure architectural durability.
+Create high-signal technical documentation that serves as an expert collaborator for
+both a human and an agent. This skill enforces the BMAD principles to prevent context
+rot and keep the architecture durable.
 
-**Distinct from `edit-document`:** Use this skill to create a document that does not yet exist. Use `edit-document` when a document already exists and needs restructuring, clarity, or prose improvements.
+Distinct from `edit-document`. Use this skill to create a document that does not yet
+exist. Use `edit-document` when a document exists and needs restructuring, clarity,
+or prose improvement.
 
-> **HARD GATE** — Every document must have a clear "Reason for Existence." If a document doesn't provide actionable leverage for a caller or test, do not create it.
+> **HARD GATE**: every document MUST have a clear reason for existence. When a document does not provide actionable leverage for a caller or a test, do not create it.
 
-## The BMAD Principles
+## The BMAD principles
 
-| Principle | Execution |
-| :--- | :--- |
-| **B**old | Make strong assertions. Define clear boundaries and "Never" rules. No "it might" or "usually." |
-| **M**inimal | High-density, low-filler. **Circuit Breaker**: If the file exceeds 300 lines or the session exceeds 20 turns, you MUST run `terse-mode` and compact state before saving. |
-| **A**ctionable | Link every doc to a verifiable outcome. **Architectural Docs**: Verify via Gherkin features (`specs/verifications/features/`) or grep-based structure checks (`grep -c "pattern" file`) that prove the design's *constraints* are present. |
-| **D**urable | Design for the long-term. **Scalability**: Use "Nested Indexing"—root files link to module-level `GEMINI.md` indexes; do not list individual sub-files in the root. |
+| Principle      | Execution                                                                                                                                                                             |
+| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **B**old       | Make a strong assertion. Define a clear boundary and a "never" rule. No "it might" or "usually".                                                                                      |
+| **M**inimal    | High density, low filler. When the file exceeds 300 lines or the session exceeds 20 turns, run `terse-mode` and compact the state before saving.                                      |
+| **A**ctionable | Link every doc to a verifiable outcome. For an architectural doc, verify through a behavioral feature or a grep-based structure check that proves the design constraints are present. |
+| **D**urable    | Design for the long term. Use nested indexing: a root file links to a module-level index, it does not list the individual sub-files.                                                  |
 
 ## Process
 
-### 1. Identify the Artifact Type & Scope
+### 1. Identify the artifact type and scope
 
-Choose the correct BMAD-BigPowers artifact:
-- **Decision Record (ADR)**: For "Why" decisions (saved to `specs/adr/`).
-- **Context Map**: For system-wide architectural mapping (`specs/tech-architecture/tech-stack.md`).
-- **Technical Guide**: For "How-to" with verification (saved to `<module>/REFERENCE.md`).
-- **Behavioral Feature**: Gherkin-style compliance specs (saved to `specs/verifications/features/`).
-- **Project README**: Project-facing documentation (saved to `README.md` at project root).
+Choose the correct artifact.
 
-**Cross-Cutting Concerns**: If a doc affects multiple modules, place the authoritative source in the lowest common ancestor directory and use "Delegates" (one-line pointers) in sub-directories to maintain the Single Source of Truth without violating the Stepdown Rule.
+- **Decision record (ADR)**: for a "why" decision, saved to `specs/adr/`.
+- **Context map**: for system-wide architectural mapping.
+- **Technical guide**: for a "how-to" with verification, saved to a module
+  `REFERENCE.md`.
+- **Behavioral feature**: a Gherkin-style compliance spec.
+- **Project README**: project-facing documentation, saved to `README.md` at the
+  project root.
 
-### 2. Draft with Semantic Velocity
+When a doc affects multiple modules, place the authoritative source in the lowest
+common ancestor directory, and use a one-line pointer in each sub-directory to
+maintain a single source of truth.
 
-> **STREAM CONTINUITY** — When writing file content, output in continuous chunks of ~200 lines. Do not pause. Continue immediately until complete. If you need time, emit a placeholder comment rather than going silent.
+### 2. Draft with semantic velocity
 
-Write the document focusing on "Expert Collaboration":
-- **Instructions over Descriptions**: Tell the reader (human or AI) exactly how to interact with the system.
-- **Provenance Links**: Link to ADRs, Issues, or Commits to preserve intent.
-- **The Stepdown Rule**: Information should descend exactly one level of abstraction. If a root doc needs to explain a leaf-level detail, it must point to a sub-index first.
+Write the document for expert collaboration.
 
-### Quick README (Project READMEs only)
+- Instructions over descriptions: tell the reader exactly how to interact with the
+  system.
+- Provenance links: link to an ADR, an issue, or a commit to preserve the intent.
+- The stepdown rule: information descends exactly one level of abstraction. When a
+  root doc needs a leaf-level detail, it points to a sub-index first.
 
-1. Ask: "Project name? One-sentence description?"
-2. Generate `README.md` at project root using the template in [REFERENCE.md](REFERENCE.md) — no TOC, no second interview round.
-3. Fill gaps from `CLAUDE.md` / `AGENTS.md` commands if available (prefer `AGENTS.md`); use `TODO` markers otherwise.
-4. Output and suggest `edit-document` for polish.
+### Quick README (a project README only)
 
-→ verify: `test -f README.md && [ "$(grep -c '^## ' README.md)" -ge 7 ]`
+1. Ask for the project name and a one-sentence description.
+2. Generate `README.md` at the project root using the template in
+   [REFERENCE.md](REFERENCE.md).
+3. Fill gaps from the project agent guide when available. Use `TODO` markers
+   otherwise.
+4. Output, then suggest `edit-document` for polish.
 
-### 3. Apply the 94% Quality Gate
+### 3. Apply the quality gate
 
-Before finalizing, audit the document against these red flags:
-- [ ] **Filler Language**: Are there pleasantries or "I hope this helps"? (Delete them).
-- [ ] **Ambiguity**: Are there "usually," "often," or "it depends" without specific conditions?
-- [ ] **Dead Ends**: Does the document end without a "Next Step" or "Verification" command?
-- [ ] **Shallow Content**: Does it restate the code without explaining the *intent* or *contracts*?
+Before finalizing, audit against these red flags.
 
-### 4. Sync and Organize
+- [ ] Filler language: a pleasantry or "I hope this helps". Delete it.
+- [ ] Ambiguity: "usually", "often", or "it depends" without a specific condition.
+- [ ] Dead end: the document ends with no next step or verification.
+- [ ] Shallow content: it restates the code without explaining the intent or the
+      contracts.
 
-- **Big Powers Hierarchy**: Place the document in the correct tier (Global -> Project -> Sub-directory). Project READMEs are an exception — they go to project root (`README.md`), not `specs/`.
-- **Nested Indexing**: If adding a module-level doc, ensure the module's `GEMINI.md` is updated. If the module's index is new, add it to the root `GEMINI.md`.
-- **Sync**: Run `scripts/sync-skills.sh` if the document is a `SKILL.md` or affects generated artifacts.
+### 4. Organize
+
+- Place the document in the correct tier: global, then project, then sub-directory.
+  A project README is the exception. It goes to the project root.
+- Nested indexing: when adding a module-level doc, update the module index doc, and
+  add a new module index to the root index.
 
 ## Rules
 
-- **Minimalism is a requirement**: If a document can be a 5-line table, do not make it a 5-line essay.
-- **Verifiable outcomes**: Every technical document must include at least one `verify:` command. For architecture, this can be a `grep` or `run_shell_command` that validates the existence of required files or patterns.
-- **No speculative docs**: Do not write documentation for features that do not exist yet unless explicitly doing `elaborate-spec`.
+- Minimalism is a requirement. When a document can be a 5-line table, do not make it
+  a 5-line essay.
+- Verifiable outcomes. Every technical document includes at least one verify command.
+- No speculative doc. Do not document a feature that does not exist yet, unless you
+  are doing `elaborate-spec`.
 
-
-Suggest next skill: `audit-code` or `sync-skills.sh`.
+Suggest the next skill: `audit-code`.

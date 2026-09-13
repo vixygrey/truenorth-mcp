@@ -1,8 +1,6 @@
 ---
 name: edit-document
-model: sonnet
-effort: standard
-description: Edit and improve documents by restructuring sections, improving clarity, and tightening prose. Use when user wants to edit, revise, restructure, or improve any document — including specs/ files, articles, READMEs, or technical writing.
+description: 'Edit and improve a document by restructuring sections, improving clarity, and tightening prose. Use it to edit, revise, restructure, or improve any document, including a specs/ file, an article, a README, or technical writing.'
 ---
 
 # Edit Document
@@ -22,4 +20,3 @@ Confirm the sections with the user.
 2. For each section:
 
 2a. Rewrite the section to improve clarity, coherence, and flow. Use maximum 240 characters per paragraph.
-
