@@ -191,13 +191,13 @@ skill reference).
     - **Validates: Requirements 5.2, 5.4, 5.7, 5.12**
 
 - [ ] 10. Emitted git hooks: content and behavior
-  - [ ] 10.1 Author the `commit-msg` hook template
+  - [x] 10.1 Author the `commit-msg` hook template
     - Read the message file passed as `$1`; accept generated merge and revert messages with exit 0
     - Accept a subject that uses a type in {feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert} and matches `type(scope): description`; reject otherwise with a non-zero exit and the stated error
     - Template `REQUIRE_ISSUE_ID` to `yes` for epic-based, issue-per-task, milestone-based and `no` for kanban, generic; when `yes`, require an issue or ticket id reference and reject its absence with a non-zero exit; when `no`, accept a message with no id and exit 0
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9, 6.10_
 
-  - [ ] 10.2 Author the `post-merge` hook template
+  - [x] 10.2 Author the `post-merge` hook template
     - Sweep only while on the trunk; exit 0 and delete nothing on a detached HEAD or an undeterminable current branch
     - Match candidate branches against the profile branch pattern; never delete the current branch or the trunk
     - Delete a local topic branch only when it is provably present on the trunk, where provably present means the branch tip is an ancestor of the trunk tip or `git diff trunk..branch` reports no differences; retain any branch not provably present
