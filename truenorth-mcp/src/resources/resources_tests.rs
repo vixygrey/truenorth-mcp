@@ -53,6 +53,48 @@ fn read_returns_current_on_disk_content() {
 }
 
 #[test]
+fn read_falls_back_to_a_legacy_specs_cockpit() {
+    // Requirement 2.9: an absent .agent/ file falls back to a legacy specs/ file.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(
+        root,
+        "specs/state.yaml",
+        "active_epic: e01\nbigpowers_version: 2.88.2\n",
+    );
+
+    let content = ResourceDoc::State.read_current(root).expect("legacy read");
+    assert!(content.contains("active_epic: e01"));
+    // The version key survives the read unchanged (Requirement 2.13).
+    assert!(content.contains("bigpowers_version: 2.88.2"));
+}
+
+#[test]
+fn agent_file_takes_precedence_over_legacy() {
+    // When both exist, the .agent/ file wins and the legacy file is ignored.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "active_epic: legacy\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: current\n");
+
+    let content = ResourceDoc::State.read_current(root).expect("read");
+    assert!(content.contains("current"));
+    assert!(!content.contains("legacy"));
+}
+
+#[test]
+fn malformed_legacy_cockpit_is_invalid() {
+    // Requirement 2.10: a malformed legacy file yields an Invalid read error.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    let error = ResourceDoc::State
+        .read_current(root)
+        .expect_err("malformed legacy");
+    assert!(matches!(error, ResourceReadError::Invalid(_)));
+}
+
+#[test]
 fn absent_backing_file_is_not_found() {
     let dir = tempdir().expect("temp dir");
     let error = ResourceDoc::State

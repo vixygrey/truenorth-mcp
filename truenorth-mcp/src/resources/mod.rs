@@ -98,10 +98,42 @@ impl ResourceDoc {
         }
     }
 
+    /// The legacy `specs/` backing path a bigpowers cockpit used, for the fallback read.
+    ///
+    /// When a cockpit file is absent under `.agent/` and present at this legacy path, the
+    /// read falls back to it (Requirement 2.9). Conventions has no legacy relocation, so
+    /// it returns `None`.
+    pub fn legacy_backing_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
+        match self {
+            ResourceDoc::State => Some(repo_root.join("specs").join("state.yaml")),
+            ResourceDoc::Cockpit => Some(repo_root.join("specs").join("release-plan.yaml")),
+            ResourceDoc::Ontology => Some(repo_root.join("specs").join("ontology.yaml")),
+            ResourceDoc::Conventions => None,
+        }
+    }
+
+    /// Resolve the read path, preferring `.agent/` and falling back to a legacy `specs/`
+    /// file when the `.agent/` file is absent (Requirement 2.9).
+    ///
+    /// A subsequent runtime write always targets the `.agent/` path, so the legacy file is
+    /// never mutated (Requirement 1.4).
+    fn read_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
+        let primary = self.backing_path(repo_root);
+        if primary.is_file() {
+            return Some(primary);
+        }
+        match self.legacy_backing_path(repo_root) {
+            Some(legacy) if legacy.is_file() => Some(legacy),
+            _ => None,
+        }
+    }
+
     /// Read and validate the backing file's current content (Requirement 5.5).
     ///
-    /// State and release-plan validate against the observed schemas; ontology parses as a
-    /// YAML document; conventions is returned as raw markdown.
+    /// The read prefers the `.agent/` path and falls back to a legacy `specs/` file when
+    /// the `.agent/` file is absent (Requirement 2.9). State and release-plan validate
+    /// against the observed schemas; ontology parses as a YAML document; conventions is
+    /// returned as raw markdown.
     ///
     /// # Errors
     ///
@@ -109,7 +141,9 @@ impl ResourceDoc {
     /// [`ResourceReadError::Invalid`] when it fails to parse or validate (Requirement
     /// 5.7).
     pub fn read_current(self, repo_root: &std::path::Path) -> Result<String, ResourceReadError> {
-        let path = self.backing_path(repo_root);
+        let path = self
+            .read_path(repo_root)
+            .ok_or_else(|| ResourceReadError::NotFound(display_backing(self)))?;
         let text = std::fs::read_to_string(&path)
             .map_err(|_| ResourceReadError::NotFound(display_backing(self)))?;
 

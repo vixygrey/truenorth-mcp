@@ -22,6 +22,63 @@ fn seed_plan(root: &Path, content: &str) {
     fs::write(path, content).expect("write release-plan file");
 }
 
+/// Seed a legacy bigpowers file under `specs/` with the given content.
+fn seed_legacy(root: &Path, name: &str, content: &str) {
+    let dir = root.join("specs");
+    fs::create_dir_all(&dir).expect("create specs dir");
+    fs::write(dir.join(name), content).expect("write legacy file");
+}
+
+#[test]
+fn advance_phase_reads_legacy_state_and_writes_to_agent() {
+    // Requirement 2.9: a legacy specs/ cockpit is read, and the write goes to .agent/.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed_legacy(
+        root,
+        "state.yaml",
+        "active_epic: e01\nbigpowers_version: 2.88.2\n",
+    );
+
+    advance_phase(root, Phase::Design, "Modeled the domain.", "").expect("advance");
+
+    // The write landed under .agent/, carrying the legacy fields (Requirements 2.11, 2.13).
+    let written = fs::read_to_string(state_path(root)).expect("read agent state");
+    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
+    assert_eq!(value.get("phase").and_then(|v| v.as_str()), Some("design"));
+    assert_eq!(
+        value.get("active_epic").and_then(|v| v.as_str()),
+        Some("e01")
+    );
+    assert_eq!(
+        value.get("bigpowers_version").and_then(|v| v.as_str()),
+        Some("2.88.2")
+    );
+
+    // The legacy file is never mutated (Requirement 1.4).
+    let legacy = fs::read_to_string(legacy_state_path(root)).expect("read legacy");
+    assert_eq!(legacy, "active_epic: e01\nbigpowers_version: 2.88.2\n");
+}
+
+#[test]
+fn record_task_reads_legacy_plan_and_writes_to_agent() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed_legacy(root, "release-plan.yaml", "build_order:\n- e01\n");
+
+    record_task(root, "e80", "Wire the gate", "cargo test").expect("record");
+
+    let written = fs::read_to_string(release_plan_path(root)).expect("read agent plan");
+    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
+    assert!(value.get("tasks").and_then(|v| v.as_sequence()).is_some());
+    // The legacy build_order carried over into the .agent/ file.
+    assert!(value.get("build_order").is_some());
+
+    // The legacy file is never mutated (Requirement 1.4).
+    let legacy = fs::read_to_string(root.join("specs").join("release-plan.yaml")).expect("legacy");
+    assert_eq!(legacy, "build_order:\n- e01\n");
+}
+
 #[test]
 fn advance_phase_writes_target_phase() {
     let dir = tempdir().expect("temp dir");
