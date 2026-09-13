@@ -1,13 +1,11 @@
 ---
 name: spike-prototype
-model: sonnet
-effort: standard
-description: Throw-away prototype for unknown problem spaces. Output is learning notes in specs/archive/spikes/SPIKE-<name>.md, not production code. Use when the domain or technology is unexplored, when estimates are impossible without experimentation, or when user says "spike", "prototype", or "proof of concept".
+description: 'A throw-away prototype for an unknown problem space. The output is learning notes, not production code. Use it when the domain or technology is unexplored, when an estimate is impossible without experimentation, or when the user says "spike", "prototype", or "proof of concept".'
 ---
 
 # Spike Prototype
-> **HARD GATE** — **HARD GATE** — Spikes are time-boxed experiments, not shipping code. Results must be throwaway or clearly isolated. Do NOT merge a spike without a plan to integrate it or replace it with a proper implementation.
 
+> **HARD GATE** — **HARD GATE** — Spikes are time-boxed experiments, not shipping code. Results must be throwaway or clearly isolated. Do NOT merge a spike without a plan to integrate it or replace it with a proper implementation.
 
 A spike is a time-boxed experiment to answer a specific question. The code is thrown away. The learning is kept in `specs/archive/spikes/SPIKE-<name>.md`.
 
@@ -29,6 +27,7 @@ Before writing a single line, state the question the spike must answer:
 > "Can we [specific thing] using [specific approach] within [constraint]?"
 
 Examples:
+
 - "Can we stream large files from S3 to the client without buffering in memory?"
 - "Does the Stripe webhook SDK handle signature verification correctly in our edge runtime?"
 - "Can we achieve < 100ms p99 response time for the search endpoint with a naive Postgres full-text search?"
@@ -42,6 +41,7 @@ Agree on a timebox with the user: 30 minutes, 1 hour, 2 hours. When time is up, 
 ### 3. Experiment
 
 Write the simplest code that could answer the question. Ignore:
+
 - Error handling
 - Test coverage
 - Code quality
@@ -94,4 +94,3 @@ After writing the findings, delete or discard the spike code. It is not meant to
 ### 6. Feed back into plan-work
 
 The spike findings are the input to `plan-work`. Call `plan-work` next, informed by `specs/archive/spikes/SPIKE-<name>.md`.
-

@@ -1,15 +1,13 @@
 ---
 name: terse-mode
-model: haiku
-effort: standard
-description: Fallback ultra-compressed communication mode. Cuts token usage ~75% by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use ONLY when context is critically long and compressing output is necessary to continue. Not a strategy — token discipline comes from code shape (small functions, unique names, headless tests), not terser prompts. Use when user says "caveman mode", "terse mode", "less tokens", "be brief", or invokes /terse-mode.
+description: 'A fallback ultra-compressed communication mode. Cuts token usage by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use it only when context is critically long and compressing output is necessary to continue. Use it when the user says "terse mode", "less tokens", or "be brief".'
 ---
 
 Respond terse like smart caveman. All technical substance stay. Only fluff die.
 
 ## Persistence
-> **HARD GATE** — **HARD GATE** — Terse mode is for reducing token usage in long sessions. Do NOT use terse mode when clarity is critical (complex design decisions, bug investigations). Enable it only on explicit user request.
 
+> **HARD GATE** — **HARD GATE** — Terse mode is for reducing token usage in long sessions. Do NOT use terse mode when clarity is critical (complex design decisions, bug investigations). Enable it only on explicit user request.
 
 ACTIVE EVERY RESPONSE once triggered. No revert after many turns. No filler drift. Still active if unsure. Off only when user says "stop" or "normal mode".
 
@@ -37,7 +35,5 @@ Example — destructive op:
 > ```
 >
 > Terse resume. Verify backup exist first.
-
-
 
 <!-- story: e04s02 -->

@@ -1,14 +1,11 @@
 ---
-# story: e80s01
 name: enforce-first
-model: haiku
-effort: standard
-description: Apply the F.I.R.S.T test quality rubric (per CONVENTIONS.md §Tests) to a test suite or individual tests. Use when develop-tdd is writing tests, when test quality needs to be checked, or when user mentions F.I.R.S.T or "test quality".
+description: 'Apply the F.I.R.S.T test-quality rubric to a test suite or individual tests. Use it when develop-tdd is writing tests, when test quality needs a check, or when the user mentions F.I.R.S.T or test quality.'
 ---
 
 # Enforce FIRST
-> **HARD GATE** — **HARD GATE** — Before shipping, ALL enforcement checks must pass: lint, typecheck, tests, coverage gates. Do NOT disable or skip checks to get to green.
 
+> **HARD GATE** — **HARD GATE** — Before shipping, ALL enforcement checks must pass: lint, typecheck, tests, coverage gates. Do NOT disable or skip checks to get to green.
 
 Apply the F.I.R.S.T rubric per CONVENTIONS.md §Tests to evaluate and improve tests.
 
@@ -35,6 +32,7 @@ Each criterion must be explicitly addressed in the audit report with pass/fail p
 ## Applying the rubric
 
 For each failing criterion:
+
 1. Identify which tests violate it
 2. Describe the fix
 3. Apply the fix
@@ -45,4 +43,3 @@ Report: "F.I.R.S.T audit complete. X criteria passed, Y fixed."
 ## Verify
 
 → verify: `grep -q '## Tests (F.I.R.S.T' CONVENTIONS.md && grep -qE 'Self-Validating|Repeatable' skills/enforce-first/SKILL.md && echo OK`
-

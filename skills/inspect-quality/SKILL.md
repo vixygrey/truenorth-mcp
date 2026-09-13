@@ -1,13 +1,11 @@
 ---
 name: inspect-quality
-model: sonnet
-effort: standard
-description: Interactive QA session where user reports bugs or issues conversationally, and the agent logs them to specs/bugs/registry.yaml with a structured audit schema. Explores the codebase in the background for context and domain language. Use when user wants to report bugs, do QA, or mentions "QA session".
+description: 'An interactive QA session. The user reports bugs conversationally, and the agent logs them to the bug registry with a structured audit schema. Explores the codebase in the background for context and domain language. Use it to report bugs, do QA, or when the user mentions a QA session.'
 ---
 
 # Inspect Quality
-> **HARD GATE** — **HARD GATE** — Quality metrics (coverage, lint, cyclomatic complexity, security scans) must be monitored. If a metric degrades, surface it as a blocker. Do NOT accept regressions.
 
+> **HARD GATE** — **HARD GATE** — Quality metrics (coverage, lint, cyclomatic complexity, security scans) must be monitored. If a metric degrades, surface it as a blocker. Do NOT accept regressions.
 
 Run an interactive QA session. The user describes problems they're encountering. You clarify, explore the codebase for context, and log each issue to `specs/bugs/registry.yaml` with a structured, durable format.
 
@@ -52,29 +50,29 @@ Append the issue to `specs/bugs/registry.yaml`. Create the `specs/bugs/` directo
 
 The file maintains a Markdown table with the following columns (derived from structured audit practice):
 
-| Field | Description |
-|-------|-------------|
-| `bug_id` | `BUG-YYYY-MM-DDTHHMMSS` |
-| `date` | `YYYY-MM-DD` |
-| `severity` | `critical` / `high` / `medium` / `low` |
-| `priority` | `p0` / `p1` / `p2` / `p3` |
-| `scope` | kebab-case area (e.g. `auth`, `checkout`) |
-| `what_happened` | actual behavior (user-facing terms) |
-| `what_expected` | expected behavior |
-| `steps_to_reproduce` | numbered steps |
-| `root_cause` | one-line hypothesis |
-| `files_changed` | filled in after fix |
-| `approach` | filled in after fix |
-| `risk_level` | `low` / `medium` / `high` |
-| `new_tests` | count (filled in after fix) |
-| `type_check` | `pass` / `fail` (filled in after fix) |
-| `lint` | `pass` / `fail` (filled in after fix) |
-| `commit_type` | `fix` / `fix!` / `feat` (filled in after fix) |
-| `release_type` | `patch` / `minor` / `major` (filled in after fix) |
-| `commit_message` | Conventional Commits message (filled in after fix) |
-| `follow_ups` | semicolon-separated follow-up items |
-| `file` | path to detailed `specs/bugs/BUG-*.md` (filled in by investigate-bug) |
-| `status` | `open` / `in-progress` / `fixed` / `wont-fix` |
+| Field                | Description                                                           |
+| -------------------- | --------------------------------------------------------------------- |
+| `bug_id`             | `BUG-YYYY-MM-DDTHHMMSS`                                               |
+| `date`               | `YYYY-MM-DD`                                                          |
+| `severity`           | `critical` / `high` / `medium` / `low`                                |
+| `priority`           | `p0` / `p1` / `p2` / `p3`                                             |
+| `scope`              | kebab-case area (e.g. `auth`, `checkout`)                             |
+| `what_happened`      | actual behavior (user-facing terms)                                   |
+| `what_expected`      | expected behavior                                                     |
+| `steps_to_reproduce` | numbered steps                                                        |
+| `root_cause`         | one-line hypothesis                                                   |
+| `files_changed`      | filled in after fix                                                   |
+| `approach`           | filled in after fix                                                   |
+| `risk_level`         | `low` / `medium` / `high`                                             |
+| `new_tests`          | count (filled in after fix)                                           |
+| `type_check`         | `pass` / `fail` (filled in after fix)                                 |
+| `lint`               | `pass` / `fail` (filled in after fix)                                 |
+| `commit_type`        | `fix` / `fix!` / `feat` (filled in after fix)                         |
+| `release_type`       | `patch` / `minor` / `major` (filled in after fix)                     |
+| `commit_message`     | Conventional Commits message (filled in after fix)                    |
+| `follow_ups`         | semicolon-separated follow-up items                                   |
+| `file`               | path to detailed `specs/bugs/BUG-*.md` (filled in by investigate-bug) |
+| `status`             | `open` / `in-progress` / `fixed` / `wont-fix`                         |
 
 When a bug is fixed (via `validate-fix`), update the relevant row with the resolution fields.
 
@@ -88,6 +86,7 @@ For each bug, also append a detail section:
 **What happened:** [actual behavior, plain language]
 **What I expected:** [expected behavior]
 **Steps to reproduce:**
+
 1. [Step 1]
 2. [Step 2]
 
@@ -105,4 +104,3 @@ For each bug, also append a detail section:
 ### 5. Continue the session
 
 After logging, ask: "Next issue, or are we done?" Keep going until the user says done. Each issue is independent — don't batch them.
-
