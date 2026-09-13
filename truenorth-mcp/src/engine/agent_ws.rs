@@ -147,6 +147,45 @@ pub fn write_under_agent(
     })
 }
 
+/// Write `contents` to `rel_path` under the repository root, for the scaffold seed only.
+///
+/// This is the one authorized write outside `.agent/` (ADR-6, ADR-7). The scaffold emits
+/// root docs, `.githooks/`, and `.github/` templates, which live at the repository root.
+/// The caller must pass `allow_repo_root_seed = true` to opt in; a `false` value rejects
+/// every target, so a runtime tool that reaches this path by mistake writes nothing.
+///
+/// The target still resolves under `repo_root`, so a `..` traversal or an absolute path
+/// that leaves the repository is rejected and nothing is written. The runtime tools never
+/// call this path; only the scaffold does (Requirement 5.5, 5.6, 5.8, 5.9).
+///
+/// # Errors
+///
+/// Returns [`WriteGuardError::OutsideAgent`] when the seed is not allowed or when
+/// `rel_path` escapes the repository root, and [`WriteGuardError::Io`] when the delegated
+/// atomic write fails.
+pub fn write_repo_seed(
+    repo_root: &Path,
+    rel_path: &Path,
+    contents: &str,
+    allow_repo_root_seed: bool,
+) -> Result<(), WriteGuardError> {
+    if !allow_repo_root_seed {
+        return Err(WriteGuardError::OutsideAgent {
+            target: rel_path.display().to_string(),
+        });
+    }
+
+    let target =
+        resolve_under(repo_root, rel_path).ok_or_else(|| WriteGuardError::OutsideAgent {
+            target: rel_path.display().to_string(),
+        })?;
+
+    write_atomic(&target, contents).map_err(|source| WriteGuardError::Io {
+        target: target.display().to_string(),
+        source,
+    })
+}
+
 /// Report whether a read target is excluded (the telemetry area, Requirement 1.10).
 ///
 /// A path is excluded exactly when it sits under the `.agent/telemetry/` area. The check

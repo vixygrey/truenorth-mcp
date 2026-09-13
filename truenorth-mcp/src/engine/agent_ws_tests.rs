@@ -81,6 +81,39 @@ fn write_under_agent_rejects_an_absolute_path() {
 }
 
 #[test]
+fn write_repo_seed_writes_a_root_doc_when_allowed() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new(".githooks/commit-msg");
+
+    write_repo_seed(repo.path(), rel, "#!/bin/sh\n", true).expect("seed allowed");
+
+    let written = repo.path().join(rel);
+    assert_eq!(
+        fs::read_to_string(&written).expect("read back"),
+        "#!/bin/sh\n"
+    );
+}
+
+#[test]
+fn write_repo_seed_rejects_when_not_allowed_and_writes_nothing() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("AGENTS.md");
+
+    let error = write_repo_seed(repo.path(), rel, "seed\n", false).expect_err("must reject");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+    assert!(!repo.path().join(rel).exists());
+}
+
+#[test]
+fn write_repo_seed_rejects_traversal_outside_the_repo() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("../escape.txt");
+
+    let error = write_repo_seed(repo.path(), rel, "x\n", true).expect_err("must reject");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+}
+
+#[test]
 fn is_excluded_read_is_true_only_for_telemetry() {
     // Repo-relative and agent-relative telemetry paths are excluded.
     assert!(is_excluded_read(Path::new(".agent/telemetry/runs.yml")));
