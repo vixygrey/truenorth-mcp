@@ -130,3 +130,16 @@ and the tests. Each is individually revertable. One PR, `Refs #62`, hold for mer
 A prose-only skill with no table and no structural sections can still render lean near
 full. This is correct. There is nothing inert to remove. The acceptance test uses a skill
 that has structural sections, matching the issue scope.
+
+## Measurement unit (#83 follow-up)
+
+The first cut measured compression in whitespace-separated words. That unit undercounts the
+table pass, which removes padding and separator characters, not whole words. The lean tier
+now measures in estimated tokens: `estimate_tokens` counts characters and divides by four,
+rounded up. It needs no tokenizer dependency, so it holds the model-agnostic and
+lean-dependency principles.
+
+The token unit shows the real effect. On `gate-trace`, a table-dense skill, the word ratio
+is near 0.95 while the token ratio is near 0.79. `TIER_LEAN_TOKEN_BUDGET` is now a real
+estimated-token budget, and `truncate_to_budget` measures characters against `budget` times
+four, so the running count matches `estimate_tokens` over the output.

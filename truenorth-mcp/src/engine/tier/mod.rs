@@ -36,9 +36,26 @@ mod tables;
 pub use compress::compress_for_local_context;
 
 /// The lean token budget. The lean transform truncates its output to at most this many
-/// tokens (design §4). A token is approximated as a whitespace-separated word, which is
-/// a conservative over-count for English prose and code directives.
+/// estimated tokens (design §4, #83). [`estimate_tokens`] defines the estimate.
 pub const TIER_LEAN_TOKEN_BUDGET: usize = 1500;
+
+/// The number of characters that approximate one model token (#83).
+///
+/// The rule of thumb for English text and code is roughly four characters per token. This
+/// estimate needs no tokenizer dependency and no model-specific vocabulary, so it holds
+/// the model-agnostic and lean-dependency principles.
+pub(super) const CHARS_PER_TOKEN: usize = 4;
+
+/// Estimate the model-token count of `text` (#83).
+///
+/// The estimate is the character count divided by [`CHARS_PER_TOKEN`], rounded up. It is
+/// closer to real model cost than a whitespace-word count, and it credits a pass that
+/// removes characters without removing words, for example the table-padding strip. It is
+/// the single measurement unit for the lean tier: both the truncation budget and the tier
+/// tests use it.
+pub fn estimate_tokens(text: &str) -> usize {
+    text.chars().count().div_ceil(CHARS_PER_TOKEN)
+}
 
 /// A skill rendering tier (design §4).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -55,6 +55,22 @@ const INVARIANT_LINES: [&str; 6] = [
 ];
 
 #[test]
+fn estimate_tokens_rounds_up_by_four_chars() {
+    // #83: the estimate is the character count divided by four, rounded up.
+    assert_eq!(estimate_tokens(""), 0);
+    assert_eq!(estimate_tokens("a"), 1); // 1 char -> ceil(1/4) = 1
+    assert_eq!(estimate_tokens("abcd"), 1); // 4 chars -> 1
+    assert_eq!(estimate_tokens("abcde"), 2); // 5 chars -> ceil(5/4) = 2
+    assert_eq!(estimate_tokens("abcdefgh"), 2); // 8 chars -> 2
+}
+
+#[test]
+fn estimate_tokens_counts_characters_not_bytes() {
+    // A multi-byte character counts as one character, not its byte length.
+    assert_eq!(estimate_tokens("\u{00e9}\u{00e9}\u{00e9}\u{00e9}"), 1); // 4 chars -> 1
+}
+
+#[test]
 fn full_tier_is_identity() {
     // Requirement 6.6: full is byte-for-byte identical.
     assert_eq!(render_skill(SKILL_FIXTURE, Tier::Full), SKILL_FIXTURE);
@@ -148,9 +164,10 @@ fn lean_converts_headings_to_bullets() {
 
 #[test]
 fn lean_respects_the_token_budget() {
-    // Requirement 6.8: lean does not exceed the configured token budget.
+    // Requirement 6.8: lean does not exceed the configured token budget. The budget is
+    // measured in estimated tokens (#83).
     let out = render_skill(SKILL_FIXTURE, Tier::Lean);
-    let tokens = out.split_whitespace().count();
+    let tokens = estimate_tokens(&out);
     assert!(
         tokens <= TIER_LEAN_TOKEN_BUDGET,
         "lean output exceeded the token budget: {tokens} tokens"
@@ -168,7 +185,7 @@ fn lean_truncates_a_large_document_to_budget() {
         ));
     }
     let out = render_skill(&big, Tier::Lean);
-    let tokens = out.split_whitespace().count();
+    let tokens = estimate_tokens(&out);
     assert!(
         tokens <= TIER_LEAN_TOKEN_BUDGET,
         "budget exceeded: {tokens}"
@@ -352,17 +369,13 @@ const STRUCTURAL_INVARIANTS: [&str; 6] = [
 
 #[test]
 fn lean_meaningfully_compresses_a_structural_skill() {
-    // Acceptance criterion (#62): lean is at most 60% of full words on a skill with
-    // structural sections and a table.
-    let full_words = render_skill(STRUCTURAL_FIXTURE, Tier::Full)
-        .split_whitespace()
-        .count();
-    let lean_words = render_skill(STRUCTURAL_FIXTURE, Tier::Lean)
-        .split_whitespace()
-        .count();
+    // Acceptance criterion (#62), measured in estimated tokens (#83): lean is at most 60%
+    // of full tokens on a skill with structural sections and a table.
+    let full = estimate_tokens(&render_skill(STRUCTURAL_FIXTURE, Tier::Full));
+    let lean = estimate_tokens(&render_skill(STRUCTURAL_FIXTURE, Tier::Lean));
     assert!(
-        (lean_words as f64) <= 0.60 * (full_words as f64),
-        "lean did not compress enough: {lean_words} lean vs {full_words} full words"
+        (lean as f64) <= 0.60 * (full as f64),
+        "lean did not compress enough: {lean} lean vs {full} full tokens"
     );
 }
 
@@ -387,20 +400,36 @@ fn lean_keeps_every_structural_invariant() {
 
 #[test]
 fn real_skill_lean_compresses_when_present() {
-    // Acceptance criterion (#62) against a real skill. `develop-tdd` has a table and
-    // several drop-body sections (rationale, background, red flags), so the lean tier has
-    // real material to remove. It measures near 0.75 today. The bound is 0.85, looser
-    // than the fixture, since a real skill's word mix varies. Skip when absent, so the
-    // test stays portable.
+    // Acceptance criterion against a real skill, in estimated tokens (#83). `develop-tdd`
+    // has a table and several drop-body sections, so the lean tier has real material to
+    // remove. It measures near 0.71 tokens today. The bound is 0.80. Skip when absent, so
+    // the test stays portable.
     let Some(path) = repo_root_file("skills/develop-tdd/SKILL.md") else {
         return;
     };
     let md = std::fs::read_to_string(&path).expect("read real SKILL.md");
-    let full = render_skill(&md, Tier::Full).split_whitespace().count();
-    let lean = render_skill(&md, Tier::Lean).split_whitespace().count();
+    let full = estimate_tokens(&render_skill(&md, Tier::Full));
+    let lean = estimate_tokens(&render_skill(&md, Tier::Lean));
+    assert!(
+        (lean as f64) < 0.80 * (full as f64),
+        "lean did not compress the real skill: {lean} lean vs {full} full tokens"
+    );
+}
+
+#[test]
+fn table_dense_skill_compresses_in_tokens_not_words() {
+    // #83: the token unit shows the table pass's true effect. `gate-trace` has
+    // content-dense tables, so its word count barely moves (near 0.95), but its token
+    // count drops (near 0.79) as padding and separators are stripped. Skip when absent.
+    let Some(path) = repo_root_file("skills/gate-trace/SKILL.md") else {
+        return;
+    };
+    let md = std::fs::read_to_string(&path).expect("read real SKILL.md");
+    let full = estimate_tokens(&render_skill(&md, Tier::Full));
+    let lean = estimate_tokens(&render_skill(&md, Tier::Lean));
     assert!(
         (lean as f64) < 0.85 * (full as f64),
-        "lean did not compress the real skill: {lean} lean vs {full} full words"
+        "the table-dense skill did not compress in tokens: {lean} lean vs {full} full"
     );
 }
 
