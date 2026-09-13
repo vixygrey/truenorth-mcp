@@ -1,8 +1,6 @@
 ---
 name: assess-impact
-model: sonnet
-effort: standard
-description: Analyze the blast radius of a proposed change before any code is written. Maps dependents, affected stories, and test coverage. Produces specs/IMPACT_LATEST.md. Use before plan-work on any non-trivial change, when touching a shared module, or when the user asks "what does this break?".
+description: 'Analyze the blast radius of a proposed change before any code is written. Maps the dependents, the affected stories, and the test coverage. Produces an impact report. Use it before plan-work on a non-trivial change, when touching a shared module, or when the user asks "what does this break?".'
 ---
 
 # Assess Impact
@@ -49,11 +47,11 @@ grep -rn "[symbol-name]" . --include="*.test.*" --include="*.spec.*"
 
 ### 5. Classify risk
 
-| Level | Condition |
-|-------|-----------|
-| Low   | ≤ 2 callers, all covered by tests |
-| Medium | 3–10 callers, partial test coverage |
-| High  | > 10 callers, or shared API/interface, or no tests |
+| Level  | Condition                                          |
+| ------ | -------------------------------------------------- |
+| Low    | ≤ 2 callers, all covered by tests                  |
+| Medium | 3–10 callers, partial test coverage                |
+| High   | > 10 callers, or shared API/interface, or no tests |
 
 ### 6. Write specs/IMPACT_LATEST.md
 
@@ -85,8 +83,9 @@ Suggest `plan-work` once risk is understood and any test gaps are noted.
 ## Risk score gating
 
 In `--lightweight` mode (used by build-epic step 2), assign a numeric risk score (1–10):
+
 - Fan-in (how many callers): 0–4 points
-- Fan-out (how many dependencies the module itself uses): 0–3 points  
+- Fan-out (how many dependencies the module itself uses): 0–3 points
 - Recent churn (git log --oneline -5 count): 0–3 points
 
 **Risk score > 7**: Gate — require a `grill-me` session before proceeding to implementation. Document the grill-me result in the impact report at `specs/IMPACT-<epic>-<story>.md`.
