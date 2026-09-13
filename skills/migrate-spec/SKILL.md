@@ -1,23 +1,27 @@
 ---
 name: migrate-spec
-model: sonnet
-effort: standard
-description: Detect GSD, spec-kit, or BMAD spec artifacts and transform them into bigpowers YAML layout (state.yaml, release-plan.yaml, epics/, requirements/, plans/, ADRs). Use when migrating foreign spec docs.
+description: 'Detect a foreign spec artifact (GSD, spec-kit, or BMAD) and transform it into the project YAML layout (the state, the release plan, the epic capsules, the requirements, the plans, and the ADRs). Use it when migrating foreign spec docs.'
 ---
+
 # story: e25s01
+
 # story: e25s02
+
 # story: e25s03
+
 # story: e25s04
+
 # story: e25s05
+
 # story: e25s06
 
 # Migrate Spec
 
-Transform existing GSD, spec-kit, or BMAD planning artifacts into the bigpowers `specs/` model. No code is written — the output is a set of bigpowers-format spec files the user can use immediately.
+Transform existing GSD, spec-kit, or BMAD planning artifacts into the project `specs/` model. No code is written — the output is a set of project-format spec files the user can use immediately.
 
 ## Quick start
 
-1. Run this skill from the root of the project being migrated (not the bigpowers repo itself).
+1. Run this skill from the root of the project being migrated (not this project's own repo).
 2. The skill auto-detects the source framework and presents its findings before transforming anything.
 3. All output goes to `specs/` at the project root.
 
@@ -42,11 +46,11 @@ If any red flag fires: surface it, wait for explicit user confirmation before co
 
 Scan for the fingerprints below. Stop at first match; if multiple match, list them and ask the user which is primary.
 
-| Framework | Fingerprints (any one is sufficient) |
-|-----------|--------------------------------------|
-| **GSD** | `.planning/` directory; `.planning/ROADMAP.md`; `.planning/REQUIREMENTS.md` with `REQ-` IDs |
-| **spec-kit** | `.specify/` directory; `spec.md` + `plan.md` at root; `.github/skills/speckit-*/SKILL.md` |
-| **BMAD** | `_bmad/` directory; `_bmad-output/` directory; `prd.md` with `FR-` IDs; `epic-*.md` or `story-*.md` |
+| Framework    | Fingerprints (any one is sufficient)                                                                |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| **GSD**      | `.planning/` directory; `.planning/ROADMAP.md`; `.planning/REQUIREMENTS.md` with `REQ-` IDs         |
+| **spec-kit** | `.specify/` directory; `spec.md` + `plan.md` at root; `.github/skills/speckit-*/SKILL.md`           |
+| **BMAD**     | `_bmad/` directory; `_bmad-output/` directory; `prd.md` with `FR-` IDs; `epic-*.md` or `story-*.md` |
 
 If none found: ask the user which framework before proceeding.
 
@@ -100,7 +104,7 @@ See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirement
 
 ### Step 4 — Generate state.yaml
 
-Always regenerate `specs/state.yaml` from scratch in bigpowers YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
+Always regenerate `specs/state.yaml` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
 
 See [REFERENCE.md](REFERENCE.md) — `active_flow: null...`
 

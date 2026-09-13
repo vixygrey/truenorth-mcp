@@ -22,7 +22,7 @@ pub fn phase_for_skill(name: &str) -> String {
 /// The raw phase lookup, mirroring the legacy `PHASE_MAP` (`phase-map.ts`).
 fn phase_lookup(name: &str) -> Option<&'static str> {
     let phase = match name {
-        "survey-context" | "research-first" | "search-skills" | "using-bigpowers"
+        "survey-context" | "research-first" | "search-skills" | "using-truenorth"
         | "map-codebase" | "elaborate-spec" => "Discover",
 
         "model-domain"
@@ -30,8 +30,7 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
         | "grill-me"
         | "grill-with-docs"
         | "deepen-architecture"
-        | "design-interface"
-        | "define-success" => "Design",
+        | "design-interface" => "Design",
 
         "scope-work" | "slice-tasks" | "plan-work" | "plan-release" | "plan-refactor"
         | "assess-impact" | "change-request" | "run-planning" | "seed-conventions"

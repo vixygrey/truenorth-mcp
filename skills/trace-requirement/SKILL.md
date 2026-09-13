@@ -1,8 +1,6 @@
 ---
 name: trace-requirement
-model: haiku
-effort: standard
-description: Link story IDs from specs/release-plan.yaml + epic capsule directories to the implementing code and tests. Produces specs/TRACEABILITY_LATEST.md. Use when you want to verify coverage of a release plan, audit which stories are implemented, or find "dark" stories with no code.
+description: 'Link the story ids from the release plan and the epic capsules to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code.'
 ---
 
 # Trace Requirement
@@ -38,11 +36,13 @@ grep -rn "story: " . --include="*.ts" --include="*.js" --include="*.py" --includ
 ### 3. Build the matrix
 
 For each story ID:
+
 - **Implemented**: list files that contain `// story: X.Y`
 - **Tested**: list test files that contain `// story: X.Y`
 - **Dark**: story has no tag in any file — flag as unimplemented
 
 For each tagged file with no matching story ID in release-plan.yaml:
+
 - **Orphan**: code exists but story was removed or never planned — flag for cleanup
 
 ### 4. Write specs/TRACEABILITY_LATEST.md
