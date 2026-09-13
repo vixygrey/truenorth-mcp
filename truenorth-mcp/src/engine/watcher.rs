@@ -30,11 +30,11 @@ pub const DEBOUNCE_WINDOW: Duration = Duration::from_millis(200);
 /// A cockpit resource URI backed by a file on disk (design §5 resources).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ResourceUri {
-    /// `truenorth://state`, backed by `state.yaml`.
+    /// `truenorth://state`, backed by `.agent/tasks/state.yml`.
     State,
     /// `truenorth://cockpit`, backed by the release plan and product boundary.
     Cockpit,
-    /// `truenorth://ontology`, backed by `ontology.yaml`.
+    /// `truenorth://ontology`, backed by `.agent/ontology.yml`.
     Ontology,
     /// `truenorth://conventions`, backed by the coding standards.
     Conventions,
@@ -60,13 +60,15 @@ impl ResourceUri {
 pub fn map_path_to_uri(path: &Path) -> Option<ResourceUri> {
     let text = path.to_string_lossy().replace('\\', "/");
 
-    if text.ends_with("specs/state.yaml") {
+    if text.ends_with(".agent/tasks/state.yml") {
         return Some(ResourceUri::State);
     }
-    if text.ends_with("specs/ontology.yaml") {
+    if text.ends_with(".agent/ontology.yml") {
         return Some(ResourceUri::Ontology);
     }
-    if text.ends_with("specs/release-plan.yaml") || text.contains("specs/product/") {
+    // The release plan or the relocated product path (Requirements 2.6, 2.12). The
+    // watcher no longer watches `specs/product/`; the product path is `.agent/product/`.
+    if text.ends_with(".agent/tasks/release-plan.yml") || text.contains(".agent/product/") {
         return Some(ResourceUri::Cockpit);
     }
     if text.ends_with("CONVENTIONS.md") || text.ends_with("conventions.md") {

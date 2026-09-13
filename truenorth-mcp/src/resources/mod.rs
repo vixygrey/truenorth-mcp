@@ -21,13 +21,13 @@ pub mod ontology;
 /// A served resource, identified by its `truenorth://` URI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ResourceDoc {
-    /// `truenorth://state`, backed by `specs/state.yaml`.
+    /// `truenorth://state`, backed by `.agent/tasks/state.yml`.
     State,
-    /// `truenorth://cockpit`, backed by `specs/release-plan.yaml`.
+    /// `truenorth://cockpit`, backed by `.agent/tasks/release-plan.yml`.
     Cockpit,
     /// `truenorth://conventions`, backed by `CONVENTIONS.md`.
     Conventions,
-    /// `truenorth://ontology`, backed by `specs/ontology.yaml`.
+    /// `truenorth://ontology`, backed by `.agent/ontology.yml`.
     Ontology,
 }
 
@@ -83,19 +83,57 @@ impl ResourceDoc {
     }
 
     /// The backing file path under a repository root.
+    ///
+    /// The cockpit files live under `.agent/` (Requirements 2.1, 2.2, 2.3). Conventions
+    /// stays at the repository root.
     pub fn backing_path(self, repo_root: &std::path::Path) -> PathBuf {
         match self {
-            ResourceDoc::State => repo_root.join("specs").join("state.yaml"),
-            ResourceDoc::Cockpit => repo_root.join("specs").join("release-plan.yaml"),
+            ResourceDoc::State => repo_root.join(".agent").join("tasks").join("state.yml"),
+            ResourceDoc::Cockpit => repo_root
+                .join(".agent")
+                .join("tasks")
+                .join("release-plan.yml"),
             ResourceDoc::Conventions => repo_root.join("CONVENTIONS.md"),
-            ResourceDoc::Ontology => repo_root.join("specs").join("ontology.yaml"),
+            ResourceDoc::Ontology => repo_root.join(".agent").join("ontology.yml"),
+        }
+    }
+
+    /// The legacy `specs/` backing path a bigpowers cockpit used, for the fallback read.
+    ///
+    /// When a cockpit file is absent under `.agent/` and present at this legacy path, the
+    /// read falls back to it (Requirement 2.9). Conventions has no legacy relocation, so
+    /// it returns `None`.
+    pub fn legacy_backing_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
+        match self {
+            ResourceDoc::State => Some(repo_root.join("specs").join("state.yaml")),
+            ResourceDoc::Cockpit => Some(repo_root.join("specs").join("release-plan.yaml")),
+            ResourceDoc::Ontology => Some(repo_root.join("specs").join("ontology.yaml")),
+            ResourceDoc::Conventions => None,
+        }
+    }
+
+    /// Resolve the read path, preferring `.agent/` and falling back to a legacy `specs/`
+    /// file when the `.agent/` file is absent (Requirement 2.9).
+    ///
+    /// A subsequent runtime write always targets the `.agent/` path, so the legacy file is
+    /// never mutated (Requirement 1.4).
+    fn read_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
+        let primary = self.backing_path(repo_root);
+        if primary.is_file() {
+            return Some(primary);
+        }
+        match self.legacy_backing_path(repo_root) {
+            Some(legacy) if legacy.is_file() => Some(legacy),
+            _ => None,
         }
     }
 
     /// Read and validate the backing file's current content (Requirement 5.5).
     ///
-    /// State and release-plan validate against the observed schemas; ontology parses as a
-    /// YAML document; conventions is returned as raw markdown.
+    /// The read prefers the `.agent/` path and falls back to a legacy `specs/` file when
+    /// the `.agent/` file is absent (Requirement 2.9). State and release-plan validate
+    /// against the observed schemas; ontology parses as a YAML document; conventions is
+    /// returned as raw markdown.
     ///
     /// # Errors
     ///
@@ -103,7 +141,13 @@ impl ResourceDoc {
     /// [`ResourceReadError::Invalid`] when it fails to parse or validate (Requirement
     /// 5.7).
     pub fn read_current(self, repo_root: &std::path::Path) -> Result<String, ResourceReadError> {
-        let path = self.backing_path(repo_root);
+        // The ontology resource creates its backing file under .agent/ on first read when
+        // it is absent, through the single write guard (Requirements 2.4, 2.5).
+        let path = match self.read_path(repo_root) {
+            Some(path) => path,
+            None if self == ResourceDoc::Ontology => create_ontology_on_read(repo_root)?,
+            None => return Err(ResourceReadError::NotFound(display_backing(self))),
+        };
         let text = std::fs::read_to_string(&path)
             .map_err(|_| ResourceReadError::NotFound(display_backing(self)))?;
 
@@ -130,13 +174,41 @@ impl ResourceDoc {
     }
 }
 
+/// The minimal ontology document seeded on first read (Requirement 2.4).
+///
+/// It is a valid, empty ontology: a domain placeholder with no entities or constraints.
+/// The generate tool (task 12) replaces it with a full ontology. The resource parses it
+/// as a YAML document, so this stub reads back cleanly.
+const ONTOLOGY_SEED: &str = "\
+version: '1'
+domain: ''
+entities: []
+constraints: []
+";
+
+/// Create the ontology backing file under `.agent/` on first read (Requirements 2.4, 2.5).
+///
+/// The write goes through the single write guard, so it stays under `.agent/`. On a
+/// create failure this returns an Invalid read error naming the ontology path, so the
+/// caller retains the last good ontology content and keeps serving other resources
+/// (Requirement 2.5).
+fn create_ontology_on_read(repo_root: &std::path::Path) -> Result<PathBuf, ResourceReadError> {
+    let rel = std::path::Path::new("ontology.yml");
+    crate::engine::agent_ws::write_under_agent(repo_root, rel, ONTOLOGY_SEED).map_err(|e| {
+        ResourceReadError::Invalid(format!(
+            "could not create .agent/ontology.yml: {e}. No file was created."
+        ))
+    })?;
+    Ok(repo_root.join(".agent").join("ontology.yml"))
+}
+
 /// The backing file name for an error message.
 fn display_backing(doc: ResourceDoc) -> String {
     match doc {
-        ResourceDoc::State => "specs/state.yaml".to_string(),
-        ResourceDoc::Cockpit => "specs/release-plan.yaml".to_string(),
+        ResourceDoc::State => ".agent/tasks/state.yml".to_string(),
+        ResourceDoc::Cockpit => ".agent/tasks/release-plan.yml".to_string(),
         ResourceDoc::Conventions => "CONVENTIONS.md".to_string(),
-        ResourceDoc::Ontology => "specs/ontology.yaml".to_string(),
+        ResourceDoc::Ontology => ".agent/ontology.yml".to_string(),
     }
 }
 
@@ -199,3 +271,9 @@ impl ResourceCache {
 #[cfg(test)]
 #[path = "resources_tests.rs"]
 mod tests;
+
+// Property tests (Property 7) live in a separate sibling so the example-based unit tests
+// stay focused. The `#[path]` include keeps them a child module of the resources module.
+#[cfg(test)]
+#[path = "resources_prop_tests.rs"]
+mod prop_tests;

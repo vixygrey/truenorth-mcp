@@ -41,15 +41,57 @@ fn read_returns_current_on_disk_content() {
     // Requirement 5.5: disk is the source of truth.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    seed(root, "specs/state.yaml", "active_epic: e01\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: e01\n");
 
     let content = ResourceDoc::State.read_current(root).expect("read state");
     assert!(content.contains("active_epic: e01"));
 
     // A later edit is reflected on the next read.
-    seed(root, "specs/state.yaml", "active_epic: e02\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: e02\n");
     let updated = ResourceDoc::State.read_current(root).expect("read updated");
     assert!(updated.contains("active_epic: e02"));
+}
+
+#[test]
+fn read_falls_back_to_a_legacy_specs_cockpit() {
+    // Requirement 2.9: an absent .agent/ file falls back to a legacy specs/ file.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(
+        root,
+        "specs/state.yaml",
+        "active_epic: e01\nbigpowers_version: 2.88.2\n",
+    );
+
+    let content = ResourceDoc::State.read_current(root).expect("legacy read");
+    assert!(content.contains("active_epic: e01"));
+    // The version key survives the read unchanged (Requirement 2.13).
+    assert!(content.contains("bigpowers_version: 2.88.2"));
+}
+
+#[test]
+fn agent_file_takes_precedence_over_legacy() {
+    // When both exist, the .agent/ file wins and the legacy file is ignored.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "active_epic: legacy\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: current\n");
+
+    let content = ResourceDoc::State.read_current(root).expect("read");
+    assert!(content.contains("current"));
+    assert!(!content.contains("legacy"));
+}
+
+#[test]
+fn malformed_legacy_cockpit_is_invalid() {
+    // Requirement 2.10: a malformed legacy file yields an Invalid read error.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    let error = ResourceDoc::State
+        .read_current(root)
+        .expect_err("malformed legacy");
+    assert!(matches!(error, ResourceReadError::Invalid(_)));
 }
 
 #[test]
@@ -66,11 +108,47 @@ fn malformed_state_is_invalid() {
     // Requirement 5.7: a malformed backing file yields an Invalid read error.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    seed(root, ".agent/tasks/state.yml", "git: not-a-mapping\n");
     let error = ResourceDoc::State
         .read_current(root)
         .expect_err("malformed");
     assert!(matches!(error, ResourceReadError::Invalid(_)));
+}
+
+#[test]
+fn reading_absent_ontology_creates_it_under_agent() {
+    // Requirement 2.4: an absent ontology is created under .agent/ on first read.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+
+    let content = ResourceDoc::Ontology
+        .read_current(root)
+        .expect("create-on-read");
+    // The created file parses as a YAML document with the seeded shape.
+    let value: serde_yaml::Value = serde_yaml::from_str(&content).expect("parse seed");
+    assert!(value.get("entities").is_some());
+
+    // The file now exists under .agent/, not specs/.
+    assert!(root.join(".agent/ontology.yml").is_file());
+    assert!(!root.join("specs/ontology.yaml").exists());
+}
+
+#[test]
+fn ontology_create_on_read_is_idempotent_and_reads_edits() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+
+    // First read seeds the file.
+    ResourceDoc::Ontology.read_current(root).expect("seed");
+
+    // A human edit to the .agent/ file is reflected on the next read.
+    seed(
+        root,
+        ".agent/ontology.yml",
+        "version: '1'\ndomain: orders\n",
+    );
+    let content = ResourceDoc::Ontology.read_current(root).expect("read edit");
+    assert!(content.contains("domain: orders"));
 }
 
 #[test]
@@ -92,13 +170,13 @@ fn cache_retains_last_good_on_parse_failure() {
     let cache = ResourceCache::new();
 
     // First read succeeds and populates the cache.
-    seed(root, "specs/state.yaml", "active_epic: e01\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: e01\n");
     let good = cache.read(ResourceDoc::State, root).expect("first read");
     assert!(good.contains("e01"));
     assert_eq!(cache.last_good(ResourceDoc::State), Some(good));
 
     // The file breaks on disk. The read errors, but the cache keeps the last good.
-    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
+    seed(root, ".agent/tasks/state.yml", "git: not-a-mapping\n");
     let error = cache
         .read(ResourceDoc::State, root)
         .expect_err("broken read");
@@ -118,9 +196,9 @@ fn cache_updates_last_good_on_success() {
     let root = dir.path();
     let cache = ResourceCache::new();
 
-    seed(root, "specs/state.yaml", "active_epic: e01\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: e01\n");
     cache.read(ResourceDoc::State, root).expect("read one");
-    seed(root, "specs/state.yaml", "active_epic: e02\n");
+    seed(root, ".agent/tasks/state.yml", "active_epic: e02\n");
     cache.read(ResourceDoc::State, root).expect("read two");
 
     assert!(
@@ -136,8 +214,8 @@ fn one_broken_resource_does_not_block_others() {
     // Requirement 5.7: other resources keep serving when one is broken.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    seed(root, "specs/state.yaml", "git: not-a-mapping\n");
-    seed(root, "specs/ontology.yaml", "version: '1'\ndomain: d\n");
+    seed(root, ".agent/tasks/state.yml", "git: not-a-mapping\n");
+    seed(root, ".agent/ontology.yml", "version: '1'\ndomain: d\n");
 
     assert!(ResourceDoc::State.read_current(root).is_err());
     assert!(ResourceDoc::Ontology.read_current(root).is_ok());

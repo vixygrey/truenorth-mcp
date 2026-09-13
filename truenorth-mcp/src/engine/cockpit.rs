@@ -42,14 +42,43 @@ pub enum CockpitError {
     },
 }
 
-/// The path to `state.yaml` under a repository root.
+/// The path to the relocated state file under a repository root (Requirement 2.1).
 pub fn state_path(repo_root: &Path) -> PathBuf {
+    repo_root.join(".agent").join("tasks").join("state.yml")
+}
+
+/// The path to the relocated release-plan file under a repository root (Requirement 2.2).
+pub fn release_plan_path(repo_root: &Path) -> PathBuf {
+    repo_root
+        .join(".agent")
+        .join("tasks")
+        .join("release-plan.yml")
+}
+
+/// The legacy bigpowers state path under `specs/`, for the fallback read (Requirement 2.9).
+fn legacy_state_path(repo_root: &Path) -> PathBuf {
     repo_root.join("specs").join("state.yaml")
 }
 
-/// The path to `release-plan.yaml` under a repository root.
-pub fn release_plan_path(repo_root: &Path) -> PathBuf {
+/// The legacy bigpowers release-plan path under `specs/`, for the fallback read
+/// (Requirement 2.9).
+fn legacy_release_plan_path(repo_root: &Path) -> PathBuf {
     repo_root.join("specs").join("release-plan.yaml")
+}
+
+/// Resolve a cockpit read path, preferring the `.agent/` file and falling back to a legacy
+/// `specs/` file when the `.agent/` file is absent (Requirement 2.9).
+///
+/// A write always targets the `.agent/` path, so the legacy file is never mutated
+/// (Requirement 1.4).
+fn read_source(agent_path: &Path, legacy_path: &Path) -> Option<PathBuf> {
+    if agent_path.is_file() {
+        return Some(agent_path.to_path_buf());
+    }
+    if legacy_path.is_file() {
+        return Some(legacy_path.to_path_buf());
+    }
+    None
 }
 
 /// Advance the lifecycle phase in `state.yaml` and record the git context
@@ -67,14 +96,13 @@ pub fn advance_phase(
     artifacts_summary: &str,
     git_context: &str,
 ) -> Result<(), CockpitError> {
-    let path = state_path(repo_root);
-    let mut state = read_state(&path)?;
+    let mut state = read_state(repo_root)?;
 
     apply_phase(&mut state, to_phase, artifacts_summary, git_context);
 
     let yaml = validate_state_for_write(&state)?;
-    write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
-        file: "state.yaml".to_string(),
+    write_atomic(&state_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
+        file: ".agent/tasks/state.yml".to_string(),
         source,
     })
 }
@@ -93,14 +121,13 @@ pub fn record_task(
     task_name: &str,
     verify_command: &str,
 ) -> Result<(), CockpitError> {
-    let path = release_plan_path(repo_root);
-    let mut plan = read_release_plan(&path)?;
+    let mut plan = read_release_plan(repo_root)?;
 
     apply_task(&mut plan, epic_id, task_name, verify_command);
 
     let yaml = validate_release_plan_for_write(&plan)?;
-    write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
-        file: "release-plan.yaml".to_string(),
+    write_atomic(&release_plan_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
+        file: ".agent/tasks/release-plan.yml".to_string(),
         source,
     })
 }
@@ -111,7 +138,7 @@ pub fn record_task(
 ///
 /// Returns [`CockpitError`] when the file exists but fails validation.
 pub fn read_tdd_step(repo_root: &Path) -> Result<Option<TddStep>, CockpitError> {
-    let state = read_state(&state_path(repo_root))?;
+    let state = read_state(repo_root)?;
     let step = state
         .get("tdd")
         .and_then(|v| v.get("step"))
@@ -129,8 +156,7 @@ pub fn read_tdd_step(repo_root: &Path) -> Result<Option<TddStep>, CockpitError> 
 ///
 /// Returns [`CockpitError`] on a read, validation, or write failure.
 pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitError> {
-    let path = state_path(repo_root);
-    let mut state = read_state(&path)?;
+    let mut state = read_state(repo_root)?;
 
     let mut tdd = state
         .get("tdd")
@@ -143,33 +169,51 @@ pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitErro
     state.set("tdd", Value::Mapping(tdd));
 
     let yaml = validate_state_for_write(&state)?;
-    write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
-        file: "state.yaml".to_string(),
+    write_atomic(&state_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
+        file: ".agent/tasks/state.yml".to_string(),
         source,
     })
 }
 
-/// Read and validate `state.yaml`, or start from an empty state when it is absent.
-fn read_state(path: &Path) -> Result<StateFile, CockpitError> {
-    match std::fs::read_to_string(path) {
+/// Read and validate the state cockpit, or start from an empty state when it is absent.
+///
+/// The read prefers `.agent/tasks/state.yml` and falls back to a legacy `specs/state.yaml`
+/// when the `.agent/` file is absent (Requirement 2.9). The map-backed model preserves
+/// every unknown field and the `bigpowers_version` value (Requirements 2.11, 2.13).
+fn read_state(repo_root: &Path) -> Result<StateFile, CockpitError> {
+    let agent = state_path(repo_root);
+    let legacy = legacy_state_path(repo_root);
+    let Some(path) = read_source(&agent, &legacy) else {
+        return Ok(StateFile::default());
+    };
+    match std::fs::read_to_string(&path) {
         Ok(text) => Ok(validate_state(&text)?),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(StateFile::default()),
         Err(source) => Err(CockpitError::Io {
-            file: "state.yaml".to_string(),
+            file: ".agent/tasks/state.yml".to_string(),
             source,
         }),
     }
 }
 
-/// Read and validate `release-plan.yaml`, or start from an empty plan when it is absent.
-fn read_release_plan(path: &Path) -> Result<ReleasePlanFile, CockpitError> {
-    match std::fs::read_to_string(path) {
+/// Read and validate the release plan, or start from an empty plan when it is absent.
+///
+/// The read prefers `.agent/tasks/release-plan.yml` and falls back to a legacy
+/// `specs/release-plan.yaml` when the `.agent/` file is absent (Requirement 2.9). The
+/// map-backed model preserves every unknown field (Requirement 2.11).
+fn read_release_plan(repo_root: &Path) -> Result<ReleasePlanFile, CockpitError> {
+    let agent = release_plan_path(repo_root);
+    let legacy = legacy_release_plan_path(repo_root);
+    let Some(path) = read_source(&agent, &legacy) else {
+        return Ok(ReleasePlanFile::default());
+    };
+    match std::fs::read_to_string(&path) {
         Ok(text) => Ok(validate_release_plan(&text)?),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             Ok(ReleasePlanFile::default())
         }
         Err(source) => Err(CockpitError::Io {
-            file: "release-plan.yaml".to_string(),
+            file: ".agent/tasks/release-plan.yml".to_string(),
             source,
         }),
     }
