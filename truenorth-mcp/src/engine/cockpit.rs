@@ -107,23 +107,25 @@ pub fn advance_phase(
     })
 }
 
-/// Append a task to `release-plan.yaml` (Requirement 2.5).
+/// Append a task to the release plan with its neutral grouping key (Requirement 2.5, 4.9).
 ///
-/// The task is appended to a `tasks` sequence under the release plan, preserving every
-/// other field. On any failure the file is left unchanged.
+/// The task is appended to a `tasks` sequence under the release plan, carrying the
+/// optional `group_id` and `group_kind` in place of the legacy `epic_id`, and preserving
+/// every other field. On any failure the file is left unchanged.
 ///
 /// # Errors
 ///
 /// Returns [`CockpitError`] on a read, validation, or write failure.
 pub fn record_task(
     repo_root: &Path,
-    epic_id: &str,
+    group_id: Option<&str>,
+    group_kind: Option<&str>,
     task_name: &str,
     verify_command: &str,
 ) -> Result<(), CockpitError> {
     let mut plan = read_release_plan(repo_root)?;
 
-    apply_task(&mut plan, epic_id, task_name, verify_command);
+    apply_task(&mut plan, group_id, group_kind, task_name, verify_command);
 
     let yaml = validate_release_plan_for_write(&plan)?;
     write_atomic(&release_plan_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
@@ -241,12 +243,29 @@ fn apply_phase(state: &mut StateFile, to_phase: Phase, artifacts_summary: &str, 
 }
 
 /// Append a task entry to the release plan's `tasks` sequence, preserving other fields.
-fn apply_task(plan: &mut ReleasePlanFile, epic_id: &str, task_name: &str, verify_command: &str) {
+///
+/// The task carries the neutral grouping key: `group_id` and `group_kind` are written
+/// only when present (Requirement 4.9). An absent grouping key writes no grouping field.
+fn apply_task(
+    plan: &mut ReleasePlanFile,
+    group_id: Option<&str>,
+    group_kind: Option<&str>,
+    task_name: &str,
+    verify_command: &str,
+) {
     let mut task = serde_yaml::Mapping::new();
-    task.insert(
-        Value::String("epic_id".to_string()),
-        Value::String(epic_id.to_string()),
-    );
+    if let Some(id) = group_id {
+        task.insert(
+            Value::String("group_id".to_string()),
+            Value::String(id.to_string()),
+        );
+    }
+    if let Some(kind) = group_kind {
+        task.insert(
+            Value::String("group_kind".to_string()),
+            Value::String(kind.to_string()),
+        );
+    }
     task.insert(
         Value::String("task_name".to_string()),
         Value::String(task_name.to_string()),

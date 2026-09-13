@@ -66,7 +66,14 @@ fn record_task_reads_legacy_plan_and_writes_to_agent() {
     let root = dir.path();
     seed_legacy(root, "release-plan.yaml", "build_order:\n- e01\n");
 
-    record_task(root, "e80", "Wire the gate", "cargo test").expect("record");
+    record_task(
+        root,
+        Some("e80"),
+        Some("epic"),
+        "Wire the gate",
+        "cargo test",
+    )
+    .expect("record");
 
     let written = fs::read_to_string(release_plan_path(root)).expect("read agent plan");
     let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
@@ -144,7 +151,14 @@ fn record_task_appends_to_release_plan() {
     let root = dir.path();
     seed_plan(root, "build_order:\n- e01\n");
 
-    record_task(root, "e80", "Wire the gate", "cargo test").expect("record");
+    record_task(
+        root,
+        Some("e80"),
+        Some("epic"),
+        "Wire the gate",
+        "cargo test",
+    )
+    .expect("record");
 
     let written = fs::read_to_string(release_plan_path(root)).expect("read plan");
     let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse plan");
@@ -153,10 +167,16 @@ fn record_task_appends_to_release_plan() {
         .and_then(|v| v.as_sequence())
         .expect("tasks");
     assert_eq!(tasks.len(), 1);
+    // The task carries the neutral grouping key in place of epic_id (Requirement 4.9).
     assert_eq!(
-        tasks[0].get("epic_id").and_then(|v| v.as_str()),
+        tasks[0].get("group_id").and_then(|v| v.as_str()),
         Some("e80")
     );
+    assert_eq!(
+        tasks[0].get("group_kind").and_then(|v| v.as_str()),
+        Some("epic")
+    );
+    assert!(tasks[0].get("epic_id").is_none());
     // The existing build_order is preserved.
     assert!(value.get("build_order").is_some());
 }
@@ -167,8 +187,8 @@ fn record_task_appends_second_task() {
     let root = dir.path();
     seed_plan(root, "release:\n  version: 1.0.0\n");
 
-    record_task(root, "e80", "First", "make a").expect("first");
-    record_task(root, "e80", "Second", "make b").expect("second");
+    record_task(root, Some("e80"), Some("epic"), "First", "make a").expect("first");
+    record_task(root, None, None, "Second", "make b").expect("second");
 
     let written = fs::read_to_string(release_plan_path(root)).expect("read plan");
     let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse plan");
