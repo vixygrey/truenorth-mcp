@@ -167,7 +167,7 @@ skill reference).
     - **Validates: Requirements 9.3, 9.4, 9.5, 9.6**
 
 - [ ] 9. Greenfield scaffold tool
-  - [ ] 9.1 Implement `tools/scaffold.rs` core emission
+  - [x] 9.1 Implement `tools/scaffold.rs` core emission
     - Define `ScaffoldArgs` (optional `profile`, 1 to 64 chars) with a strict `schemars` schema
     - Resolve the profile; absent uses issue-per-task; an unknown name makes no file change and returns an error naming the value and the known names
     - Emit the `.agent/` tree and the cockpit seed files for the profile's `starter_files`; produce a language-agnostic scaffold with no `Cargo.toml`, no `package.json`, and no source tree
