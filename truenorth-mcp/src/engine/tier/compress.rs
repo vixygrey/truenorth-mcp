@@ -31,13 +31,23 @@ pub fn compress_for_local_context(md: &str) -> String {
     truncate_to_budget(&deduped, TIER_LEAN_TOKEN_BUDGET)
 }
 
-/// Section titles whose bodies the lean tier drops as rationale or background.
-const LOW_VALUE_SECTION_TITLES: [&str; 5] = [
+/// Section titles whose bodies the lean tier drops.
+///
+/// The first five are rationale or background prose. The last three are structural
+/// sections a lean acting agent does not execute on: citations, scope exclusions, and the
+/// handoff prose. The Handoff wiring lines survive regardless, because
+/// `encodes_invariant_or_ac` treats `Next:`, `Writes:`, and `Gate:` as load-bearing
+/// (#62). `integration points` and `notes` stay intact, because they carry
+/// action-relevant prose with no reliable line shape to protect.
+const LOW_VALUE_SECTION_TITLES: [&str; 8] = [
     "rationale",
     "background",
     "philosophy",
     "examples (verbose)",
     "red flags",
+    "references",
+    "out of scope",
+    "handoff",
 ];
 
 /// Drop the bodies of rationale, background, and verbose-example sections (lean tier).

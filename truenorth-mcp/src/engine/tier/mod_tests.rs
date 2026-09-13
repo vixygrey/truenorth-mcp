@@ -238,6 +238,60 @@ fn lean_keeps_wiring_lines_in_a_dropped_section() {
 }
 
 #[test]
+fn lean_drops_references_and_out_of_scope_bodies() {
+    // Requirement 6.8 (#62): References citations and Out of scope exclusions are inert
+    // for a lean acting agent, so their bodies drop while the heading stays.
+    let md = "# Skill\n\n## References\n\n- Fowler's Refactoring Catalog: the canonical vocabulary.\n\n## Out of scope\n\nWork beyond the destination is not routed here.\n";
+    let out = render_skill(md, Tier::Lean);
+    assert!(
+        out.contains("References"),
+        "lean dropped the References heading"
+    );
+    assert!(
+        !out.contains("Fowler's Refactoring Catalog"),
+        "lean kept a References body line"
+    );
+    assert!(
+        out.contains("Out of scope") || out.contains("Out of Scope"),
+        "lean dropped the Out of scope heading"
+    );
+    assert!(
+        !out.contains("Work beyond the destination"),
+        "lean kept an Out of scope body line"
+    );
+}
+
+#[test]
+fn lean_drops_handoff_prose_but_keeps_wiring() {
+    // Handoff joins the drop-body set (#62). Its prose drops, its wiring survives.
+    let md = "# Skill\n\n## Handoff\n\nThe downstream flow is described in this prose sentence.\nNext: kickoff-branch.\nWrites: `state.yaml`.\n";
+    let out = render_skill(md, Tier::Lean);
+    assert!(out.contains("Handoff"), "lean dropped the Handoff heading");
+    assert!(
+        !out.contains("described in this prose"),
+        "lean kept the Handoff prose body"
+    );
+    assert!(out.contains("Next: kickoff-branch"), "lean dropped Next:");
+    assert!(out.contains("Writes:"), "lean dropped Writes:");
+}
+
+#[test]
+fn lean_keeps_integration_points_and_notes_bodies() {
+    // #62: integration points and notes carry action-relevant prose, so they are NOT in
+    // the drop-body set. Their bodies survive.
+    let md = "# Skill\n\n## Integration points\n\nThe release-branch gate blocks the merge on a FAIL.\n\n## Notes\n\nHusky v9 does not need shebangs in hook files.\n";
+    let out = render_skill(md, Tier::Lean);
+    assert!(
+        out.contains("release-branch gate blocks the merge"),
+        "lean wrongly dropped the Integration points body"
+    );
+    assert!(
+        out.contains("Husky v9 does not need shebangs"),
+        "lean wrongly dropped the Notes body"
+    );
+}
+
+#[test]
 fn wiring_keyword_in_prose_is_not_preserved() {
     // The anchor is the line start. A sentence that merely contains the word is prose,
     // so a dropped section still removes it.
