@@ -92,12 +92,9 @@ fn write_tdd_step_preserves_other_state_fields() {
 
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    std::fs::create_dir_all(root.join("specs")).expect("specs dir");
-    std::fs::write(
-        state_path(root),
-        "active_epic: e01\nbigpowers_version: 2.88.2\n",
-    )
-    .expect("seed state");
+    let state = state_path(root);
+    std::fs::create_dir_all(state.parent().expect("state parent")).expect("tasks dir");
+    std::fs::write(&state, "active_epic: e01\nbigpowers_version: 2.88.2\n").expect("seed state");
 
     write_tdd_step(root, TddStep::Red).expect("write step");
 

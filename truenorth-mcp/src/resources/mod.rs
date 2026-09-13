@@ -21,13 +21,13 @@ pub mod ontology;
 /// A served resource, identified by its `truenorth://` URI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ResourceDoc {
-    /// `truenorth://state`, backed by `specs/state.yaml`.
+    /// `truenorth://state`, backed by `.agent/tasks/state.yml`.
     State,
-    /// `truenorth://cockpit`, backed by `specs/release-plan.yaml`.
+    /// `truenorth://cockpit`, backed by `.agent/tasks/release-plan.yml`.
     Cockpit,
     /// `truenorth://conventions`, backed by `CONVENTIONS.md`.
     Conventions,
-    /// `truenorth://ontology`, backed by `specs/ontology.yaml`.
+    /// `truenorth://ontology`, backed by `.agent/ontology.yml`.
     Ontology,
 }
 
@@ -83,12 +83,18 @@ impl ResourceDoc {
     }
 
     /// The backing file path under a repository root.
+    ///
+    /// The cockpit files live under `.agent/` (Requirements 2.1, 2.2, 2.3). Conventions
+    /// stays at the repository root.
     pub fn backing_path(self, repo_root: &std::path::Path) -> PathBuf {
         match self {
-            ResourceDoc::State => repo_root.join("specs").join("state.yaml"),
-            ResourceDoc::Cockpit => repo_root.join("specs").join("release-plan.yaml"),
+            ResourceDoc::State => repo_root.join(".agent").join("tasks").join("state.yml"),
+            ResourceDoc::Cockpit => repo_root
+                .join(".agent")
+                .join("tasks")
+                .join("release-plan.yml"),
             ResourceDoc::Conventions => repo_root.join("CONVENTIONS.md"),
-            ResourceDoc::Ontology => repo_root.join("specs").join("ontology.yaml"),
+            ResourceDoc::Ontology => repo_root.join(".agent").join("ontology.yml"),
         }
     }
 
@@ -133,10 +139,10 @@ impl ResourceDoc {
 /// The backing file name for an error message.
 fn display_backing(doc: ResourceDoc) -> String {
     match doc {
-        ResourceDoc::State => "specs/state.yaml".to_string(),
-        ResourceDoc::Cockpit => "specs/release-plan.yaml".to_string(),
+        ResourceDoc::State => ".agent/tasks/state.yml".to_string(),
+        ResourceDoc::Cockpit => ".agent/tasks/release-plan.yml".to_string(),
         ResourceDoc::Conventions => "CONVENTIONS.md".to_string(),
-        ResourceDoc::Ontology => "specs/ontology.yaml".to_string(),
+        ResourceDoc::Ontology => ".agent/ontology.yml".to_string(),
     }
 }
 

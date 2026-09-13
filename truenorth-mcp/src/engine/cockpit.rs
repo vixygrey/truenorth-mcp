@@ -42,14 +42,17 @@ pub enum CockpitError {
     },
 }
 
-/// The path to `state.yaml` under a repository root.
+/// The path to the relocated state file under a repository root (Requirement 2.1).
 pub fn state_path(repo_root: &Path) -> PathBuf {
-    repo_root.join("specs").join("state.yaml")
+    repo_root.join(".agent").join("tasks").join("state.yml")
 }
 
-/// The path to `release-plan.yaml` under a repository root.
+/// The path to the relocated release-plan file under a repository root (Requirement 2.2).
 pub fn release_plan_path(repo_root: &Path) -> PathBuf {
-    repo_root.join("specs").join("release-plan.yaml")
+    repo_root
+        .join(".agent")
+        .join("tasks")
+        .join("release-plan.yml")
 }
 
 /// Advance the lifecycle phase in `state.yaml` and record the git context
@@ -74,7 +77,7 @@ pub fn advance_phase(
 
     let yaml = validate_state_for_write(&state)?;
     write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
-        file: "state.yaml".to_string(),
+        file: ".agent/tasks/state.yml".to_string(),
         source,
     })
 }
@@ -100,7 +103,7 @@ pub fn record_task(
 
     let yaml = validate_release_plan_for_write(&plan)?;
     write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
-        file: "release-plan.yaml".to_string(),
+        file: ".agent/tasks/release-plan.yml".to_string(),
         source,
     })
 }
@@ -144,7 +147,7 @@ pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitErro
 
     let yaml = validate_state_for_write(&state)?;
     write_atomic(&path, &yaml).map_err(|source| CockpitError::Io {
-        file: "state.yaml".to_string(),
+        file: ".agent/tasks/state.yml".to_string(),
         source,
     })
 }
@@ -155,7 +158,7 @@ fn read_state(path: &Path) -> Result<StateFile, CockpitError> {
         Ok(text) => Ok(validate_state(&text)?),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(StateFile::default()),
         Err(source) => Err(CockpitError::Io {
-            file: "state.yaml".to_string(),
+            file: ".agent/tasks/state.yml".to_string(),
             source,
         }),
     }
@@ -169,7 +172,7 @@ fn read_release_plan(path: &Path) -> Result<ReleasePlanFile, CockpitError> {
             Ok(ReleasePlanFile::default())
         }
         Err(source) => Err(CockpitError::Io {
-            file: "release-plan.yaml".to_string(),
+            file: ".agent/tasks/release-plan.yml".to_string(),
             source,
         }),
     }

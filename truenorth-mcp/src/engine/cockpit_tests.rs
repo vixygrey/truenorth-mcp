@@ -8,18 +8,18 @@ use super::*;
 use std::fs;
 use tempfile::tempdir;
 
-/// Seed `specs/state.yaml` with the given content.
+/// Seed the relocated state file with the given content.
 fn seed_state(root: &Path, content: &str) {
-    let dir = root.join("specs");
-    fs::create_dir_all(&dir).expect("create specs dir");
-    fs::write(dir.join("state.yaml"), content).expect("write state.yaml");
+    let path = state_path(root);
+    fs::create_dir_all(path.parent().expect("state parent")).expect("create tasks dir");
+    fs::write(path, content).expect("write state file");
 }
 
-/// Seed `specs/release-plan.yaml` with the given content.
+/// Seed the relocated release-plan file with the given content.
 fn seed_plan(root: &Path, content: &str) {
-    let dir = root.join("specs");
-    fs::create_dir_all(&dir).expect("create specs dir");
-    fs::write(dir.join("release-plan.yaml"), content).expect("write release-plan.yaml");
+    let path = release_plan_path(root);
+    fs::create_dir_all(path.parent().expect("plan parent")).expect("create tasks dir");
+    fs::write(path, content).expect("write release-plan file");
 }
 
 #[test]
@@ -147,10 +147,13 @@ fn write_atomic_leaves_no_temp_residue() {
 
     advance_phase(root, Phase::Plan, "planned", "").expect("advance");
 
-    // No `.state.yaml.*.tmp` residue remains in specs/.
-    let specs = root.join("specs");
-    let residue: Vec<_> = fs::read_dir(&specs)
-        .expect("read specs")
+    // No `.state.yml.*.tmp` residue remains in the tasks directory.
+    let tasks = state_path(root)
+        .parent()
+        .expect("tasks parent")
+        .to_path_buf();
+    let residue: Vec<_> = fs::read_dir(&tasks)
+        .expect("read tasks dir")
         .filter_map(Result::ok)
         .filter(|e| e.file_name().to_string_lossy().contains(".tmp"))
         .collect();

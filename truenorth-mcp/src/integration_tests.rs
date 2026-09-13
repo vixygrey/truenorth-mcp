@@ -22,10 +22,11 @@ use crate::server::TrueNorthServer;
 fn seed_repo(root: &std::path::Path) {
     fs::create_dir_all(root.join("skills/develop-tdd")).expect("skills dir");
     fs::write(root.join("skills/develop-tdd/SKILL.md"), "# TDD\n").expect("skill");
-    fs::create_dir_all(root.join("specs")).expect("specs dir");
-    fs::write(root.join("specs/state.yaml"), "active_epic: e01\n").expect("state");
+    // The cockpit files live under .agent/tasks/ after the relocation (Requirement 2).
+    fs::create_dir_all(root.join(".agent/tasks")).expect("tasks dir");
+    fs::write(root.join(".agent/tasks/state.yml"), "active_epic: e01\n").expect("state");
     fs::write(
-        root.join("specs/release-plan.yaml"),
+        root.join(".agent/tasks/release-plan.yml"),
         "build_order:\n- e01\n",
     )
     .expect("plan");
@@ -98,7 +99,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
 
     // A direct disk edit is reflected on the next read (disk is the source of truth).
     fs::write(
-        root.join("specs/state.yaml"),
+        root.join(".agent/tasks/state.yml"),
         "active_epic: e99\nphase: integrate\n",
     )?;
     let after_edit = read_text(&client, "truenorth://state").await?;

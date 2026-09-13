@@ -1,10 +1,10 @@
-//! Tests for the file watcher (task 7.3).
+//! Tests for the file watcher (tasks 7.3, 4.5).
 //!
 //! Included from `watcher.rs` via `#[path]`, so `super` is the watcher module. The
 //! coalesce test drives the pure `Debouncer` with explicit instants, so it needs no
 //! filesystem and no sleeping.
 //!
-//! Requirements: 5.6, and the URI mapping behind 5.3.
+//! Requirements: 5.6, and the URI mapping behind 5.3; 2.6 and 2.12 for the re-point.
 
 use super::*;
 use std::path::Path;
@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 #[test]
 fn maps_state_file_to_state_uri() {
     assert_eq!(
-        map_path_to_uri(Path::new("/repo/specs/state.yaml")),
+        map_path_to_uri(Path::new("/repo/.agent/tasks/state.yml")),
         Some(ResourceUri::State)
     );
 }
@@ -21,11 +21,12 @@ fn maps_state_file_to_state_uri() {
 #[test]
 fn maps_release_plan_and_product_to_cockpit() {
     assert_eq!(
-        map_path_to_uri(Path::new("/repo/specs/release-plan.yaml")),
+        map_path_to_uri(Path::new("/repo/.agent/tasks/release-plan.yml")),
         Some(ResourceUri::Cockpit)
     );
+    // The product path moved to .agent/product/ (Requirement 2.12).
     assert_eq!(
-        map_path_to_uri(Path::new("/repo/specs/product/SCOPE.md")),
+        map_path_to_uri(Path::new("/repo/.agent/product/scope.md")),
         Some(ResourceUri::Cockpit)
     );
 }
@@ -33,12 +34,21 @@ fn maps_release_plan_and_product_to_cockpit() {
 #[test]
 fn maps_ontology_and_conventions() {
     assert_eq!(
-        map_path_to_uri(Path::new("/repo/specs/ontology.yaml")),
+        map_path_to_uri(Path::new("/repo/.agent/ontology.yml")),
         Some(ResourceUri::Ontology)
     );
     assert_eq!(
         map_path_to_uri(Path::new("/repo/CONVENTIONS.md")),
         Some(ResourceUri::Conventions)
+    );
+}
+
+#[test]
+fn legacy_specs_product_is_no_longer_watched() {
+    // The watcher no longer maps specs/product/ to a resource (Requirement 2.12).
+    assert_eq!(
+        map_path_to_uri(Path::new("/repo/specs/product/SCOPE.md")),
+        None
     );
 }
 
@@ -58,9 +68,9 @@ fn two_edits_in_window_coalesce_into_one_notification() {
     let start = Instant::now();
 
     // Two edits to the same file, both inside the window.
-    debouncer.record(Path::new("/repo/specs/state.yaml"), start);
+    debouncer.record(Path::new("/repo/.agent/tasks/state.yml"), start);
     debouncer.record(
-        Path::new("/repo/specs/state.yaml"),
+        Path::new("/repo/.agent/tasks/state.yml"),
         start + Duration::from_millis(50),
     );
 
@@ -79,10 +89,10 @@ fn distinct_files_in_window_report_each_uri_once() {
     let mut debouncer = Debouncer::new();
     let start = Instant::now();
 
-    debouncer.record(Path::new("/repo/specs/state.yaml"), start);
-    debouncer.record(Path::new("/repo/specs/ontology.yaml"), start);
+    debouncer.record(Path::new("/repo/.agent/tasks/state.yml"), start);
+    debouncer.record(Path::new("/repo/.agent/ontology.yml"), start);
     debouncer.record(
-        Path::new("/repo/specs/state.yaml"),
+        Path::new("/repo/.agent/tasks/state.yml"),
         start + Duration::from_millis(10),
     );
 
@@ -104,13 +114,13 @@ fn a_new_window_opens_after_a_flush() {
     let mut debouncer = Debouncer::new();
     let start = Instant::now();
 
-    debouncer.record(Path::new("/repo/specs/state.yaml"), start);
+    debouncer.record(Path::new("/repo/.agent/tasks/state.yml"), start);
     let first = debouncer.poll(start + DEBOUNCE_WINDOW + Duration::from_millis(1));
     assert_eq!(first, Some(vec![ResourceUri::State]));
 
     // A later change opens a fresh window and flushes on its own schedule.
     let later = start + Duration::from_secs(1);
-    debouncer.record(Path::new("/repo/specs/ontology.yaml"), later);
+    debouncer.record(Path::new("/repo/.agent/ontology.yml"), later);
     assert!(debouncer.poll(later + Duration::from_millis(10)).is_none());
     let second = debouncer.poll(later + DEBOUNCE_WINDOW + Duration::from_millis(1));
     assert_eq!(second, Some(vec![ResourceUri::Ontology]));
