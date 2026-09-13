@@ -27,7 +27,8 @@ use super::{TIER_LEAN_TOKEN_BUDGET, collapse_blank_runs, encodes_invariant_or_ac
 pub fn compress_for_local_context(md: &str) -> String {
     let without_prose = drop_low_value_sections(md);
     let compact = compact_tables(&without_prose);
-    let bulleted = headings_to_bullets(&compact);
+    let plain = strip_decoration(&compact);
+    let bulleted = headings_to_bullets(&plain);
     let deduped = dedupe_directives(&bulleted);
     truncate_to_budget(&deduped, TIER_LEAN_TOKEN_BUDGET)
 }
@@ -175,6 +176,41 @@ fn split_cells(row: &str) -> Vec<String> {
 fn strip_table_padding(row: &str) -> String {
     let cells = split_cells(row);
     format!("| {} |", cells.join(" | "))
+}
+
+/// Strip decorative formatting from lean markdown (#62).
+///
+/// The pass drops a standalone horizontal rule (a line of only `-`, `*`, or `_` of length
+/// three or more) and trims trailing whitespace from every line. A horizontal rule is pure
+/// decoration for a lean agent. A heading, a checkbox, or any line that encodes an
+/// invariant is never a horizontal rule, so this pass cannot remove a load-bearing line.
+fn strip_decoration(md: &str) -> String {
+    // The leading YAML frontmatter block is delimited by `---` fences that look like
+    // horizontal rules. Keep every line before the first heading untouched, so the
+    // frontmatter fences survive. A body horizontal rule after the first heading is
+    // decoration and is dropped.
+    let first_heading = md
+        .lines()
+        .position(|line| heading_level(line).is_some())
+        .unwrap_or(0);
+
+    let out: Vec<&str> = md
+        .lines()
+        .enumerate()
+        .filter(|(index, line)| *index < first_heading || !is_horizontal_rule(line))
+        .map(|(_, line)| line.trim_end())
+        .collect();
+    collapse_blank_runs(&out.join("\n"))
+}
+
+/// Report whether a line is a standalone horizontal rule (`---`, `***`, or `___`).
+fn is_horizontal_rule(line: &str) -> bool {
+    let trimmed = line.trim();
+    if trimmed.len() < 3 {
+        return false;
+    }
+    let first = trimmed.chars().next().expect("length checked above");
+    matches!(first, '-' | '*' | '_') && trimmed.chars().all(|c| c == first)
 }
 
 /// Section titles whose bodies the lean tier drops.
