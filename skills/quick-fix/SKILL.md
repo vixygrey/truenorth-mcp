@@ -1,11 +1,7 @@
 ---
-# story: e51s04
 name: quick-fix
-description: "Streamlined fast-path for trivial data-only fixes — no TDD, no branching ceremony. Collapses 6 skills into 2 for changes that are purely data with no logic risk. Aborts with fallback to investigate-bug if guardrails trigger."
-model: sonnet
-effort: standard
+description: 'A streamlined fast path for a trivial data-only fix. No TDD, no branching ceremony. Collapses the flow for a change that is purely data with no logic risk. Aborts with a fallback to investigate-bug when a guardrail triggers.'
 ---
-
 
 # Quick Fix
 
@@ -35,15 +31,15 @@ Before invoking quick-fix, evaluate every item in this checklist:
 
 If ANY guardrail triggers, **abort immediately** and suggest `investigate-bug` instead:
 
-| Guardrail | Check |
-|-----------|-------|
-| **>1 file** | The fix touches more than one file |
-| **>5 lines** | The diff exceeds 5 lines |
-| **Logic change** | Any function signature, condition, or loop is modified |
-| **Complex verify** | The verify command is more than one pipeline |
-| **Test breakage** | Running `npm test` or equivalent breaks any existing test |
+| Guardrail          | Check                                                     |
+| ------------------ | --------------------------------------------------------- |
+| **>1 file**        | The fix touches more than one file                        |
+| **>5 lines**       | The diff exceeds 5 lines                                  |
+| **Logic change**   | Any function signature, condition, or loop is modified    |
+| **Complex verify** | The verify command is more than one pipeline              |
+| **Test breakage**  | Running `npm test` or equivalent breaks any existing test |
 
-> **Fallback:** If any guardrail triggers, tell the user: *"This fix exceeds quick-fix guardrails. Use `investigate-bug` for the full TDD bug-fix chain instead."*
+> **Fallback:** If any guardrail triggers, tell the user: _"This fix exceeds quick-fix guardrails. Use `investigate-bug` for the full TDD bug-fix chain instead."_
 
 ## Fast-Path Workflow
 
@@ -56,12 +52,12 @@ release-branch  →  merge and ship (existing skill)
 
 **Skipped skills (with justification):**
 
-| Skipped skill | Why skipped |
-|---------------|-------------|
-| `investigate-bug` | Root cause is obvious (data gap, not logic error) |
-| `diagnose-root` | No isolation needed — the data point is the root cause |
-| `develop-tdd` | No logic to test — single assertion proves correctness |
-| `kickoff-branch` | Change is so small it does not warrant a separate worktree |
+| Skipped skill     | Why skipped                                                |
+| ----------------- | ---------------------------------------------------------- |
+| `investigate-bug` | Root cause is obvious (data gap, not logic error)          |
+| `diagnose-root`   | No isolation needed — the data point is the root cause     |
+| `develop-tdd`     | No logic to test — single assertion proves correctness     |
+| `kickoff-branch`  | Change is so small it does not warrant a separate worktree |
 
 > Justification is included in the `fix:` commit body so the audit trail is preserved.
 
@@ -100,7 +96,6 @@ Skipped skills (justified for data-only change):
 ### 5. Release
 
 Invoke `release-branch` to merge and ship.
-
 
 ## Example
 

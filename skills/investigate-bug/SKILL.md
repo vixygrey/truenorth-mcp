@@ -1,8 +1,6 @@
 ---
 name: investigate-bug
-model: sonnet
-effort: standard
-description: Investigate a bug or issue by exploring the codebase to find root cause, then write a TDD-based fix plan to specs/bugs/BUG-*.md. Use when user reports a bug, wants to investigate a problem, mentions "triage", or wants to plan a fix.
+description: 'Investigate a bug or issue by exploring the codebase to find the root cause, then write a TDD-based fix plan to a BUG report. Use it when the user reports a bug, wants to investigate a problem, mentions triage, or wants to plan a fix.'
 ---
 
 # Investigate Bug
@@ -34,6 +32,7 @@ Do NOT ask follow-up questions yet. Start investigating immediately.
 Run the 4-phase root-cause analysis via the `diagnose-root` skill (Reproduce → Isolate → Hypothesize → Verify). That skill is the canonical RCA engine — do not re-implement the phases here.
 
 Also look at:
+
 - Recent changes to affected files (`git log --oneline <file>`)
 - Existing tests (what's tested, what's missing)
 - Similar patterns elsewhere in the codebase that work correctly
@@ -58,6 +57,7 @@ Create a concrete, ordered list of RED-GREEN cycles. Each cycle is one vertical 
 - **GREEN**: Describe the minimal code change to make that test pass
 
 Rules:
+
 - Tests verify behavior through public interfaces, not implementation details
 - One test at a time, vertical slices (NOT all tests first, then all code)
 - Each test should survive internal refactors
@@ -77,6 +77,7 @@ After writing, append a row to `specs/bugs/registry.yaml` with: bug_id (same tim
 ## Problem
 
 A clear description of the bug or issue, including:
+
 - What happens (actual behavior)
 - What should happen (expected behavior)
 - How to reproduce (if applicable)
@@ -84,6 +85,7 @@ A clear description of the bug or issue, including:
 ## Root Cause Analysis
 
 Describe what you found during investigation:
+
 - The code path involved
 - Why the current code fails
 - Any contributing factors
@@ -126,4 +128,3 @@ After writing the bug file, print a one-line summary of the root cause and sugge
 
 - [Feathers' Seams & Characterization Tests](../../docs/references/feathers.md) — seam types, characterization tests, and the legacy code change algorithm
 - [Fowler's Code Smells](../../docs/references/fowler.md) — identifying structural problems by smell before investigating
-

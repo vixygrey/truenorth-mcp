@@ -1,9 +1,6 @@
 ---
-# story: e45s38
 name: diagnose-stall
-model: haiku
-effort: light
-description: Diagnose why agent orchestration stopped producing progress — silent stalls in /loop, dispatch-agents, or execute-plan. Use when work appears hung, no output for several minutes, or a subagent never returned.
+description: 'Diagnose why agent orchestration stopped producing progress. A silent stall in a loop, dispatch-agents, or execute-plan. Use it when work appears hung, there is no output for several minutes, or a subagent never returned.'
 ---
 
 # Diagnose Stall
@@ -14,18 +11,18 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Stall signals
 
-| Signal | Likely cause |
-|--------|----------------|
+| Signal                                        | Likely cause                                         |
+| --------------------------------------------- | ---------------------------------------------------- |
 | No stdout for >5 min on a monitored loop tick | Sleep/watcher misconfigured or prompt never re-armed |
-| Subagent dispatched but no completion message | Agent hung, blocked on approval, or scope too large |
-| `dispatch-agents` cycle 3 reached with gaps | Circuit exhausted — needs human escalation |
-| Verify command running >15 min | Missing timeout or waiting on external service |
-| `handoff.next_skill` unchanged across turns | Prior skill never wrote handoff |
+| Subagent dispatched but no completion message | Agent hung, blocked on approval, or scope too large  |
+| `dispatch-agents` cycle 3 reached with gaps   | Circuit exhausted — needs human escalation           |
+| Verify command running >15 min                | Missing timeout or waiting on external service       |
+| `handoff.next_skill` unchanged across turns   | Prior skill never wrote handoff                      |
 
 ## Process
 
 1. **Read state** — `specs/state.yaml`: `handoff.next_skill`, `active_flow`, `metrics.story_start`, open decisions.
-2. **Check locks** — `bash scripts/check-stale-locks.sh` if present; read `specs/agent-locks.yaml`.
+2. **Check the locks** — read `specs/agent-locks.yaml` and look for a stale lock.
 3. **Inspect terminals** — list background shells; note PIDs, last output timestamp, exit codes.
 4. **Classify stall type:**
    - **waiting_approval** — tool blocked on user consent
@@ -39,12 +36,12 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Integration
 
-| Caller | When to invoke |
-|--------|----------------|
-| `/loop` (Cursor) | After two consecutive ticks with no observable progress |
+| Caller            | When to invoke                                          |
+| ----------------- | ------------------------------------------------------- |
+| `/loop` (Cursor)  | After two consecutive ticks with no observable progress |
 | `dispatch-agents` | When a wave exceeds expected duration with zero returns |
-| `execute-plan` | When a step checkpoint is overdue |
-| User | "Why did this stop?" / "Nothing is happening" |
+| `execute-plan`    | When a step checkpoint is overdue                       |
+| User              | "Why did this stop?" / "Nothing is happening"           |
 
 ## Verify
 

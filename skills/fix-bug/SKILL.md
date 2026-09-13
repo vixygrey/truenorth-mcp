@@ -1,9 +1,6 @@
 ---
-# story: e51s04
 name: fix-bug
-model: sonnet
-effort: standard
-description: Bug fix orchestrator — active_flow fix_bug; reads specs/bugs/BUG-*.md; chains investigate-bug, develop-tdd, validate-fix. Use when user reports a defect.
+description: 'A bug-fix orchestrator. Sets the fix_bug flow, reads the BUG report, and chains investigate-bug, develop-tdd, and validate-fix. Use it when the user reports a defect.'
 ---
 
 # Fix Bug
@@ -19,24 +16,25 @@ Orchestrates **fix_bug** flow without mixing epic build state.
 Valid entry **without a user-reported bug** when:
 
 - **Preflight** or **CI** is red at kickoff or verify-work
-- **Golden suite** or project baseline is red (`bash scripts/run-verification-gates.sh` or equivalent)
+- The project baseline is red, per the `truenorth_verify_gate` tool
 - A reproducible gate failure during unrelated epic work exceeds quick-fix guardrails
 
 Create `specs/bugs/BUG-*.md` via `investigate-bug` (or inline in fix-bug step 1) describing the gate failure, then run the standard fix_bug chain.
 
 ## Five steps (`bug_cycle` in state.yaml)
 
-| Step | Skill / action |
-|------|----------------|
-| 1 | `investigate-bug` — create BUG-*.md with RCA |
-| 2 | `diagnose-root` — 4-phase root cause analysis |
-| 3 | `develop-tdd` — red-green against bug file verify steps |
-| 4 | `validate-fix` — re-run failing test, full suite, lint |
-| 5 | `release-branch` — PR or solo land the fix |
+| Step | Skill / action                                          |
+| ---- | ------------------------------------------------------- |
+| 1    | `investigate-bug` — create BUG-\*.md with RCA           |
+| 2    | `diagnose-root` — 4-phase root cause analysis           |
+| 3    | `develop-tdd` — red-green against bug file verify steps |
+| 4    | `validate-fix` — re-run failing test, full suite, lint  |
+| 5    | `release-branch` — PR or solo land the fix              |
 
 ### Checkpoint / resume
 
 Track progress via `specs/state.yaml` `bug_cycle`:
+
 - `bug_cycle.current_step`: current step (1–5)
 - `bug_cycle.completed_steps`: completed step numbers
 - `handoff.next_skill`: skill for the current step
@@ -66,4 +64,5 @@ title: Short title
 
 ## Verify
 
-→ verify: `test -d specs/bugs && test -f scripts/run-skill-verify.sh`
+Confirm the BUG report exists and the fix passes the project verification through
+the `truenorth_verify_gate` tool.
