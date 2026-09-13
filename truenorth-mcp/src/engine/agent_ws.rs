@@ -317,6 +317,12 @@ fn resolve_under(base: &Path, rel_path: &Path) -> Option<PathBuf> {
         }
     }
 
+    // The target must name a file under the base. A path that resolves back to the base
+    // itself (for example `a/..`) is not a writable file target.
+    if depth == 0 {
+        return None;
+    }
+
     Some(resolved)
 }
 
@@ -325,3 +331,9 @@ fn resolve_under(base: &Path, rel_path: &Path) -> Option<PathBuf> {
 #[cfg(test)]
 #[path = "agent_ws_tests.rs"]
 mod tests;
+
+// Property tests (Property 6) live in a separate sibling so the example-based unit tests
+// stay focused. The `#[path]` include keeps them a child module of `agent_ws`.
+#[cfg(test)]
+#[path = "agent_ws_prop_tests.rs"]
+mod prop_tests;
