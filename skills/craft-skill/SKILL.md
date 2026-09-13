@@ -1,109 +1,93 @@
 ---
-# story: e45s02
-# story: e45s12
-# story: e79s02
 name: craft-skill
-model: sonnet
-effort: standard
-description: Create new bigpowers skills with proper structure, progressive disclosure, and bundled resources. Use when user wants to create, write, or build a new skill for the bigpowers lifecycle.
+description: 'Create a new skill with proper structure, progressive disclosure, and bundled resources. Use it to create, write, or build a new skill for the lifecycle.'
 ---
 
 # Craft Skill
 
-> **HARD GATE** — Do NOT name a skill without a two-word verb-noun pair. Do NOT merge a new skill without running `sync-skills.sh`. Generated `.cursor/rules/` and `.gemini/` artifacts MUST match the source SKILL.md.
+> **HARD GATE**: Do NOT name a skill without a two-word verb-noun pair. Validate the new skill before you merge it.
 
-## CSO Description Discipline (e45s02)
+## Frontmatter discipline
 
-The YAML `description` is the **Catalog Selection Object** — the only field agents see when picking a skill.
+A skill frontmatter has two fields only: `name` and `description`. Do NOT add a
+`model:` field or an `effort:` field. The runtime is model-agnostic. It never routes
+on a vendor model tier. Leanness comes from the server render tiers, not the
+frontmatter.
 
-| Rule | Limit |
-|------|-------|
-| Max length | 1024 characters |
-| Voice | Third person |
-| Content | Capability + `Use when …` triggers only |
-| Forbidden | Workflow steps, phase chains, numbered lists, `→ verify:`, HARD GATE prose |
+## CSO description discipline
 
-Move process detail into the SKILL.md body or REFERENCE.md — never into `description`.
+The `description` is the catalog selection object, the only field an agent sees when
+picking a skill.
 
-## Agentic STE body discipline (e79s02)
+| Rule       | Limit                                                                          |
+| ---------- | ------------------------------------------------------------------------------ |
+| Max length | 1024 characters                                                                |
+| Voice      | Third person                                                                   |
+| Content    | The capability plus "Use it ..." triggers only                                 |
+| Forbidden  | Workflow steps, phase chains, numbered lists, verify commands, HARD GATE prose |
 
-Skill-body instructional prose MUST follow [AGENTIC-STE.md](../../docs/AGENTIC-STE.md).
+Move the process detail into the SKILL.md body or a REFERENCE.md. Never put it in
+the `description`.
 
-| Rule | Limit |
-|------|-------|
-| Sentence length | ≤20 words per instruction sentence |
-| Voice | Imperative, active |
-| Directive terms | MUST, MUST NOT, NEVER, ALWAYS, DO, DO NOT |
-| Banned modals | should, might, could, may, consider, try, generally, typically |
-| Scope | SKILL.md body only — not YAML `description`, not `terse-mode` output |
+## Body discipline
 
-> **HARD GATE** — Do NOT merge a new or edited skill until `bash scripts/validate-agentic-ste.sh --strict skills/<name>/SKILL.md` exits 0. Fix violations before `sync-skills.sh`.
+The instructional prose in a skill body MUST follow the house writing rules: short
+imperative sentences, active voice, approved modals (`can`, `will`, `must`), and no
+vendor model names.
+
+| Rule            | Limit                                                                    |
+| --------------- | ------------------------------------------------------------------------ |
+| Sentence length | 20 words or fewer per instruction sentence                               |
+| Voice           | Imperative, active                                                       |
+| Directive terms | MUST, MUST NOT, NEVER, ALWAYS, DO, DO NOT                                |
+| Banned modals   | should, might, could, may, consider, try, generally, typically           |
+| Scope           | The SKILL.md body only, not the `description`, not the terse-mode output |
 
 ## Process
 
-1. **Gather requirements** — ask user about:
-   - What task/domain does the skill cover?
-   - Which use cases must the skill handle?
-   - Does it need executable scripts or just instructions?
-   - Any reference materials to include?
-   - What specs/ output does it produce (if any)?
+1. **Gather the requirements**: ask the user what task or domain the skill covers,
+   which use cases it must handle, whether it needs executable content or just
+   instructions, any reference material to include, and what `specs/` output it
+   produces.
+2. **Verify the principles**: the skill is atomic (verb-noun), deep (a simple
+   interface over complex internal logic), has hard gates where needed, and is
+   verifiable.
+3. **Draft the skill**: create the SKILL.md with concise instructions (see
+   [REFERENCE.md](REFERENCE.md) for the template), plus a reference file when the
+   content exceeds 100 lines. When the user provides a library README or API docs,
+   extract the triggers and the hard gates. Do NOT invent an API that is not in the
+   source.
+4. **Review with the user**: present the draft, and ask whether it covers the use
+   cases, whether anything is missing, and whether any section needs more or less
+   detail.
+5. **Completion-honesty gate** (HARD GATE): before you declare the skill done,
+   validate that the name is a verb-noun pair, the description is 1024 characters or
+   fewer with triggers only, the body follows the writing rules, and the skill
+   parses. Show the evidence. Narration without evidence is rejected.
 
-2. **Verify Principles** — Ensure the skill aligns with [PRINCIPLES.md](../../docs/PRINCIPLES.md):
-   - Is it atomic (verb-noun)?
-   - Is it "deep" (simple interface, complex internal logic)?
-   - Does it include Hard Gates?
-   - Is it verifiable with a `.feature` file?
+## Naming rules
 
-3. **Draft the skill** — create:
-   - SKILL.md with concise instructions (see [REFERENCE.md](REFERENCE.md) for template)
-   - Additional reference files if content exceeds 100 lines
-   - Utility scripts if deterministic operations needed
+Every skill name MUST be a two-word verb-noun pair. See [REFERENCE.md](REFERENCE.md)
+for the full rules, examples, and the documented exceptions.
 
-   **Auto-skill from library README:** When user provides a library README or API docs URL, extract triggers and HARD GATEs.
-   Draft verify commands and specs/ output into SKILL.md. Do NOT invent APIs not in the source.
+## The specs output
 
-4. Add `model:` frontmatter (`haiku` | `sonnet` | `opus`) per [model-profiles.md](../../docs/references/model-profiles.md).
+When the skill produces written output, it goes in `specs/` at the project root.
+Document the output-file path in the skill body.
 
-> **STREAM CONTINUITY** — When writing file content, output in continuous chunks of ~200 lines. Do not pause. Continue immediately until complete. If you need time, emit a placeholder comment rather than going silent.
+## Review checklist
 
-5. **Review with user** — present draft and ask:
-   - Does this cover your use cases?
-   - Anything missing or unclear?
-   - Does any section need more or less detail?
-
-6. **Completion-honesty gate (HARD GATE — e45s02)** — Before declaring done:
-   - Run `bash scripts/validate-skill-description.sh skills/<name>/SKILL.md` — must exit 0
-   - Run `bash scripts/validate-agentic-ste.sh --strict skills/<name>/SKILL.md` — must exit 0 (e79s02)
-   - Run `bash scripts/sync-skills.sh` — must complete without error
-   - Run `bash scripts/run-skill-verify.sh <name>` if the skill defines a verify command
-   - Show terminal output for each — narration without evidence is rejected
-
-## Naming Rules
-
-Every skill name must be a **two-word verb-noun pair**. See [REFERENCE.md](REFERENCE.md) for full rules, examples, and documented exceptions.
-
-## specs/ Output
-
-If the skill produces written output, it goes in `specs/` at the project root. Document the output file path in the skill body and in CONVENTIONS.md's output files table.
-
-## Review Checklist
-
-After drafting, verify:
-
-- [ ] Name is a two-word verb-noun pair (or follows grill-me exception)
-- [ ] Description < 1024 chars, triggers only, no workflow-summary leakage
-- [ ] Description includes triggers ("Use when...")
-- [ ] SKILL.md under 100 lines
-- [ ] No time-sensitive info
-- [ ] Consistent terminology with CONVENTIONS.md
-- [ ] specs/ output documented if applicable
-- [ ] `validate-skill-description.sh` exits 0
-- [ ] `validate-agentic-ste.sh --strict` exits 0 (e79s02)
-- [ ] `sync-skills.sh` run to propagate to Cursor/Gemini
-- [ ] `bash scripts/validate-skill-catalog.sh` passes for the new skill (HARD GATE — completion honesty)
-
-> **HARD GATE** — Do NOT declare the skill done until `bash scripts/validate-skill-catalog.sh --strict --skill <name>` exits 0. Validator enforces verb-noun name, HARD GATE block, description ≤1024 chars, and `→ verify:` command.
+- [ ] The name is a two-word verb-noun pair (or a documented exception).
+- [ ] The frontmatter is `name` and `description` only.
+- [ ] The description is under 1024 characters, triggers only, no workflow summary.
+- [ ] The description includes the "Use it ..." triggers.
+- [ ] The SKILL.md body is under 100 lines.
+- [ ] No time-sensitive information.
+- [ ] Consistent terminology with the project conventions.
+- [ ] The `specs/` output is documented when applicable.
+- [ ] No repository script references and no vendor model names.
 
 ## Verify
 
-→ verify: `bash scripts/validate-skill-catalog.sh --strict --skill craft-skill && bash scripts/validate-skill-description.sh skills/craft-skill/SKILL.md`
+Confirm the new skill parses, its name is a verb-noun pair, its description is
+within the limit, and its body follows the writing rules.

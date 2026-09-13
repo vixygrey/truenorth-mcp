@@ -1,74 +1,50 @@
 ---
 name: search-skills
-description: Find the right bigpowers skill from natural-language intent using a local lexical index over SKILL.md frontmatter. Use when unsure which skill to invoke, or at start of research-first.
-model: haiku
-effort: standard
+description: 'Find the right skill from a natural-language intent using the catalog search. Use it when unsure which skill to invoke, or at the start of research-first.'
 ---
-
-# story: e09s01
-# story: e21s01
 
 # Search Skills
 
-> **HARD GATE** — Search results must be ranked by relevance. Do NOT return all matches without prioritization. Use skill metadata (phase, purpose, frequency) to rank.
+> **HARD GATE**: rank the search results by relevance. Do NOT return every match without prioritization. Use the skill metadata to rank.
 >
-> **HARD GATE** — Do NOT use external embedding APIs or AI-based semantic search. This is a lexical-only index (ADR: zero external dependency).
+> **HARD GATE**: Do NOT use an external embedding API or AI-based semantic search. The catalog search is lexical over the skill frontmatter, with zero external dependency.
 
-Lexical search only — no embedding service (ADR: zero external dependency). The index is a flat markdown file (`specs/SKILL-SEARCH-INDEX_LATEST.md`) built from every SKILL.md's YAML frontmatter — name, description, and key phrases. No vector DB, no API calls, no network dependency.
+Search the skill catalog lexically, with no embedding service. The
+`search_skills` tool reads every skill's `name` and `description` directly from the
+`skills/` directory. There is no vector DB, no API call, and no network dependency.
 
 ## When to use
 
-- You're unsure which skill to invoke for a user's request
-- At the start of `research-first` to find pre-existing skills that might solve the problem
-- When a user asks "is there a skill for X?"
-- Before calling a skill by name, to confirm it's the right one
-
-## Pre-flight
-
-- [ ] Does `specs/SKILL-SEARCH-INDEX_LATEST.md` exist? If not, run `bash scripts/build-skill-index.sh`.
-- [ ] Is the index fresh? Check its timestamp — if > 24 hours old or after any SKILL.md change, regenerate.
+- You are unsure which skill to invoke for a request.
+- At the start of `research-first`, to find a pre-existing skill that solves the
+  problem.
+- When a user asks "is there a skill for X?".
+- Before calling a skill by name, to confirm it is the right one.
 
 ## Process
 
-1. **Refresh index if stale** — Run `bash scripts/build-skill-index.sh` if `specs/SKILL-SEARCH-INDEX_LATEST.md` doesn't exist or was modified before the last SKILL.md change.
+1. **Search the catalog**: call the `search_skills` tool with the keywords from the
+   intent. It matches the skill name, phase, and description. Use `index_skills`
+   first when you want the full list.
+2. **Rank the results**: read the top 3 matches. Evaluate each by exactness (does
+   the description literally match the intent?), phase fit (is the skill for the
+   current lifecycle phase?), and trigger phrases (does the "Use it ..." text match
+   the situation?).
+3. **Recommend one skill**: select the single best match. Give the skill name, why
+   it is the best match (citing the description or a trigger phrase), and what it
+   produces (an artifact, a dialogue, or a state change).
+4. **Invoke**: call the skill directly or through the orchestrator. When no match is
+   found, suggest the closest phase-appropriate skill or the general entry-point
+   skill for the project.
 
-2. **Search the index** — Use ripgrep on the lexical index:
-   ```
-   rg -i "<keywords>" specs/SKILL-SEARCH-INDEX_LATEST.md
-   ```
-   The index contains each skill's name, description, phase, and key use-case phrases, so natural language queries work well even without embeddings.
+## Why not semantic search
 
-3. **Rank results** — Read the top 3 matches. Evaluate by:
-   - **Exactness** — Does the description literally match the user's intent?
-   - **Phase fit** — Is the skill designed for the current lifecycle phase?
-   - **Trigger phrases** — Does the skill's "Use when" section match the situation?
-
-4. **Recommend one skill** — Select the single best-matching skill. Provide:
-   - The skill name
-   - Why it's the best match (citing the description or trigger phrase)
-   - What it produces (artifact, dialogue, or state change)
-
-5. **Invoke** — Call the skill directly or through the orchestrator. If no match found, suggest the closest phase-appropriate skill or `using-bigpowers` as a general entry point.
-
-## Index Format
-
-`specs/SKILL-SEARCH-INDEX_LATEST.md` contains one section per skill:
-```markdown
-## <skill-name>
-- **Description:** <from frontmatter>
-- **Phase:** <lifecycle phase>
-- **Triggers:** <key phrases from description>
-- **Keywords:** <extracted terms>
-```
-
-## Why Not Semantic Search?
-
-- Zero network dependency — works fully offline
-- Zero cost — no API keys, no usage limits
-- Instant — ripgrep on a local file is sub-second
-- Deterministic — same query always returns same results
-- Auditable — you can read the full index
+- Zero network dependency. It works fully offline.
+- Zero cost. No API key, no usage limit.
+- Instant. A lexical match over the served catalog is sub-second.
+- Deterministic. The same query always returns the same result.
+- Auditable. You can read the full skill set.
 
 ## Verify
 
-→ verify: `test -f specs/SKILL-SEARCH-INDEX_LATEST.md || (bash scripts/build-skill-index.sh && test -f specs/SKILL-SEARCH-INDEX_LATEST.md)`
+Confirm the `search_skills` tool returns a ranked result for a representative query.
