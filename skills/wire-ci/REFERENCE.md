@@ -2,46 +2,42 @@
 
 ## Navigation
 
-| Lines | Section |
-|-------|---------|
-| 1 | Title |
-| 3–20 | Navigation |
-| 21–22 | Examples |
-| 23–39 | Create CI for a Go project (TBR + optional deploy) |
-| 40–49 | Create CI for a CLI tool (TBR only, no deploy) |
-| 50–57 | Validate existing workflows (no generation) |
-| 58–70 | Options |
-| 71–79 | Integration with build-epic |
-| 80–154 | Reference block 1 — test-build-release.yml (Go, excerpt) |
+| Lines   | Section                                                   |
+| ------- | --------------------------------------------------------- |
+| 1       | Title                                                     |
+| 3–20    | Navigation                                                |
+| 21–22   | Examples                                                  |
+| 23–39   | Create CI for a Go project (TBR + optional deploy)        |
+| 40–49   | Create CI for a CLI tool (TBR only, no deploy)            |
+| 50–57   | Validate existing workflows (no generation)               |
+| 58–70   | Options                                                   |
+| 71–79   | Integration with build-epic                               |
+| 80–154  | Reference block 1 — test-build-release.yml (Go, excerpt)  |
 | 155–204 | Reference block 2 — deploy.yml (generic web app, excerpt) |
-| 205–232 | Reference block 3 — CLI dogfood (big-release pattern) |
-| 233–257 | Reference block 4 — validate script |
-| 258–268 | Reference block 5 — dry-run |
+| 205–232 | Reference block 3 — CLI dogfood (self-releasing CLI)      |
+| 233–257 | Reference block 4 — validate script                       |
+| 258–268 | Reference block 5 — dry-run                               |
 
 ## Examples
 
 ### Create CI for a Go project (TBR + optional deploy)
 
 ```bash
-# Resolve forge + stack, then apply the bundled template
-bash scripts/wire-ci.sh --detect
-bash scripts/wire-ci.sh --apply
-
+# Detect the forge and stack, then apply the matching CI template
+wire-ci --detect
+wire-ci --apply
 wire-ci --validate
 wire-ci --dry-run
 ```
 
-To use your own org templates instead of the bundled ones:
-
-```bash
-BIGPOWERS_CI_TEMPLATES=/path/to/your/templates bash scripts/wire-ci.sh --apply
-```
+To use your own org templates instead of the bundled ones, point the CI template
+directory at your own path, then apply.
 
 ### Create CI for a CLI tool (TBR only, no deploy)
 
 ```bash
-bash scripts/wire-ci.sh --apply
-# Edit release job to download build artifact — see big-release dogfood
+wire-ci --apply
+# Edit release job to download build artifact — see the CLI dogfood pattern
 # CLI/library repos: delete deploy.yml; the release job is terminal.
 
 wire-ci --validate
@@ -57,14 +53,14 @@ wire-ci --validate --check-only
 
 ## Options
 
-| Flag | Description |
-|------|-------------|
-| `--validate` | Check YAML syntax, permissions, secrets, common pitfalls |
-| `--dry-run` | Run workflows locally via `act` or dispatch via `gh` |
-| `--check-only` | Only validate, do not generate new files |
-| `--type <type>` | Force project type (skip auto-detection) |
-| `--force` | Overwrite existing workflow files |
-| `--no-deploy` | Skip deploy.yml even for hosted stacks |
+| Flag            | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `--validate`    | Check YAML syntax, permissions, secrets, common pitfalls |
+| `--dry-run`     | Run workflows locally via `act` or dispatch via `gh`     |
+| `--check-only`  | Only validate, do not generate new files                 |
+| `--type <type>` | Force project type (skip auto-detection)                 |
+| `--force`       | Overwrite existing workflow files                        |
+| `--no-deploy`   | Skip deploy.yml even for hosted stacks                   |
 
 ---
 
@@ -145,7 +141,8 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
-      - run: npx semantic-release
+      # Tag-driven release: a `v*` tag triggers the release workflow.
+      - run: echo "Run your tag-driven release command here."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -158,7 +155,7 @@ jobs:
 name: Deploy
 on:
   workflow_run:
-    workflows: ["Test Build Release"]
+    workflows: ['Test Build Release']
     types: [completed]
 
 permissions:
@@ -170,7 +167,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  SITE_URL: "https://CHANGE-ME.example.com"
+  SITE_URL: 'https://CHANGE-ME.example.com'
 
 jobs:
   deploy:
@@ -180,13 +177,13 @@ jobs:
     runs-on: ubuntu-22.04
     environment: production
     steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: deploy-meta
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
           path: deploy-meta
-      # Placeholder deploy step — bigpowers ships no deploy templates and pins
+      # Placeholder deploy step — the project ships no deploy templates and pins
       # no third-party action. Substitute your platform's own step here, or drop
       # the deploy job entirely for CLI and library repos. Pin whatever action
       # you choose to a full commit SHA rather than a tag. (GH #104)
@@ -202,28 +199,28 @@ jobs:
 
 ---
 
-## Reference block 3 — CLI dogfood (big-release pattern)
+## Reference block 3 — CLI dogfood (self-releasing CLI pattern)
 
 ```yaml
-  build:
-    needs: [test]
-    steps:
-      - run: make build
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: big-release-${{ github.sha }}
-          path: bin/big-release
+build:
+  needs: [test]
+  steps:
+    - run: make build
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: myapp-cli-${{ github.sha }}
+        path: dist/myapp-cli
 
-  release:
-    needs: [build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
-        with:
-          name: big-release-${{ github.sha }}
-          path: bin
-      - run: make release   # cross-compile assets only; host binary from artifact
-      - run: big-release release --verbose
+release:
+  needs: [build]
+  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  steps:
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: myapp-cli-${{ github.sha }}
+        path: bin
+    - run: make release # cross-compile assets only; host binary from artifact
+    - run: myapp-cli release --verbose
 ```
 
 No `deploy.yml` — CLI publishes via the release job.

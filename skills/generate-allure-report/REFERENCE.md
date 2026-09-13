@@ -4,17 +4,17 @@
 
 The script reads five YAML sources from the project:
 
-| Source | Path | Fields Used |
-|--------|------|-------------|
-| Execution status | `specs/execution-status.yaml` | `epics`, `stories`, `development_status` |
-| Release plan | `specs/release-plan.yaml` | `release.version`, `release.status`, `bugs` summary |
-| Epic capsules | `specs/epics/**/epic.yaml` + `-tasks.yaml` | Epic metadata, task pass/fail counts |
-| Cycle times | `specs/metrics/cycle-times.yaml` | Story-level `cycle_minutes`, `bcp_per_hour`, `source` |
-| Bug registry | `specs/bugs/registry.yaml` | Bug counts by status and severity |
+| Source           | Path                                       | Fields Used                                           |
+| ---------------- | ------------------------------------------ | ----------------------------------------------------- |
+| Execution status | `specs/execution-status.yaml`              | `epics`, `stories`, `development_status`              |
+| Release plan     | `specs/release-plan.yaml`                  | `release.version`, `release.status`, `bugs` summary   |
+| Epic capsules    | `specs/epics/**/epic.yaml` + `-tasks.yaml` | Epic metadata, task pass/fail counts                  |
+| Cycle times      | `specs/metrics/cycle-times.yaml`           | Story-level `cycle_minutes`, `bcp_per_hour`, `source` |
+| Bug registry     | `specs/bugs/registry.yaml`                 | Bug counts by status and severity                     |
 
 ## Script Body
 
-`scripts/generate-allure-report.sh`:
+The report generator reads the specs/ model and writes the Allure result files:
 
 ```bash
 #!/usr/bin/env bash
@@ -61,7 +61,7 @@ total_stories = len(stories)
 incomplete = sum(1 for s in stories.values() if isinstance(s, dict) and s.get("status") != "done")
 
 testsuite = ET.Element("testsuite", {
-    "name": "bigpowers-epic-progress",
+    "name": "epic-progress",
     "tests": str(total_stories),
     "failures": str(incomplete),
     "errors": "0",
@@ -152,8 +152,8 @@ if open_bugs > 0:
 # 4. Build executor.json
 rl = release_plan.get("release", {}) if isinstance(release_plan.get("release"), dict) else {}
 executor = {
-    "name": "bigpowers",
-    "type": "bigpowers",
+    "name": "truenorth",
+    "type": "truenorth",
     "buildName": rl.get("version", "unknown") if isinstance(rl, dict) else "unknown",
     "buildOrder": len(exec_status.get("development_status", {})),
 }
@@ -173,7 +173,7 @@ PY
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<testsuite name="bigpowers-epic-progress" tests="N" failures="F" errors="0" skipped="0">
+<testsuite name="epic-progress" tests="N" failures="F" errors="0" skipped="0">
   <testcase classname="e01" name="e01s01: Security slopcheck tags" time="0.75">
     <properties>
       <property name="risk" value="none"/>
@@ -217,8 +217,8 @@ PY
 
 ```json
 {
-  "name": "bigpowers",
-  "type": "bigpowers",
+  "name": "truenorth",
+  "type": "truenorth",
   "buildName": "2.76.2",
   "buildOrder": 400
 }
@@ -227,10 +227,7 @@ PY
 ## Example Usage
 
 ```bash
-# Generate reports
-bash scripts/generate-allure-report.sh
-
-# Verify output
+# Generate the Allure report from the specs/ model, then verify output
 test -f allure-results/junit-results.xml && echo "JUnit OK"
 test -f allure-results/categories.json && echo "Categories OK"
 test -f allure-results/executor.json && echo "Executor OK"

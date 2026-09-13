@@ -9,4 +9,4 @@
 **Evidence:** path/to/benchmark-report.md
 ```
 
-Benchmark repo: `bigpowers-benchmark` — resolve the local clone on this machine; clone it from wherever your fork lives if absent. Never assume a hard-coded absolute path or a specific owner.
+Benchmark repo: the project benchmark repository — resolve the local clone on this machine; clone it from wherever your fork lives if absent. Never assume a hard-coded absolute path or a specific owner.

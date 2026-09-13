@@ -2,45 +2,38 @@
 
 ## Navigation
 
-| Lines | Section |
-|-------|---------|
-| 1 | Title |
-| 3–17 | Navigation |
-| 18–34 | Runner script |
-| 35–46 | Configuration reference |
-| 47–55 | Verification |
-| 56–89 | Reference block 1 |
-| 90–107 | Reference block 2 |
-| 108–122 | Reference block 3 |
-| 123–159 | Reference block 4 |
-| 160–177 | Reference block 5 |
+| Lines   | Section                 |
+| ------- | ----------------------- |
+| 1       | Title                   |
+| 3–17    | Navigation              |
+| 18–34   | Runner script           |
+| 35–46   | Configuration reference |
+| 47–55   | Verification            |
+| 56–89   | Reference block 1       |
+| 90–107  | Reference block 2       |
+| 108–122 | Reference block 3       |
+| 123–159 | Reference block 4       |
+| 160–177 | Reference block 5       |
 
 ## Runner script
 
-A ready-to-use runner is provided for standalone operation:
+Run the smoke checks against the deployed URL. A standalone runner:
 
-```bash
-bash scripts/run-smoke.sh [url] [smoke-checks-file]
-```
-
-The runner:
 1. Uses `$DEPLOY_URL`, `$SMOKE_CHECKS_FILE`, or CLI arguments
 2. Runs all defined checks
 3. Prints a pass/fail summary
 4. Exits 0 on all pass, non-zero on any failure
 
-
 ---
 
 ## Configuration reference
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SMOKE_CHECKS_FILE` | `smoke-checks.yaml` | Path to smoke checks YAML |
-| `DEPLOY_URL` / `BASE_URL` | *(required)* | Base URL for all checks |
-| `SMOKE_TIMEOUT` | `30` | Per-check timeout (seconds) |
-| `SMOKE_RETRIES` | `0` | Number of retries on failure |
-
+| Variable                  | Default             | Description                  |
+| ------------------------- | ------------------- | ---------------------------- |
+| `SMOKE_CHECKS_FILE`       | `smoke-checks.yaml` | Path to smoke checks YAML    |
+| `DEPLOY_URL` / `BASE_URL` | _(required)_        | Base URL for all checks      |
+| `SMOKE_TIMEOUT`           | `30`                | Per-check timeout (seconds)  |
+| `SMOKE_RETRIES`           | `0`                 | Number of retries on failure |
 
 ---
 
@@ -49,7 +42,7 @@ The runner:
 → verify: `test -f smoke-test/SKILL.md && grep -q 'name: smoke-test' smoke-test/SKILL.md && echo OK`
 → verify: `grep -qi 'smoke.checks.yaml\|checklist\|expected_status\|content_signal' smoke-test/SKILL.md && echo OK`
 → verify: `grep -ci 'pass\|fail\|summary\|report' smoke-test/SKILL.md | awk '{if($1>=2) print "OK"; else print "FAIL"}'`
-→ verify: `grep -q 'smoke-test' SKILL-INDEX.md && echo OK`
+→ verify: confirm the `smoke-test` skill resolves through the `index_skills` tool.
 
 ---
 
@@ -57,32 +50,32 @@ The runner:
 
 ```yaml
 # smoke-checks.yaml — auto-loaded if present at project root
-base_url: "https://example.com"
+base_url: 'https://example.com'
 checks:
-  - name: "Homepage"
-    path: "/"
+  - name: 'Homepage'
+    path: '/'
     method: GET
     expected_status: 200
-    content_signal: "bigpowers"
+    content_signal: 'example'
     max_response_time_ms: 3000
 
-  - name: "API Health"
-    path: "/api/health"
+  - name: 'API Health'
+    path: '/api/health'
     method: GET
     expected_status: 200
-    content_signal: "ok|healthy"
+    content_signal: 'ok|healthy'
 
-  - name: "API Jogos"
-    path: "/api/jogos"
+  - name: 'API Jogos'
+    path: '/api/jogos'
     method: GET
     expected_status: 200
-    content_signal: "jogos|games"
+    content_signal: 'jogos|games'
 
-  - name: "Not Found handling"
-    path: "/nonexistent"
+  - name: 'Not Found handling'
+    path: '/nonexistent'
     method: GET
     expected_status: 404
-    content_signal: "not found|404"
+    content_signal: 'not found|404'
 ```
 
 ---

@@ -70,7 +70,7 @@ Once the user has answered the main questions, probe for assumptions:
 
 ### 4. Synthesize and confirm
 
-Summarize your understanding in 3–5 bullet points aligned with [countable-story-format.md](../../docs/countable-story-format.md):
+Summarize your understanding in 3 to 5 bullet points aligned with the countable-story-format:
 
 - The problem (feeds into §1 Business narrative)
 - The solution and main flow (feeds into §5)

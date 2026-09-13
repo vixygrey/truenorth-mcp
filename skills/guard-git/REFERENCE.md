@@ -2,17 +2,17 @@
 
 ## Navigation
 
-| Lines | Section |
-|-------|---------|
-| 1 | Title |
-| 3–16 | Navigation |
-| 17–28 | Secret patterns (audit + pre-commit) |
-| 29–46 | Copy layout |
-| 47–72 | Claude Code |
-| 73–94 | Cursor and Cursor CLI |
-| 95–122 | Gemini CLI |
-| 123–137 | Google Antigravity |
-| 138–180 | Verify (local tests) |
+| Lines   | Section                              |
+| ------- | ------------------------------------ |
+| 1       | Title                                |
+| 3–16    | Navigation                           |
+| 17–28   | Secret patterns (audit + pre-commit) |
+| 29–46   | Copy layout                          |
+| 47–72   | Claude Code                          |
+| 73–94   | Cursor and Cursor CLI                |
+| 95–122  | Gemini CLI                           |
+| 123–137 | Google Antigravity                   |
+| 138–180 | Verify (local tests)                 |
 
 ## Secret patterns (audit + pre-commit)
 
@@ -138,42 +138,47 @@ Add **Deny list** entries in **Antigravity → Settings → Terminal**:
 ## Verify (local tests)
 
 **1. Block push to main without land mode (Claude mode):**
+
 ```bash
 echo '{"tool_input":{"command":"git push origin main"}}' | ./pre-tool-use.sh
 # Expected: exit 2, protected branch message
 ```
 
 **2. Allow push to main with GIT_BIGPOWERS_LAND=1:**
+
 ```bash
 GIT_BIGPOWERS_LAND=1 echo '{"tool_input":{"command":"git push origin main"}}' | ./pre-tool-use.sh
 # Expected: exit 0 (when on main)
 ```
 
 **3. Allow push to feature branch:**
+
 ```bash
 echo '{"tool_input":{"command":"git push -u origin feat/my-task"}}' | ./pre-tool-use.sh
 # Expected: exit 0
 ```
 
 **4. Conventional Commits (Gemini mode):**
+
 ```bash
 echo '{"tool_input":{"command":"git commit -m \"bad message\""}}' | GIT_GUARDRAILS_MODE=gemini ./pre-tool-use.sh
 # Expected: exit 0, {"decision":"deny", "reason":"..."}
 ```
 
 **5. Protected Branch commit (Cursor mode):**
+
 ```bash
 # Run on 'main' branch
 echo '{"command":"git commit -m \"feat: valid message\""}' | GIT_GUARDRAILS_MODE=cursor ./pre-tool-use.sh
 # Expected: exit 2, "Direct commits to protected branch 'main' are forbidden"
 ```
 
-**6. Land script exists:**
-```bash
-test -x scripts/land-branch.sh && echo OK
-```
+**6. Branch-landing path exists:**
+
+Confirm the project has a branch-landing path (for example, `gh pr create` then a squash merge).
 
 **7. Allow (Gemini mode):**
+
 ```bash
 echo '{"tool_input":{"command":"git status"}}' | GIT_GUARDRAILS_MODE=gemini ./pre-tool-use.sh
 # Expected: exit 0, {"decision":"allow"}

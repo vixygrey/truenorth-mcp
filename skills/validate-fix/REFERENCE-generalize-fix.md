@@ -20,8 +20,9 @@ cat > specs/verifications/generalize-sweep-BUG-YYYY-MM-DD-slug.json <<EOF
   "tracked_issues": []
 }
 EOF
-bash scripts/verify-generalize-sweep.sh specs/verifications/generalize-sweep-*.json
 ```
+
+Verify the generalize sweep: confirm every entry in `specs/verifications/generalize-sweep-*.json` resolves and its verification passes.
 
 ## Security classes
 

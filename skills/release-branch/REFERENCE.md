@@ -2,21 +2,21 @@
 
 ## Navigation
 
-| Lines | Section |
-|-------|---------|
-| 1 | Title |
-| 3–22 | Navigation |
-| 23–31 | PR body template (team-pr mode) |
-| 32–35 | Summary |
-| 36–41 | Verify |
-| 42–47 | specs/ artifacts |
-| 48–58 | Worktree cleanup details |
-| 59–81 | Cycle-time recording |
-| 82–100 | Why not story_start minus story_end? |
-| 101–121 | CI verification |
-| 122–127 | Solo-local fallback detail |
-| 128–134 | Handoff |
-| 135–159 | Reference block 1 |
+| Lines   | Section                              |
+| ------- | ------------------------------------ |
+| 1       | Title                                |
+| 3–22    | Navigation                           |
+| 23–31   | PR body template (team-pr mode)      |
+| 32–35   | Summary                              |
+| 36–41   | Verify                               |
+| 42–47   | specs/ artifacts                     |
+| 48–58   | Worktree cleanup details             |
+| 59–81   | Cycle-time recording                 |
+| 82–100  | Why not story_start minus story_end? |
+| 101–121 | CI verification                      |
+| 122–127 | Solo-local fallback detail           |
+| 128–134 | Handoff                              |
+| 135–159 | Reference block 1                    |
 
 # Release Branch — Reference
 
@@ -58,17 +58,11 @@ If `git worktree remove` fails due to uncommitted changes, ask: "There are uncom
 
 ## Cycle-time recording
 
-After landing the branch, record delivery metrics using the git-derived,
-additive script (replaces hand-arithmetic):
+After landing the branch, record delivery metrics from git history (replaces
+hand-arithmetic). Append a row to `specs/metrics/cycle-times.yaml` for the story,
+using the commit range `$(git merge-base main HEAD)..HEAD`.
 
-```bash
-bash scripts/record-cycle-time.sh append \
-  --story <story_id> --bcps <bcps> \
-  --range "$(git merge-base main HEAD)..HEAD" \
-  --file specs/metrics/cycle-times.yaml
-```
-
-This appends a row to the cycle-times ledger with two separated metrics:
+The row records two separated metrics:
 
 - **effort_hours** — ADDITIVE. Idle-stripped estimated effort from git commit
   history (git-hours model: 120-min session threshold, 120-min first-commit pad).
@@ -92,28 +86,25 @@ retired because:
    derived from a latency measurement).
 
 The new approach derives effort from commit history (objective, reproducible)
-and lead time from first commit → merge (honest calendar latency). See
-`docs/references/bcp.md` for BCP sizing context and
-`scripts/record-cycle-time.sh` for the full algorithm.
+and lead time from first commit to merge (honest calendar latency). The effort
+model uses a 120-min session threshold with a 120-min first-commit pad, and an
+additivity self-check.
 
 ---
 
 ## CI verification
 
-The CI polling logic has been extracted to `scripts/wait-for-ci.sh`.
-See the script's `--help` for usage. Step 7b of the main SKILL.md invokes it directly:
-
-```bash
-bash scripts/wait-for-ci.sh --timeout 600 --interval 30
-```
+After pushing, wait for CI to complete. Poll every 30 seconds with a 600-second
+timeout. Confirm the branch/commit workflows before you land.
 
 **Exit codes:**
+
 - **0** — all workflows green. Set `release.ci_verified: true` in state.yaml.
 - **1** — at least one workflow failed. Prints failure URLs. Set `handoff.next_skill = fix-bug`.
 - **2** — timeout. CI did not complete. Retry or investigate.
 - **0 with warning** — `gh` CLI not available, git-only fallback confirmed push landed but CI status unverified.
 
-The script handles: auto-discovery of all workflows for the current
+The CI-verification step covers: auto-discovery of all workflows for the current
 branch/commit, polling until completion, success/failure/timeout exit codes,
 and git-only fallback when `gh` CLI is unavailable.
 
@@ -121,9 +112,9 @@ and git-only fallback when `gh` CLI is unavailable.
 
 ## Solo-local fallback detail
 
-The fallback sequence (Path B above) handles the "remote has moved" case with `git pull --rebase`. Use when `scripts/land-branch.sh` is absent.
+The fallback sequence (Path B above) handles the "remote has moved" case with `git pull --rebase`. Use when no automated branch-landing path is available.
 
-**Acceptance:** When fallback runs, main is updated, feature branch is deleted locally, and output states `"used fallback merge (land-branch.sh not found)"`.
+**Acceptance:** When fallback runs, main is updated, feature branch is deleted locally, and output states that the fallback merge was used.
 
 ## Handoff
 

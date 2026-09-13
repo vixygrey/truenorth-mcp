@@ -2,24 +2,24 @@
 
 ## Navigation
 
-| Lines | Section |
-|-------|---------|
-| 1 | Title |
-| 3–23 | Navigation |
-| 24–32 | Integration |
-| 33–44 | Configuration |
-| 45–54 | Verification |
-| 55–71 | Reference block 1 |
-| 72–92 | Reference block 2 |
-| 93–104 | Example 1 |
-| 105–121 | Example 2 |
-| 122–133 | Example 3 |
-| 134–144 | Example 4 |
-| 145–165 | Example 5 |
-| 166–176 | Example 6 |
-| 177–185 | Integration |
-| 186–197 | Configuration |
-| 198–204 | Verification |
+| Lines   | Section           |
+| ------- | ----------------- |
+| 1       | Title             |
+| 3–23    | Navigation        |
+| 24–32   | Integration       |
+| 33–44   | Configuration     |
+| 45–54   | Verification      |
+| 55–71   | Reference block 1 |
+| 72–92   | Reference block 2 |
+| 93–104  | Example 1         |
+| 105–121 | Example 2         |
+| 122–133 | Example 3         |
+| 134–144 | Example 4         |
+| 145–165 | Example 5         |
+| 166–176 | Example 6         |
+| 177–185 | Integration       |
+| 186–197 | Configuration     |
+| 198–204 | Verification      |
 
 ## Integration
 
@@ -27,18 +27,16 @@
 - **CI pipeline:** JSON Lines output is CI-friendly; pipe to `jq` for assertions.
 - **Pre-migration:** Run `validate-contracts --shape` before consuming migration output.
 
-
 ---
 
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CONTRACTS_DIR` | `specs/contracts/` | Directory containing contract YAML files |
-| `VALIDATE_ALL` | `false` | If true, run all contracts in the directory |
-| `STRICT_MODE` | `false` | Treat warnings as failures |
-| `OUTPUT_FORMAT` | `text` | `text` or `json` |
-
+| Variable        | Default            | Description                                 |
+| --------------- | ------------------ | ------------------------------------------- |
+| `CONTRACTS_DIR` | `specs/contracts/` | Directory containing contract YAML files    |
+| `VALIDATE_ALL`  | `false`            | If true, run all contracts in the directory |
+| `STRICT_MODE`   | `false`            | Treat warnings as failures                  |
+| `OUTPUT_FORMAT` | `text`             | `text` or `json`                            |
 
 ---
 
@@ -48,7 +46,7 @@
 → verify: `grep -qi 'specs/contracts\|JSON Schema\|key.set\|data.shape' validate-contracts/SKILL.md && echo OK`
 → verify: `grep -ci 'divergence\|missing key\|type mismatch\|diff\|conforms\|column' validate-contracts/SKILL.md | awk '{if($1>=3) print "OK"; else print "FAIL"}'`
 → verify: `grep -ci 'JSON Lines\|machine.parse\|CI\|deploy.*gate\|pre.deploy' validate-contracts/SKILL.md | awk '{if($1>=2) print "OK"; else print "FAIL"}'`
-→ verify: `grep -q 'validate-contracts' SKILL-INDEX.md && echo OK`
+→ verify: confirm the `validate-contracts` skill is listed by the `index_skills` tool.
 
 ---
 
@@ -126,7 +124,7 @@ schema:
 sources:
   reference: src/frontend/locales/en.json
   target: src/backend/messages/en.json
-mode: subset      # all target keys must exist in reference
+mode: subset # all target keys must exist in reference
 ```
 
 ---
@@ -180,18 +178,16 @@ validate-contracts --shape specs/contracts/migration-output.yaml
 - **CI pipeline:** JSON Lines output is CI-friendly; pipe to `jq` for assertions.
 - **Pre-migration:** Run `validate-contracts --shape` before consuming migration output.
 
-
 ---
 
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CONTRACTS_DIR` | `specs/contracts/` | Directory containing contract YAML files |
-| `VALIDATE_ALL` | `false` | If true, run all contracts in the directory |
-| `STRICT_MODE` | `false` | Treat warnings as failures |
-| `OUTPUT_FORMAT` | `text` | `text` or `json` |
-
+| Variable        | Default            | Description                                 |
+| --------------- | ------------------ | ------------------------------------------- |
+| `CONTRACTS_DIR` | `specs/contracts/` | Directory containing contract YAML files    |
+| `VALIDATE_ALL`  | `false`            | If true, run all contracts in the directory |
+| `STRICT_MODE`   | `false`            | Treat warnings as failures                  |
+| `OUTPUT_FORMAT` | `text`             | `text` or `json`                            |
 
 ---
 
@@ -201,4 +197,4 @@ validate-contracts --shape specs/contracts/migration-output.yaml
 → verify: `grep -qi 'specs/contracts\|JSON Schema\|key.set\|data.shape' validate-contracts/SKILL.md && echo OK`
 → verify: `grep -ci 'divergence\|missing key\|type mismatch\|diff\|conforms\|column' validate-contracts/SKILL.md | awk '{if($1>=3) print "OK"; else print "FAIL"}'`
 → verify: `grep -ci 'JSON Lines\|machine.parse\|CI\|deploy.*gate\|pre.deploy' validate-contracts/SKILL.md | awk '{if($1>=2) print "OK"; else print "FAIL"}'`
-→ verify: `grep -q 'validate-contracts' SKILL-INDEX.md && echo OK`
+→ verify: confirm the `validate-contracts` skill is listed by the `index_skills` tool.

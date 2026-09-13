@@ -7,7 +7,7 @@ description: 'Evaluate an incoming project plan against the project principles a
 
 > **HARD GATE** — Do NOT start build skills (kickoff-branch, develop-tdd) until audit-plan returns a READY verdict. A plan missing test commands, scope boundaries, or success criteria will produce drift and rework downstream.
 
-Assess an incoming project plan for alignment with bigpowers principles, identify what's missing, and produce a structured readiness report before any skill execution begins.
+Assess an incoming project plan for alignment with the project principles, identify what is missing, and produce a structured readiness report before any skill execution begins.
 
 ## Three lenses
 

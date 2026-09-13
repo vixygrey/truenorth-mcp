@@ -4,39 +4,39 @@ Combined from dbader/readme-template and jehna/readme-best-practices. No TOC.
 
 ## Navigation
 
-| Lines | Section |
-|-------|---------|
-| 1 | Title |
-| 5–40 | Navigation |
-| 41–42 | Sections |
-| 43–54 | 1. Title + Badges |
-| 55–60 | 2. Tagline |
-| 61–64 | 3. Description |
-| 65–67 | 4. Prerequisites |
-| 68–75 | Prerequisites |
-| 76–78 | 5. Installation |
-| 79–89 | Installation |
-| 90–92 | 6. Usage |
-| 93–102 | Usage |
-| 103–105 | 7. Features |
-| 106–113 | Features |
-| 114–116 | 8. Configuration |
-| 117–125 | Configuration |
-| 126–128 | 9. Development Setup |
-| 129–139 | Development |
-| 140–142 | 10. Running Tests |
-| 143–152 | Tests |
-| 153–155 | 11. Contributing |
-| 156–164 | Contributing |
-| 165–167 | 12. Changelog |
-| 168–172 | Changelog |
-| 173–175 | 13. Links |
-| 176–181 | Links |
-| 182–184 | 14. License |
-| 185–191 | License |
+| Lines   | Section                |
+| ------- | ---------------------- |
+| 1       | Title                  |
+| 5–40    | Navigation             |
+| 41–42   | Sections               |
+| 43–54   | 1. Title + Badges      |
+| 55–60   | 2. Tagline             |
+| 61–64   | 3. Description         |
+| 65–67   | 4. Prerequisites       |
+| 68–75   | Prerequisites          |
+| 76–78   | 5. Installation        |
+| 79–89   | Installation           |
+| 90–92   | 6. Usage               |
+| 93–102  | Usage                  |
+| 103–105 | 7. Features            |
+| 106–113 | Features               |
+| 114–116 | 8. Configuration       |
+| 117–125 | Configuration          |
+| 126–128 | 9. Development Setup   |
+| 129–139 | Development            |
+| 140–142 | 10. Running Tests      |
+| 143–152 | Tests                  |
+| 153–155 | 11. Contributing       |
+| 156–164 | Contributing           |
+| 165–167 | 12. Changelog          |
+| 168–172 | Changelog              |
+| 173–175 | 13. Links              |
+| 176–181 | Links                  |
+| 182–184 | 14. License            |
+| 185–191 | License                |
 | 192–194 | 15. Credits (optional) |
-| 195–199 | Credits |
-| 200–202 | Verify |
+| 195–199 | Credits                |
+| 200–202 | Verify                 |
 
 ## Sections
 
@@ -47,10 +47,9 @@ Combined from dbader/readme-template and jehna/readme-best-practices. No TOC.
 
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![npm version](https://img.shields.io/npm/v/your-package.svg)
-
 ```
 
-Fill badges from CLAUDE.md stack info if available. Default to license + version badges.
+Fill badges from the project agent guide stack info if available. Default to license + version badges.
 
 ### 2. Tagline
 
@@ -67,15 +66,15 @@ Fill badges from CLAUDE.md stack info if available. Default to license + version
 ```markdown
 ## Prerequisites
 
-- **Runtime**: Node.js v18+ (from CLAUDE.md)
+- **Runtime**: Node.js v18+ (from the project agent guide)
 - **Package manager**: npm (or pnpm/yarn)
 ```
 
-Auto-fill from CLAUDE.md commands section when possible.
+Auto-fill from the project agent guide commands section when possible.
 
 ### 5. Installation
 
-```markdown
+````markdown
 ## Installation
 
 ```bash
@@ -83,7 +82,9 @@ npm install -g your-package
 # or
 npx your-package
 ```
-```
+````
+
+````
 
 Prefer npx one-shot if applicable; list global install as alternative.
 
@@ -95,8 +96,9 @@ Prefer npx one-shot if applicable; list global install as alternative.
 ```bash
 your-command --help
 your-command do-something
-```
-```
+````
+
+````
 
 Include the most common 1-2 commands. Link to full docs if they exist.
 
@@ -107,7 +109,7 @@ Include the most common 1-2 commands. Link to full docs if they exist.
 
 - Feature 1: short description
 - Feature 2: short description
-```
+````
 
 3-6 bullet points of what the project does. Derived from the project's purpose.
 
@@ -116,8 +118,8 @@ Include the most common 1-2 commands. Link to full docs if they exist.
 ```markdown
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
+| Variable   | Default | Description      |
+| ---------- | ------- | ---------------- |
 | `VAR_NAME` | `value` | What it controls |
 ```
 
@@ -125,7 +127,7 @@ Use `TODO` markers if unknown.
 
 ### 9. Development Setup
 
-```markdown
+````markdown
 ## Development
 
 ```bash
@@ -133,9 +135,11 @@ git clone <repo-url>
 cd project
 npm install
 ```
-```
+````
 
-Auto-fill from CLAUDE.md `Run` and `Build` commands.
+````
+
+Auto-fill from the project agent guide `Run` and `Build` commands.
 
 ### 10. Running Tests
 
@@ -145,10 +149,11 @@ Auto-fill from CLAUDE.md `Run` and `Build` commands.
 ```bash
 npm test
 npm run lint
-```
-```
+````
 
-Auto-fill from CLAUDE.md `Test` and `Lint` commands.
+````
+
+Auto-fill from the project agent guide `Test` and `Lint` commands.
 
 ### 11. Contributing
 
@@ -160,7 +165,7 @@ Auto-fill from CLAUDE.md `Test` and `Lint` commands.
 3. Commit changes (`git commit -am 'Add my thing'`).
 4. Push (`git push origin feature/my-thing`).
 5. Open a Pull Request.
-```
+````
 
 ### 12. Changelog
 
@@ -187,14 +192,14 @@ See [CHANGELOG.md](../../CHANGELOG.md) or [Releases](https://github.com/user/rep
 MIT — see [LICENSE](../../LICENSE) for details.
 ```
 
-Detect from CLAUDE.md or project LICENSE file.
+Detect from the project agent guide or project LICENSE file.
 
 ### 15. Credits (optional)
 
 ```markdown
 ## Credits
 
-Built with [bigpowers](https://www.npmjs.com/package/bigpowers).
+Built with [truenorth-mcp](https://www.npmjs.com/package/truenorth-mcp).
 ```
 
 ## Verify
