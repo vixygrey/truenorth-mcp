@@ -47,6 +47,20 @@ pub enum GroupingVocab {
     None,
 }
 
+impl GroupingVocab {
+    /// The kebab-case label a `group_kind` must match, or `None` for the no-grouping
+    /// vocabulary. A profile with vocab `None` accepts no `group_kind` (Requirement 4.6).
+    pub fn as_kind_str(self) -> Option<&'static str> {
+        match self {
+            GroupingVocab::Epic => Some("epic"),
+            GroupingVocab::Sprint => Some("sprint"),
+            GroupingVocab::Milestone => Some("milestone"),
+            GroupingVocab::Ticket => Some("ticket"),
+            GroupingVocab::None => None,
+        }
+    }
+}
+
 /// Whether a profile requires a grouping key (Requirement 3.3).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GroupingRule {
