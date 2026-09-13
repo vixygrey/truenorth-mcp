@@ -113,6 +113,25 @@ fn distinct_files_in_window_report_each_uri_once() {
 }
 
 #[test]
+fn an_adr_edit_reports_the_adr_uri_within_the_window() {
+    // Requirement 9.3: a change under specs/adr/ coalesces and reports the ADR resource,
+    // which the watcher emits as resources/updated within 1 second. The debouncer drives
+    // the same report path the running watcher uses, deterministically.
+    let mut debouncer = Debouncer::new();
+    let start = Instant::now();
+
+    debouncer.record(Path::new("/repo/specs/adr/0001-verb-noun-naming.md"), start);
+    assert!(debouncer.poll(start + Duration::from_millis(100)).is_none());
+
+    let report = debouncer
+        .poll(start + DEBOUNCE_WINDOW + Duration::from_millis(1))
+        .expect("the window elapsed");
+    assert_eq!(report, vec![ResourceUri::Adr]);
+    // The window is 200 ms, well within the 1 second bound.
+    assert!(DEBOUNCE_WINDOW < Duration::from_secs(1));
+}
+
+#[test]
 fn poll_before_any_change_reports_nothing() {
     let mut debouncer = Debouncer::new();
     assert!(debouncer.poll(Instant::now()).is_none());
