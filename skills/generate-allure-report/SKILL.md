@@ -1,40 +1,34 @@
 ---
 name: generate-allure-report
-model: sonnet
-effort: standard
-description: "Generate Allure-ready reports from bigpowers YAML metadata. Reads execution-status.yaml, release-plan.yaml, epic capsules, task YAMLs, cycle-times.yaml, and bug registry to produce allure-results/junit-results.xml, categories.json, and executor.json. Use when preparing progress dashboards, integrating with Allure TestOps, or generating CI reports."
+description: 'Generate Allure-ready reports from the project YAML metadata. Reads the execution status, the release plan, the epic capsules, the task files, and the bug registry to produce a JUnit results file, a categories file, and an executor file. Use it when preparing a progress dashboard, integrating with Allure TestOps, or generating a CI report.'
 ---
 
 # Generate Allure Report
 
-Generate Allure TestOps-compatible reports from bigpowers project metadata. Produces JUnit XML for story-level test results, custom categories for filtering, and executor metadata — all in the `allure-results/` directory.
+Generate Allure-compatible reports from the project metadata. Produce JUnit XML for
+the story-level test results, custom categories for filtering, and executor
+metadata, all in the `allure-results/` directory.
 
-## Quick Start
+## What it produces
 
-```bash
-bash scripts/generate-allure-report.sh
-```
+Three files in `allure-results/`.
 
-## What It Produces
+| File                | Description                                                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `junit-results.xml` | One test case per story, with properties for risk, security, WSJF, tier, wave, and status. An incomplete story gets a failure element. |
+| `categories.json`   | Custom Allure categories for filtering by epic, risk level, and security review.                                                       |
+| `executor.json`     | Build metadata: the name, type, version from the release plan, and the build order.                                                    |
 
-Three files in `allure-results/`:
+## Data sources
 
-| File | Description |
-|------|-------------|
-| `junit-results.xml` | One `<testcase>` per story with `<properties>` for risk, security, WSJF, tier, wave, and status. Incomplete stories get a `<failure>` element. |
-| `categories.json` | Custom Allure categories for filtering by epic, risk level (P0), and security reviews. |
-| `executor.json` | Build metadata — name, type, version from release-plan.yaml, build order. |
-
-## Data Sources
-
-See [REFERENCE.md](REFERENCE.md)
+Read the execution status, the release plan, the epic capsules, the task files, and
+the bug registry. See [REFERENCE.md](REFERENCE.md) for the field mapping.
 
 ## Verify
 
-```bash
-test -f allure-results/junit-results.xml && test -f allure-results/categories.json && test -f allure-results/executor.json
-```
+Confirm the three files exist in `allure-results/`: the JUnit results, the
+categories, and the executor.
 
 ## Handoff
 
-- next_skill: null (terminal skill — no downstream workflow step)
+Next skill: none. This is a terminal skill with no downstream step.

@@ -1,51 +1,36 @@
 ---
 name: visual-dashboard
-model: sonnet
-effort: standard
-description: Start a browser-based dashboard that visualizes architecture, implementation plans, and project status. Persists artifacts in .bigpowers/dashboard/. Reads specs/state.yaml, release-plan.yaml, epics, and planning-status via HTTP API or opencode panel.
+description: 'Start a browser-based dashboard that visualizes the architecture, the implementation plans, and the project status. Reads the cockpit files (state, release plan, epics, planning status) and serves a read-only view.'
 ---
 
 # Visual Dashboard
-> **HARD GATE** — **HARD GATE** — Dashboards are read-only. Do NOT use visualization to make decisions without consulting the source data. 'The chart looks better' is not a decision.
 
+> **HARD GATE**: the dashboard is read-only. Do NOT use a visualization to make a decision without consulting the source data. "The chart looks better" is not a decision.
 
-Browser-based visual companion for bigpowers. Visualizes architecture, plans, and status.
+A browser-based visual companion. It visualizes the architecture, the plans, and the
+status from the cockpit.
 
-## HTTP cockpit (YAML SoT)
+## HTTP cockpit
 
-Start the server:
+Start a local server that reads the cockpit and serves it over HTTP.
 
-```bash
-bash visual-dashboard/scripts/start-server.sh
-```
+| Route                                | Purpose                                                                       |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `GET /api/status?projectDir=<abs>`   | JSON: the state, the release, the epics, the planning status, the active epic |
+| `GET /cockpit.html?projectDir=<abs>` | A read-only PM view, planning on the left, epics on the right                 |
 
-Endpoints:
+The server reads the cockpit files directly. Prefer reading them through the
+`truenorth://state` and `truenorth://cockpit` resources when driving the view from
+the MCP server.
 
-| Route | Purpose |
-|-------|---------|
-| `GET /api/status?projectDir=<abs>` | JSON: `state`, `release`, `epics[]`, `planning_status`, `active_epic` |
-| `GET /cockpit.html?projectDir=<abs>` | Read-only PM view (planning left, epics right) |
-| `GET /` | Agent-pushed HTML screens (legacy, unchanged) |
+## Cockpit keys the view reads
 
-Example:
+- `state.yaml`: `active_flow`, `active_epic_id`, `git`, `handoff`, `epic_cycle`.
+- `release-plan.yaml`: `release.version`, and the `epics[]` with `id`, `title`,
+  `wsjf`, `file`.
+- `execution-status.yaml`: the story and epic status map.
+- `planning-status.yaml`: the discover workflows and their status.
 
-```bash
-curl -s "http://127.0.0.1:PORT/api/status?projectDir=$PWD" | jq .release.version
-```
+## Verify
 
-Implementation: `visual-dashboard/scripts/read-specs-status.cjs` + `server.cjs`.
-
-## Opencode Progress Panel
-
-Projects using bigpowers in opencode can read `specs/state.yaml`, `specs/release-plan.yaml`, and active `specs/epics/*.yaml` directly (no checkbox `### WS1` markdown).
-
-Required YAML keys:
-
-- **state.yaml** — `active_flow`, `active_epic_id`, `git`, `handoff`, `epic_cycle`
-- **release-plan.yaml** — `release.version`, `epics[]` with `id`, `title`, `wsjf`, `file`
-- **execution-status.yaml** — `development_status` map (story/epic → `done` | `pending`)
-- **planning-status.yaml** — discover workflows and `status: done|pending`
-
-## Agent screens (optional)
-
-Push HTML to the dashboard session dir for rich diagrams. See `start-server.sh` for `CONTENT_DIR`.
+Confirm the status endpoint returns the current cockpit state for the project.
