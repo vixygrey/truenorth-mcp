@@ -251,20 +251,20 @@ P5 (no dangling references).
 - [x] 20. Checkpoint - Confirm crate + npm wrapper parity before cleanup
   - Make sure that the full parity test suites (crate + npm wrapper) pass with zero failures. Ask the user if questions arise. Do not proceed to cleanup unless parity holds (Req 10.5, §9.3).
 
-- [ ] 21. Repository cleanup (parity-gated, one commit per batch)
+- [x] 21. Repository cleanup (parity-gated, one commit per batch)
   - [x] 21.1 Consolidate the 13 per-harness skill mirror directories into one `skills/`
     - Fold `.cline/ .codebuddy/ .codex/ .continue/ .copilot/ .cursor/ .gemini/ .kilocode/ .opencode/ .pi/ .qwen/ .trae/ .windsurf/` skill mirrors into a single canonical `skills/`. Assert exactly one `skills/` remains and zero mirror directories remain. Commit as its own batch
     - _Requirements: 10.1, 10.6_
 
-  - [ ] 21.2 Remove analysis docs and vendor-coupled agent files
+  - [x] 21.2 Remove analysis docs and vendor-coupled agent files
     - Remove the upstream one-off analysis docs and `CLAUDE.md`, `GEMINI.md`, `opencode.json`, `.mcp.json`. Commit as its own batch
     - _Requirements: 10.2, 10.6_
 
-  - [ ] 21.3 Remove the bash/python script pipeline and upstream infra directories
+  - [x] 21.3 Remove the bash/python script pipeline and upstream infra directories
     - Remove the `scripts/` pipeline and the `kernel/`, `profiles/`, `extensions/`, `hooks/`, `dashboard/`, and `website/` directories. Commit as its own batch
     - _Requirements: 10.2, 10.6_
 
-  - [ ] 21.4 Remove superseded entrypoints and generated artifacts
+  - [x] 21.4 Remove superseded entrypoints and generated artifacts
     - Remove `bin/*.js`, `index.js`, `requirements.txt`, the auto-generated skill index and lock files, upstream `templates/`, and the regeneratable `specs/` process artifacts, JSON side-cars, and wiki directories. Commit as its own batch
     - _Requirements: 10.3, 10.6_
 
@@ -274,7 +274,7 @@ P5 (no dangling references).
     - Commit as its own batch
     - _Requirements: 10.4, 10.7_
 
-- [ ] 22. Final checkpoint - Make sure that all tests pass and no dangling references remain
+- [x] 22. Final checkpoint - Make sure that all tests pass and no dangling references remain
   - Make sure that all tests pass. Ask the user if questions arise.
 
 ## Notes
