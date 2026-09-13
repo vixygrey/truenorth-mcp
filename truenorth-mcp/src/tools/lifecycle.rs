@@ -306,3 +306,9 @@ fn cockpit_error(error: CockpitError) -> ErrorData {
 #[cfg(test)]
 #[path = "lifecycle_tests.rs"]
 mod tests;
+
+// Property tests (Properties 8 and 9) live in a separate sibling so the example-based
+// unit tests stay focused. The `#[path]` include keeps them a child module of `lifecycle`.
+#[cfg(test)]
+#[path = "lifecycle_prop_tests.rs"]
+mod prop_tests;
