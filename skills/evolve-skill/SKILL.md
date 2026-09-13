@@ -1,40 +1,38 @@
 ---
 name: evolve-skill
-description: Benchmark-gated skill evolution — consume bigpowers-benchmark report, propose plan-work change, edit skill via craft-skill, re-run benchmark, record ADR. Use when a skill underperforms on benchmark or stocktake finds systemic gap.
-model: opus
-effort: standard
+description: 'Benchmark-gated skill evolution. Consume a benchmark report, propose a plan-work change, edit the skill via craft-skill, re-run the benchmark, and record an ADR. Use it when a skill underperforms on a benchmark or stocktake finds a systemic gap.'
 ---
-# story: e23s03
-
-# story: e09s01
-# story: e09s05
 
 # Evolve Skill
 
-> **HARD GATE** — No skill change ships without benchmark score ≥ pre-change baseline. Learning is measured and versioned — never implicit.
+> **HARD GATE**: no skill change ships without a benchmark score at or above the pre-change baseline. Learning is measured and versioned, never implicit.
 
 ## Loop
 
-1. **Regression gate** — Run `bash scripts/run-verification-gates.sh` to catch mechanical regressions (compliance, sync pipeline, size budget) before spending time on benchmark evals. If golden suite fails, fix regressions first — they are pre-requisites for any capability improvement.
-2. **Establish baseline** — Run `run-benchmark <skill> --baseline`. If no definition exists at `specs/benchmarks/<skill>.yaml`, create one following `specs/benchmarks/SCHEMA.md` first. Save report path in `state.yaml`. If `specs/benchmarks/reports/BASELINE-<skill>.yaml` already exists, skip this step.
-
-3. **Identify gap** — Read the baseline report (`specs/benchmarks/reports/BASELINE-<skill>.yaml`). Find scenarios with `result: FAIL` or low `pass_at_k`. This is the measurable gap.
-
-4. **`plan-work`** — Write a minimal change proposal targeting the failing scenarios. Include verify commands.
-
-5. **Edit** via `craft-skill` / direct SKILL.md edit; run `bash scripts/sync-skills.sh`.
-
-6. **Re-run benchmark** — `run-benchmark <skill>`. Compare new `pass_at_k` against baseline.
-   - **IMPROVED or STABLE** → advance to step 6.
-   - **REGRESSION** (`new pass_at_k < baseline`) → revert the change and loop back to step 3.
-
-7. **Record decision** — Write `specs/adr/NNNN-evolve-<skill>.md` with before/after `pass_at_k` scores. Update `session-state`.
+1. **Regression gate**: run the project verification through the
+   `truenorth_verify_gate` tool to catch a mechanical regression before you spend
+   time on the benchmark evals. When it fails, fix the regression first. It is a
+   prerequisite for any capability improvement.
+2. **Establish the baseline**: run the benchmark for the skill in baseline mode.
+   When no definition exists, create one first. Save the report path in
+   `state.yaml`. When a baseline report already exists, skip this step.
+3. **Identify the gap**: read the baseline report. Find the scenarios with a FAIL
+   result or a low pass-at-k. This is the measurable gap.
+4. **Plan the change**: use `plan-work` to write a minimal change proposal that
+   targets the failing scenarios. Include the verify commands.
+5. **Edit**: use `craft-skill` or a direct SKILL.md edit.
+6. **Re-run the benchmark**: compare the new pass-at-k against the baseline.
+   - Improved or stable: advance to step 7.
+   - Regression (the new pass-at-k is below the baseline): revert the change and
+     loop back to step 3.
+7. **Record the decision**: write an ADR with the before-and-after pass-at-k scores.
+   Update `session-state`.
 
 ## Verify
 
-→ verify: `test -d specs/benchmarks && test -f skills/run-benchmark/SKILL.md`
+Confirm the benchmark definition exists and the post-change score is at or above the
+baseline.
 
-See [REFERENCE.md](REFERENCE.md) for ADR template.
-
+See [REFERENCE.md](REFERENCE.md) for the ADR template.
 
 <!-- story: e31s07 -->

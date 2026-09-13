@@ -1,17 +1,11 @@
 ---
 name: compose-workflow
-description: Chain multiple bigpowers skills into a custom workflow recipe saved in specs/. Use when a project repeats a non-standard skill sequence, or user wants a documented playbook beyond orchestrate-project modes.
-model: sonnet
-effort: standard
+description: 'Chain multiple skills into a custom workflow recipe saved in specs/. Use it when a project repeats a non-standard skill sequence, or when the user wants a documented playbook beyond the orchestrate-project modes.'
 ---
 
-# story: e09s01
-# story: e45s27
-# story: e21s04
-
 # Compose Workflow
-> **HARD GATE** — **HARD GATE** — Workflows are orchestration, not automation. Do NOT create workflows for tasks that should be single skills. Workflow complexity must be justified.
 
+> **HARD GATE**: a workflow is orchestration, not automation. Do NOT create a workflow for a task that should be a single skill. The workflow complexity must be justified.
 
 ## Process
 
@@ -29,12 +23,12 @@ effort: standard
 
 Every workflow step and `/loop` tick MUST exit with exactly one terminal state:
 
-| State | Meaning | Next action |
-|-------|---------|-------------|
-| `success` | Step verify passed; artifacts written | Advance to next skill in recipe |
-| `no-op` | Nothing to do (already green / already applied) | Skip step; advance |
-| `blocked` | External gate (approval, red CI, missing dep) | `diagnose-stall` or escalate to user |
-| `exhausted` | Max iterations/cycles reached (review cap, dispatch cycles) | Stop; human decision required |
+| State       | Meaning                                                     | Next action                          |
+| ----------- | ----------------------------------------------------------- | ------------------------------------ |
+| `success`   | Step verify passed; artifacts written                       | Advance to next skill in recipe      |
+| `no-op`     | Nothing to do (already green / already applied)             | Skip step; advance                   |
+| `blocked`   | External gate (approval, red CI, missing dep)               | `diagnose-stall` or escalate to user |
+| `exhausted` | Max iterations/cycles reached (review cap, dispatch cycles) | Stop; human decision required        |
 
 Record terminal state in `specs/state.yaml` `handoff.last_terminal_state` when a recipe step completes. `/loop` ticks that produce no progress for two consecutive wakes → invoke `diagnose-stall`.
 
@@ -43,18 +37,19 @@ Record terminal state in `specs/state.yaml` `handoff.last_terminal_state` when a
 Pre-built recipes in `specs/workflows/` map agentic stack commands to skill chains.
 Reference them in AGENTS.md so `/command` directly invokes the matching recipe.
 
-| Command | Workflow | Skill chain |
-|---------|----------|-------------|
-| `/check-stack` | check-stack | survey-context → assess-impact → setup-environment |
-| `/ship` | ship | audit-code → commit-message → release-branch |
-| `/tdd` | tdd | develop-tdd → enforce-first |
-| `/code-review` | code-review | audit-code → request-review → respond-review |
-| `/security` | security | audit-code → request-review |
-| `/plan` | plan | survey-context → research-first → plan-work |
-| `/build-fix` | build-fix | investigate-bug → diagnose-root → develop-tdd → validate-fix |
-| `/e2e` | e2e | smoke-test → verify-work |
+| Command        | Workflow    | Skill chain                                                  |
+| -------------- | ----------- | ------------------------------------------------------------ |
+| `/check-stack` | check-stack | survey-context → assess-impact → setup-environment           |
+| `/ship`        | ship        | audit-code → commit-message → release-branch                 |
+| `/tdd`         | tdd         | develop-tdd → enforce-first                                  |
+| `/code-review` | code-review | audit-code → request-review → respond-review                 |
+| `/security`    | security    | audit-code → request-review                                  |
+| `/plan`        | plan        | survey-context → research-first → plan-work                  |
+| `/build-fix`   | build-fix   | investigate-bug → diagnose-root → develop-tdd → validate-fix |
+| `/e2e`         | e2e         | smoke-test → verify-work                                     |
 
 Add to `AGENTS.md`:
+
 ```
 /check-stack = compose-workflow check-stack
 /ship        = compose-workflow ship

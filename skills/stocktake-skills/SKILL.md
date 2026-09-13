@@ -1,66 +1,49 @@
 ---
 name: stocktake-skills
-# story: e18s05
-description: Sequential subagent batch audit of the bigpowers skill catalog — Quick Scan (changed only) or Full (all skills). Use during sustain phase, before a major release, or when catalog drift is suspected.
-# story: e22s02
-model: sonnet
-effort: standard
+description: 'A batch audit of the skill catalog. A quick scan of changed skills, or a full audit of all skills. Use it during a sustain phase, before a major release, or when catalog drift is suspected.'
 ---
 
-# story: e09s01
-<!-- story: e45s12 -->
-<!-- story: e79s04 -->
-
-
 # Stocktake Skills
-> **HARD GATE** — **HARD GATE** — Skill inventory must be current. Missing HARD GATEs, stale descriptions, or broken verify commands are defects, not cosmetic. Fix them in `evolve-skill`.
 
+> **HARD GATE**: the skill inventory MUST be current. A missing HARD GATE, a stale description, or a broken verify command is a defect, not cosmetic. Fix it in `evolve-skill`.
 
-Audit SKILL.md catalog for drift, stale triggers, missing HARD GATEs, and INDEX mismatches.
+Audit the SKILL.md catalog for drift, a stale trigger, a missing HARD GATE, and a
+frontmatter problem.
 
 ## Modes
 
-| Mode | Scope |
-|------|-------|
-| **Quick Scan** | Skills changed since last tag or in current diff |
-| **Full** | All skills per SKILL-INDEX.md + catalog audit |
-| **--verify** | Run `bash scripts/run-skill-verify.sh` and append health results to the stocktake report |
+| Mode           | Scope                                                         |
+| -------------- | ------------------------------------------------------------- |
+| **Quick scan** | Skills changed since the last tag or in the current diff      |
+| **Full**       | Every skill, plus a catalog audit                             |
+| **--verify**   | Run each skill's verify command and append the health results |
 
 ## Process
 
-0. **Catalog validator (code-enforced)** — run `bash scripts/validate-skill-catalog.sh`. Any FAIL is a critical finding before manual review. Add `--archive` to list zero-usage skills from `metrics.skill_timings` for auto-archiving candidates (move to `specs/epics/archive/` or delete after user confirms).
-0b. **Agentic STE audit (e79s04)** — run `bash scripts/validate-agentic-ste.sh --audit skills/`. Flag hedge words and sentences over 20 words per [AGENTIC-STE.md](../../docs/AGENTIC-STE.md). Record WARN lines in the stocktake report as **STE debt** — do NOT rewrite the full catalog in one pass. Route critical repeat offenders to `evolve-skill`.
-1. Run `bash scripts/audit-catalog.sh` to verify pi/skills ↔ source SKILL.md sync. Mismatch is a critical finding.
-2. Run mode; for each skill check: exists, verb-noun, &lt;300 lines total, HARD GATE present, INDEX row matches.
-3. Write `specs/STOCKTAKE-<date>.md` with findings table (skill, issue, severity).
-4. **Effectiveness report (--full mode only):** Read `specs/state.yaml` `metrics.skill_timings` and report:
-   - Top 5 most-used skills (by calls, total_seconds)
-   - Skills with zero calls (potential dead weight)
-   - Skills with high average time (candidates for `evolve-skill`)
-5. Critical findings → `plan-work` story; cosmetic → `evolve-skill` candidate.
-6. **--verify mode:** Run `bash scripts/run-skill-verify.sh` and append a `## Verify Health` section to the stocktake report: `"N/68 PASS, M FAIL, K SKIP"`. FAIL skills are critical findings and go straight to `plan-work`.
-
-### Skill timing data (`metrics.skill_timings`)
-
-In `--full` mode, read `specs/state.yaml` `metrics.skill_timings` for per-skill usage stats:
-
-```yaml
-metrics:
-  skill_timings:
-    survey-context:
-      calls: 12
-      total_seconds: 180
-      avg_seconds: 15.0
-    develop-tdd:
-      calls: 30
-      total_seconds: 5400
-      avg_seconds: 180.0
-```
-
-Timing data is populated by `scripts/bp-timing.sh start|end <skill>` calls within critical-path skills.
+1. **Enumerate the catalog**: list every skill with the `index_skills` tool. This is
+   the source of truth for what the runtime serves, so a drift between it and the
+   `skills/` directory is a critical finding.
+2. **Run the mode**: for each in-scope skill, check that it exists, has a verb-noun
+   name, is under 300 lines, has a HARD GATE where needed, has a `name` and
+   `description` frontmatter only, and has a description within 1024 characters.
+3. **Body-writing audit**: flag a hedge word and a sentence over 20 words, per the
+   house writing rules. Record the writing debt in the report. Do NOT rewrite the
+   whole catalog in one pass. Route a repeat offender to `evolve-skill`.
+4. **Write the report**: write a findings table (skill, issue, severity) to a dated
+   stocktake file.
+5. **Effectiveness report** (full mode only): read the skill-usage metrics from
+   `specs/state.yaml` and report the most-used skills, the skills with zero calls
+   (potential dead weight), and the skills with a high average time (candidates for
+   `evolve-skill`).
+6. **Route the findings**: a critical finding becomes a `plan-work` story, a
+   cosmetic one becomes an `evolve-skill` candidate.
+7. **--verify mode**: run each skill's verify command through the
+   `truenorth_verify_gate` tool and append a verify-health section. A FAIL is a
+   critical finding and goes straight to `plan-work`.
 
 ## Verify
 
-→ verify: `compgen -G 'specs/STOCKTAKE-*.md' >/dev/null && bash scripts/validate-skill-catalog.sh`
+Confirm a dated stocktake report exists and the catalog enumerated by `index_skills`
+matches the `skills/` directory.
 
-See [REFERENCE.md](REFERENCE.md) for checklist.
+See [REFERENCE.md](REFERENCE.md) for the checklist.
