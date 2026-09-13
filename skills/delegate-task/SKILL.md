@@ -1,15 +1,13 @@
 ---
 name: delegate-task
-model: sonnet
-effort: standard
-description: Delegate one complex task to a single subagent, review its work in two stages before merging back. Sequential — one agent at a time, with oversight. Use when a task is complex and requires careful review before the result is accepted. Distinct from dispatch-agents (no parallelism here; reviewer sees full diff before proceeding).
+description: 'Delegate one complex task to a single subagent, and review its work in two stages before merging back. Sequential, one agent at a time, with oversight. Use it when a task is complex and needs careful review before the result is accepted. Distinct from dispatch-agents, which has no parallelism here and the reviewer sees the full diff before proceeding.'
 ---
 
 # story: e45s30
 
 # Delegate Task
-> **HARD GATE** — **HARD GATE** — Delegated work must have clear success criteria and verification commands. The delegate must be able to verify completion independently.
 
+> **HARD GATE** — **HARD GATE** — Delegated work must have clear success criteria and verification commands. The delegate must be able to verify completion independently.
 
 Delegate a single complex task to a subagent with a two-stage review gate before accepting the result. Use when oversight of a single task matters more than speed.
 
@@ -19,11 +17,11 @@ Delegate a single complex task to a subagent with a two-stage review gate before
 
 Select brief depth from task `risk:` and skill `effort:` before spawning:
 
-| Tier | When | Brief includes |
-|------|------|----------------|
-| `full_maturity` | P0 stories, multi-file refactors, security work | Full template + CONVENTIONS excerpts + threat model if present |
-| `standard` | Default implementation tasks | Goal, scope, out-of-bounds, constraints, verify, prior decisions |
-| `minimal_decisive` | Light probes, read-only audits | Goal, verify, explicit file list (≤15 lines total) |
+| Tier               | When                                            | Brief includes                                                   |
+| ------------------ | ----------------------------------------------- | ---------------------------------------------------------------- |
+| `full_maturity`    | P0 stories, multi-file refactors, security work | Full template + CONVENTIONS excerpts + threat model if present   |
+| `standard`         | Default implementation tasks                    | Goal, scope, out-of-bounds, constraints, verify, prior decisions |
+| `minimal_decisive` | Light probes, read-only audits                  | Goal, verify, explicit file list (≤15 lines total)               |
 
 State `depth: <tier>` in the Agent tool description field.
 
@@ -51,6 +49,7 @@ Use the Agent tool with a **fresh context** per spawn. Pass prior decisions only
 **Cycle:** dispatch → evaluate output vs goal → refine brief → re-spawn if needed (max 3 cycles).
 
 Include in each brief:
+
 - All context the agent needs (it starts cold — no shared state)
 - Reference to CONVENTIONS.md constraints
 - The verify command it must run before reporting done
@@ -58,6 +57,7 @@ Include in each brief:
 ### 3. Stage 1 review — output inspection
 
 When the subagent returns, review its report before looking at the diff:
+
 - Did it run the verify command? Did it pass?
 - Does it explain what it changed and why?
 - Are there any concerns raised by the agent?
@@ -67,11 +67,13 @@ If the report raises red flags, ask the subagent for clarification or re-run wit
 ### 4. Stage 2 review — diff inspection
 
 Inspect the actual diff:
+
 ```bash
 git diff main...HEAD
 ```
 
 Check:
+
 - [ ] Changes are scoped to what was asked — nothing extra
 - [ ] No `any`, no `@ts-ignore`, no disabled lint rules
 - [ ] Tests added for new behavior
@@ -85,9 +87,9 @@ Check:
 - **Reject**: discard and re-approach differently
 
 **After accepting**, append to `specs/state.yaml` under `## Active Decisions`:
+
 ```
 **[task short name]**: [what approach the agent chose and why — one sentence]
 ```
 
 Report the decision and rationale to the user.
-
