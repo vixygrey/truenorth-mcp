@@ -12,6 +12,7 @@ pub mod git;
 pub mod graph;
 pub mod ontology_scan;
 pub mod phase;
+pub mod profile;
 pub mod skill;
 pub mod skill_parser;
 pub mod skill_validate;
