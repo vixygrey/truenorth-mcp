@@ -38,6 +38,8 @@ pub enum ResourceUri {
     Ontology,
     /// `truenorth://conventions`, backed by the coding standards.
     Conventions,
+    /// `truenorth://adr`, backed by the `specs/adr/` directory (Requirement 9.3).
+    Adr,
 }
 
 impl ResourceUri {
@@ -48,6 +50,7 @@ impl ResourceUri {
             ResourceUri::Cockpit => "truenorth://cockpit",
             ResourceUri::Ontology => "truenorth://ontology",
             ResourceUri::Conventions => "truenorth://conventions",
+            ResourceUri::Adr => "truenorth://adr",
         }
     }
 }
@@ -73,6 +76,10 @@ pub fn map_path_to_uri(path: &Path) -> Option<ResourceUri> {
     }
     if text.ends_with("CONVENTIONS.md") || text.ends_with("conventions.md") {
         return Some(ResourceUri::Conventions);
+    }
+    // The ADR resource is backed by the specs/adr/ directory (Requirement 9.3).
+    if text.contains("specs/adr/") {
+        return Some(ResourceUri::Adr);
     }
     None
 }

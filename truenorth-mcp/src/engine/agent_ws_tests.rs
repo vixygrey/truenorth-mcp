@@ -114,6 +114,28 @@ fn write_repo_seed_rejects_traversal_outside_the_repo() {
 }
 
 #[test]
+fn write_under_agent_rejects_a_specs_adr_target_and_leaves_bytes_unchanged() {
+    // Property 6 for the ADR resource: a write aimed at specs/adr/ is rejected, and the
+    // existing ADR bytes stay unchanged. This is the write-guard half of the read-only
+    // ADR guarantee (Requirement 9.4).
+    let repo = TempDir::new().expect("temp repo");
+    let adr = repo.path().join("specs").join("adr");
+    fs::create_dir_all(&adr).expect("create adr dir");
+    fs::write(adr.join("0001-first.md"), "# Decision\n").expect("seed adr");
+
+    // A relative target that escapes .agent/ into specs/adr/.
+    let rel = Path::new("../specs/adr/0001-first.md");
+    let error = write_under_agent(repo.path(), rel, "tampered\n").expect_err("must reject");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+
+    // The ADR file is unchanged.
+    assert_eq!(
+        fs::read_to_string(adr.join("0001-first.md")).expect("read adr"),
+        "# Decision\n"
+    );
+}
+
+#[test]
 fn is_excluded_read_is_true_only_for_telemetry() {
     // Repo-relative and agent-relative telemetry paths are excluded.
     assert!(is_excluded_read(Path::new(".agent/telemetry/runs.yml")));

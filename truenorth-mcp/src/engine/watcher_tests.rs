@@ -44,6 +44,15 @@ fn maps_ontology_and_conventions() {
 }
 
 #[test]
+fn maps_adr_directory_to_the_adr_uri() {
+    // A change under specs/adr/ maps to the ADR resource (Requirement 9.3).
+    assert_eq!(
+        map_path_to_uri(Path::new("/repo/specs/adr/0001-verb-noun-naming.md")),
+        Some(ResourceUri::Adr)
+    );
+}
+
+#[test]
 fn legacy_specs_product_is_no_longer_watched() {
     // The watcher no longer maps specs/product/ to a resource (Requirement 2.12).
     assert_eq!(
@@ -101,6 +110,25 @@ fn distinct_files_in_window_report_each_uri_once() {
         .expect("the window elapsed");
     // Two distinct URIs, each once. Ordering is stable by the enum order.
     assert_eq!(report, vec![ResourceUri::State, ResourceUri::Ontology]);
+}
+
+#[test]
+fn an_adr_edit_reports_the_adr_uri_within_the_window() {
+    // Requirement 9.3: a change under specs/adr/ coalesces and reports the ADR resource,
+    // which the watcher emits as resources/updated within 1 second. The debouncer drives
+    // the same report path the running watcher uses, deterministically.
+    let mut debouncer = Debouncer::new();
+    let start = Instant::now();
+
+    debouncer.record(Path::new("/repo/specs/adr/0001-verb-noun-naming.md"), start);
+    assert!(debouncer.poll(start + Duration::from_millis(100)).is_none());
+
+    let report = debouncer
+        .poll(start + DEBOUNCE_WINDOW + Duration::from_millis(1))
+        .expect("the window elapsed");
+    assert_eq!(report, vec![ResourceUri::Adr]);
+    // The window is 200 ms, well within the 1 second bound.
+    assert!(DEBOUNCE_WINDOW < Duration::from_secs(1));
 }
 
 #[test]

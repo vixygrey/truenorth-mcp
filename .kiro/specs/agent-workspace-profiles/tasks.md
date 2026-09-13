@@ -31,8 +31,8 @@ skill reference).
 
 ## Tasks
 
-- [ ] 1. Engine write guard: the single `.agent/` write path
-  - [ ] 1.1 Implement `engine::agent_ws` (`agent_ws.rs`)
+- [x] 1. Engine write guard: the single `.agent/` write path
+  - [x] 1.1 Implement `engine::agent_ws` (`agent_ws.rs`)
     - Define `AGENT_DIR = ".agent"` and `TELEMETRY_AREA = "telemetry"` constants
     - Implement `write_under_agent(repo_root, rel_path, contents)` that normalizes the joined path, rejects `..` traversal and any absolute path that escapes `.agent/`, and delegates the byte write to the existing `engine::cockpit::write_atomic` helper
     - Return `WriteGuardError::OutsideAgent` naming the target when the path escapes; write nothing on reject so every target stays unchanged
@@ -41,35 +41,35 @@ skill reference).
     - `unwrap`/`expect`/`panic!` are banned; return typed `Result`
     - _Requirements: 1.1, 1.2, 1.3, 1.9, 1.10, 1.11, 1.12_
 
-  - [ ]* 1.2 Write property test for the write guard
+  - [x]\* 1.2 Write property test for the write guard
     - **Property 6: Runtime writes only under `.agent/`**
     - Generate relative and absolute paths, some under `.agent/`, some escaping via `..` or a `specs/` prefix; assert `write_under_agent` succeeds exactly for paths under `.agent/` and writes nothing on reject
     - Assert `is_excluded_read` is true exactly for `.agent/telemetry/` paths
     - **Validates: Requirements 1.2, 1.3, 1.4, 1.10**
 
-  - [ ]* 1.3 Write unit tests for the layout contract read
+  - [x]\* 1.3 Write unit tests for the layout contract read
     - Test the present-contract pass and the absent-entry error naming the missing path and the expected layout
     - Test that the last valid contract state is retained on a rejected read
     - _Requirements: 1.11, 1.12_
 
-  - [ ] 1.4 Add the audited repo-seed write path for the scaffold
+  - [x] 1.4 Add the audited repo-seed write path for the scaffold
     - Implement `engine::agent_ws::write_repo_seed(repo_root, rel_path, contents)` gated behind an explicit `allow_repo_root_seed` flag, used only by the scaffold to emit root docs, `.githooks/`, and `.github/` outside `.agent/`
     - Runtime tools never call `write_repo_seed`; assert this with a test in task 6
     - _Requirements: 5.5, 5.6, 5.8, 5.9_
 
-- [ ] 2. Engine config: markers and git scope re-point
-  - [ ] 2.1 Update `engine::config` markers and git scope
+- [x] 2. Engine config: markers and git scope re-point
+  - [x] 2.1 Update `engine::config` markers and git scope
     - Set `MARKER_DIRS = [".agent", "specs", "skills"]` and `GIT_SCOPE_DIRS = [".agent", "specs", "skills"]`
     - Update `is_valid_repo_root` to require all three markers
     - _Requirements: 2.7, 2.8_
 
-  - [ ]* 2.2 Write unit tests for config markers
+  - [x]\* 2.2 Write unit tests for config markers
     - Test that a root missing any of the three markers fails the valid-root check
     - Test that git scope includes `.agent/`, `specs/`, and `skills/`
     - _Requirements: 2.7, 2.8_
 
-- [ ] 3. Engine profiles: five built-ins and resolution
-  - [ ] 3.1 Implement `engine::profile` (`profile.rs`)
+- [x] 3. Engine profiles: five built-ins and resolution
+  - [x] 3.1 Implement `engine::profile` (`profile.rs`)
     - Define `GroupingVocab`, `GroupingRule`, and the `Profile` data struct per §3.1
     - Define the five `const` profiles and `ALL_PROFILES`: epic-based, issue-per-task, kanban, milestone-based, generic, each with vocab, rule, starter files, branch pattern, and `require_issue_id`
     - Implement `by_name(name)` returning `None` for an unknown name
@@ -77,43 +77,43 @@ skill reference).
     - Reject any request to define a custom profile: there is no registration path
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-  - [ ]* 3.2 Write property test for profile resolution
+  - [x]\* 3.2 Write property test for profile resolution
     - **Property 10: Profile default and unknown-name resolution**
     - For any name outside the five, assert `by_name` is `None` and `resolve_active` errors naming the five valid names; for absent config assert issue-per-task; for each of the five names assert resolution returns that profile
     - **Validates: Requirements 3.2, 3.5, 3.6**
 
-- [ ] 4. Cockpit relocation into `.agent/`
-  - [ ] 4.1 Re-point cockpit backing paths
+- [x] 4. Cockpit relocation into `.agent/`
+  - [x] 4.1 Re-point cockpit backing paths
     - Re-point `ResourceDoc::backing_path` so `truenorth://state` resolves `.agent/tasks/state.yml`, `truenorth://cockpit` resolves `.agent/tasks/release-plan.yml`, and `truenorth://ontology` resolves `.agent/ontology.yml`
     - Re-point `engine::cockpit::state_path` and `release_plan_path` to the same `.agent/tasks/` paths
     - Update `display_backing` message strings to match
     - Route the ontology create-on-read through `write_under_agent`; a create failure returns a resource read error naming the ontology path and cause, leaves existing `.agent/` files unchanged, and retains the last good ontology content
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-  - [ ] 4.2 Implement the legacy `specs/` cockpit read
+  - [x] 4.2 Implement the legacy `specs/` cockpit read
     - When a backing file is absent under `.agent/` and a legacy file is present under `specs/`, `read_state` and `read_release_plan` fall back to the legacy path, parse it, and map its content onto the `.agent/` model through the `#[serde(flatten)]` catch-all
     - Preserve every unknown field and the `bigpowers_version` value with their original keys and values
     - A malformed legacy file returns a resource read error naming the file and the parse cause, leaves `.agent/` files unchanged, and retains the last good content
     - A subsequent runtime write goes to `.agent/` only; the legacy `specs/` file is never mutated
     - _Requirements: 2.9, 2.10, 2.11, 2.13, 1.4_
 
-  - [ ]* 4.3 Write property test for cockpit relocation backward-compat
+  - [x]\* 4.3 Write property test for cockpit relocation backward-compat
     - **Property 7: Cockpit relocation preserves unknown fields and version**
     - Generate legacy cockpit maps with random unknown fields and a `bigpowers_version`; read and map; assert every unknown field and the version value survive
     - Edge case: a malformed legacy YAML yields the naming error and a retained last-good, with `.agent/` unchanged
     - **Validates: Requirements 2.9, 2.11, 2.13, 2.10**
 
-  - [ ] 4.4 Re-point the watcher path mapping
+  - [x] 4.4 Re-point the watcher path mapping
     - Update `engine::watcher::map_path_to_uri` so `.agent/tasks/state.yml`, `.agent/ontology.yml`, `.agent/tasks/release-plan.yml`, and `.agent/product/` map to their resource URIs, and the watcher no longer watches `specs/product/`
     - Keep `CONVENTIONS.md` mapping unchanged
     - _Requirements: 2.6, 2.12_
 
-  - [ ]* 4.5 Write unit tests for the watcher re-point
+  - [x]\* 4.5 Write unit tests for the watcher re-point
     - Test that each relocated `.agent/` path maps to the correct URI and that `specs/product/` is no longer watched
     - _Requirements: 2.6, 2.12_
 
-- [ ] 5. Neutral grouping key in `record_task`
-  - [ ] 5.1 Replace `epic_id` with the neutral grouping key in `tools/lifecycle.rs`
+- [x] 5. Neutral grouping key in `record_task`
+  - [x] 5.1 Replace `epic_id` with the neutral grouping key in `tools/lifecycle.rs`
     - Replace the `epic_id` field of `RecordTaskArgs` with `group_id` (optional, 1 to 200 chars), `group_kind` (optional enum epic|sprint|milestone|ticket), and a retained legacy `epic_id` field, keeping the strict `schemars` schema
     - Validate before any mutation: map legacy `epic_id` to `group_kind = epic` and `group_id = epic_id` when `epic_id` is present and the neutral fields are absent
     - Resolve the active profile; when grouping is `Required` and `group_id` is absent, reject naming the missing grouping key and preserve the pre-call state; when `Optional`, accept the omission
@@ -122,21 +122,21 @@ skill reference).
     - On read of a cockpit file carrying a legacy `active_epic`, map it onto the neutral grouping model and preserve the original `active_epic` value through the catch-all
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9_
 
-  - [ ]* 5.2 Write property test for neutral grouping backward-compat
+  - [x]\* 5.2 Write property test for neutral grouping backward-compat
     - **Property 8: Neutral grouping preserves legacy mapping and fields**
     - For any legacy `epic_id`, assert the recorded task carries `group_kind = epic` and `group_id = epic_id`; for any cockpit with `active_epic`, assert the value is preserved; for any write, assert every pre-state unknown field survives
     - **Validates: Requirements 4.7, 4.8, 4.9**
 
-  - [ ]* 5.3 Write property test for grouping-key validation
+  - [x]\* 5.3 Write property test for grouping-key validation
     - **Property 9: Grouping-key validation rejects invalid input and preserves state**
     - Generate valid and invalid grouping inputs across the five profiles; assert accept/reject matches the rule and the cockpit file is unchanged on reject
     - **Validates: Requirements 4.2, 4.3, 4.4, 4.5, 4.6**
 
-- [ ] 6. Checkpoint - Make sure that engine, profile, and grouping tests pass
+- [x] 6. Checkpoint - Make sure that engine, profile, and grouping tests pass
   - Make sure that all tests pass. Ask the user if questions arise.
 
-- [ ] 7. External-tracker bug reference tool
-  - [ ] 7.1 Implement `tools/bugref.rs`
+- [x] 7. External-tracker bug reference tool
+  - [x] 7.1 Implement `tools/bugref.rs`
     - Define `RecordBugArgs` (`id`, `external_link`, `status`, `linked_ref`, optional `tags`) and the `BugStatus` enum per §9, with a strict `schemars` schema
     - Validate before any write: id length 1 to 200; `external_link` parses as an absolute URL; `status` is one of the enum; `linked_ref` resolves to an existing task or group id in `.agent/tasks/`
     - Store the accepted record into `.agent/tasks/bugs.yml` through `write_under_agent`, storing caller-supplied tags as given
@@ -145,13 +145,13 @@ skill reference).
     - Register the tool in `src/tools/mod.rs`
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.6, 8.7_
 
-  - [ ]* 7.2 Write property test for bug-reference validation
+  - [x]\* 7.2 Write property test for bug-reference validation
     - **Property 14: Bug-reference validation and tag preservation**
     - Generate valid and invalid bug references; assert accept/reject matches the four field rules, tags round-trip on acceptance, and `bugs.yml` is unchanged on reject
     - **Validates: Requirements 8.3, 8.6, 8.7**
 
-- [ ] 8. ADR read-only resource
-  - [ ] 8.1 Implement `resources/adr.rs` and register the resource
+- [x] 8. ADR read-only resource
+  - [x] 8.1 Implement `resources/adr.rs` and register the resource
     - Add an `Adr` variant to `ResourceDoc`, grow `ALL_RESOURCES` to five, and resolve `backing_path` to `repo_root/specs/adr`
     - Read and concatenate the ADR files in `specs/adr/` on `resources/read`
     - Absent `specs/adr/`: return a resource read error naming the missing directory and keep serving other resources
@@ -160,7 +160,7 @@ skill reference).
     - Add `specs/adr/` mapping to `map_path_to_uri` so the watcher emits `notifications/resources/updated` for `truenorth://adr` within 1 second of a change
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6_
 
-  - [ ]* 8.2 Write integration and property coverage for the ADR resource
+  - [x]\* 8.2 Write integration and property coverage for the ADR resource
     - **Property 6: Runtime writes only under `.agent/`** — assert a write through `truenorth://adr` is rejected and `specs/adr/` bytes stay unchanged
     - Edit a file under `specs/adr/` and assert `resources/updated` fires within 1 second against a temp repo
     - Assert the absent-directory and parse-failure read errors, the retained last-good, and that other resources keep serving
@@ -184,7 +184,7 @@ skill reference).
     - Include a grouping field in the issue forms when the profile vocabulary is epic or milestone; omit the issue-id field when the profile is kanban or generic
     - _Requirements: 5.6, 5.7, 5.8, 5.9, 5.10, 5.11_
 
-  - [ ]* 9.3 Write property and golden tests for the scaffold
+  - [ ]\* 9.3 Write property and golden tests for the scaffold
     - **Property 13: Greenfield scaffold is non-destructive** — for any pre-existing subset of scaffold targets, assert the bytes stay unchanged and a skip message names each; assert an unknown profile makes no file change
     - Golden: snapshot the emitted `.agent/` tree, root docs, the two hooks, and the `.github/` templates per profile; assert no `Cargo.toml`, `package.json`, or source tree, and that `git config core.hooksPath .githooks` is printed, not run
     - Assert that runtime tools never call `write_repo_seed`
@@ -203,12 +203,12 @@ skill reference).
     - Delete a local topic branch only when it is provably present on the trunk, where provably present means the branch tip is an ancestor of the trunk tip or `git diff trunk..branch` reports no differences; retain any branch not provably present
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8_
 
-  - [ ]* 10.3 Write property test for the commit-msg hook decision
+  - [ ]\* 10.3 Write property test for the commit-msg hook decision
     - **Property 12: Commit-msg hook decision**
     - Generate subjects (valid/invalid type, with/without scope, with/without id) across profiles and run the emitted hook against temp repos; assert the exit code matches the rule and merge/revert subjects always exit 0
     - **Validates: Requirements 6.3, 6.4, 6.5, 6.7, 6.8, 6.9, 6.10**
 
-  - [ ]* 10.4 Write property test for the post-merge sweep safety
+  - [ ]\* 10.4 Write property test for the post-merge sweep safety
     - **Property 11: Post-merge sweep safety**
     - Build temp repos with random branch and merge topologies and run the emitted hook; assert the current and trunk branches always survive, only ancestor-or-empty-diff matching branches are deleted, and a detached HEAD deletes nothing
     - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.8**
@@ -218,7 +218,7 @@ skill reference).
     - Register `truenorth_scaffold_project` and `truenorth_record_bug` in the tool router, add the `Adr` resource to the `ServerHandler`, and confirm the watcher watches `specs/adr/` and the relocated `.agent/` paths
     - _Requirements: 5.1, 8.1, 9.2, 2.6_
 
-  - [ ]* 11.2 Write an MCP round-trip integration test
+  - [ ]\* 11.2 Write an MCP round-trip integration test
     - Drive `resources/read` for each relocated resource against a temp repo seeded under `.agent/`, and against a legacy-`specs/` temp repo, asserting the backward-compat read
     - Drive `truenorth_record_bug` and `truenorth_scaffold_project` end to end against a temp repo
     - _Requirements: 2.9, 8.1, 5.3_
