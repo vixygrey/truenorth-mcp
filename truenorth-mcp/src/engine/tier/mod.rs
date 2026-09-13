@@ -31,6 +31,7 @@ use std::sync::OnceLock;
 use regex::Regex;
 
 mod compress;
+mod tables;
 
 pub use compress::compress_for_local_context;
 
