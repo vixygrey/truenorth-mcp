@@ -15,6 +15,7 @@ use std::sync::Mutex;
 
 use crate::engine::validate::{validate_release_plan, validate_state};
 
+pub mod adr;
 pub mod cockpit;
 pub mod ontology;
 
@@ -29,14 +30,17 @@ pub enum ResourceDoc {
     Conventions,
     /// `truenorth://ontology`, backed by `.agent/ontology.yml`.
     Ontology,
+    /// `truenorth://adr`, a read-only view over `specs/adr/` (Requirement 9.1, 9.2).
+    Adr,
 }
 
 /// Every served resource, in list order.
-pub const ALL_RESOURCES: [ResourceDoc; 4] = [
+pub const ALL_RESOURCES: [ResourceDoc; 5] = [
     ResourceDoc::State,
     ResourceDoc::Cockpit,
     ResourceDoc::Conventions,
     ResourceDoc::Ontology,
+    ResourceDoc::Adr,
 ];
 
 /// An error reading a resource (Requirement 5.7).
@@ -61,6 +65,7 @@ impl ResourceDoc {
             ResourceDoc::Cockpit => "truenorth://cockpit",
             ResourceDoc::Conventions => "truenorth://conventions",
             ResourceDoc::Ontology => "truenorth://ontology",
+            ResourceDoc::Adr => "truenorth://adr",
         }
     }
 
@@ -71,13 +76,14 @@ impl ResourceDoc {
             ResourceDoc::Cockpit => "cockpit",
             ResourceDoc::Conventions => "conventions",
             ResourceDoc::Ontology => "ontology",
+            ResourceDoc::Adr => "adr",
         }
     }
 
     /// The resource's MIME type.
     pub fn mime_type(self) -> &'static str {
         match self {
-            ResourceDoc::Conventions => "text/markdown",
+            ResourceDoc::Conventions | ResourceDoc::Adr => "text/markdown",
             _ => "application/yaml",
         }
     }
@@ -95,6 +101,9 @@ impl ResourceDoc {
                 .join("release-plan.yml"),
             ResourceDoc::Conventions => repo_root.join("CONVENTIONS.md"),
             ResourceDoc::Ontology => repo_root.join(".agent").join("ontology.yml"),
+            // The ADR resource is backed by a directory of human-authored files under
+            // `specs/`, not a single file (Requirement 9.1, 9.2).
+            ResourceDoc::Adr => repo_root.join("specs").join("adr"),
         }
     }
 
@@ -108,7 +117,7 @@ impl ResourceDoc {
             ResourceDoc::State => Some(repo_root.join("specs").join("state.yaml")),
             ResourceDoc::Cockpit => Some(repo_root.join("specs").join("release-plan.yaml")),
             ResourceDoc::Ontology => Some(repo_root.join("specs").join("ontology.yaml")),
-            ResourceDoc::Conventions => None,
+            ResourceDoc::Conventions | ResourceDoc::Adr => None,
         }
     }
 
@@ -141,6 +150,12 @@ impl ResourceDoc {
     /// [`ResourceReadError::Invalid`] when it fails to parse or validate (Requirement
     /// 5.7).
     pub fn read_current(self, repo_root: &std::path::Path) -> Result<String, ResourceReadError> {
+        // The ADR resource reads a directory of human-authored files, not a single backing
+        // file, so it resolves through its own reader (Requirement 9.2).
+        if self == ResourceDoc::Adr {
+            return adr::read_adr_dir(&self.backing_path(repo_root));
+        }
+
         // The ontology resource creates its backing file under .agent/ on first read when
         // it is absent, through the single write guard (Requirements 2.4, 2.5).
         let path = match self.read_path(repo_root) {
@@ -169,6 +184,9 @@ impl ResourceDoc {
             }
             // Conventions is free-form markdown, so it has no schema to validate.
             ResourceDoc::Conventions => return Ok(text),
+            // Adr returns early above, before the file-path resolution, so it never
+            // reaches this match.
+            ResourceDoc::Adr => unreachable!("ADR reads through read_adr_dir"),
         };
         Ok(text)
     }
@@ -209,6 +227,7 @@ fn display_backing(doc: ResourceDoc) -> String {
         ResourceDoc::Cockpit => ".agent/tasks/release-plan.yml".to_string(),
         ResourceDoc::Conventions => "CONVENTIONS.md".to_string(),
         ResourceDoc::Ontology => ".agent/ontology.yml".to_string(),
+        ResourceDoc::Adr => "specs/adr/".to_string(),
     }
 }
 

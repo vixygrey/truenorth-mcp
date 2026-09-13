@@ -44,6 +44,15 @@ fn maps_ontology_and_conventions() {
 }
 
 #[test]
+fn maps_adr_directory_to_the_adr_uri() {
+    // A change under specs/adr/ maps to the ADR resource (Requirement 9.3).
+    assert_eq!(
+        map_path_to_uri(Path::new("/repo/specs/adr/0001-verb-noun-naming.md")),
+        Some(ResourceUri::Adr)
+    );
+}
+
+#[test]
 fn legacy_specs_product_is_no_longer_watched() {
     // The watcher no longer maps specs/product/ to a resource (Requirement 2.12).
     assert_eq!(
