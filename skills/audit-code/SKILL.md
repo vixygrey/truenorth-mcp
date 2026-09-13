@@ -1,142 +1,135 @@
 ---
-# story: e51s04
-# story: e45s18
-# story: e45s31
 name: audit-code
-model: haiku
-effort: standard
-description: Self-review checklist for the coding agent to run before dispatching a reviewer. Checks CONVENTIONS.md compliance, Boy Scout Rule, test coverage, types, and SOLID. Produces a pass/fail checklist. Use before request-review, before committing, or when user asks for a code quality check.
+description: 'A self-review checklist for the coding agent to run before dispatching a reviewer. Checks convention compliance, the Boy Scout rule, test coverage, types, and SOLID. Produces a pass or fail checklist. Use it before request-review, before committing, or when the user asks for a code-quality check.'
 ---
 
 # Audit Code
-> **HARD GATE** — **HARD GATE** — Audit must check for: bugs (correctness), security, performance, and clarity. Do NOT skip security review if the code touches user data, auth, or external APIs.
 
+> **HARD GATE**: the audit MUST check for bugs (correctness), security, performance, and clarity. Do NOT skip the security review when the code touches user data, auth, or an external API.
 
-Run this self-review before asking anyone else to look at the code. The goal is to catch everything that is clearly wrong or missing — so the reviewer can focus on design and architecture, not hygiene.
+Run this self-review before you ask anyone else to look at the code. The goal is to
+catch everything clearly wrong or missing, so the reviewer can focus on design and
+architecture, not hygiene.
 
-**Distinct from `request-review`:** This is the coding agent checking its own work. No second agent is involved. Run this first; run `request-review` after this passes.
+Distinct from `request-review`. This is the coding agent checking its own work. No
+second agent is involved. Run this first. Run `request-review` after this passes.
 
-## Look-here-first (churn heuristic)
+## Look here first (a churn heuristic)
 
-Before the checklist, rank changed files by git churn and review **high-churn hotspots first** — they carry the most latent risk regardless of diff size.
-
-```bash
-bash scripts/bp-churn-rank.sh --since 90.days --limit 15
-```
-
-Apply the full checklist to churn-ranked files in descending order. Files with zero recent commits but large diffs still get reviewed; churn only sets priority, not scope.
+Before the checklist, rank the changed files by git churn and review the high-churn
+hotspots first. They carry the most latent risk regardless of diff size. Use the
+git-context tool or `git log` to rank the recently changed files. A file with zero
+recent commits but a large diff still gets reviewed. Churn sets the priority, not the
+scope.
 
 ## Modes
 
-- Default: full checklist
-- --quick: Run only Supply Chain and Test Coverage. Use for changes under 50 LOC.
-- --gate: Non-interactive mode for automated CI gating (used by build-epic step 6). Exit with non-zero status code (`exit 1`) on ANY checklist failure; `exit 0` only if ALL items pass. Produces a compact pass/fail summary to stderr. On failure, list every ✗ item with reason.
-- --parallel: Run checklist sections in **isolated git worktrees** (e45s18) so concurrent checks cannot corrupt each other's working tree:
-
-```bash
-bash scripts/lib/parallel-review-worktrees.sh audit-code
-```
-
+- Default: the full checklist.
+- `--quick`: run only the supply-chain and test-coverage sections. Use it for a
+  change under 50 lines.
+- `--gate`: non-interactive mode for automated CI gating (used by build-epic).
+  Exit non-zero on any checklist failure, exit 0 only when every item passes.
+  Produce a compact pass or fail summary. On failure, list every failed item with a
+  reason.
+- `--parallel`: run the checklist sections in isolated git worktrees, so concurrent
+  checks cannot corrupt each other's working tree.
 
 ## Checklist
 
-### Supply Chain & Security
+### Supply chain and security
 
-- [ ] slopcheck run for new dependencies; packages tagged in plan-work: `[OK]`, `[SUS]`, or `[SLOP]`
-- [ ] No `[SLOP]` packages without documented human approval
-- [ ] No secrets in diff (`sk-`, `ghp_`, `AKIA`, `.env` values) — see `guard-git` patterns
-- [ ] OWASP Top 10 spot-check: injection, broken auth, sensitive data exposure, misconfiguration (see `docs/references/security-threats.md`)
-- [ ] Security: diff scanned — no unaddressed HIGH findings (or deviations documented in `specs/security/EXCEPTIONS.md`)
+- [ ] A slopcheck ran for a new dependency. Packages tagged `[OK]`, `[SUS]`, or `[SLOP]`.
+- [ ] No `[SLOP]` package without a documented human approval.
+- [ ] No secret in the diff (`sk-`, `ghp_`, `AKIA`, an `.env` value). See the `guard-git` patterns.
+- [ ] OWASP Top 10 spot-check: injection, broken auth, sensitive-data exposure, misconfiguration.
+- [ ] The diff is scanned. No unaddressed HIGH finding, or a documented deviation.
 
-### Provenance & Metadata
+### Provenance and metadata
 
-- [ ] New plan artefacts include `type:` and `context:` metadata
-- [ ] Implementation steps reference ADR or commit SHA where decisions were made
+- [ ] A new plan artifact includes its `type:` and `context:` metadata.
+- [ ] An implementation step references the ADR or commit SHA where the decision was made.
 
 ### Law of Demeter
 
-- [ ] No method chains through unrelated objects (e.g. `a.getB().getC().doX()`)
-- [ ] Collaborators talk to immediate neighbors only; law violations need explicit justification
+- [ ] No method chain through an unrelated object (`a.getB().getC().doX()`).
+- [ ] A collaborator talks to its immediate neighbor only. A violation needs an explicit justification.
 
-### CONVENTIONS.md Compliance
+### Convention compliance
 
-- [ ] All output files are in `specs/` (no docs written to project root)
-- [ ] No `gh issue create` calls anywhere in new/modified skills or scripts
-- [ ] `gh` used only for PRs and repo clone operations
-- [ ] No GitHub REST API called directly (no curl/fetch to api.github.com)
+- [ ] Every output file is in `specs/`, no doc written to the project root.
+- [ ] No `gh issue create` call in a new or modified skill or script.
+- [ ] `gh` used only for a PR or a repo clone.
+- [ ] No direct GitHub REST API call.
 
 ### Scope
 
-- [ ] Changes are limited to what was asked — nothing extra refactored or reorganized
-- [ ] No speculative features added
-- [ ] No files touched outside the stated scope
-- [ ] **Discovered defects:** Reproducible gate failures (Preflight, CI, golden suite) require fix-or-log — `quick-fix` or `fix-bug` — even when "outside" the story scope. Scope-minimization does not waive Always Green.
-- [ ] Boy Scout Rule applies to files opened to fix a gate failure; it does not excuse skipping red Preflight
+- [ ] The changes are limited to what was asked. Nothing extra refactored.
+- [ ] No speculative feature added.
+- [ ] No file touched outside the stated scope.
+- [ ] Discovered defect: a reproducible gate failure needs fix-or-log (`quick-fix` or `fix-bug`), even when outside the story scope. Scope minimization does not waive Always Green.
 
-### Boy Scout Rule
+### Boy Scout rule
 
-- [ ] Every file I touched is cleaner than when I found it
-- [ ] No dead code left behind
-- [ ] No commented-out code blocks
+- [ ] Every file you touched is cleaner than you found it.
+- [ ] No dead code left behind.
+- [ ] No commented-out code block.
 
-### Types and Safety
+### Types and safety
 
-- [ ] No `any` types introduced (TypeScript) or untyped public functions (Python/Go/etc.)
-- [ ] No `@ts-ignore` or `// eslint-disable` added
-- [ ] No `as unknown as X` casts that bypass type safety
+- [ ] No `any` type introduced, and no untyped public function.
+- [ ] No type-ignore or lint-disable added.
+- [ ] No cast that bypasses type safety.
 
-### Test Coverage
+### Test coverage
 
-- [ ] Every new function has at least one test
-- [ ] Every bug fix has a regression test
-- [ ] Tests verify behavior through public interfaces (not implementation details)
-- [ ] Tests are F.I.R.S.T compliant (per CONVENTIONS.md §Tests; use `enforce-first` if unsure)
+- [ ] Every new function has at least one test.
+- [ ] Every bug fix has a regression test.
+- [ ] The tests verify behavior through the public interface, not an implementation detail.
+- [ ] The tests are F.I.R.S.T compliant. Use `enforce-first` when unsure.
 
-### SOLID and Heuristics
+### SOLID and heuristics
 
-- [ ] Single Responsibility: no function or module doing two unrelated things
-- [ ] Open/Closed: extended through interfaces, not by modifying stable code
-- [ ] Dependency Inversion: dependencies injected, not imported globally where avoidable
-- [ ] **Chapter 17 Heuristics**: Code is free of smells documented in `audit-code/HEURISTICS.md` (G, N, C, T)
+- [ ] Single responsibility: no function or module doing two unrelated things.
+- [ ] Open/closed: extended through an interface, not by modifying stable code.
+- [ ] Dependency inversion: a dependency is injected, not imported globally where avoidable.
+- [ ] The code is free of the smells documented in [HEURISTICS.md](HEURISTICS.md).
 
-### Refactoring Smells (Fowler)
+### Refactoring smells
 
-Explicitly name any detected smells: Mysterious Name, Duplicated Code, Feature Envy, Data Clumps, Primitive Obsession, Message Chains, Middle Man.
+Explicitly name any detected smell: a mysterious name, duplicated code, feature
+envy, a data clump, primitive obsession, a message chain, a middle man.
 
-### Code Style (CONVENTIONS.md)
+### Code style
 
-- [ ] Functions: 4–20 lines; split if longer
-- [ ] Functions: descend exactly one level of abstraction (The Stepdown Rule / G34)
-- [ ] Files: under 300 lines (ideally 200–300)
-- [ ] Names: specific and unique (grep returns < 5 hits for each name)
-- [ ] No duplication — shared logic extracted (DRY / G5)
-- [ ] Early returns over nested ifs; max 2 levels of indentation
-- [ ] Conditionals: expressed as positives (G29)
-- [ ] Comments explain WHY, not WHAT
+- [ ] Functions are 4 to 20 lines. Split a longer one.
+- [ ] A function descends exactly one level of abstraction.
+- [ ] Files are under 300 lines.
+- [ ] Names are specific and unique.
+- [ ] No duplication. Shared logic is extracted.
+- [ ] Early returns over nested ifs. At most two levels of indentation.
+- [ ] A conditional is expressed as a positive.
+- [ ] A comment explains why, not what.
 
-### Red Flags
+### Red flags
 
-Before reporting, name any rationalization you caught yourself making for skipping a checklist item. Silence is not acceptable — if you skipped an item, state the reason explicitly.
+Before you report, name any rationalization you caught yourself making for skipping
+a checklist item. Silence is not acceptable. When you skip an item, state the reason.
 
 ## Output
 
-Report the checklist with ✓ / ✗ per item. For each ✗, describe what needs to be fixed.
+Report the checklist with a pass or fail mark per item. For each fail, describe what
+needs to change. When every item passes, suggest running `request-review`. When any
+item fails, fix it before proceeding.
 
-If all items pass: suggest running `request-review` for an independent second opinion.
-If any items fail: fix them before proceeding.
-
-In `--gate` mode, print one summary line per checklist section (`PASS Supply Chain` / `FAIL Provenance (2 items)`). Exit `0` only if all PASS. Write full report to `specs/verifications/AUDIT-<epic>-<story>.md`.
+In `--gate` mode, print one summary line per section, exit 0 only when all pass, and
+write the full report for the story.
 
 ## Verify
 
-→ verify: `test -f CONVENTIONS.md && test -d skills/enforce-first && test -d skills/request-review`
+Confirm the project conventions are present and the sibling skills (enforce-first,
+request-review) exist.
 
 ## Handoff
 
-Gate: READY -> next: commit-message
-Writes: state.yaml handoff.next_skill = commit-message
-
-
-<!-- story: e01s02 -->
-<!-- story: e06s03 -->
-<!-- story: e07s01 -->
+Gate: READY. Next: commit-message.
+Writes: `state.yaml` `handoff.next_skill = commit-message`.

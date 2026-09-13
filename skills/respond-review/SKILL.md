@@ -1,13 +1,11 @@
 ---
 name: respond-review
-model: sonnet
-effort: standard
-description: Act on a reviewer agent's feedback systematically — categorize findings, apply fixes, verify tests still pass. Use after request-review returns a report, or when user wants to work through code review findings.
+description: 'Act on a reviewer agent feedback systematically. Categorize the findings, apply the fixes, and verify the tests still pass. Use it after request-review returns a report, or when the user wants to work through code-review findings.'
 ---
 
 # Respond Review
-> **HARD GATE** — **HARD GATE** — Every reviewer comment must be addressed (fix, disagree + document reason, or ask clarification). Do NOT ignore feedback and merge.
 
+> **HARD GATE**: every reviewer comment MUST be addressed. Fix it, disagree and document the reason, or ask for clarification. Do NOT ignore feedback and merge.
 
 Work through reviewer findings systematically. Don't apply changes blindly — categorize first, then decide, then fix, then verify.
 
@@ -21,11 +19,11 @@ Read every finding before acting on any of them. Get the full picture first.
 
 For each finding, assign a category:
 
-| Category | Meaning | Action |
-|----------|---------|--------|
-| **must-fix** | Correctness bug, security issue, test failure, CONVENTIONS.md violation | Fix before proceeding |
-| **should-fix** | Code quality issue, naming, clarity — worth fixing but not blocking | Fix if time allows |
-| **consider** | Architectural suggestion, alternative approach — may or may not apply | Discuss with user |
+| Category       | Meaning                                                                     | Action                |
+| -------------- | --------------------------------------------------------------------------- | --------------------- |
+| **must-fix**   | A correctness bug, a security issue, a test failure, a convention violation | Fix before proceeding |
+| **should-fix** | Code quality issue, naming, clarity — worth fixing but not blocking         | Fix if time allows    |
+| **consider**   | Architectural suggestion, alternative approach — may or may not apply       | Discuss with user     |
 
 Create a numbered list of all findings with their categories.
 
@@ -36,6 +34,7 @@ For each "consider" item, briefly describe the trade-off and ask: "Apply, skip, 
 ### 4. Apply must-fix items first
 
 Fix every must-fix item. For each one:
+
 - Describe what you're changing and why
 - Make the change
 - Run the verify command if one exists for this area
@@ -70,4 +69,3 @@ All tests pass.
 ```
 
 Suggest next skill: `commit-message`.
-
