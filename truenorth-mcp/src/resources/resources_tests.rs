@@ -116,6 +116,42 @@ fn malformed_state_is_invalid() {
 }
 
 #[test]
+fn reading_absent_ontology_creates_it_under_agent() {
+    // Requirement 2.4: an absent ontology is created under .agent/ on first read.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+
+    let content = ResourceDoc::Ontology
+        .read_current(root)
+        .expect("create-on-read");
+    // The created file parses as a YAML document with the seeded shape.
+    let value: serde_yaml::Value = serde_yaml::from_str(&content).expect("parse seed");
+    assert!(value.get("entities").is_some());
+
+    // The file now exists under .agent/, not specs/.
+    assert!(root.join(".agent/ontology.yml").is_file());
+    assert!(!root.join("specs/ontology.yaml").exists());
+}
+
+#[test]
+fn ontology_create_on_read_is_idempotent_and_reads_edits() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+
+    // First read seeds the file.
+    ResourceDoc::Ontology.read_current(root).expect("seed");
+
+    // A human edit to the .agent/ file is reflected on the next read.
+    seed(
+        root,
+        ".agent/ontology.yml",
+        "version: '1'\ndomain: orders\n",
+    );
+    let content = ResourceDoc::Ontology.read_current(root).expect("read edit");
+    assert!(content.contains("domain: orders"));
+}
+
+#[test]
 fn conventions_serves_raw_markdown() {
     let dir = tempdir().expect("temp dir");
     let root = dir.path();

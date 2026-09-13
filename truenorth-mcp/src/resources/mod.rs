@@ -141,9 +141,13 @@ impl ResourceDoc {
     /// [`ResourceReadError::Invalid`] when it fails to parse or validate (Requirement
     /// 5.7).
     pub fn read_current(self, repo_root: &std::path::Path) -> Result<String, ResourceReadError> {
-        let path = self
-            .read_path(repo_root)
-            .ok_or_else(|| ResourceReadError::NotFound(display_backing(self)))?;
+        // The ontology resource creates its backing file under .agent/ on first read when
+        // it is absent, through the single write guard (Requirements 2.4, 2.5).
+        let path = match self.read_path(repo_root) {
+            Some(path) => path,
+            None if self == ResourceDoc::Ontology => create_ontology_on_read(repo_root)?,
+            None => return Err(ResourceReadError::NotFound(display_backing(self))),
+        };
         let text = std::fs::read_to_string(&path)
             .map_err(|_| ResourceReadError::NotFound(display_backing(self)))?;
 
@@ -168,6 +172,34 @@ impl ResourceDoc {
         };
         Ok(text)
     }
+}
+
+/// The minimal ontology document seeded on first read (Requirement 2.4).
+///
+/// It is a valid, empty ontology: a domain placeholder with no entities or constraints.
+/// The generate tool (task 12) replaces it with a full ontology. The resource parses it
+/// as a YAML document, so this stub reads back cleanly.
+const ONTOLOGY_SEED: &str = "\
+version: '1'
+domain: ''
+entities: []
+constraints: []
+";
+
+/// Create the ontology backing file under `.agent/` on first read (Requirements 2.4, 2.5).
+///
+/// The write goes through the single write guard, so it stays under `.agent/`. On a
+/// create failure this returns an Invalid read error naming the ontology path, so the
+/// caller retains the last good ontology content and keeps serving other resources
+/// (Requirement 2.5).
+fn create_ontology_on_read(repo_root: &std::path::Path) -> Result<PathBuf, ResourceReadError> {
+    let rel = std::path::Path::new("ontology.yml");
+    crate::engine::agent_ws::write_under_agent(repo_root, rel, ONTOLOGY_SEED).map_err(|e| {
+        ResourceReadError::Invalid(format!(
+            "could not create .agent/ontology.yml: {e}. No file was created."
+        ))
+    })?;
+    Ok(repo_root.join(".agent").join("ontology.yml"))
 }
 
 /// The backing file name for an error message.
