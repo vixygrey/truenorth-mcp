@@ -236,7 +236,10 @@ fn phase_value(phase: Phase) -> Value {
 /// The write goes to a temp file in the same directory, then renames over the target. A
 /// same-directory rename is atomic on the same filesystem, so a reader sees either the old
 /// or the new file, never a partial one. On any failure the target is unchanged.
-fn write_atomic(path: &Path, contents: &str) -> std::io::Result<()> {
+///
+/// Crate-visible so the single write guard in [`crate::engine::agent_ws`] delegates the
+/// byte write here, keeping one atomic-write implementation (ADR-6).
+pub(crate) fn write_atomic(path: &Path, contents: &str) -> std::io::Result<()> {
     let parent = path.parent().unwrap_or_else(|| Path::new("."));
     std::fs::create_dir_all(parent)?;
 
