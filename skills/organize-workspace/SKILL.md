@@ -1,13 +1,11 @@
 ---
 name: organize-workspace
-model: haiku
-effort: standard
-description: Scans the active workspace for disposable artifacts—logs, caches, stale build output, and stray draft markdown—and proposes consolidation of scattered assets. Produces a reviewable list, asks for explicit confirmation before any delete or move, and optionally revises .gitignore. Use when the user says "clean my room", "organize workspace", "workspace cleanup", "remove temp files", "organize assets", "gitignore", or wants a safe tidy pass.
+description: 'Scan the active workspace for a disposable artifact (a log, a cache, stale build output, a stray draft) and propose consolidating scattered assets. Produces a reviewable list, asks for explicit confirmation before any delete or move, and optionally revises the gitignore. Use it when the user says "clean my room", "organize workspace", "workspace cleanup", "remove temp files", or wants a safe tidy pass.'
 ---
 
 # Organize Workspace
-> **HARD GATE** — **HARD GATE** — Workspace structure must reflect domain structure. If the codebase feels disorganized, flag it. Disorganization != 'just a style thing;' it is a signal of domain misalignment.
 
+> **HARD GATE** — **HARD GATE** — Workspace structure must reflect domain structure. If the codebase feels disorganized, flag it. Disorganization != 'just a style thing;' it is a signal of domain misalignment.
 
 ## Principles
 
@@ -26,13 +24,13 @@ description: Scans the active workspace for disposable artifacts—logs, caches,
 
 Group findings under these **buckets**:
 
-| Bucket | Examples | Typical action |
-|--------|----------|----------------|
-| **Logs & temp** | `*.log`, `logs/`, `tmp/`, `temp/`, `*.pid` | Delete after confirm |
-| **Build / cache** | `dist/`, `build/`, `.next/`, `coverage/`, `.turbo/` | Delete if rebuildable |
-| **Package caches** | root `.cache/`, `__pycache__/` | Offer delete |
-| **Stray drafts** | root-level `*.md` named `draft`, `scratch`, `temp` | User picks: delete, move to `specs/`, or keep |
-| **Duplicate / dump dirs** | `old/`, `backup/`, `copy/`, `*_backup` | List + ask |
+| Bucket                    | Examples                                            | Typical action                                |
+| ------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| **Logs & temp**           | `*.log`, `logs/`, `tmp/`, `temp/`, `*.pid`          | Delete after confirm                          |
+| **Build / cache**         | `dist/`, `build/`, `.next/`, `coverage/`, `.turbo/` | Delete if rebuildable                         |
+| **Package caches**        | root `.cache/`, `__pycache__/`                      | Offer delete                                  |
+| **Stray drafts**          | root-level `*.md` named `draft`, `scratch`, `temp`  | User picks: delete, move to `specs/`, or keep |
+| **Duplicate / dump dirs** | `old/`, `backup/`, `copy/`, `*_backup`              | List + ask                                    |
 
 Use quick size hints: `du -sh` per top-level dir; sort large items first.
 
@@ -57,7 +55,7 @@ Output a table or numbered list:
 - Approx size
 - Proposed action: **delete** | **move to …** | **keep**
 
-Ask: *"Delete items 1–3? Move 4–5? Skip 6?"*
+Ask: _"Delete items 1–3? Move 4–5? Skip 6?"_
 
 ## 5. Execute after approval
 
@@ -76,7 +74,5 @@ Do this when the repo is under Git and the cleanup surfaced **untracked** noise:
 5. **Verify**: run `git check-ignore -v <path>` on 2–3 representative paths.
 
 See [REFERENCE.md](REFERENCE.md) for shell patterns, `.gitignore` mechanics, and safety checks.
-
-
 
 <!-- story: e04s03 -->

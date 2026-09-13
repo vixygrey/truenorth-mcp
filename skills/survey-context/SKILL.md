@@ -1,141 +1,106 @@
 ---
 name: survey-context
-model: haiku
-effort: standard
-description: Per-task context bootstrap — reads existing specs/ and tech-architecture docs to map the current lifecycle phase and suggest the next skill. Use at the start of any task, when returning after a break, or when unsure what to do next. For deriving a tech-stack doc from scratch, use map-codebase first.
+description: 'A per-task context bootstrap. Reads the existing specs/ and tech-architecture docs to map the current lifecycle phase and suggest the next skill. Use it at the start of any task, when returning after a break, or when unsure what to do next. For deriving a tech-stack doc from scratch, use map-codebase first.'
 ---
-
-# story: e82s02
 
 # Survey Context
 
-Read the project's current state and give a phase map + next-skill recommendation. This is the "where am I?" skill — run it at the start of every task.
+Read the project current state and give a phase map plus a next-skill
+recommendation. This is the "where am I?" skill. Run it at the start of every task.
 
-> **Use this vs map-codebase:** `survey-context` consumes existing specs and docs (fast; does not re-derive). `map-codebase` builds the tech-stack doc from scratch by scanning the codebase. Run `map-codebase` when `specs/tech-architecture/tech-stack.md` doesn't exist yet; run `survey-context` when it does.
+> Use this versus map-codebase: `survey-context` consumes the existing specs and docs (fast, it does not re-derive). `map-codebase` builds the tech-stack doc from scratch by scanning the codebase. Run `map-codebase` when the tech-stack doc does not exist yet. Run `survey-context` when it does.
 
-> **HARD GATE** — Read specs/ files before suggesting next steps. If state.yaml is stale or contradicts the codebase, request clarification rather than assuming intent.
+> **HARD GATE**: read the specs/ files before you suggest a next step. When the state is stale or contradicts the codebase, request clarification rather than assuming intent.
 
-Orchestrate-project 6 phases: Phase 1 Discover - Phase 2 Elaborate - Phase 3 Plan - Phase 4 Build - Phase 5 Verify - Phase 6 Release
+The six phases: discover, elaborate, plan, build, verify, release.
 
 ## Process
 
-> **Timing:** `bash scripts/bp-timing.sh start survey-context` at invocation; `bash scripts/bp-timing.sh end survey-context` before handoff.
+### 1. Read the conventions
 
-### 1. Read CONVENTIONS.md
+When the project conventions doc exists at the root, read it first. It contains the
+rules every agent must follow in this project. Read it through the
+`truenorth://conventions` resource when available.
 
-If `CONVENTIONS.md` exists at the project root, read it first. It contains the rules all agents must follow in this project.
+### 2. Read specs/
 
-### 2. Read specs/ (YAML-first)
+Scan the `specs/` directory. Read the cockpit through the `truenorth://state` and
+`truenorth://cockpit` resources when available. For each YAML file, note whether it
+exists, whether the keys are populated, and the `handoff.next_skill`.
 
-Scan the `specs/` directory if it exists:
+- `specs/state.yaml`: the session, the active flow, the epic, the git state, the
+  handoff.
+- `specs/release-plan.yaml`: the target version, the WSJF epic index.
+- `specs/execution-status.yaml`: the flat story and epic status.
+- `specs/product/`, `specs/epics/`, `specs/bugs/`: scope, epic capsules, bug reports.
 
-```
-specs/
-├── state.yaml                  → session: active_flow, epic, git, handoff
-├── release-plan.yaml           → target version, WSJF epic index
-├── execution-status.yaml       → flat story/epic status
-├── planning-status.yaml        → discover-phase checklist (optional)
-├── requirements/
-│   ├── VISION_LATEST.yaml
-│   ├── SCOPE_LATEST.yaml
-│   └── GLOSSARY_LATEST.yaml
-├── plans/                      → TECH_STACK, TEST_PLAN, etc.
-├── epics/                      → eNN shards (flat yaml or eNN/stories/)
-└── bugs/                       → BUG-*.md + registry.yaml
-```
+### 3. Read the project agent guide
 
-For each YAML file found, note: exists? keys populated? `handoff.next_skill`?
+When the project agent guide exists at the root, read it for the stack, the
+commands, the architecture, and the conventions.
 
-Legacy markdown (`specs/archive/STATE.md`, `RELEASE-PLAN.md`) is **not** SoT if YAML exists.
+### 4. Check the VCS state
 
-→ verify: `bash scripts/validate-specs-yaml.sh`
+Read the `vcs.kind` value from `state.yaml`. Use the native identity through the
+git-context tool.
 
-### 3. Read CLAUDE.md
+- Git: status, the last few commits, the current branch.
+- Jujutsu: status and the recent change log.
 
-If `CLAUDE.md` exists at the project root, read it for project context (stack, commands, architecture, conventions).
-
-### 4. Check VCS state
-
-Read `state.yaml` `vcs.kind` (or resolve `auto`). Use native identity:
-
-```bash
-# Git
-git status --short; git log --oneline -5; git branch --show-current
-# Jujutsu
-jj status; jj log -r 'mine() & ::@' -n 5
-```
-
-For Jujutsu, compare stable change IDs and bookmarks with the `vcs` block; never interpret colocated Git's detached HEAD as branch state.
+For Jujutsu, compare the stable change ids and bookmarks with the `vcs` block. Never
+interpret a colocated Git detached HEAD as branch state.
 
 ### 5. Map the lifecycle phase
 
-Based on what you've found, identify which PMBOK phase this project is currently in:
+Identify the current phase from what you found.
 
-| Phase | Signals |
-|-------|---------|
-| **Discover** | No `requirements/SCOPE_LATEST.yaml` yet, or only rough notes |
-| **Design** | SCOPE exists but no `release-plan.yaml` |
-| **Plan** | `release-plan.yaml` exists; on `main`/`master` branch |
-| **Initiate** | On a feature branch; no code changes yet |
-| **Execute** | `state.yaml` `active_flow: build_epic`; epic capsule in progress |
-| **Verify** | Implementation done; run `verify-work` or `run-evals` |
-| **Bug** | `state.yaml` `active_flow: fix_bug` or open `specs/bugs/BUG-*.md` |
-| **Review** | All code written; no PR yet |
-| **Integrate** | PR open; tests passing |
-| **Sustain** | Ongoing; no active task |
+| Phase         | Signals                                                |
+| ------------- | ------------------------------------------------------ |
+| **Discover**  | No product scope yet, or only rough notes              |
+| **Design**    | Scope exists but no release plan                       |
+| **Plan**      | The release plan exists, on `main` or `master`         |
+| **Initiate**  | On a feature branch, no code change yet                |
+| **Execute**   | `active_flow: build_epic`, an epic capsule in progress |
+| **Verify**    | Implementation done, run `verify-work` or `run-evals`  |
+| **Bug**       | `active_flow: fix_bug`, or an open bug report          |
+| **Review**    | All code written, no PR yet                            |
+| **Integrate** | PR open, tests passing                                 |
+| **Sustain**   | Ongoing, no active task                                |
 
-Prefer `specs/state.yaml` `active_flow` and `handoff.next_skill` when present.
+Prefer the `active_flow` and `handoff.next_skill` from `state.yaml` when present.
 
-### 6. Suggest next skill
+### 6. Suggest the next skill
 
-Based on the phase and state, recommend the most useful next step:
+Recommend the most useful next step for the phase and state.
 
-- **If in Plan/Bug phase and on `main`**: Suggest `kickoff-branch` next.
-- **If in Initiate phase**: Suggest `develop-tdd` or `execute-plan` or `ship-epic`.
-- **If in Execute phase**: Suggest `ship-epic` (resume) or `develop-tdd` for `active_story_id`.
-- **If in Verify phase**: Suggest `verify-work` (UAT) or `run-evals`.
+- In the plan or bug phase and on `main`: suggest `kickoff-branch`.
+- In the initiate phase: suggest `develop-tdd` or `execute-plan`.
+- In the execute phase: suggest `build-epic` to resume, or `develop-tdd` for the
+  active story.
+- In the verify phase: suggest `verify-work` or `run-evals`.
 
-Example:
-```
-Phase: Execute
-Active branch: feat/e02-verify (state.yaml matches)
-release-plan.yaml: v3.0.0, 10 epics
-active_epic_id: e02
+Be specific. Name the exact skill and why. When several options exist, list them in
+priority order.
 
-Suggested next: ship-epic (resume e02s01 at develop-tdd)
-```
+### 7. Surface the blockers
 
-Be specific — name the exact skill and why. If multiple options exist, list them in priority order.
+Report a blocker before a recommendation: a broken baseline test, an open bug report
+with no active fix branch, an epic task with no verify command, or a git hash in
+`state.yaml` that is stale versus the working tree.
 
-### 7. Surface blockers
+### 8. Record the story-start timestamp
 
-If something looks wrong:
-- Broken tests in the baseline
-- Open `specs/bugs/BUG-*.md` with no active fix branch
-- Epic shards missing `verify:` on tasks
-- `validate-specs-yaml.sh` fails
-- Git hash in `state.yaml` stale vs `git rev-parse`
-
-Report blockers first, before recommendations.
-
-### 8. Record story start timestamp
-
-At story start, write `metrics.story_start` with the current ISO 8601 timestamp to `specs/state.yaml` as an **informational progress marker only** — not a measurement input. Cycle-time metrics are now derived from git commit history via `scripts/record-cycle-time.sh` (see `skills/release-branch/REFERENCE.md` §Cycle-time recording).
+At story start, write `metrics.story_start` with the current ISO-8601 timestamp to
+`specs/state.yaml` as an informational progress marker only, not a measurement input.
 
 ## Utility outputs
 
-### list-epics (absorbed)
-
-Loop through all `specs/epics/*/epic.yaml` files and print a summary of story counts per epic. Useful for understanding overall project scope and epic distribution.
-
-### check-gates (absorbed)
-
-Print `active_flow`, validate YAML, then show `git status` or `jj status` according to `vcs.kind`. Use before handoffs or context transitions.
+- **list-epics**: loop through the epic capsules and print a summary of the story
+  counts per epic.
+- **check-gates**: print the active flow, validate the state YAML, then show the git
+  or jj status through the git-context tool. Use it before a handoff.
 
 ## Handoff
 
-Gate: READY -> next: plan-work
-Writes: state.yaml handoff.next_skill = plan-work
-
-
-<!-- story: e03s03 -->
+Gate: READY. Next: plan-work.
+Writes: `state.yaml` `handoff.next_skill = plan-work`.

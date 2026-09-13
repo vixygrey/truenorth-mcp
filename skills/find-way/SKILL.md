@@ -1,9 +1,6 @@
 ---
 name: find-way
-phase: discover
-effort: standard
-model: sonnet
-description: Plan a large effort as a shared map of decision tickets on an issue tracker, resolving them one at a time until the way is clear. Use when an idea is too big for one session, needs structured exploration before implementation, or requires mapping decisions before building.
+description: 'Plan a large effort as a shared map of decision tickets on an issue tracker, resolving them one at a time until the way is clear. Use it when an idea is too big for one session, needs structured exploration before implementation, or requires mapping decisions before building.'
 ---
 
 # Find Way
@@ -22,29 +19,34 @@ A single issue labelled `wayfinder:map` — the canonical artifact. Child issues
 
 ```markdown
 ## Destination
+
 <what reaching the end looks like — one or two lines>
 
 ## Notes
+
 <domain, skills to consult, standing preferences>
 
 ## Decisions so far
+
 - [closed ticket title](link) — one-line gist
 
 ## Not yet specified
+
 <in-scope fog you can't ticket yet>
 
 ## Out of scope
+
 <work ruled beyond the destination>
 ```
 
 ## Ticket Types
 
-| Type | Label | Mode | Purpose |
-|------|-------|------|---------|
-| Research | `wayfinder:research` | AFK | Surface facts from docs/APIs |
-| Prototype | `wayfinder:prototype` | HITL | Cheap artifact to react to |
-| Grilling | `wayfinder:grilling` | HITL | One-question-at-a-time dialogue |
-| Task | `wayfinder:task` | Either | Manual work unblocking a decision |
+| Type      | Label                 | Mode   | Purpose                           |
+| --------- | --------------------- | ------ | --------------------------------- |
+| Research  | `wayfinder:research`  | AFK    | Surface facts from docs/APIs      |
+| Prototype | `wayfinder:prototype` | HITL   | Cheap artifact to react to        |
+| Grilling  | `wayfinder:grilling`  | HITL   | One-question-at-a-time dialogue   |
+| Task      | `wayfinder:task`      | Either | Manual work unblocking a decision |
 
 **HITL** = human in the loop. **AFK** = agent alone.
 
