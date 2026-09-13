@@ -28,12 +28,15 @@ use thiserror::Error;
 const REPO_ROOT_ENV: &str = "TRUENORTH_ROOT";
 
 /// Marker directories that identify a valid repository root. A candidate is valid only
-/// when it directly contains both of these directories (Requirement 1.5).
-const MARKER_DIRS: [&str; 2] = ["skills", "specs"];
+/// when it directly contains all three of these directories (Requirement 2.7). The
+/// `.agent/` marker is the machine-facing workspace, `specs/` is the human-facing
+/// narrative, and `skills/` holds the skill sources.
+const MARKER_DIRS: [&str; 3] = [".agent", "specs", "skills"];
 
 /// Git scope directories (ports `GIT_SCOPE_DIRS`). Git status, log, and diff output is
-/// scoped to these two directories (Requirement 1.8).
-pub const GIT_SCOPE_DIRS: [&str; 2] = ["skills", "specs"];
+/// scoped to these three directories (Requirement 2.8). `specs/` stays in scope because
+/// the runtime reads ADR content there.
+pub const GIT_SCOPE_DIRS: [&str; 3] = [".agent", "specs", "skills"];
 
 /// Maximum byte size of a single skill file read into memory.
 pub const MAX_READ_SKILL_BYTES: usize = 512 * 1024;
@@ -44,10 +47,11 @@ pub const DEFAULT_GATE_TIMEOUT: Duration = Duration::from_secs(300);
 /// An error from repository-root resolution.
 #[derive(Debug, Error)]
 pub enum ConfigError {
-    /// No candidate directory contained both marker directories (Requirement 1.6).
+    /// No candidate directory contained all three marker directories (Requirement 1.6).
     #[error(
         "no valid repository root among the evaluated candidates ({candidates}). \
-         A valid root must directly contain both a `skills/` and a `specs/` directory. \
+         A valid root must directly contain a `.agent/`, a `specs/`, and a `skills/` \
+         directory. \
          Set the `TRUENORTH_ROOT` environment variable to the repository root, \
          or run the server from inside the repository."
     )]
@@ -65,8 +69,8 @@ pub enum ConfigError {
 /// 2. The current working directory.
 /// 3. The parent of the package directory (the parent of the running binary's directory).
 ///
-/// A candidate is a valid root only when it directly contains both a `skills/` and a
-/// `specs/` directory (Requirement 1.5).
+/// A candidate is a valid root only when it directly contains a `.agent/`, a `specs/`,
+/// and a `skills/` directory (Requirement 2.7).
 ///
 /// # Errors
 ///
