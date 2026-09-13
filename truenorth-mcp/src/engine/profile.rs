@@ -216,3 +216,9 @@ pub fn resolve_active(repo_root: &Path) -> Result<Profile, ProfileError> {
 #[cfg(test)]
 #[path = "profile_tests.rs"]
 mod tests;
+
+// Property tests (Property 10) live in a separate sibling so the example-based unit tests
+// stay focused. The `#[path]` include keeps them a child module of `profile`.
+#[cfg(test)]
+#[path = "profile_prop_tests.rs"]
+mod prop_tests;
