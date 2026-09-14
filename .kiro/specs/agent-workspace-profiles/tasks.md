@@ -213,12 +213,12 @@ skill reference).
     - Build temp repos with random branch and merge topologies and run the emitted hook; assert the current and trunk branches always survive, only ancestor-or-empty-diff matching branches are deleted, and a detached HEAD deletes nothing
     - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.6, 7.8**
 
-- [ ] 11. Wire the new tools and resource into the server
-  - [ ] 11.1 Aggregate the scaffold, bug-reference tool, and ADR resource in `src/index.rs`
+- [x] 11. Wire the new tools and resource into the server
+  - [x] 11.1 Aggregate the scaffold, bug-reference tool, and ADR resource in `src/index.rs`
     - Register `truenorth_scaffold_project` and `truenorth_record_bug` in the tool router, add the `Adr` resource to the `ServerHandler`, and confirm the watcher watches `specs/adr/` and the relocated `.agent/` paths
     - _Requirements: 5.1, 8.1, 9.2, 2.6_
 
-  - [ ]\* 11.2 Write an MCP round-trip integration test
+  - [x]\* 11.2 Write an MCP round-trip integration test
     - Drive `resources/read` for each relocated resource against a temp repo seeded under `.agent/`, and against a legacy-`specs/` temp repo, asserting the backward-compat read
     - Drive `truenorth_record_bug` and `truenorth_scaffold_project` end to end against a temp repo
     - _Requirements: 2.9, 8.1, 5.3_
