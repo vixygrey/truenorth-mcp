@@ -252,8 +252,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 8.5, 10.10_
 
-- [ ] 17. Remove generated wikis and JSON side-cars
-  - [ ] 17.1 Remove the regeneratable artifacts
+- [x] 17. Remove generated wikis and JSON side-cars
+  - [x] 17.1 Remove the regeneratable artifacts
     - Remove `verifications/`, `epics/`, `codebase-wiki/`, and the generated `adr-wiki/`, `epics-wiki/`, `skills-wiki/`, and `conventions-wiki/` directories
     - Remove the JSON side-cars: `blind-spots`, `drift-report`, `skill-graph`, `receipts`, `rule-matrix`, `import-boundaries`, and `traceability-matrix`
     - Commit as its own revertible batch
