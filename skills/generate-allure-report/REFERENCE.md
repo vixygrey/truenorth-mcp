@@ -4,17 +4,19 @@
 
 The script reads five YAML sources from the project:
 
-| Source           | Path                                       | Fields Used                                           |
-| ---------------- | ------------------------------------------ | ----------------------------------------------------- |
-| Execution status | `specs/execution-status.yaml`              | `epics`, `stories`, `development_status`              |
-| Release plan     | `specs/release-plan.yaml`                  | `release.version`, `release.status`, `bugs` summary   |
-| Epic capsules    | `specs/epics/**/epic.yaml` + `-tasks.yaml` | Epic metadata, task pass/fail counts                  |
-| Cycle times      | `specs/metrics/cycle-times.yaml`           | Story-level `cycle_minutes`, `bcp_per_hour`, `source` |
-| Bug registry     | `specs/bugs/registry.yaml`                 | Bug counts by status and severity                     |
+| Source           | Path                                               | Fields Used                                         |
+| ---------------- | -------------------------------------------------- | --------------------------------------------------- |
+| Execution status | `.agent/tasks/execution-status.yml`                | `groups`, `stories`, `development_status`           |
+| Release plan     | `.agent/tasks/release-plan.yml`                    | `release.version`, `release.status`, `bugs` summary |
+| Task groups      | `.agent/tasks/<capsule>/group.yml` + `-tasks.yaml` | Group metadata, task pass/fail counts               |
+| Bug references   | `.agent/tasks/bugs.yml` (optional)                 | Bug counts by status and severity                   |
+
+The external tracker owns bug detail. Cycle-time metrics are out of scope, so the
+report reads no metrics file.
 
 ## Script Body
 
-The report generator reads the specs/ model and writes the Allure result files:
+The report generator reads the `.agent/` cockpit and writes the Allure result files:
 
 ```bash
 #!/usr/bin/env bash
@@ -33,25 +35,20 @@ from pathlib import Path
 root = Path(sys.argv[1])
 out = root / "allure-results"
 
-# 1. Read execution-status.yaml
-exec_status_file = root / "specs" / "execution-status.yaml"
-release_plan_file = root / "specs" / "release-plan.yaml"
-cycle_times_file = root / "specs" / "metrics" / "cycle-times.yaml"
-bugs_registry_file = root / "specs" / "bugs" / "registry.yaml"
+# 1. Read the .agent/ cockpit files
+exec_status_file = root / ".agent" / "tasks" / "execution-status.yml"
+release_plan_file = root / ".agent" / "tasks" / "release-plan.yml"
+bugs_file = root / ".agent" / "tasks" / "bugs.yml"
 
 sys.path.insert(0, str(root / "scripts" / "lib"))
 from simple_yaml import parse_simple_yaml
 
 exec_status = parse_simple_yaml(exec_status_file.read_text()) if exec_status_file.exists() else {}
 release_plan = parse_simple_yaml(release_plan_file.read_text()) if release_plan_file.exists() else {}
-cycle_times = parse_simple_yaml(cycle_times_file.read_text()) if cycle_times_file.exists() else {"stories": []}
-bugs_registry = parse_simple_yaml(bugs_registry_file.read_text()) if bugs_registry_file.exists() else {"bugs": []}
+bugs_registry = parse_simple_yaml(bugs_file.read_text()) if bugs_file.exists() else {"bugs": []}
 
-# Build cycle-times lookup
+# Cycle-time metrics are out of scope, so there is no per-story cycle-time lookup.
 ct_lookup = {}
-for ct in cycle_times.get("stories", []):
-    if isinstance(ct, dict):
-        ct_lookup[ct.get("id", "")] = ct
 
 # 2. Build JUnit XML
 stories = exec_status.get("stories", {})
@@ -61,7 +58,7 @@ total_stories = len(stories)
 incomplete = sum(1 for s in stories.values() if isinstance(s, dict) and s.get("status") != "done")
 
 testsuite = ET.Element("testsuite", {
-    "name": "epic-progress",
+    "name": "group-progress",
     "tests": str(total_stories),
     "failures": str(incomplete),
     "errors": "0",
@@ -73,23 +70,18 @@ for story_id in sorted(stories.keys()):
     if not isinstance(story, dict):
         continue
 
-    epic_id = story.get("epic", "unknown")
+    group_id = story.get("group", "unknown")
     title = story.get("title", story_id)
     bcps = story.get("bcps", 0)
     status = story.get("status", "backlog")
     risk_max = story.get("risk_max", "none")
     security_max = story.get("security_max", "none")
 
-    # Enrich with cycle-times data
-    ct_data = ct_lookup.get(story_id, {})
-    cycle_minutes = ct_data.get("cycle_minutes", 0)
-    bcp_per_hour = ct_data.get("bcp_per_hour", 0)
-
-    # Time: cycle_minutes * 60 for seconds in Allure display
-    time_seconds = cycle_minutes * 60.0 if cycle_minutes else 0.0
+    # Cycle-time metrics are out of scope, so the Allure time is left at zero.
+    time_seconds = 0.0
 
     testcase = ET.SubElement(testsuite, "testcase", {
-        "classname": epic_id,
+        "classname": group_id,
         "name": f"{story_id}: {title}",
         "time": str(round(time_seconds, 3)),
     })
@@ -99,8 +91,6 @@ for story_id in sorted(stories.keys()):
     ET.SubElement(props, "property", {"name": "security", "value": security_max})
     ET.SubElement(props, "property", {"name": "bcps", "value": str(bcps)})
     ET.SubElement(props, "property", {"name": "status", "value": status})
-    ET.SubElement(props, "property", {"name": "bcp_per_hour", "value": str(bcp_per_hour)})
-    ET.SubElement(props, "property", {"name": "lead_time_minutes", "value": str(cycle_minutes)})
 
     if status != "done":
         ET.SubElement(testcase, "failure", {
@@ -113,16 +103,16 @@ ET.indent(tree, space="  ")
 tree.write(str(out / "junit-results.xml"), encoding="utf-8", xml_declaration=True)
 
 # 3. Build categories.json
-epics = exec_status.get("epics", {})
+groups = exec_status.get("groups", {})
 categories = []
 
-for epic_id in sorted(epics.keys()):
-    epic = epics[epic_id]
-    if isinstance(epic, dict) and epic.get("status") != "done":
+for group_id in sorted(groups.keys()):
+    group = groups[group_id]
+    if isinstance(group, dict) and group.get("status") != "done":
         categories.append({
-            "name": f"Epic: {epic.get('title', epic_id)}",
+            "name": f"Group: {group.get('title', group_id)}",
             "matchedStatuses": ["failed"],
-            "messageRegex": f".*{epic_id}:.*"
+            "messageRegex": f".*{group_id}:.*"
         })
 
 categories.append({
@@ -160,9 +150,9 @@ executor = {
 (out / "executor.json").write_text(json.dumps(executor, indent=2))
 
 # Summary
-epic_count = len([e for e in epics.values() if isinstance(e, dict) and e.get("status") == "done"])
-total_epics = len(epics)
-print(f"generate-allure-report: {total_stories} stories, {epic_count}/{total_epics} epics done, {bug_count} bugs")
+group_count = len([g for g in groups.values() if isinstance(g, dict) and g.get("status") == "done"])
+total_groups = len(groups)
+print(f"generate-allure-report: {total_stories} stories, {group_count}/{total_groups} groups done, {bug_count} bugs")
 print(f"  -> {out}/junit-results.xml")
 print(f"  -> {out}/categories.json")
 print(f"  -> {out}/executor.json")
@@ -173,15 +163,13 @@ PY
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<testsuite name="epic-progress" tests="N" failures="F" errors="0" skipped="0">
-  <testcase classname="e01" name="e01s01: Security slopcheck tags" time="0.75">
+<testsuite name="group-progress" tests="N" failures="F" errors="0" skipped="0">
+  <testcase classname="e01" name="e01s01: Security slopcheck tags" time="0.0">
     <properties>
       <property name="risk" value="none"/>
       <property name="security" value="none"/>
       <property name="bcps" value="1"/>
       <property name="status" value="done"/>
-      <property name="bcp_per_hour" value="1.3"/>
-      <property name="lead_time_minutes" value="45"/>
     </properties>
   </testcase>
   <testcase classname="e01" name="e01s99: Some incomplete story" time="0.0">
@@ -196,7 +184,7 @@ PY
 ```json
 [
   {
-    "name": "Epic: Quality Core - Skill Hardening",
+    "name": "Group: Quality Core - Skill Hardening",
     "matchedStatuses": ["failed"],
     "messageRegex": ".*e45:.*"
   },
@@ -227,7 +215,7 @@ PY
 ## Example Usage
 
 ```bash
-# Generate the Allure report from the specs/ model, then verify output
+# Generate the Allure report from the .agent/ cockpit, then verify output
 test -f allure-results/junit-results.xml && echo "JUnit OK"
 test -f allure-results/categories.json && echo "Categories OK"
 test -f allure-results/executor.json && echo "Executor OK"

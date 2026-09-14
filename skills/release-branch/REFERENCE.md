@@ -9,7 +9,7 @@
 | 23–31   | PR body template (team-pr mode)      |
 | 32–35   | Summary                              |
 | 36–41   | Verify                               |
-| 42–47   | specs/ artifacts                     |
+| 42–47   | Narrative artifacts                  |
 | 48–58   | Worktree cleanup details             |
 | 59–81   | Cycle-time recording                 |
 | 82–100  | Why not story_start minus story_end? |
@@ -39,8 +39,8 @@ gh pr create \
 - [ ] CONVENTIONS.md compliance verified
 - [ ] PR Title follows Conventional Commits (for automated release)
 
-## specs/ artifacts
-- [List any specs/ files produced or updated]
+## Narrative artifacts
+- [List any human-narrative files under specs/ produced or updated]
 EOF
 )"
 ```
@@ -58,11 +58,13 @@ If `git worktree remove` fails due to uncommitted changes, ask: "There are uncom
 
 ## Cycle-time recording
 
-After landing the branch, record delivery metrics from git history (replaces
-hand-arithmetic). Append a row to `specs/metrics/cycle-times.yaml` for the story,
-using the commit range `$(git merge-base main HEAD)..HEAD`.
+Cycle-time metrics are out of scope. The cycle-time ledger is removed. This
+section records the retired design for reference only.
 
-The row records two separated metrics:
+The old approach derived delivery metrics from git history (replaced
+hand-arithmetic), using the commit range `$(git merge-base main HEAD)..HEAD`.
+
+The row recorded two separated metrics:
 
 - **effort_hours** — ADDITIVE. Idle-stripped estimated effort from git commit
   history (git-hours model: 120-min session threshold, 120-min first-commit pad).

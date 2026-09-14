@@ -62,7 +62,7 @@ The description is **the only thing your agent sees** when deciding which skill 
 **Good example**:
 
 ```
-Investigate a bug by exploring the codebase to find root cause, then write a TDD-based fix plan to specs/bugs/BUG-*.md. Use when user reports a bug, wants to investigate a problem, or mentions "triage".
+Investigate a bug by exploring the codebase to find root cause, then write a TDD-based fix plan. The external tracker owns bug detail; cockpit bug references live at .agent/tasks/bugs.yml. Use when user reports a bug, wants to investigate a problem, or mentions "triage".
 ```
 
 ## When to Add Scripts
