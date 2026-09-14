@@ -25,11 +25,10 @@ the MCP server.
 
 ## Cockpit keys the view reads
 
-- `state.yaml`: `active_flow`, `active_group_id`, `git`, `handoff`, `group_cycle`.
-- `release-plan.yaml`: `release.version`, and the `groups[]` with `id`, `title`,
-  `wsjf`, `file`.
-- `execution-status.yaml`: the story and group status map.
-- `planning-status.yaml`: the discover workflows and their status.
+- `.agent/tasks/state.yml`: `active_flow`, `active_group_id`, `git`, `handoff`, `group_cycle`.
+- `.agent/tasks/release-plan.yml`: `release.version`, and the `groups[]` with `id`,
+  `title`, `wsjf`, `file`.
+- `.agent/tasks/execution-status.yml`: the story and group status map.
 
 ## Verify
 

@@ -26,7 +26,7 @@
     body{margin:0;background:var(--paper);color:var(--ink);
       font-family:"Inter",system-ui,sans-serif;font-size:16px;line-height:var(--lh);
       -webkit-font-smoothing:antialiased;}
-    
+
     /* ---- scaffold ---- */
     .spread{position:relative;width:100%;}
     .wrap{position:relative;max-width:var(--maxw);margin:0 auto;padding:var(--lh) var(--margin);}
@@ -65,7 +65,7 @@
     header { padding: var(--lh) 0; background: var(--paper); color: var(--ink); display: flex; gap: var(--gutter); flex-wrap: wrap; border-bottom: 2px solid var(--ink); margin-bottom: var(--lh); }
     header strong { color: var(--accent); }
     header span { color: var(--ink-soft); }
-    
+
     section { padding: var(--lh) 0; border-top: 1px solid #ddd; }
     section h2 { margin: 0 0 var(--lh) 0; font-size: 16px; line-height: var(--lh); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
     .epic { padding: 0 0 calc(var(--lh) - 1px) 0; margin-bottom: var(--lh); border-bottom: 1px solid #eee; }
@@ -116,16 +116,16 @@
       document.getElementById('hdr').innerHTML =
         '<div><strong>Release</strong> ' + (r.version || '?') + ' · ' + (r.status || '') + '</div>' +
         '<span>flow: ' + (data.state.active_flow || '—') + '</span>' +
-        '<span>epic: ' + (data.active_epic_id || '—') + '</span>' +
+        '<span>group: ' + (data.active_group_id || '—') + '</span>' +
         '<span>branch: ' + ((data.state.git || {}).branch || '—') + '</span>';
 
       const pw = data.planning_status || {};
       document.getElementById('planning-body').innerHTML = Object.entries(pw).map(([k, v]) => {
         const st = (v && v.status) || v || 'unknown';
         return '<div class="epic"><strong>' + k + '</strong> — <span class="' + st + '">' + st + '</span></div>';
-      }).join('') || '<p>No planning-status.yaml</p>';
+      }).join('') || '<p>No planning status tracked.</p>';
 
-      document.getElementById('build-body').innerHTML = (data.epics || []).map(e =>
+      document.getElementById('build-body').innerHTML = (data.groups || []).map(e =>
         '<div class="epic"><strong>' + e.id + '</strong> ' + e.title +
         ' <span class="' + e.status + '">(' + e.status + ')</span> WSJF ' + e.wsjf + '</div>'
       ).join('');

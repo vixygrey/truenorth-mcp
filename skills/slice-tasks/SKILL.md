@@ -13,7 +13,7 @@ Produce **task group story tasks** in the task group under `.agent/tasks/` — v
 
 ## Pre-flight
 
-- [ ] Does `.agent/product/SCOPE_LATEST.yaml` exist? If not, run `scope-work` first — you can't slice what you haven't bounded.
+- [ ] Does `.agent/product/scope.yml` exist? If not, run `scope-work` first — you can't slice what you haven't bounded.
 - [ ] Is the `release-plan.yaml` populated with the task groups you're slicing? Group IDs (e01, e02…) should exist before you create stories.
 - [ ] Do you understand the difference between a horizontal layer and a vertical slice? (See anti-patterns below.)
 
@@ -27,7 +27,7 @@ Produce **task group story tasks** in the task group under `.agent/tasks/` — v
 
    Use `feature_name`, `constraints`, and `out_of_scope` to inform slice boundaries. `key_decisions` in the file may constrain how stories are cut (e.g., "no external deps" constrains slice 2). If absent, proceed normally.
 
-1. **Read context** — Read `.agent/product/SCOPE_LATEST.yaml` and/or `.agent/tasks/release-plan.yml`. Understand what the task group delivers end-to-end.
+1. **Read context** — Read `.agent/product/scope.yml` and/or `.agent/tasks/release-plan.yml`. Understand what the task group delivers end-to-end.
 
 2. **Cut tracer-bullet slices** — Identify the thinnest possible vertical path through the stack that delivers user value. Start with this slice; it will catch integration issues first. For example:
    - A search feature: first slice is "user types query → API returns results" (no filters, no pagination, no ranking — just the plumbing working end-to-end).

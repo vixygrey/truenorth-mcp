@@ -19,7 +19,7 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
 
 ## The 6-Phase Core Loop
 
-1. **DISCOVER** (3-6 hours): Understand problem. Deliverables: `requirements/VISION_LATEST.yaml`, `requirements/SCOPE_LATEST.yaml`, `plans/TECH_STACK_LATEST.md`.
+1. **DISCOVER** (3-6 hours): Understand problem. Deliverables: `.agent/product/vision.yml`, `.agent/product/scope.yml`, the project tech-stack note.
 2. **ELABORATE** (3-6 hours): Research solutions. Deliverables: Prior art in scope YAML, ADRs in `specs/adr/`.
 3. **PLAN** (2-4 hours): Write verifiable plan. Deliverables: `release-plan.yaml`, `epics/eNN-*.yaml` with `verify:` per task.
 4. **BUILD** (1-8 hours): Execute plan. Runs build-epic once per story in WSJF order. Deliverables: Code; update `execution-status.yaml`.

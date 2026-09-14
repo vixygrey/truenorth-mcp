@@ -28,8 +28,8 @@ function parseArgs(argv) {
 }
 
 function buildHints(styles, colors, components) {
-  const glass = styles.some(s => s.backdropFilter && s.backdropFilter !== 'none');
-  const darkBg = styles.some(s => {
+  const glass = styles.some((s) => s.backdropFilter && s.backdropFilter !== 'none');
+  const darkBg = styles.some((s) => {
     if (s.tag !== 'body') return false;
     const m = s.backgroundColor?.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
     return m && parseInt(m[1]) + parseInt(m[2]) + parseInt(m[3]) < 100;
@@ -37,12 +37,17 @@ function buildHints(styles, colors, components) {
   const ss = [];
   if (glass) ss.push('glassmorphism');
   if (darkBg) ss.push('dark');
-  const hasGrot = styles.some(s => {
+  const hasGrot = styles.some((s) => {
     const ff = (s.fontFamily || '').toLowerCase();
-    return ff.includes('inter') || ff.includes('helvetica') || ff.includes('grotesk') || ff.includes('archivo');
+    return (
+      ff.includes('inter') ||
+      ff.includes('helvetica') ||
+      ff.includes('grotesk') ||
+      ff.includes('archivo')
+    );
   });
   if (hasGrot && Object.keys(colors).length <= 8 && !glass) ss.push('swiss');
-  const ff = new Set(styles.map(s => s.fontFamily).filter(Boolean));
+  const ff = new Set(styles.map((s) => s.fontFamily).filter(Boolean));
   return {
     dominantColorFamily: darkBg ? 'dark' : 'light',
     styleSignals: ss.length ? ss : ['minimalist'],
@@ -57,7 +62,7 @@ function buildHints(styles, colors, components) {
  */
 function validateExtraction(light) {
   const styles = light?.styles || [];
-  const hasStyledElements = styles.filter(s => {
+  const hasStyledElements = styles.filter((s) => {
     const hasBg = s.backgroundColor && s.backgroundColor !== 'rgba(0, 0, 0, 0)';
     const hasText = s.fontFamily && s.fontSize;
     return (s.width > 0 || s.height > 0) && (hasBg || hasText);
@@ -66,7 +71,8 @@ function validateExtraction(light) {
   if (styles.length === 0) {
     return {
       tier: 'Tier 2 — Degraded',
-      message: 'No styled elements found. The prototype may be empty, JS-rendered (SPA shell), or contain no CSS.',
+      message:
+        'No styled elements found. The prototype may be empty, JS-rendered (SPA shell), or contain no CSS.',
       fix: 'Verify the HTML file contains visible styled elements. For SPAs, use a published URL with server-side rendering.',
     };
   }
@@ -89,7 +95,9 @@ async function main() {
   // --- Lint-only mode ---
   if (args.lintOnly) {
     if (!existsSync(OUTPUT_PATH)) {
-      log.user(`Error: DESIGN_LATEST.md not found at ${OUTPUT_PATH}. Run without --lint-only first.`);
+      log.user(
+        `Error: the design note was not found at ${OUTPUT_PATH}. Run without --lint-only first.`,
+      );
       process.exit(1);
     }
     const v = new DesignValidator();
@@ -100,13 +108,15 @@ async function main() {
 
   // --- Validate inputs ---
   if (!args.source) {
-    log.user('Usage: node extract-design/scripts/extract.js --source <file|url> [--name "Name"] [--lint-only]');
+    log.user(
+      'Usage: node extract-design/scripts/extract.js --source <file|url> [--name "Name"] [--lint-only]',
+    );
     process.exit(1);
   }
 
   const name = args.name || basename(args.source, '.html');
 
-  // --- Check if this is an update (existing DESIGN_LATEST.md) ---
+  // --- Check if this is an update (existing design note) ---
   const isUpdate = existsSync(OUTPUT_PATH);
   const oldSnapshotPath = isUpdate ? `${OUTPUT_PATH}.pre-update` : null;
 
@@ -117,7 +127,13 @@ async function main() {
 
   // --- Launch Puppeteer ---
   let pm;
-  try { pm = await import('puppeteer-core'); } catch { try { pm = await import('puppeteer'); } catch {} }
+  try {
+    pm = await import('puppeteer-core');
+  } catch {
+    try {
+      pm = await import('puppeteer');
+    } catch {}
+  }
 
   if (!pm) {
     log.user('Error: Puppeteer not found. Install with: npm install puppeteer');
@@ -158,13 +174,15 @@ async function main() {
   // --- Detect pseudo-state variants (while browser is open) ---
   let pseudoVariants = {};
   try {
-    const compArr = Object.entries(compR.components).map(([name, tokens]) => ({
-      componentName: name,
-      backgroundColor: tokens.backgroundColor,
-      textColor: tokens.textColor,
-      width: parseInt(tokens.width) || 0,
-      height: parseInt(tokens.height) || 0,
-    })).filter(c => c.backgroundColor);
+    const compArr = Object.entries(compR.components)
+      .map(([name, tokens]) => ({
+        componentName: name,
+        backgroundColor: tokens.backgroundColor,
+        textColor: tokens.textColor,
+        width: parseInt(tokens.width) || 0,
+        height: parseInt(tokens.height) || 0,
+      }))
+      .filter((c) => c.backgroundColor);
 
     if (compArr.length > 0) {
       pseudoVariants = await extractor.detectPseudoStates(compArr);
@@ -182,18 +200,28 @@ async function main() {
 
   // --- Aggregate uncertain decisions ---
   const allU = [
-    ...cr.uncertain, ...tr.uncertain, ...sr.uncertain, ...rr.uncertain, ...compR.uncertain, ...fontWarnings,
+    ...cr.uncertain,
+    ...tr.uncertain,
+    ...sr.uncertain,
+    ...rr.uncertain,
+    ...compR.uncertain,
+    ...fontWarnings,
   ];
 
-  const degraded = Object.keys(cr.colors).length < COVERAGE_MINIMUMS.MIN_COLORS ||
-                   Object.keys(tr.typography).length < COVERAGE_MINIMUMS.MIN_TYPOGRAPHY_LEVELS;
+  const degraded =
+    Object.keys(cr.colors).length < COVERAGE_MINIMUMS.MIN_COLORS ||
+    Object.keys(tr.typography).length < COVERAGE_MINIMUMS.MIN_TYPOGRAPHY_LEVELS;
 
   const hints = buildHints(styles, cr.colors, compR.components);
 
   const prose = generateProse({
-    name, colors: cr.colors, typography: tr.typography,
-    spacing: sr.spacing, rounded: rr.rounded,
-    components: compR.components, hints,
+    name,
+    colors: cr.colors,
+    typography: tr.typography,
+    spacing: sr.spacing,
+    rounded: rr.rounded,
+    components: compR.components,
+    hints,
     detectedPatterns: compR.detectedPatterns,
   });
 
@@ -206,9 +234,14 @@ async function main() {
 
   // --- Write DESIGN.md ---
   writeDESIGNmd({
-    name, colors: cr.colors, typography: tr.typography,
-    spacing: sr.spacing, rounded: rr.rounded,
-    components: compR.components, prose, colorsDark: cd,
+    name,
+    colors: cr.colors,
+    typography: tr.typography,
+    spacing: sr.spacing,
+    rounded: rr.rounded,
+    components: compR.components,
+    prose,
+    colorsDark: cd,
   });
 
   // --- Diff on update ---
@@ -221,20 +254,27 @@ async function main() {
       // Diff unavailable — skip
     }
     // Clean up snapshot
-    try { unlinkSync(oldSnapshotPath); } catch {}
+    try {
+      unlinkSync(oldSnapshotPath);
+    } catch {}
   }
 
   // --- Lint ---
   const validator = new DesignValidator();
   let lr;
-  try { lr = validator.lint(OUTPUT_PATH); } catch {}
+  try {
+    lr = validator.lint(OUTPUT_PATH);
+  } catch {}
 
   // --- Terminal summary ---
   const elapsed = ((Date.now() - start) / 1000).toFixed(1);
   log.user(`\n=== extract-design complete ===`);
   log.user(`Design: ${name}  |  Output: ${OUTPUT_PATH}`);
-  log.user(`Colors: ${Object.keys(cr.colors).length}  Typo: ${Object.keys(tr.typography).length}  Spacing: ${Object.keys(sr.spacing).length}  Rounded: ${Object.keys(rr.rounded).length}  Components: ${Object.keys(compR.components).length}`);
-  if (Object.keys(pseudoVariants).length > 0) log.user(`Pseudo-states: ${Object.keys(pseudoVariants).length} variants detected`);
+  log.user(
+    `Colors: ${Object.keys(cr.colors).length}  Typo: ${Object.keys(tr.typography).length}  Spacing: ${Object.keys(sr.spacing).length}  Rounded: ${Object.keys(rr.rounded).length}  Components: ${Object.keys(compR.components).length}`,
+  );
+  if (Object.keys(pseudoVariants).length > 0)
+    log.user(`Pseudo-states: ${Object.keys(pseudoVariants).length} variants detected`);
   if (cd) log.user(`Dark mode: ${Object.keys(cd).length} colors (differs from light)`);
 
   if (isUpdate && diffResult && !diffResult.skipped) {
@@ -246,12 +286,12 @@ async function main() {
 
   if (fontWarnings.length) {
     log.user(`\n⚠️  Font declaration mismatches:`);
-    fontWarnings.forEach(w => log.user(`  • ${w}`));
+    fontWarnings.forEach((w) => log.user(`  • ${w}`));
   }
 
   if (allU.length) {
     log.user(`\n⚠️  ${allU.length} uncertain decisions — run grill-me to validate:`);
-    allU.slice(0, 5).forEach(d => log.user(`  • ${d}`));
+    allU.slice(0, 5).forEach((d) => log.user(`  • ${d}`));
     if (allU.length > 5) log.user(`  ... and ${allU.length - 5} more`);
   }
 
@@ -299,7 +339,7 @@ function formatDiff(dr) {
   return lines.length ? lines.join('\n') : '  No token-level changes detected.';
 }
 
-main().catch(err => {
+main().catch((err) => {
   log.user(`\nFATAL — Unexpected error:\n  ${err.message}`);
   log.error('unhandled', { error: err.message, stack: err.stack });
   process.exit(1);

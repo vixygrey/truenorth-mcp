@@ -11,13 +11,13 @@ description: 'Planning spine step 1 of 3. Scope the work: define what is in and 
 
 > **Spine position:** Step 1 — scope-work → slice-tasks → plan-work.
 
-Turn the current conversation into a bounded PRD at `.agent/product/SCOPE_LATEST.yaml`. Without a scope boundary, implementation drifts — stories expand, estimates blow up, and "done" becomes undefined.
+Turn the current conversation into a bounded PRD at `.agent/product/scope.yml`. Without a scope boundary, implementation drifts — stories expand, estimates blow up, and "done" becomes undefined.
 
 ## Pre-flight
 
 - [ ] Do you have a clear user need or problem statement? If not, run `elaborate-spec` first.
-- [ ] Does `.agent/product/VISION_LATEST.yaml` exist? If yes, read it for north-star alignment.
-- [ ] Is there an existing `SCOPE_LATEST.yaml`? If yes, you're refining, not creating from scratch.
+- [ ] Does `.agent/product/vision.yml` exist? If yes, read it for north-star alignment.
+- [ ] Is there an existing `.agent/product/scope.yml`? If yes, you're refining, not creating from scratch.
 
 ## Process
 
@@ -29,11 +29,11 @@ Turn the current conversation into a bounded PRD at `.agent/product/SCOPE_LATEST
 
    Pre-populate `feature_name`, `constraints`, and `out_of_scope` from the file. Skip re-asking questions already answered by elaborate-spec. If the file is absent, proceed normally.
 
-1. **Gather context** — Read existing `specs/` artifacts (`release-plan.yaml`, `plans/TECH_STACK_LATEST.md`, `requirements/VISION_LATEST.yaml` if any). Understand what the project is building and why.
+1. **Gather context** — Read the existing cockpit artifacts (`.agent/tasks/release-plan.yml`, the project tech-stack note, `.agent/product/vision.yml` if any). Understand what the project is building and why.
 
 2. **Interview (if needed)** — Clarify: What is the goal? Who are the users? What is definitely in scope? What is explicitly out of scope? What constraints exist (time, budget, tech)? How will success be measured?
 
-3. **Write `.agent/product/SCOPE_LATEST.yaml`** with these fields:
+3. **Write `.agent/product/scope.yml`** with these fields:
    - `core_value` — one-sentence value proposition
    - `summary` — 2-3 paragraph scope overview
    - `in_scope[]` — list of what this initiative covers (each maps to a group or story)
@@ -58,8 +58,8 @@ Turn the current conversation into a bounded PRD at `.agent/product/SCOPE_LATEST
 
 ## Output
 
-`.agent/product/SCOPE_LATEST.yaml` — the bounded PRD. Subsequent skills (`slice-tasks`, `plan-work`) reference this as the source of truth for what to build.
+`.agent/product/scope.yml` — the bounded PRD. Subsequent skills (`slice-tasks`, `plan-work`) reference this as the source of truth for what to build.
 
 ## Verify
 
-→ verify: `test -f .agent/product/SCOPE_LATEST.yaml && grep -q out_of_scope .agent/product/SCOPE_LATEST.yaml`
+→ verify: `test -f .agent/product/scope.yml && grep -q out_of_scope .agent/product/scope.yml`
