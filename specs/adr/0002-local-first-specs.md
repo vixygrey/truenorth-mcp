@@ -1,6 +1,6 @@
 # ADR-0002: Local-First Specs
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0008 (the `.agent/` vs `specs/` split)
 **Date:** 2026-05-19
 
 ## Context
