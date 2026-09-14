@@ -246,8 +246,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 2.1, 2.2, 2.3, 2.12, 10.9, 10.12_
 
-- [ ] 16. Remove `specs/bugs/` and the `.okf` sidecars
-  - [ ] 16.1 Remove the bug narrative directory and sidecar format
+- [x] 16. Remove `specs/bugs/` and the `.okf` sidecars
+  - [x] 16.1 Remove the bug narrative directory and sidecar format
     - Remove `specs/bugs/` and every `*.okf.md` sidecar; do not carry the `.okf` sidecar format into TrueNorth
     - Commit as its own revertible batch
     - _Requirements: 8.5, 10.10_
