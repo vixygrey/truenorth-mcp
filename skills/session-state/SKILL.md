@@ -35,7 +35,7 @@ handoff:
   open_decisions:
     - 'Use folder mode for e07 (more than 5 stories)'
   required_reading:
-    - .agent/tasks/e02-verification/epic.yaml
+    - .agent/tasks/e02-verification/group.yml
   next_skill: develop-tdd
 ```
 

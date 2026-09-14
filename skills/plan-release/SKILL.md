@@ -15,7 +15,7 @@ Synthesize the conversation context into `.agent/tasks/release-plan.yml` (index)
 | File                                       | Content                                                                                                                     |
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `.agent/tasks/release-plan.yml`            | `release.version`, semver bump hint, WSJF-ordered group list with `id`, `capsule_dir`, `wsjf`, `bcps` — **no story status** |
-| `.agent/tasks/<capsule>/epic.yaml`         | Group manifest: `id`, `title`, `wsjf`, `total_bcps`, `status`, `stories[]` list                                             |
+| `.agent/tasks/<capsule>/group.yml`         | Group manifest: `id`, `title`, `wsjf`, `total_bcps`, `status`, `stories[]` list                                             |
 | `.agent/tasks/<capsule>/eNNsYY-<slug>.md`  | Story spec in the countable-story-format with 20 sections and Gherkin acceptance criteria                                   |
 | `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` | Decoupled task checklist with `verify:` commands per task                                                                   |
 | `.agent/tasks/execution-status.yml`        | Flat key-value store for story status (`eNNsYY: todo`)                                                                      |
@@ -26,7 +26,7 @@ All task groups use capsule directories (no flat/folder distinction):
 
 ```
 .agent/tasks/e01-auth-system/
-├── epic.yaml              # Group manifest
+├── group.yml              # Group manifest
 ├── adr/                   # Group-local ADRs (created lazily)
 ├── e01s01-login.md        # Story spec (countable-story-format)
 ├── e01s01-tasks.yaml      # Decoupled task checklist
@@ -80,9 +80,9 @@ groups:
     capsule_dir: epics/e02-user-profile
 ```
 
-### 5. Save group manifest (`epic.yaml`)
+### 5. Save group manifest (`group.yml`)
 
-Each task group directory contains an `epic.yaml` manifest:
+Each task group directory contains a `group.yml` manifest:
 
 ```yaml
 id: e01

@@ -38,8 +38,8 @@ Produce **task group story tasks** in the task group under `.agent/tasks/` — v
 4. **Each story** writes:
    - `eNNsYY-tasks.yaml` with `story_id`, `title`, `status`, `bcps`, `tasks[]` (each with `id`, `description`, `verify`, `status`)
    - Story spec `.md` files are written by `plan-work` and follow countable-story-format.md
-   - The task group manifest (`epic.yaml`) is updated to list the story ID and BCPs
-   - **Requirement deltas (e45s29):** Stories that alter existing behavior MUST carry `delta:` in `epic.yaml` (`ADDED` | `MODIFIED` | `REMOVED` | `RENAMED`). `plan-work` expands deltas into full before/after requirement text.
+   - The task group manifest (`group.yml`) is updated to list the story ID and BCPs
+   - **Requirement deltas (e45s29):** Stories that alter existing behavior MUST carry `delta:` in `group.yml` (`ADDED` | `MODIFIED` | `REMOVED` | `RENAMED`). `plan-work` expands deltas into full before/after requirement text.
 
 5. **Order by WSJF** in `release-plan.yaml` group list — highest WSJF first. Weight-shortest-job-first ensures the highest value arrives earliest.
 
@@ -58,7 +58,7 @@ Produce **task group story tasks** in the task group under `.agent/tasks/` — v
 ## Output
 
 - `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` — per-story task breakdown with verify commands
-- `.agent/tasks/<capsule>/epic.yaml` — updated with story list and BCPs
+- `.agent/tasks/<capsule>/group.yml` — updated with story list and BCPs
 - `.agent/tasks/release-plan.yml` — updated WSJF ordering (if needed)
 
 ## Verify
