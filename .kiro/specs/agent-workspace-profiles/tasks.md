@@ -259,8 +259,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 10.5, 10.6, 10.10_
 
-- [ ] 18. Remove process docs and stray artifacts
-  - [ ] 18.1 Remove the process exhaust
+- [x] 18. Remove process docs and stray artifacts
+  - [x] 18.1 Remove the process exhaust
     - Remove the `*_LATEST.md` files, the process docs, the stray yaml files `agent-locks`, `planning-status`, and `tombstones`, and the `viz.html` file
     - Commit as its own revertible batch
     - _Requirements: 10.7, 10.10_
