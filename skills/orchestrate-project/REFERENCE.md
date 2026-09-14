@@ -21,19 +21,19 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 ### PHASE 3: PLAN
 
 - **Goal**: Write a verifiable implementation plan with success criteria.
-- **Deliverables**: `release-plan.yaml`, `epics/eNN-*.yaml` with `verify:` per task.
+- **Deliverables**: `release-plan.yaml`, per-group task manifests under `.agent/tasks/<capsule>/` with `verify:` per task.
 - **Skills**: `scope-work`, `slice-tasks`, `plan-work`.
 - **Gate**: Quality (request-review ≥94%) + slopcheck [SUS]/[SLOP].
 
 ### PHASE 4: BUILD
 
 - **Goal**: Execute the plan story-by-story using the 8-step `build-epic` cycle with TDD and vertical slices.
-- **Deliverables**: Code; `execution-status.yaml` updated per story; `specs/metrics/cycle-times.yaml` row per story.
+- **Deliverables**: Code; `execution-status.yaml` updated per story. Cycle-time metrics are out of scope; the per-story metrics row is removed.
 - **Skills**: `build-epic` (conductor) → per-story: `survey-context`, `plan-work`, `kickoff-branch`, `develop-tdd`, `verify-work`, `audit-code`, `commit-message`, `release-branch`.
-- **BCP tracking**: `plan-release` sizes each story in Business Complexity Points (BCP) before the build queue. `plan-work` confirms and writes the size to `state.yaml` as `epic_cycle.story_bcps`.
-- **Timestamps**: `survey-context` stamps `metrics.story_start`; `release-branch` stamps `metrics.story_end` and writes BCP/hr to `specs/metrics/cycle-times.yaml`.
+- **BCP tracking**: `plan-release` sizes each story in Business Complexity Points (BCP) before the build queue. `plan-work` confirms and writes the size to `state.yaml` as `group_cycle.story_bcps`.
+- **Timestamps**: Cycle-time metrics are out of scope; the metrics stamps and BCP/hr ledger are removed.
 - **next_skill**: Each critical-path skill writes `handoff.next_skill` to `state.yaml`. Agents resume by reading `state.yaml` — no guessing.
-- **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742) shows live pipeline, epic queue, BCP metrics, and cycle-time ledger.
+- **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742) shows live pipeline, task group queue, and BCP metrics.
 - **Gate**: Integration tests PASS; all 8 build-epic steps completed per story.
 
 ### PHASE 5: VERIFY
@@ -104,9 +104,9 @@ _The gate types and the checkpoint keys are defined in this reference._
 
 ## Error Recovery & State
 
-Orchestrate maintains `specs/state.yaml` to track:
+Orchestrate maintains `.agent/tasks/state.yml` to track:
 
-- **Current flow / epic**: `active_flow`, `active_epic_id`, `epic_cycle`.
+- **Current flow / task group**: `active_flow`, `active_group_id`, `group_cycle`.
 - **Handoff**: `last_step_completed`, `open_decisions`, `required_reading`, `next_skill`.
 - **Git**: `branch`, `hash` for session continuity.
 - **Progress**: Story status lives in `execution-status.yaml` only.

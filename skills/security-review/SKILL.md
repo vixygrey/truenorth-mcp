@@ -5,13 +5,13 @@ description: 'Security analysis of code changes. Traces data flow and detects in
 
 # Security Review
 
-> **HARD GATE**: requires git context (a branch with a merge-base or a diff). Never writes a file outside `specs/security/`. A finding below confidence 8 of 10 is suppressed.
+> **HARD GATE**: requires git context (a branch with a merge-base or a diff). Writes only the security review report. A finding below confidence 8 of 10 is suppressed.
 
 ## Parallel mode
 
 When running alongside `audit-code`, use isolated git worktrees so the scans do
 not race on the same index. Each check gets a detached worktree, and the reports
-still write only under `specs/security/`.
+still write only to the security review report.
 
 ## Five-phase scan
 
@@ -62,17 +62,17 @@ Formal rule for SQL injection classification:
 
 ## Integration points
 
-| Skill             | Touchpoint                                                                     |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `build-epic`      | Step 0 — threat-model epic scope → `specs/security/epics/<id>/THREAT_MODEL.md` |
-| `plan-work`       | `security:` field (none/low/medium/high) on story tasks                        |
-| `plan-release`    | +2 WSJF risk boost for HIGH+ risk epics                                        |
-| `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                       |
-| `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt     |
-| `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                              |
-| `validate-fix`    | Recurrence hardening check for security bugs                                   |
-| `verify-work`     | Phase 5 — blocks on HIGH findings ≥ 8 confidence                               |
-| `release-branch`  | Hard gate — blocks merge if unresolved HIGH findings                           |
+| Skill             | Touchpoint                                                                 |
+| ----------------- | -------------------------------------------------------------------------- |
+| `build-epic`      | Step 0 — threat-model group scope → the security review report             |
+| `plan-work`       | `security:` field (none/low/medium/high) on story tasks                    |
+| `plan-release`    | +2 WSJF risk boost for HIGH+ risk task groups                              |
+| `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                   |
+| `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt |
+| `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                          |
+| `validate-fix`    | Recurrence hardening check for security bugs                               |
+| `verify-work`     | Phase 5 — blocks on HIGH findings ≥ 8 confidence                           |
+| `release-branch`  | Hard gate — blocks merge if unresolved HIGH findings                       |
 
 ## Report format
 
@@ -90,5 +90,5 @@ Each finding: **`File:Line` — Severity — Category**
 
 ## Verify
 
-Confirm the `specs/security/` directory exists, each detection rule has its positive
+Confirm the security review report exists, each detection rule has its positive
 and negative fixture pair, and the git context resolves.

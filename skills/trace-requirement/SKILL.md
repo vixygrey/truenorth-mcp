@@ -1,19 +1,19 @@
 ---
 name: trace-requirement
-description: 'Link the story ids from the release plan and the epic capsules to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code.'
+description: 'Link the story ids from the release plan and the task groups to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code.'
 ---
 
 # Trace Requirement
 
-Build a traceability matrix from `specs/release-plan.yaml + epic capsule directories` to implementing code and tests. Surfaces gaps in both directions: stories with no code, and code with no story.
+Build a traceability matrix from `.agent/tasks/release-plan.yml` and the task group directories to implementing code and tests. Surfaces gaps in both directions: stories with no code, and code with no story.
 
 ## Pre-flight
 
-> **HARD GATE** — `specs/release-plan.yaml + epic capsule directories` must exist. If it doesn't, run `plan-release` first.
+> **HARD GATE** — `.agent/tasks/release-plan.yml` and the task group directories must exist. If it doesn't, run `plan-release` first.
 
-→ verify: `test -f specs/release-plan.yaml && test -d specs/epics`
+→ verify: `test -f .agent/tasks/release-plan.yml`
 
-Read `specs/release-plan.yaml + epic capsule directories` fully before proceeding.
+Read `.agent/tasks/release-plan.yml` and the task group directories fully before proceeding.
 
 ## Process
 
@@ -21,7 +21,7 @@ Read `specs/release-plan.yaml + epic capsule directories` fully before proceedin
 
 From release-plan.yaml, collect all story IDs (e.g. `1.1`, `1.2`, `2.1`).
 
-→ verify: `grep -rho 'e[0-9]\+s[0-9]\+' specs/release-plan.yaml specs/epics/*/epic.yaml 2>/dev/null | sort -u | head -1 | grep -q .`
+→ verify: `grep -rho 'e[0-9]\+s[0-9]\+' .agent/tasks/release-plan.yml 2>/dev/null | sort -u | head -1 | grep -q .`
 
 ### 2. Search for story tags in code
 
@@ -45,7 +45,7 @@ For each tagged file with no matching story ID in release-plan.yaml:
 
 - **Orphan**: code exists but story was removed or never planned — flag for cleanup
 
-### 4. Write specs/TRACEABILITY_LATEST.md
+### 4. Write the traceability report
 
 ```
 ## Story Coverage
@@ -65,6 +65,6 @@ For each tagged file with no matching story ID in release-plan.yaml:
 Stories: [X] covered / [Y] dark / [Z] total
 ```
 
-→ verify: `grep -c "Covered\|Dark" specs/TRACEABILITY_LATEST.md`
+→ verify: the traceability report counts `Covered` and `Dark` stories.
 
 Suggest `plan-work` for each dark story found.

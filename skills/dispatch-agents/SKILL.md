@@ -57,7 +57,7 @@ Record `depth: <tier>` in the Agent tool description when dispatching.
 
 ### 2. Write typed task briefs (Orca message protocol)
 
-Before writing briefs, read `specs/state.yaml` if it exists — each agent gets only the decisions relevant to its task, nothing else.
+Before writing briefs, read `.agent/tasks/state.yml` if it exists — each agent gets only the decisions relevant to its task, nothing else.
 
 Every inter-agent message uses a **typed envelope** — no freeform prose between waves:
 
@@ -77,7 +77,7 @@ goal: [one sentence — what success looks like]
 in_scope: [explicit file or module list]
 out_of_bounds: [what NOT to touch]
 verify: [runnable command]
-prior_decisions: [relevant entries from specs/state.yaml — omit if none]
+prior_decisions: [relevant entries from .agent/tasks/state.yml — omit if none]
 ```
 
 Emit **`checkpoint`** comments when an agent is slow or blocked — one line, no stack traces. Parent reads checkpoints before spawning follow-ups.

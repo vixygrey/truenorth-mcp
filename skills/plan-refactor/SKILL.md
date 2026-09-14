@@ -7,7 +7,7 @@ description: 'Create a detailed refactor plan with tiny commits through a user i
 
 > **HARD GATE** — **HARD GATE** — Before refactoring, document the current behavior and why it is wrong. Extract one invariant that must be preserved. If you skip this, you will break things you don't expect.
 
-Create a detailed refactor plan through a user interview. Save output to `specs/REFACTOR_LATEST.md`.
+Create a detailed refactor plan through a user interview. Save it as the refactor plan.
 
 ## Steps
 
@@ -25,7 +25,7 @@ Create a detailed refactor plan through a user interview. Save output to `specs/
 
 7. Break the implementation into a plan of tiny commits. Remember Martin Fowler's advice: "make each refactoring step as small as possible, so that you can always see the program working."
 
-8. Save the refactor plan to `specs/REFACTOR_LATEST.md`. Create the `specs/` directory if it doesn't exist.
+8. Save the refactor plan as a working report under `specs/`.
 
 <refactor-plan-template>
 
@@ -75,7 +75,7 @@ Any further notes about the refactor.
 
 </refactor-plan-template>
 
-After writing `specs/REFACTOR_LATEST.md`, suggest running `kickoff-branch` next to create a refactor branch.
+After writing the refactor plan, suggest running `kickoff-branch` next to create a refactor branch.
 
 ## References
 

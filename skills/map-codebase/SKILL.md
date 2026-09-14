@@ -1,13 +1,13 @@
 ---
 name: map-codebase
-description: 'Derive the tech-stack doc from scratch by scanning the codebase. Analyzes the stack, the architecture, and the gray areas (error handling, API shapes), and persists the findings into the tech-architecture notes. Run it when the tech doc does not exist yet. Use survey-context to consume it once it does.'
+description: 'Derive the tech-stack note from scratch by scanning the codebase. Analyzes the stack, the architecture, and the gray areas (error handling, API shapes), and persists the findings into the project tech-stack note. Run it when the tech doc does not exist yet. Use survey-context to consume it once it does.'
 ---
 
 # Map Codebase
 
 Perform a deep architectural and structural analysis of the codebase. Unlike `survey-context` which identifies "where we are", `map-codebase` identifies "what we are dealing with" and "how things are done".
 
-> **Use this vs survey-context:** `map-codebase` BUILDS the tech-stack doc by scanning the codebase from scratch. `survey-context` READS existing specs/tech-architecture docs without re-deriving them. Run `map-codebase` when `specs/tech-architecture/tech-stack.md` doesn't exist yet; run `survey-context` when it does.
+> **Use this vs survey-context:** `map-codebase` BUILDS the tech-stack note by scanning the codebase from scratch. `survey-context` READS the existing project tech-stack note without re-deriving it. Run `map-codebase` when the tech-stack note doesn't exist yet; run `survey-context` when it does.
 
 > **HARD GATE** — Cold analysis only. Do NOT assume architectural patterns without reading the code. If the codebase structure surprises you, call out the delta.
 
@@ -45,9 +45,9 @@ Look for signals that will influence upcoming plans:
 - **Integration Points:** "We need to talk to the Stripe API, but there's no wrapper yet."
 - **Conventions:** "The team always uses functional components over classes."
 
-### 5. Persist to specs/tech-architecture/tech-stack.md
+### 5. Persist to the project tech-stack note
 
-Compile all findings into `specs/tech-architecture/tech-stack.md`. This file serves as the project's "Long-Term Memory".
+Compile all findings into the project tech-stack note. This note serves as the project's "Long-Term Memory".
 
 ```markdown
 # Project Context
@@ -79,4 +79,4 @@ Compile all findings into `specs/tech-architecture/tech-stack.md`. This file ser
 - When first joining a project.
 - Before a major refactor or architectural change.
 - When `survey-context` reveals a lack of domain knowledge.
-- To refresh `specs/tech-architecture/tech-stack.md` after significant changes.
+- To refresh the project tech-stack note after significant changes.

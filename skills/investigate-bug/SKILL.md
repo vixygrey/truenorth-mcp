@@ -5,9 +5,9 @@ description: 'Investigate a bug or issue by exploring the codebase to find the r
 
 # Investigate Bug
 
-**Boundary**: End-to-end bug entry point — history check → RCA (via `diagnose-root`) → fix approach → TDD plan → bug file. Delegates the 4-phase RCA to `diagnose-root`; does not re-implement it.
+**Boundary**: End-to-end bug entry point — history check → RCA (via `diagnose-root`) → fix approach → TDD plan → bug record. Delegates the 4-phase RCA to `diagnose-root`; does not re-implement it.
 
-Investigate a reported problem, find its root cause, and write a TDD fix plan to `specs/bugs/BUG-*.md`. This is a mostly hands-off workflow — minimize questions to the user.
+Investigate a reported problem, find its root cause, and record a TDD fix plan in the external tracker. This is a mostly hands-off workflow — minimize questions to the user.
 
 ## Process
 
@@ -15,8 +15,8 @@ Investigate a reported problem, find its root cause, and write a TDD fix plan to
 
 Before starting diagnosis:
 
-1. Read `specs/bugs/registry.yaml` (if it exists) — check for prior bugs in the same `scope` or with similar symptoms.
-2. If a relevant prior bug is found, read the corresponding `specs/bugs/BUG-*.md` file to understand previous root cause analysis and fix approach.
+1. Read the bug references under `.agent/tasks/bugs.yml` (if it exists). Check for prior bugs in the same `scope` or with similar symptoms.
+2. If a relevant prior bug is found, read its detail in the external tracker to understand previous root cause analysis and fix approach.
 3. Note in your investigation whether this is a recurrence, a related issue, or novel.
 
 ### 1. Capture the problem
@@ -64,11 +64,11 @@ Rules:
 - Include a final refactor step if needed
 - **Durability**: Only suggest fixes that would survive radical codebase changes. Tests assert on observable outcomes (API responses, UI state, user-visible effects), not internal state.
 
-### 5. Write the bug file
+### 5. Record the bug
 
-Save the investigation and fix plan to `specs/bugs/BUG-NNN-slug.md`. Create the `specs/bugs/` directory if it doesn't exist.
+Save the investigation and fix plan in the external tracker. The external tracker owns bug detail.
 
-After writing, append a row to `specs/bugs/registry.yaml` with: bug_id (same timestamp), date, severity, priority, scope, summary, and file path. Create `specs/bugs/registry.yaml` if it doesn't exist.
+After recording, append a bug reference to `.agent/tasks/bugs.yml` with: bug_id (same timestamp), date, severity, priority, scope, and summary.
 
 <diagnosis-template>
 
@@ -120,7 +120,7 @@ A numbered list of RED-GREEN cycles:
 
 </diagnosis-template>
 
-After writing the bug file, print a one-line summary of the root cause and suggest running `kickoff-branch` next to create a fix branch.
+After recording the bug, print a one-line summary of the root cause and suggest running `kickoff-branch` next to create a fix branch.
 
 ## References
 

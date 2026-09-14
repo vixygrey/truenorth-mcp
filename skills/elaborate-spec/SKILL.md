@@ -80,12 +80,12 @@ Summarize your understanding in 3 to 5 bullet points aligned with the countable-
 
 Ask: "Is this an accurate summary? Anything missing or wrong?"
 
-### 5. Write specs/planning-context.yaml
+### 5. Write .agent/tasks/planning-context.yml
 
 After the user confirms the summary in step 4, persist the key decisions:
 
 ```yaml
-# specs/planning-context.yaml — written by elaborate-spec; consumed by scope-work and slice-tasks
+# .agent/tasks/planning-context.yml — written by elaborate-spec; consumed by scope-work and slice-tasks
 feature_name: '<from step 1>'
 problem_statement: '<one paragraph>'
 constraints:
@@ -97,14 +97,14 @@ key_decisions:
     rationale: '<why>'
 ```
 
-If `specs/planning-context.yaml` already exists, ask: `"Planning context from a prior session exists. Update it? [Y/n]"`. Overwrite on Y; leave unchanged on N.
+If `.agent/tasks/planning-context.yml` already exists, ask: `"Planning context from a prior session exists. Update it? [Y/n]"`. Overwrite on Y; leave unchanged on N.
 
 ### 6. Suggest next skill
 
 Once the spec is clear, recommend the next step:
 
 - If domain model needs work → `model-domain`
-- If ready to plan → `plan-release` (creates epic capsules with `epic.yaml` + story `.md` + `-tasks.yaml`) then `plan-work` per story
+- If ready to plan → `plan-release` (creates task groups with `group.yml` + story `.md` + `-tasks.yaml`) then `plan-work` per story
 - If a spike is needed first → `spike-prototype`
 - If architecture decisions are needed → `deepen-architecture` or `grill-me`
 - If the plan depends on a specific library or API → `grill-me` in docs mode

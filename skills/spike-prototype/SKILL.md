@@ -7,7 +7,7 @@ description: 'A throw-away prototype for an unknown problem space. The output is
 
 > **HARD GATE** — **HARD GATE** — Spikes are time-boxed experiments, not shipping code. Results must be throwaway or clearly isolated. Do NOT merge a spike without a plan to integrate it or replace it with a proper implementation.
 
-A spike is a time-boxed experiment to answer a specific question. The code is thrown away. The learning is kept in `specs/archive/spikes/SPIKE-<name>.md`.
+A spike is a time-boxed experiment to answer a specific question. The code is thrown away. The learning is kept in the spike note.
 
 **The spike produces learning, not code to ship.** If you find yourself cleaning up spike code for production, stop — run `plan-work` and `develop-tdd` instead with the insights you gained.
 
@@ -49,9 +49,9 @@ Write the simplest code that could answer the question. Ignore:
 
 Focus entirely on answering the question.
 
-### 4. Write specs/archive/spikes/SPIKE-<name>.md
+### 4. Write the spike note
 
-Save the learning to `specs/archive/spikes/SPIKE-<name>.md`. Create the `specs/` directory if it doesn't exist.
+Save the learning to the spike note.
 
 <spike-template>
 
@@ -93,4 +93,4 @@ After writing the findings, delete or discard the spike code. It is not meant to
 
 ### 6. Feed back into plan-work
 
-The spike findings are the input to `plan-work`. Call `plan-work` next, informed by `specs/archive/spikes/SPIKE-<name>.md`.
+The spike findings are the input to `plan-work`. Call `plan-work` next, informed by the spike note.

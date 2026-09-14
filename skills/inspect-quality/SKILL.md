@@ -7,7 +7,7 @@ description: 'An interactive QA session. The user reports bugs conversationally,
 
 > **HARD GATE** — **HARD GATE** — Quality metrics (coverage, lint, cyclomatic complexity, security scans) must be monitored. If a metric degrades, surface it as a blocker. Do NOT accept regressions.
 
-Run an interactive QA session. The user describes problems they're encountering. You clarify, explore the codebase for context, and log each issue to `specs/bugs/registry.yaml` with a structured, durable format.
+Run an interactive QA session. The user describes problems they're encountering. You clarify, explore the codebase for context, and log each issue to the bug references under `.agent/tasks/bugs.yml` with a structured, durable format.
 
 ## For each issue the user raises
 
@@ -25,7 +25,7 @@ Do NOT over-interview. If the description is clear enough to log, move on.
 
 Kick off an Agent (subagent_type=Explore) to understand the relevant area. The goal is NOT to find a fix — it's to:
 
-- Learn the domain language used in that area (check `specs/UBIQUITOUS_LANGUAGE_LATEST.md` if present)
+- Learn the domain language used in that area (check the project glossary if present)
 - Understand what the feature is supposed to do
 - Identify the user-facing behavior boundary
 
@@ -42,37 +42,37 @@ Keep as a single issue when:
 - It's one behavior that's wrong in one place
 - The symptoms are all caused by the same root behavior
 
-### 4. Log to specs/bugs/registry.yaml
+### 4. Log to the bug references
 
-Append the issue to `specs/bugs/registry.yaml`. Create the `specs/bugs/` directory if it doesn't exist.
+Append the issue to the bug references under `.agent/tasks/bugs.yml`. The external tracker owns the full bug detail.
 
-#### registry.yaml format
+#### bug reference format
 
 The file maintains a Markdown table with the following columns (derived from structured audit practice):
 
-| Field                | Description                                                           |
-| -------------------- | --------------------------------------------------------------------- |
-| `bug_id`             | `BUG-YYYY-MM-DDTHHMMSS`                                               |
-| `date`               | `YYYY-MM-DD`                                                          |
-| `severity`           | `critical` / `high` / `medium` / `low`                                |
-| `priority`           | `p0` / `p1` / `p2` / `p3`                                             |
-| `scope`              | kebab-case area (e.g. `auth`, `checkout`)                             |
-| `what_happened`      | actual behavior (user-facing terms)                                   |
-| `what_expected`      | expected behavior                                                     |
-| `steps_to_reproduce` | numbered steps                                                        |
-| `root_cause`         | one-line hypothesis                                                   |
-| `files_changed`      | filled in after fix                                                   |
-| `approach`           | filled in after fix                                                   |
-| `risk_level`         | `low` / `medium` / `high`                                             |
-| `new_tests`          | count (filled in after fix)                                           |
-| `type_check`         | `pass` / `fail` (filled in after fix)                                 |
-| `lint`               | `pass` / `fail` (filled in after fix)                                 |
-| `commit_type`        | `fix` / `fix!` / `feat` (filled in after fix)                         |
-| `release_type`       | `patch` / `minor` / `major` (filled in after fix)                     |
-| `commit_message`     | Conventional Commits message (filled in after fix)                    |
-| `follow_ups`         | semicolon-separated follow-up items                                   |
-| `file`               | path to detailed `specs/bugs/BUG-*.md` (filled in by investigate-bug) |
-| `status`             | `open` / `in-progress` / `fixed` / `wont-fix`                         |
+| Field                | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| `bug_id`             | `BUG-YYYY-MM-DDTHHMMSS`                                              |
+| `date`               | `YYYY-MM-DD`                                                         |
+| `severity`           | `critical` / `high` / `medium` / `low`                               |
+| `priority`           | `p0` / `p1` / `p2` / `p3`                                            |
+| `scope`              | kebab-case area (e.g. `auth`, `checkout`)                            |
+| `what_happened`      | actual behavior (user-facing terms)                                  |
+| `what_expected`      | expected behavior                                                    |
+| `steps_to_reproduce` | numbered steps                                                       |
+| `root_cause`         | one-line hypothesis                                                  |
+| `files_changed`      | filled in after fix                                                  |
+| `approach`           | filled in after fix                                                  |
+| `risk_level`         | `low` / `medium` / `high`                                            |
+| `new_tests`          | count (filled in after fix)                                          |
+| `type_check`         | `pass` / `fail` (filled in after fix)                                |
+| `lint`               | `pass` / `fail` (filled in after fix)                                |
+| `commit_type`        | `fix` / `fix!` / `feat` (filled in after fix)                        |
+| `release_type`       | `patch` / `minor` / `major` (filled in after fix)                    |
+| `commit_message`     | Conventional Commits message (filled in after fix)                   |
+| `follow_ups`         | semicolon-separated follow-up items                                  |
+| `ref`                | tracker reference to the detailed bug (filled in by investigate-bug) |
+| `status`             | `open` / `in-progress` / `fixed` / `wont-fix`                        |
 
 When a bug is fixed (via `validate-fix`), update the relevant row with the resolution fields.
 
@@ -95,9 +95,9 @@ For each bug, also append a detail section:
 
 #### Rules for all entries
 
-- **bug_id** uses full timestamp: `BUG-YYYY-MM-DDTHHMMSS` — matches the individual bug file name in `specs/bugs/`
+- **bug_id** uses full timestamp: `BUG-YYYY-MM-DDTHHMMSS`. It matches the bug id in the external tracker.
 - **No file paths or line numbers** — these go stale
-- **Use the project's domain language** (check `specs/UBIQUITOUS_LANGUAGE_LATEST.md` if it exists)
+- **Use the project's domain language** (check the project glossary if it exists)
 - **Describe behaviors, not code** — "the sync service fails to apply the patch" not "applyPatch() throws"
 - **Reproduction steps are mandatory** — if you can't determine them, ask the user
 

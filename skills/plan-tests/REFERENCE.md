@@ -1,26 +1,30 @@
 # Plan Tests — Reference
 
-## Test Plan Template (`specs/tech-architecture/eNN-TEST_PLAN_LATEST.md`)
+## Test Plan Template (the test plan note)
 
 ```markdown
 # Test Design: [eNN-slug]
 
 ## 1. Risk Matrix & Scenarios
-| Scenario ID | Behavior Description | Risk | Test Level | Target File/Module |
-|-------------|----------------------|------|------------|--------------------|  
-| SC-P0-01    | Primary checkout     | P0   | Integration | checkout.spec.ts  |
+
+| Scenario ID | Behavior Description | Risk | Test Level  | Target File/Module |
+| ----------- | -------------------- | ---- | ----------- | ------------------ |
+| SC-P0-01    | Primary checkout     | P0   | Integration | checkout.spec.ts   |
 
 ## 2. Fixture Architecture & Isolation
+
 - Data Factories: (e.g. UserFactory)
 - Network Intercepts: (e.g. MSW handlers)
 - Database State: (e.g. in-memory SQLite)
 
 ## 3. NFR Verification
+
 | NFR Type | Requirement | Verification Command |
-|----------|-------------|----------------------|
+| -------- | ----------- | -------------------- |
 | Perf     | < 200ms     | `npm run test:perf`  |
 
 ## 4. Out of Scope
+
 - [Explicitly excluded testing areas]
 ```
 

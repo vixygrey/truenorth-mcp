@@ -56,7 +56,7 @@ scope.
 
 ### Convention compliance
 
-- [ ] Every output file is in `specs/`, no doc written to the project root.
+- [ ] Runtime state is under `.agent/`. Narrative is under `specs/`. No doc written to the project root.
 - [ ] No `gh issue create` call in a new or modified skill or script.
 - [ ] `gh` used only for a PR or a repo clone.
 - [ ] No direct GitHub REST API call.

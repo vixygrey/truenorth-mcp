@@ -1,6 +1,6 @@
 ---
 name: compose-workflow
-description: 'Chain multiple skills into a custom workflow recipe saved in specs/. Use it when a project repeats a non-standard skill sequence, or when the user wants a documented playbook beyond the orchestrate-project modes.'
+description: 'Chain multiple skills into a custom workflow recipe. Use it when a project repeats a non-standard skill sequence, or when the user wants a documented playbook beyond the orchestrate-project modes.'
 ---
 
 # Compose Workflow
@@ -10,13 +10,13 @@ description: 'Chain multiple skills into a custom workflow recipe saved in specs
 ## Process
 
 1. Interview: goal, phases, which skills, gates between steps.
-2. Write `specs/workflows/<name>.yaml`:
+2. Write the workflow recipe:
    - `name`, `command`, `description`, `skills[]`, `verify`
    - Optional: `args` for skill-specific arguments
 3. Register in state.yaml Active Decisions.
 4. Optional: reference from `orchestrate-project` Ad-Hoc mode.
 
-> **Prefer the YAML recipe format** over the legacy `specs/WORKFLOW-<name>.md` markdown format.
+> **Prefer the YAML recipe format** over the legacy workflow markdown format.
 > YAML recipes are command-mappable, machine-readable, and listed in the Standard Recipe Library.
 
 ## Terminal-state taxonomy (e45s27)
@@ -30,11 +30,11 @@ Every workflow step and `/loop` tick MUST exit with exactly one terminal state:
 | `blocked`   | External gate (approval, red CI, missing dep)               | `diagnose-stall` or escalate to user |
 | `exhausted` | Max iterations/cycles reached (review cap, dispatch cycles) | Stop; human decision required        |
 
-Record terminal state in `specs/state.yaml` `handoff.last_terminal_state` when a recipe step completes. `/loop` ticks that produce no progress for two consecutive wakes → invoke `diagnose-stall`.
+Record terminal state in `.agent/tasks/state.yml` `handoff.last_terminal_state` when a recipe step completes. `/loop` ticks that produce no progress for two consecutive wakes → invoke `diagnose-stall`.
 
 ## Standard Recipe Library
 
-Pre-built recipes in `specs/workflows/` map agentic stack commands to skill chains.
+Pre-built workflow recipes map agentic stack commands to skill chains.
 Reference them in AGENTS.md so `/command` directly invokes the matching recipe.
 
 | Command        | Workflow    | Skill chain                                                  |
@@ -57,6 +57,6 @@ Add to `AGENTS.md`:
 
 ## Verify
 
-→ verify: `[ "$(ls specs/workflows/*.yaml 2>/dev/null | wc -l | tr -d ' ')" -ge 8 ]`
+→ verify: the workflow recipe exists and lists at least one skill in `skills[]`.
 
 See [REFERENCE.md](REFERENCE.md) for template.

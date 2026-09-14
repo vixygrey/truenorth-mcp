@@ -11,7 +11,7 @@ description: 'A doc-grounded variant of grill-me. Stress-tests plan assumptions 
 
 ## Process
 
-1. Read the plan or design under test (`specs/release-plan.yaml + epic shards`, INTERFACE-OPTIONS.md, etc.).
+1. Read the plan or design under test (`.agent/tasks/release-plan.yml` and the group shards, INTERFACE-OPTIONS.md, etc.).
 2. List assumptions that depend on external libraries or APIs.
 3. For each assumption: fetch or quote official docs; challenge with "docs say X, plan says Y."
 4. Resolve or update the plan inline; unresolved items block `plan-work`.

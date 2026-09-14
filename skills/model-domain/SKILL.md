@@ -1,6 +1,6 @@
 ---
 name: model-domain
-description: 'A grilling session that challenges a plan against the existing domain model, sharpens terminology, and updates the tech-architecture notes and the ADRs inline as decisions crystallize. Use it to stress-test a plan against the project domain language and documented decisions.'
+description: 'A grilling session that challenges a plan against the existing domain model, sharpens terminology, and updates the project tech-stack note and the ADRs inline as decisions crystallize. Use it to stress-test a plan against the project domain language and documented decisions.'
 ---
 
 # Model Domain
@@ -33,7 +33,7 @@ Most repos have a single context:
 └── src/
 ```
 
-If a `specs/tech-architecture/tech-stack.md` exists, the repo has multiple contexts. The map points to where each one lives:
+If the project tech-stack note exists, the repo has multiple contexts. The map points to where each one lives:
 
 ```
 /
@@ -51,13 +51,13 @@ If a `specs/tech-architecture/tech-stack.md` exists, the repo has multiple conte
             └── adr/
 ```
 
-Create files lazily — only when you have something to write. If no `specs/tech-architecture/tech-stack.md` exists, create it when the first term is resolved. If no `specs/adr/` exists, create it when the first ADR is needed.
+Create files lazily — only when you have something to write. If no project tech-stack note exists, create it when the first term is resolved. If no `specs/adr/` exists, create it when the first ADR is needed.
 
 ## During the session
 
 ### Challenge against the glossary
 
-When the user uses a term that conflicts with the existing language in `specs/tech-architecture/tech-stack.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+When the user uses a term that conflicts with the existing language in the project tech-stack note, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
 
 ### Sharpen fuzzy language
 
@@ -71,11 +71,11 @@ When domain relationships are being discussed, stress-test them with specific sc
 
 When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
 
-### Update specs/tech-architecture/tech-stack.md inline
+### Update the project tech-stack note inline
 
-When a term is resolved, update `specs/tech-architecture/tech-stack.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+When a term is resolved, update the project tech-stack note right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
 
-Don't couple `specs/tech-architecture/tech-stack.md` to implementation details. Only include terms that are meaningful to domain experts.
+Don't couple the project tech-stack note to implementation details. Only include terms that are meaningful to domain experts.
 
 ### Offer ADRs sparingly
 

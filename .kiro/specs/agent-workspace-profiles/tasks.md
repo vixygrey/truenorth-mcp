@@ -229,11 +229,11 @@ skill reference).
     - Assert `git status` reports the `.agent/` tree as trackable
     - _Requirements: 1.13_
 
-- [ ] 13. Checkpoint - Confirm the runtime re-point holds before cleanup
+- [x] 13. Checkpoint - Confirm the runtime re-point holds before cleanup
   - Make sure that all tests pass and every retained skill and runtime reference still resolves. Ask the user if questions arise. Do not start the destructive `specs/` cleanup (tasks 15 to 20) unless the runtime re-point and the skill rewrite hold.
 
-- [ ] 14. Skill rewrite off removed `specs/` paths
-  - [ ] 14.1 Neutralize retained skills of mandatory epics and removed paths
+- [x] 14. Skill rewrite off removed `specs/` paths
+  - [x] 14.1 Neutralize retained skills of mandatory epics and removed paths
     - Reword every retained `skills/*/SKILL.md` so it organizes around the neutral grouping model with zero references to mandatory epics
     - Reword each example path that names a removed directory to a neutral placeholder or the `.agent/` path, so no example path resolves to a removed directory (for example the `specs/bugs/`, `specs/epics/`, and `specs/release-plan.yaml` references in `seed-conventions`, `slice-tasks`, and `plan-release`)
     - Commit as its own revertible batch

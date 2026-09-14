@@ -2,34 +2,34 @@
 
 ## Navigation
 
-| Lines   | Section                                                   |
-| ------- | --------------------------------------------------------- |
-| 1       | Title                                                     |
-| 3–25    | Navigation                                                |
-| 26–27   | Output file formats                                       |
-| 28–31   | Story spec: `specs/epics/<capsule>/eNNsYY-<slug>.md`      |
-| 32–61   | Task checklist: `specs/epics/<capsule>/eNNsYY-tasks.yaml` |
-| 62–64   | Plan template                                             |
-| 65–71   | Story [X.Y]: [title] — Implementation Steps               |
-| 72–77   | Steps                                                     |
-| 78–85   | Verification Script (Step-by-Step)                        |
-| 86–89   | Out of scope                                              |
-| 90–94   | Risks                                                     |
-| 95–114  | Verify step format rules                                  |
-| 115–116 | Sub-operations                                            |
-| 117–127 | Risk Assignment Heuristics                                |
-| 128–143 | Requirement delta tags (e45s29)                           |
-| 144–152 | Define Success                                            |
-| 153–161 | Zoom-Out Check                                            |
-| 162–169 | Slopcheck                                                 |
+| Lines   | Section                                     |
+| ------- | ------------------------------------------- |
+| 1       | Title                                       |
+| 3–25    | Navigation                                  |
+| 26–27   | Output file formats                         |
+| 28–31   | Story spec (task group directory)           |
+| 32–61   | Task checklist (task group directory)       |
+| 62–64   | Plan template                               |
+| 65–71   | Story [X.Y]: [title] — Implementation Steps |
+| 72–77   | Steps                                       |
+| 78–85   | Verification Script (Step-by-Step)          |
+| 86–89   | Out of scope                                |
+| 90–94   | Risks                                       |
+| 95–114  | Verify step format rules                    |
+| 115–116 | Sub-operations                              |
+| 117–127 | Risk Assignment Heuristics                  |
+| 128–143 | Requirement delta tags (e45s29)             |
+| 144–152 | Define Success                              |
+| 153–161 | Zoom-Out Check                              |
+| 162–169 | Slopcheck                                   |
 
 ## Output file formats
 
-### Story spec: `specs/epics/<capsule>/eNNsYY-<slug>.md`
+### Story spec (task group directory: `.agent/tasks/<capsule>/`)
 
 Populated countable-story-format with all 20 sections. Minimum maturity: 3 (Countable). Acceptance criteria in §17.
 
-### Task checklist: `specs/epics/<capsule>/eNNsYY-tasks.yaml`
+### Task checklist (task group directory: `.agent/tasks/<capsule>/`)
 
 ```yaml
 story_id: e01s01
@@ -58,7 +58,7 @@ tasks:
 
 `categories` is a list of relevant tags — wave names, test categories (e.g. `"unit"`, `"integration"`), or thematic groupings (e.g. `"Security Review"`).
 
-Update `specs/epics/<capsule>/epic.yaml` manifest to list the story and its BCPs. Update `specs/execution-status.yaml` after structural changes.
+Update the `.agent/tasks/<capsule>/group.yml` manifest to list the story and its BCPs. Update `.agent/tasks/execution-status.yml` after structural changes.
 
 ## Plan template
 
@@ -120,7 +120,7 @@ N. <What to do> → verify: <runnable command that proves it worked>
 
 ### Risk Assignment Heuristics
 
-Every task and story MUST be assigned a `risk:` level (P0, P1, P2, P3). When `specs/tech-architecture/eNN-TEST_PLAN_LATEST.md` exists for the epic, defer to its scenario risk mapping (`SC-eNNsYY-P0-NN`). Otherwise, apply these heuristics based on BCP and story type:
+Every task and story MUST be assigned a `risk:` level (P0, P1, P2, P3). When the test plan note exists for the task group, defer to its scenario risk mapping (`SC-eNNsYY-P0-NN`). Otherwise, apply these heuristics based on BCP and story type:
 
 - **P0**: Critical path, data loss risk, auth/security boundary, external integration, or high BCP (≥ 5).
 - **P1**: Core feature logic, state mutations, standard business value (BCP 3-4).

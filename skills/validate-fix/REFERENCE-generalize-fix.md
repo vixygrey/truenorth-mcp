@@ -7,10 +7,9 @@ After local hardening in `validate-fix`, sweep the **defect class** across the c
 1. **Classify** — name the pattern (e.g. `unscoped org query`, `fail-open verify`, `hardcoded package manager`).
 2. **Sweep** — grep for sibling instances; record `match_count` and `grep_pattern`.
 3. **Resolve** — patch all matches in this PR **or** file one tracking issue listing every remaining instance.
-4. **Artifact** — write sweep evidence before declaring done:
+4. **Artifact** — write a verification report before declaring done. Record the sweep evidence in this shape:
 
-```bash
-cat > specs/verifications/generalize-sweep-BUG-YYYY-MM-DD-slug.json <<EOF
+```json
 {
   "defect_class": "fail-open-verify",
   "grep_pattern": "\\\\|\\\\| echo",
@@ -19,10 +18,9 @@ cat > specs/verifications/generalize-sweep-BUG-YYYY-MM-DD-slug.json <<EOF
   "patched_in_pr": [],
   "tracked_issues": []
 }
-EOF
 ```
 
-Verify the generalize sweep: confirm every entry in `specs/verifications/generalize-sweep-*.json` resolves and its verification passes.
+Verify the generalize sweep: confirm every entry in the verification report resolves and its verification passes.
 
 ## Security classes
 

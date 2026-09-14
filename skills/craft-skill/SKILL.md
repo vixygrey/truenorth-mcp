@@ -47,7 +47,7 @@ vendor model names.
 
 1. **Gather the requirements**: ask the user what task or domain the skill covers,
    which use cases it must handle, whether it needs executable content or just
-   instructions, any reference material to include, and what `specs/` output it
+   instructions, any reference material to include, and what output it
    produces.
 2. **Verify the principles**: the skill is atomic (verb-noun), deep (a simple
    interface over complex internal logic), has hard gates where needed, and is
@@ -70,10 +70,10 @@ vendor model names.
 Every skill name MUST be a two-word verb-noun pair. See [REFERENCE.md](REFERENCE.md)
 for the full rules, examples, and the documented exceptions.
 
-## The specs output
+## The skill output
 
-When the skill produces written output, it goes in `specs/` at the project root.
-Document the output-file path in the skill body.
+When the skill produces written output, runtime state goes under `.agent/` and
+narrative goes under `specs/`. Document the output-file path in the skill body.
 
 ## Review checklist
 
@@ -84,7 +84,7 @@ Document the output-file path in the skill body.
 - [ ] The SKILL.md body is under 100 lines.
 - [ ] No time-sensitive information.
 - [ ] Consistent terminology with the project conventions.
-- [ ] The `specs/` output is documented when applicable.
+- [ ] The output path is documented when applicable.
 - [ ] No repository script references and no vendor model names.
 
 ## Verify

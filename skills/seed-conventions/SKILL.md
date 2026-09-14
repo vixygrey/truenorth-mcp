@@ -1,6 +1,6 @@
 ---
 name: seed-conventions
-description: 'Generate the project agent guide and conventions for a brand-new project through a brief interview, and create the specs/ directory structure. The entry point for a greenfield project. Use it when starting a new project from scratch, or when there is no agent guide yet.'
+description: 'Generate the project agent guide and conventions for a brand-new project through a brief interview, and confirm the .agent/ workspace layout. The entry point for a greenfield project. Use it when starting a new project from scratch, or when there is no agent guide yet.'
 ---
 
 # Seed Conventions
@@ -15,7 +15,7 @@ start of a greenfield project.
 - `AGENTS.md`: the canonical, harness-neutral agent guide. This is the single source
   of truth.
 - `CONVENTIONS.md`: the shared rules for every agent.
-- `specs/`: the directory where the planning output lives.
+- `.agent/`: the machine-facing workspace where the runtime reads and writes state. Human-authored narrative lives under `specs/`.
 - Optional per-harness aliases: a symlink or copy of `AGENTS.md` under a
   harness-specific name (for a harness that reads its own file), created only when
   the user opts in. The default output is `AGENTS.md` only.
@@ -56,18 +56,19 @@ After the interview, generate each file.
 - `CONVENTIONS.md`: the standard conventions template plus the project's
   defensive-code categories.
 
-### The specs/ directory
+### The workspace layout
+
+The machine-facing workspace is `.agent/`. Human-authored narrative, for example
+ADRs, lives under `specs/`. The scaffold tool seeds the full `.agent/` tree; this
+skill confirms the workspace and the agent guide.
 
 ```bash
-mkdir -p specs/product specs/product/snapshots specs/epics/archive
-mkdir -p specs/tech-architecture specs/adr specs/verifications specs/bugs
-touch specs/product/SCOPE_LATEST.yaml specs/product/VISION_LATEST.yaml specs/product/GLOSSARY_LATEST.yaml
-touch specs/release-plan.yaml specs/execution-status.yaml specs/planning-status.yaml specs/state.yaml
-touch specs/tech-architecture/tech-stack.md
-touch specs/bugs/registry.yaml
+mkdir -p .agent/product/snapshots .agent/tasks .agent/config specs/adr
+touch .agent/product/scope.yml .agent/product/vision.yml .agent/product/glossary.yml
+touch .agent/tasks/release-plan.yml .agent/tasks/execution-status.yml .agent/tasks/state.yml
 ```
 
-`specs/state.yaml` carries a top-level `workflow_mode` (`team-pr` or `solo-git`,
+`.agent/tasks/state.yml` carries a top-level `workflow_mode` (`team-pr` or `solo-git`,
 default `solo-git`). This is the canonical integrate-mode signal for every skill.
 Set it once here.
 
@@ -95,9 +96,8 @@ Standard marker ids: `project` (seed-conventions), `context-routing`
 ## Checklist
 
 - [ ] `AGENTS.md` exists and is populated.
-- [ ] `CONVENTIONS.md` exists and includes the `specs/` output convention.
-- [ ] `specs/product/` exists with the scope, vision, and glossary files.
-- [ ] `specs/tech-architecture/` exists with the tech-stack doc.
-- [ ] `specs/verifications/` and `specs/epics/archive/` exist.
-- [ ] `specs/bugs/registry.yaml` exists.
+- [ ] `CONVENTIONS.md` exists and describes the `.agent/` write model.
+- [ ] `.agent/product/` exists with the scope, vision, and glossary files.
+- [ ] `.agent/tasks/` exists with the state, release-plan, and execution-status files.
+- [ ] `.agent/config/` exists for the workspace config.
 - [ ] Confirm with the user: "does the agent guide accurately describe your project?".

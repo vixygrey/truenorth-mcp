@@ -7,9 +7,9 @@ description: 'A bug-fix orchestrator. Sets the fix_bug flow, reads the BUG repor
 
 **Boundary**: Orchestrator flow — chains `investigate-bug` (entry point + RCA via `diagnose-root`) → `develop-tdd` → `validate-fix`. Does not implement RCA or write bug files directly.
 
-Orchestrates **fix_bug** flow without mixing epic build state.
+Orchestrates **fix_bug** flow without mixing group build state.
 
-> **HARD GATE** — Set `specs/state.yaml` `active_flow: fix_bug` and `bug_cycle.current_step: 1` before starting.
+> **HARD GATE** — Set `.agent/tasks/state.yml` `active_flow: fix_bug` and `bug_cycle.current_step: 1` before starting.
 
 ## Discovered gate failures (e51s04)
 
@@ -17,9 +17,9 @@ Valid entry **without a user-reported bug** when:
 
 - **Preflight** or **CI** is red at kickoff or verify-work
 - The project baseline is red, per the `truenorth_verify_gate` tool
-- A reproducible gate failure during unrelated epic work exceeds quick-fix guardrails
+- A reproducible gate failure during unrelated group work exceeds quick-fix guardrails
 
-Create `specs/bugs/BUG-*.md` via `investigate-bug` (or inline in fix-bug step 1) describing the gate failure, then run the standard fix_bug chain.
+Record the gate failure via `investigate-bug` (or inline in fix-bug step 1) in the external tracker, then run the standard fix_bug chain.
 
 ## Five steps (`bug_cycle` in state.yaml)
 
@@ -33,7 +33,7 @@ Create `specs/bugs/BUG-*.md` via `investigate-bug` (or inline in fix-bug step 1)
 
 ### Checkpoint / resume
 
-Track progress via `specs/state.yaml` `bug_cycle`:
+Track progress via `.agent/tasks/state.yml` `bug_cycle`:
 
 - `bug_cycle.current_step`: current step (1–5)
 - `bug_cycle.completed_steps`: completed step numbers
@@ -42,7 +42,7 @@ Track progress via `specs/state.yaml` `bug_cycle`:
 
 ## Process
 
-1. **Step 1 — investigate-bug:** If no `specs/bugs/BUG-*.md`, run `investigate-bug` first — it handles history check, RCA (via `diagnose-root`), fix approach, and writes the bug file. Increment `bug_cycle.current_step` to 2 on completion.
+1. **Step 1 — investigate-bug:** If no bug record exists, run `investigate-bug` first. It handles history check, RCA (via `diagnose-root`), fix approach, and records the bug in the external tracker. Increment `bug_cycle.current_step` to 2 on completion.
 2. **Step 2 — diagnose-root:** Run 4-phase RCA (reproduce → isolate → hypothesize → verify). Record findings in the bug file. Increment to step 3.
 3. **Step 3 — develop-tdd:** `develop-tdd` against the bug file's verify steps. Increment to step 4 on all-green.
 4. **Step 4 — validate-fix:** `validate-fix` — re-run failing test, full suite, typecheck, lint. Increment to step 5.

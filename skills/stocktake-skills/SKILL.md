@@ -32,7 +32,7 @@ frontmatter problem.
 4. **Write the report**: write a findings table (skill, issue, severity) to a dated
    stocktake file.
 5. **Effectiveness report** (full mode only): read the skill-usage metrics from
-   `specs/state.yaml` and report the most-used skills, the skills with zero calls
+   `.agent/tasks/state.yml` and report the most-used skills, the skills with zero calls
    (potential dead weight), and the skills with a high average time (candidates for
    `evolve-skill`).
 6. **Route the findings**: a critical finding becomes a `plan-work` story, a

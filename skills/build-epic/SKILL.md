@@ -1,6 +1,6 @@
 ---
 name: build-epic
-description: 'The epic build cycle. Reads the state, the execution status, and one epic capsule, then advances the build flow one step per invocation in resume mode. Use it instead of an ad-hoc execute-plan for release work.'
+description: 'The task-group build cycle. Reads the state, the execution status, and one task group, then advances the build flow one step per invocation in resume mode. Use it instead of an ad-hoc execute-plan for release work.'
 ---
 
 # Build Epic
@@ -8,10 +8,10 @@ description: 'The epic build cycle. Reads the state, the execution status, and o
 Scope: one story. Called by orchestrate-project in its build phase. Not a
 replacement for orchestrate-project.
 
-Orchestrate the build flow for a single epic: survey, plan tasks, kickoff, TDD,
+Orchestrate the build flow for a single task group: survey, plan tasks, kickoff, TDD,
 verify, audit, commit, release.
 
-> **HARD GATE**: set `active_flow: build_epic` and `active_epic: eNN` in `specs/state.yaml` before starting.
+> **HARD GATE**: set `active_flow: build_group` and `active_group: eNN` in `.agent/tasks/state.yml` before starting.
 >
 > **HARD GATE**: not on `main` or `master` before step 3 (kickoff-branch).
 
@@ -19,9 +19,9 @@ verify, audit, commit, release.
 
 | Step | Skill or action                                                |
 | ---- | -------------------------------------------------------------- |
-| 0    | `security-review`: threat-model the epic scope                 |
-| 1    | `survey-context`: confirm the epic and the story               |
-| 2    | `plan-work`: flesh out the story tasks in the epic capsule     |
+| 0    | `security-review`: threat-model the group scope                |
+| 1    | `survey-context`: confirm the group and the story              |
+| 2    | `plan-work`: flesh out the story tasks in the task group       |
 | 3    | `kickoff-branch`: a feature branch and a clean baseline        |
 | 4    | `develop-tdd`: red-green per task                              |
 | 5    | `verify-work`: UAT and the mechanical gates                    |
@@ -31,13 +31,13 @@ verify, audit, commit, release.
 
 ## Process
 
-1. Read `specs/state.yaml`, `specs/execution-status.yaml`,
-   `specs/release-plan.yaml`, and the active epic capsule.
+1. Read `.agent/tasks/state.yml`, `.agent/tasks/execution-status.yml`,
+   `.agent/tasks/release-plan.yml`, and the active task group.
    - On story start (step 1): record the `started_at` ISO-8601 timestamp under the
      story key in the execution status. Record a task's progress through the
      `truenorth_record_task` tool.
-2. **Step 0, threat model**: run `security-review` against the epic scope. Write the
-   threat model for the epic.
+2. **Step 0, threat model**: run `security-review` against the group scope. Write the
+   threat model for the task group.
 3. **Assess impact (step 2)**: before writing tasks, run `assess-impact` on the
    proposed change. When the risk score exceeds 7, gate and require a `grill-me`
    session. Write the impact report. For net-new code with no existing dependents,
@@ -60,7 +60,7 @@ verify, audit, commit, release.
      ```
 
 8. **Traceability refresh**: before step 8, refresh the traceability data and
-   surface any dark, orphan, or stale finding for the just-built epic in the verify
+   surface any dark, orphan, or stale finding for the just-built group in the verify
    summary. When the refresh is unavailable, note "trace skipped" and continue. A
    trace failure must be visible, not silent. Blocking is the job of `gate-trace`.
 
@@ -92,10 +92,10 @@ or branch state.
 ## Handoff
 
 Write `handoff.next_skill` and `handoff.context` in `state.yaml` when pausing
-mid-epic.
+mid-group.
 
 ## Verify
 
-Confirm the cockpit files exist (`specs/state.yaml`, `specs/execution-status.yaml`,
-`specs/release-plan.yaml`) and the gate skills are present (assess-impact,
+Confirm the cockpit files exist (`.agent/tasks/state.yml`, `.agent/tasks/execution-status.yml`,
+`.agent/tasks/release-plan.yml`) and the gate skills are present (assess-impact,
 audit-code, security-review).
