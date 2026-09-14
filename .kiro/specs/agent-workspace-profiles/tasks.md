@@ -279,8 +279,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 9.7, 9.8, 9.9, 10.10_
 
-- [ ] 21. Author the repo-root AGENTS.md
-  - [ ] 21.1 Write the repo-root `AGENTS.md` against the final layout
+- [x] 21. Author the repo-root AGENTS.md
+  - [x] 21.1 Write the repo-root `AGENTS.md` against the final layout
     - Author a repo-root `AGENTS.md` for the TrueNorth-MCP project, wired to the final `.agent/` layout, never wired to `specs/`
     - Commit as its own revertible batch
     - _Requirements: 11.1, 11.2_
