@@ -285,13 +285,13 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 11.1, 11.2_
 
-- [ ] 22. Final verification - No dangling skill reference
-  - [ ] 22.1 Assert every retained skill reference resolves
+- [x] 22. Final verification - No dangling skill reference
+  - [x] 22.1 Assert every retained skill reference resolves
     - **Property 15: No dangling skill reference after cleanup**
     - Grep every retained `skills/*/SKILL.md` for referenced paths, assert each resolves on disk, and assert the unresolved count is zero, counting the approximately 20 references that dangle today
     - _Requirements: 10.2, 10.3, 10.4_
 
-  - [ ] 22.2 Final checkpoint - Make sure that all tests pass
+  - [x] 22.2 Final checkpoint - Make sure that all tests pass
     - Make sure that all tests pass and no dangling references remain. Ask the user if questions arise.
 
 ## Notes
