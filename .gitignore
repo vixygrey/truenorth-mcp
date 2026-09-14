@@ -31,9 +31,8 @@ desktop.ini
 # Node
 node_modules/
 
-# Agent-tool local dirs
-.agents
-.agent
+# Agent-tool local dirs. The `.agent/` workspace is tracked under version control
+# (Requirement 1.13), so it is not ignored here.
 .claude
 .openhands
 

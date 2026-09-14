@@ -223,8 +223,8 @@ skill reference).
     - Drive `truenorth_record_bug` and `truenorth_scaffold_project` end to end against a temp repo
     - _Requirements: 2.9, 8.1, 5.3_
 
-- [ ] 12. Version control the `.agent/` directory
-  - [ ] 12.1 Remove the `.agent` ignore entries
+- [x] 12. Version control the `.agent/` directory
+  - [x] 12.1 Remove the `.agent` ignore entries
     - Remove the `.gitignore` entries that ignore `.agent` and `.agents` so the `.agent/` tree tracks under version control
     - Assert `git status` reports the `.agent/` tree as trackable
     - _Requirements: 1.13_

@@ -5,11 +5,42 @@
 //! `is_valid_repo_root` with fixed inputs, so they read no process-global state and
 //! stay independent under parallel execution.
 //!
-//! Requirements: 1.4, 1.6, 1.7, 2.7, 2.8.
+//! Requirements: 1.4, 1.6, 1.7, 1.13, 2.7, 2.8.
 
 use super::*;
 use std::fs;
 use tempfile::tempdir;
+
+#[test]
+fn gitignore_does_not_ignore_the_agent_workspace() {
+    // Requirement 1.13: the .agent/ tree tracks under version control, so the repo-root
+    // .gitignore must not carry a bare `.agent` or `.agents` ignore entry.
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("repo root is the crate's parent");
+    let gitignore = repo_root.join(".gitignore");
+    let text = fs::read_to_string(&gitignore).expect("read .gitignore");
+
+    for line in text.lines() {
+        let entry = line.trim();
+        assert_ne!(
+            entry, ".agent",
+            "`.agent` must not be gitignored (Requirement 1.13)"
+        );
+        assert_ne!(
+            entry, ".agent/",
+            "`.agent/` must not be gitignored (Requirement 1.13)"
+        );
+        assert_ne!(
+            entry, ".agents",
+            "`.agents` must not be gitignored (Requirement 1.13)"
+        );
+        assert_ne!(
+            entry, ".agents/",
+            "`.agents/` must not be gitignored (Requirement 1.13)"
+        );
+    }
+}
 
 /// Create a directory that contains all three marker directories, so it is a valid root.
 fn make_valid_root(base: &Path, name: &str) -> PathBuf {
