@@ -147,18 +147,19 @@ fn release_plan_append_preserves_other_fields() {
 
 #[test]
 fn real_state_fixture_roundtrips_when_present() {
-    // Property 3 against the real repo cockpit. The fixture lives at the repo root, one
-    // level above the crate. Skip when it is absent, so the test is portable.
-    let Some(path) = repo_root_file("specs/state.yaml") else {
+    // Property 3 against the real repo cockpit, relocated under `.agent/tasks/`. The
+    // fixture lives at the repo root, one level above the crate. Skip when it is absent,
+    // so the test is portable.
+    let Some(path) = repo_root_file(".agent/tasks/state.yml") else {
         return;
     };
-    let yaml = std::fs::read_to_string(&path).expect("read real state.yaml");
+    let yaml = std::fs::read_to_string(&path).expect("read real state.yml");
 
     let before: serde_yaml::Value = serde_yaml::from_str(&yaml).expect("parse real state");
     let state: StateFile = serde_yaml::from_str(&yaml).expect("parse real state model");
     let serialized = serde_yaml::to_string(&state).expect("serialize real state");
     let after: serde_yaml::Value = serde_yaml::from_str(&serialized).expect("re-parse real state");
-    assert_eq!(before, after, "real state.yaml must round-trip verbatim");
+    assert_eq!(before, after, "real state.yml must round-trip verbatim");
 }
 
 #[test]
