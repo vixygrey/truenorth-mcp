@@ -239,8 +239,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 10.1, 10.4, 10.10_
 
-- [ ] 15. Migrate cockpit state and the product concept into `.agent/`
-  - [ ] 15.1 Move the cockpit and product files under `.agent/`
+- [x] 15. Migrate cockpit state and the product concept into `.agent/`
+  - [x] 15.1 Move the cockpit and product files under `.agent/`
     - Move `state.yaml`, `release-plan.yaml`, `ontology.yaml`, and `execution-status.yaml` into `.agent/tasks/` and `.agent/ontology.yml`; migrate the product concept into `.agent/product/` and remove the bigpowers `specs/product/` content
     - On a failed migration, leave the tree in its pre-batch state and return an error naming the failed batch
     - Commit as its own revertible batch
