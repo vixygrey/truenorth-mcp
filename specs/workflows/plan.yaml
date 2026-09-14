@@ -1,8 +1,0 @@
-name: plan
-command: /plan
-description: Context bootstrap, research prior art, then plan the active story tasks.
-skills:
-  - survey-context
-  - research-first
-  - plan-work
-verify: "ls survey-context/SKILL.md research-first/SKILL.md plan-work/SKILL.md >/dev/null 2>&1 && echo 'OK' || echo 'FAIL'"

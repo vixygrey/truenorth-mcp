@@ -1,8 +1,0 @@
-name: ship
-command: /ship
-description: Audit, draft commit message, and release the current feature branch.
-skills:
-  - audit-code
-  - commit-message
-  - release-branch
-verify: "ls audit-code/SKILL.md commit-message/SKILL.md release-branch/SKILL.md >/dev/null 2>&1 && echo 'OK' || echo 'FAIL'"

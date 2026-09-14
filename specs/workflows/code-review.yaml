@@ -1,8 +1,0 @@
-name: code-review
-command: /code-review
-description: Self-audit then independent reviewer, then act on findings.
-skills:
-  - audit-code
-  - request-review
-  - respond-review
-verify: "ls audit-code/SKILL.md request-review/SKILL.md respond-review/SKILL.md >/dev/null 2>&1 && echo 'OK' || echo 'FAIL'"
