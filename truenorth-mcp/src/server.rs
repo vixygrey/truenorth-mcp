@@ -107,7 +107,8 @@ impl ServerHandler for TrueNorthServer {
         Self::server_info()
     }
 
-    /// List the four cockpit resources (Requirement 5.1).
+    /// List the five served resources: the cockpit set and the read-only ADR resource
+    /// (Requirements 5.1, 9.2).
     async fn list_resources(
         &self,
         _request: Option<PaginatedRequestParams>,

@@ -47,13 +47,14 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     });
     let client = ().serve(client_transport).await?;
 
-    // resources/list returns the four cockpit resources (Requirement 5.1).
+    // resources/list returns the five served resources (Requirements 5.1, 9.2).
     let resources = client.list_all_resources().await?;
     let uris: Vec<&str> = resources.iter().map(|r| r.uri.as_str()).collect();
     assert!(uris.contains(&"truenorth://state"));
     assert!(uris.contains(&"truenorth://cockpit"));
     assert!(uris.contains(&"truenorth://ontology"));
     assert!(uris.contains(&"truenorth://conventions"));
+    assert!(uris.contains(&"truenorth://adr"));
 
     // resources/read returns the current on-disk state (Requirement 5.5).
     let state = read_text(&client, "truenorth://state").await?;
@@ -144,5 +145,134 @@ async fn call_tool(
         !result.is_error.unwrap_or(false),
         "tool `{name}` returned an error: {result:?}"
     );
+    Ok(())
+}
+
+/// A connected in-process client and its server task, for a repo at `root`.
+type Client = rmcp::service::RunningService<rmcp::RoleClient, ()>;
+
+async fn connect(
+    root: std::path::PathBuf,
+) -> anyhow::Result<(Client, tokio::task::JoinHandle<anyhow::Result<()>>)> {
+    let (server_transport, client_transport) = tokio::io::duplex(8192);
+    let server = TrueNorthServer::new(root);
+    let handle = tokio::spawn(async move {
+        server.serve(server_transport).await?.waiting().await?;
+        anyhow::Ok(())
+    });
+    let client = ().serve(client_transport).await?;
+    Ok((client, handle))
+}
+
+#[tokio::test]
+async fn reads_a_legacy_specs_cockpit_over_the_client() -> anyhow::Result<()> {
+    // Requirement 2.9: a legacy specs/ cockpit is served when the .agent/ file is absent.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    fs::create_dir_all(root.join("skills")).expect("skills");
+    fs::create_dir_all(root.join("specs")).expect("specs");
+    fs::write(
+        root.join("specs/state.yaml"),
+        "active_epic: legacy1\nbigpowers_version: 2.88.2\n",
+    )?;
+
+    let (client, handle) = connect(root).await?;
+
+    let state = read_text(&client, "truenorth://state").await?;
+    assert!(state.contains("legacy1"), "serves the legacy cockpit");
+    assert!(
+        state.contains("bigpowers_version: 2.88.2"),
+        "preserves the version key"
+    );
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
+async fn reads_the_adr_resource_over_the_client() -> anyhow::Result<()> {
+    // Requirement 9.2: the read-only ADR resource serves specs/adr/ content.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    fs::create_dir_all(root.join("skills")).expect("skills");
+    fs::create_dir_all(root.join(".agent")).expect("agent");
+    fs::create_dir_all(root.join("specs/adr")).expect("adr dir");
+    fs::write(
+        root.join("specs/adr/0001-verb-noun-naming.md"),
+        "# ADR 0001: verb-noun naming\n",
+    )?;
+
+    let (client, handle) = connect(root).await?;
+
+    let adr = read_text(&client, "truenorth://adr").await?;
+    assert!(adr.contains("verb-noun naming"), "serves the ADR content");
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
+async fn records_a_bug_over_the_client() -> anyhow::Result<()> {
+    // Requirement 8.1: the bug tool stores a reference under .agent/tasks/bugs.yml.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+    // Seed a release-plan task so the linked_ref resolves.
+    fs::write(
+        root.join(".agent/tasks/release-plan.yml"),
+        "tasks:\n- group_id: e01\n  task_name: A task\n  verify_command: cargo test\n",
+    )?;
+
+    let (client, handle) = connect(root.clone()).await?;
+
+    call_tool(
+        &client,
+        "truenorth_record_bug",
+        serde_json::json!({
+            "id": "BUG-1",
+            "external_link": "https://tracker.example/issues/1",
+            "status": "open",
+            "linked_ref": "e01",
+            "tags": ["regression"]
+        }),
+    )
+    .await?;
+
+    let bugs = fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?;
+    assert!(bugs.contains("BUG-1"), "the bug reference is stored");
+    assert!(bugs.contains("regression"), "the tag is stored");
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
+async fn scaffolds_a_project_over_the_client() -> anyhow::Result<()> {
+    // Requirement 5.3: the scaffold seeds the .agent/ tree and root docs.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+
+    let (client, handle) = connect(root.clone()).await?;
+
+    call_tool(
+        &client,
+        "truenorth_scaffold_project",
+        serde_json::json!({ "profile": "kanban" }),
+    )
+    .await?;
+
+    assert!(root.join(".agent/layout.yml").is_file());
+    assert!(root.join(".agent/profile.yml").is_file());
+    assert!(root.join("AGENTS.md").is_file());
+    assert!(root.join(".githooks/commit-msg").is_file());
+    // Language-agnostic: no code manifests.
+    assert!(!root.join("Cargo.toml").exists());
+    assert!(!root.join("package.json").exists());
+
+    client.cancel().await?;
+    handle.abort();
     Ok(())
 }
