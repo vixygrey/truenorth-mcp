@@ -97,7 +97,7 @@ behavioral correctness.
 - **Never use a type-ignore, an `as any`, or a lint-disable to fix a bug.** These
   suppress the symptom without fixing the root cause.
 - **Never mark the task done while any test is failing.**
-- **The verify command from the BUG report or the active epic task must pass.**
+- **The verify command from the BUG report or the active group task must pass.**
 
 Suggest the next skill: `audit-code`, then `commit-message`.
 

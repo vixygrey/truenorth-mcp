@@ -1,13 +1,13 @@
 ---
 name: plan-work
-description: 'Planning spine step 3 of 3. Plan the work: write detailed implementation tasks into the active epic capsule. Produces a countable-story-format spec and a runnable tasks file. Use it after slice-tasks. Not a substitute for scope-work or slice-tasks.'
+description: 'Planning spine step 3 of 3. Plan the work: write detailed implementation tasks into the active task group. Produces a countable-story-format spec and a runnable tasks file. Use it after slice-tasks. Not a substitute for scope-work or slice-tasks.'
 ---
 
 # Plan Work
 
 > **Spine position**: step 3. scope-work, then slice-tasks, then plan-work.
 
-Produce a detailed, verifiable implementation plan in the active epic capsule
+Produce a detailed, verifiable implementation plan in the active task group
 directory. Output: a story-spec file (countable-story-format) and a tasks file with
 runnable verify commands. "I think it works" is not a step.
 
@@ -17,7 +17,7 @@ runnable verify commands. "I think it works" is not a step.
 
 ## Pre-flight
 
-Read the release plan, the product scope, the active epic capsule, the tech stack,
+Read the release plan, the product scope, the active task group, the tech stack,
 and the glossary.
 
 > **ZOOM-OUT MANDATE**: when modifying an existing module, state the module purpose, name its callers, and list its contracts. When you cannot answer all three, stop. The scope is misunderstood.
@@ -49,7 +49,7 @@ the blast radius.
    verifiable with a single command. Name any rationalization you caught before you
    move on.
 3. **Write the capsule story spec and tasks**: output two files inside the active
-   epic capsule. See [REFERENCE.md](REFERENCE.md) for the file formats. Each task
+   task group. See [REFERENCE.md](REFERENCE.md) for the file formats. Each task
    MUST include a `risk:` field (`P0` to `P3`). When a test plan exists, inherit its
    risk classifications and scenario ids. Each task optionally includes a
    `security:` field, and a `security: medium` or `high` task MUST include "no new
@@ -93,7 +93,7 @@ feature branch), then `build-epic`, `execute-plan`, or `develop-tdd`.
 
 ## Verify
 
-Confirm the active epic capsule has a story spec and a tasks file, and that the
+Confirm the active task group has a story spec and a tasks file, and that the
 cross-artifact consistency pass reports no CRITICAL or HIGH finding.
 
 ## Handoff

@@ -39,7 +39,7 @@ See [REFERENCE.md](REFERENCE.md) for detailed phase specifications and gate type
 
 ## How Orchestrate Works
 
-1. **Maintains the state**: tracks the current phase, `active_epic`, `active_flow`,
+1. **Maintains the state**: tracks the current phase, `active_group`, `active_flow`,
    decisions, and risks in `.agent/tasks/state.yml`.
 2. **Routes to the phase skill**: selects the skill for the current phase. A
    decision passes only through the `handoff` block in `.agent/tasks/state.yml` between
@@ -49,7 +49,7 @@ See [REFERENCE.md](REFERENCE.md) for detailed phase specifications and gate type
 4. **Enforces the gates**: hard stops when a success criterion is not met.
 5. **The gatekeeper**: between stories in the build phase, read the execution
    status. The previous story must be `done` before the next starts. Use
-   `build-epic` for the epic cycle.
+   `build-epic` for the group cycle.
 6. **Pauses for confirmation**: after each phase, ask "ready to proceed?".
 7. **Snapshots**: take a cockpit snapshot before a major release cut.
 
@@ -64,6 +64,6 @@ See [REFERENCE.md](REFERENCE.md) for full mode behaviors.
 ## Verification
 
 Confirm every phase completed with its artifacts: the state, the release plan, the
-product scope, and the epic capsules all exist.
+product scope, and the task groups all exist.
 
 <!-- story: e05s03 -->

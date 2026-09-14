@@ -1,21 +1,21 @@
 ---
 name: execute-plan
-description: 'Batch-execute the tasks from the active epic capsule sequentially, with a human checkpoint after each step. Use it when the user has an approved plan and wants step-by-step oversight.'
+description: 'Batch-execute the tasks from the active task group sequentially, with a human checkpoint after each step. Use it when the user has an approved plan and wants step-by-step oversight.'
 ---
 
 # Execute Plan
 
-Execute tasks from the **active epic** (the epic capsule story `tasks[]`) one at a time, showing evidence after each step before proceeding.
+Execute tasks from the **active group** (the task group story `tasks[]`) one at a time, showing evidence after each step before proceeding.
 
 > **HARD GATE** — Do NOT proceed if on `main` or `master`. Run `kickoff-branch` first.
 >
-> **HARD GATE** — Active epic must exist with runnable `verify` on each task. If missing, run `plan-release` then `plan-work` or `build-epic`.
+> **HARD GATE** — The active group must exist with runnable `verify` on each task. If missing, run `plan-release` then `plan-work` or `build-epic`.
 
 ## Process
 
 ### 1. Read the plan
 
-Read `.agent/tasks/state.yml` (`active_epic`, `active_story`) and the matching epic capsule under `.agent/tasks/`. Parse `depends-on` in task descriptions for execution waves.
+Read `.agent/tasks/state.yml` (`active_group`, `active_story`) and the matching task group under `.agent/tasks/`. Parse `depends-on` in task descriptions for execution waves.
 
 > **CONTEXT ISOLATION** — Spawn each skill with a **fresh context window**. Pass decisions only through `.agent/tasks/state.yml` `handoff` — never rely on prior chat history.
 
@@ -39,11 +39,11 @@ For each task in the active story:
 
 On verify failure: fix and re-run; never advance on red.
 
-Update `.agent/tasks/execution-status.yml` when a story or epic completes.
+Update `.agent/tasks/execution-status.yml` when a story or group completes.
 
 ### 3. Blockers
 
-Report blocker; ask skip/adapt/stop; update epic capsule if plan changes.
+Report blocker; ask skip/adapt/stop; update the task group if plan changes.
 
 ### 4. Final report
 

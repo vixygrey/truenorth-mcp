@@ -48,7 +48,7 @@ Write a self-contained brief for each reviewer. Include what was built (the feat
 not the implementation), which files changed, the relevant planning artifacts, what
 the conventions require, the verify command, and what you are most uncertain about.
 
-Security focus: when the epic has a threat model, include the relevant vulnerability
+Security focus: when the task group has a threat model, include the relevant vulnerability
 categories as reviewer focal points, plus the false-positive exclusion rules. Tag
 the review as security-sensitive when the threat-model risk is HIGH or more.
 
@@ -79,7 +79,7 @@ You are code reviewer [A|B]. Review the following changes independently.
 
 Context: [the feature description]
 Conventions: [the relevant rules]
-Active epic: [the relevant capsule]
+Active group: [the relevant capsule]
 Diff: [the changed files]
 Verify command: [a runnable command]
 

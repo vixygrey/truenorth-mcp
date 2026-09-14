@@ -7,7 +7,7 @@ description: 'The discover-phase advancer. Drives the discover-phase checklist t
 
 # Run Planning
 
-> **HARD GATE** — Before running planning skills, confirm the epic capsule exists and the active story is clear. Planning without a target is noise.
+> **HARD GATE** — Before running planning skills, confirm the task group exists and the active story is clear. Planning without a target is noise.
 >
 > **Role:** DISCOVER-PHASE ADVANCER — orchestrates the discover-phase sequence; hands off to the scope-work → slice-tasks → plan-work spine for implementation planning.
 
@@ -18,13 +18,13 @@ Tracks the planning progress as discover-phase skills complete. This is NOT a du
 - Starting a brand-new feature or initiative with no prior planning artifacts
 - Returning to a stalled initiative and needing to resume the discovery workflow
 - After `orchestrate-project` hands off to the Discover phase
-- When a new epic emerges from `change-request` and needs to go through full discovery
+- When a new task group emerges from `change-request` and needs to go through full discovery
 
 ## Pre-flight
 
 - [ ] Does the planning progress record exist? If not, create it with the default workflow keys.
 - [ ] Does `.agent/tasks/state.yml` have `active_flow: planning`? Set it if not already.
-- [ ] Is the epic identified in `release-plan.yaml`? The epic must exist before discovery begins.
+- [ ] Is the task group identified in `release-plan.yaml`? The group must exist before discovery begins.
 
 ## Workflows (default keys)
 
@@ -60,7 +60,7 @@ if written:
    - `scope-work` — what's in and out?
    - `research-first` — what already exists?
    - `elaborate-spec` — refine the idea (optional)
-   - `plan-release` — sequence epics by WSJF
+   - `plan-release` — sequence task groups by WSJF
    - `slice-tasks` — cut vertical slices
 
 4. **Update status** — On successful completion, set `status: done` for that workflow key in the planning progress.

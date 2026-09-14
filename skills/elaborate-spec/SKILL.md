@@ -104,7 +104,7 @@ If `.agent/tasks/planning-context.yml` already exists, ask: `"Planning context f
 Once the spec is clear, recommend the next step:
 
 - If domain model needs work → `model-domain`
-- If ready to plan → `plan-release` (creates epic capsules with `epic.yaml` + story `.md` + `-tasks.yaml`) then `plan-work` per story
+- If ready to plan → `plan-release` (creates task groups with `epic.yaml` + story `.md` + `-tasks.yaml`) then `plan-work` per story
 - If a spike is needed first → `spike-prototype`
 - If architecture decisions are needed → `deepen-architecture` or `grill-me`
 - If the plan depends on a specific library or API → `grill-me` in docs mode

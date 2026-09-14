@@ -31,7 +31,7 @@ git log --oneline -10 -- [file-path]
 
 ### 3. Map to release plan stories
 
-Read `.agent/tasks/release-plan.yml + epic capsule directories` (if it exists). For each dependent found in Step 2, identify which story owns that module. List stories that will be affected by the change.
+Read `.agent/tasks/release-plan.yml` and the task group directories (if they exist). For each dependent found in Step 2, identify which story owns that module. List stories that will be affected by the change.
 
 → verify: `test -f .agent/tasks/release-plan.yml && grep -ci "stor" .agent/tasks/release-plan.yml`
 

@@ -64,9 +64,9 @@ Formal rule for SQL injection classification:
 
 | Skill             | Touchpoint                                                                 |
 | ----------------- | -------------------------------------------------------------------------- |
-| `build-epic`      | Step 0 — threat-model epic scope → the security review report              |
+| `build-epic`      | Step 0 — threat-model group scope → the security review report             |
 | `plan-work`       | `security:` field (none/low/medium/high) on story tasks                    |
-| `plan-release`    | +2 WSJF risk boost for HIGH+ risk epics                                    |
+| `plan-release`    | +2 WSJF risk boost for HIGH+ risk task groups                              |
 | `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                   |
 | `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt |
 | `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                          |

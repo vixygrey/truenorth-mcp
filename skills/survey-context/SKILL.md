@@ -28,11 +28,11 @@ Scan the runtime state under `.agent/` and the narrative under `specs/`. Read th
 `truenorth://cockpit` resources when available. For each YAML file, note whether it
 exists, whether the keys are populated, and the `handoff.next_skill`.
 
-- `.agent/tasks/state.yml`: the session, the active flow, the epic, the git state, the
+- `.agent/tasks/state.yml`: the session, the active flow, the active group, the git state, the
   handoff.
-- `.agent/tasks/release-plan.yml`: the target version, the WSJF epic index.
-- `.agent/tasks/execution-status.yml`: the flat story and epic status.
-- `.agent/product/`, the task group under `.agent/tasks/`, the bug references under `.agent/tasks/bugs.yml`: scope, epic capsules, bug references.
+- `.agent/tasks/release-plan.yml`: the target version, the WSJF group index.
+- `.agent/tasks/execution-status.yml`: the flat story and group status.
+- `.agent/product/`, the task group under `.agent/tasks/`, the bug references under `.agent/tasks/bugs.yml`: scope, task groups, bug references.
 
 ### 3. Read the project agent guide
 
@@ -54,18 +54,18 @@ interpret a colocated Git detached HEAD as branch state.
 
 Identify the current phase from what you found.
 
-| Phase         | Signals                                                |
-| ------------- | ------------------------------------------------------ |
-| **Discover**  | No product scope yet, or only rough notes              |
-| **Design**    | Scope exists but no release plan                       |
-| **Plan**      | The release plan exists, on `main` or `master`         |
-| **Initiate**  | On a feature branch, no code change yet                |
-| **Execute**   | `active_flow: build_epic`, an epic capsule in progress |
-| **Verify**    | Implementation done, run `verify-work` or `run-evals`  |
-| **Bug**       | `active_flow: fix_bug`, or an open bug report          |
-| **Review**    | All code written, no PR yet                            |
-| **Integrate** | PR open, tests passing                                 |
-| **Sustain**   | Ongoing, no active task                                |
+| Phase         | Signals                                               |
+| ------------- | ----------------------------------------------------- |
+| **Discover**  | No product scope yet, or only rough notes             |
+| **Design**    | Scope exists but no release plan                      |
+| **Plan**      | The release plan exists, on `main` or `master`        |
+| **Initiate**  | On a feature branch, no code change yet               |
+| **Execute**   | `active_flow: build_group`, a task group in progress  |
+| **Verify**    | Implementation done, run `verify-work` or `run-evals` |
+| **Bug**       | `active_flow: fix_bug`, or an open bug report         |
+| **Review**    | All code written, no PR yet                           |
+| **Integrate** | PR open, tests passing                                |
+| **Sustain**   | Ongoing, no active task                               |
 
 Prefer the `active_flow` and `handoff.next_skill` from `state.yaml` when present.
 
@@ -85,7 +85,7 @@ priority order.
 ### 7. Surface the blockers
 
 Report a blocker before a recommendation: a broken baseline test, an open bug report
-with no active fix branch, an epic task with no verify command, or a git hash in
+with no active fix branch, a group task with no verify command, or a git hash in
 `state.yaml` that is stale versus the working tree.
 
 ### 8. Record the story-start timestamp
@@ -95,8 +95,8 @@ At story start, write `metrics.story_start` with the current ISO-8601 timestamp 
 
 ## Utility outputs
 
-- **list-epics**: loop through the epic capsules and print a summary of the story
-  counts per epic.
+- **list-groups**: loop through the task groups and print a summary of the story
+  counts per group.
 - **check-gates**: print the active flow, validate the state YAML, then show the git
   or jj status through the git-context tool. Use it before a handoff.
 

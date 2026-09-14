@@ -36,7 +36,7 @@ Turn the current conversation into a bounded PRD at `.agent/product/SCOPE_LATEST
 3. **Write `.agent/product/SCOPE_LATEST.yaml`** with these fields:
    - `core_value` — one-sentence value proposition
    - `summary` — 2-3 paragraph scope overview
-   - `in_scope[]` — list of what this initiative covers (each maps to an epic/story)
+   - `in_scope[]` — list of what this initiative covers (each maps to a group or story)
    - `out_of_scope[]` — explicit exclusions (prevents scope creep)
    - `constraints` — tech, time, resource boundaries
    - `success_criteria` — observable outcomes that prove the scope is delivered
@@ -46,9 +46,9 @@ Turn the current conversation into a bounded PRD at `.agent/product/SCOPE_LATEST
 
 5. **Run `research-first`** if external dependencies are proposed — verify the dependency exists, is maintained, and fits the scope before committing to it.
 
-> **HARD GATE** — Every `in_scope` item must map to a future epic/story ID or explicit deferred note in `out_of_scope`. If an item can't be mapped, the scope is too vague — refine before proceeding.
+> **HARD GATE** — Every `in_scope` item must map to a future group or story ID or explicit deferred note in `out_of_scope`. If an item can't be mapped, the scope is too vague — refine before proceeding.
 
-> **HARD GATE** — Do NOT include implementation details in SCOPE_LATEST.yaml. Scope is _what_ and _why_, not _how_. Implementation detail belongs in epic capsules and slice-tasks.
+> **HARD GATE** — Do NOT include implementation details in SCOPE*LATEST.yaml. Scope is \_what* and _why_, not _how_. Implementation detail belongs in task groups and slice-tasks.
 
 ## Common Anti-Patterns
 

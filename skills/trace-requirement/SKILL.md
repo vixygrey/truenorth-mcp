@@ -1,19 +1,19 @@
 ---
 name: trace-requirement
-description: 'Link the story ids from the release plan and the epic capsules to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code.'
+description: 'Link the story ids from the release plan and the task groups to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code.'
 ---
 
 # Trace Requirement
 
-Build a traceability matrix from `.agent/tasks/release-plan.yml + epic capsule directories` to implementing code and tests. Surfaces gaps in both directions: stories with no code, and code with no story.
+Build a traceability matrix from `.agent/tasks/release-plan.yml` and the task group directories to implementing code and tests. Surfaces gaps in both directions: stories with no code, and code with no story.
 
 ## Pre-flight
 
-> **HARD GATE** — `.agent/tasks/release-plan.yml + epic capsule directories` must exist. If it doesn't, run `plan-release` first.
+> **HARD GATE** — `.agent/tasks/release-plan.yml` and the task group directories must exist. If it doesn't, run `plan-release` first.
 
 → verify: `test -f .agent/tasks/release-plan.yml`
 
-Read `.agent/tasks/release-plan.yml + epic capsule directories` fully before proceeding.
+Read `.agent/tasks/release-plan.yml` and the task group directories fully before proceeding.
 
 ## Process
 

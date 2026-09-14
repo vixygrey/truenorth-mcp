@@ -1,6 +1,6 @@
 ---
 name: generate-allure-report
-description: 'Generate Allure-ready reports from the project YAML metadata. Reads the execution status, the release plan, the epic capsules, the task files, and the bug registry to produce a JUnit results file, a categories file, and an executor file. Use it when preparing a progress dashboard, integrating with Allure TestOps, or generating a CI report.'
+description: 'Generate Allure-ready reports from the project YAML metadata. Reads the execution status, the release plan, the task groups, the task files, and the bug registry to produce a JUnit results file, a categories file, and an executor file. Use it when preparing a progress dashboard, integrating with Allure TestOps, or generating a CI report.'
 ---
 
 # Generate Allure Report
@@ -16,12 +16,12 @@ Three files in `allure-results/`.
 | File                | Description                                                                                                                            |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `junit-results.xml` | One test case per story, with properties for risk, security, WSJF, tier, wave, and status. An incomplete story gets a failure element. |
-| `categories.json`   | Custom Allure categories for filtering by epic, risk level, and security review.                                                       |
+| `categories.json`   | Custom Allure categories for filtering by group, risk level, and security review.                                                      |
 | `executor.json`     | Build metadata: the name, type, version from the release plan, and the build order.                                                    |
 
 ## Data sources
 
-Read the execution status, the release plan, the epic capsules, the task files, and
+Read the execution status, the release plan, the task groups, the task files, and
 the bug registry. See [REFERENCE.md](REFERENCE.md) for the field mapping.
 
 ## Verify

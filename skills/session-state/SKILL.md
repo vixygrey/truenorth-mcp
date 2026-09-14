@@ -21,7 +21,7 @@ conventions ensure token-efficient writing.
 
 Maintain a single source of truth for the current session in `.agent/tasks/state.yml`.
 Read and write it through the `truenorth://state` resource when available. This
-complements the long-term docs and the delivery detail in the epic capsules and the
+complements the long-term docs and the delivery detail in the task groups and the
 release plan.
 
 ## Handoff block (cold start)
@@ -57,7 +57,7 @@ When `.agent/tasks/state.yml` does not exist, or you are starting a new major ph
 - [ ] Get the git metadata through the git-context tool: the current branch and the
       short hash.
 - [ ] Create `.agent/tasks/state.yml` with the active flow, the git block, the handoff,
-      and the epic cycle when in a build.
+      and the group cycle when in a build.
 
 ### 2. Load (context refresh)
 
@@ -73,7 +73,7 @@ When a significant decision is made or a milestone is reached:
 
 - [ ] Patch `state.yaml` through the lifecycle tools or a direct edit.
 - [ ] Update `handoff.open_decisions` with the rationale.
-- [ ] Advance the cycle counter when advancing the epic steps.
+- [ ] Advance the cycle counter when advancing the group steps.
 - [ ] Record an open question under `handoff.open_decisions` or in an ADR.
 
 ## Universal checkpoint pattern
@@ -82,7 +82,7 @@ Every multi-step flow uses a cycle counter in `state.yaml`.
 
 | Flow                | Cycle key       | Step field      |
 | ------------------- | --------------- | --------------- |
-| build-epic          | `epic_cycle`    | `current_step`  |
+| build-epic          | `group_cycle`   | `current_step`  |
 | fix-bug             | `bug_cycle`     | `current_step`  |
 | orchestrate-project | `project_cycle` | `current_phase` |
 
@@ -93,28 +93,28 @@ trail.
 
 ### reset-state (absorbed)
 
-Clear the ephemeral session state. Set the active epic, the active story, and the
-epic-cycle step to null. Use it when ending a phase or starting a new project
+Clear the ephemeral session state. Set the active group, the active story, and the
+group-cycle step to null. Use it when ending a phase or starting a new project
 context.
 
 ### compact-state (absorbed)
 
 Archive a verbose decision before a context transition. Move a system-wide decision
-to a global ADR, and an epic-scoped decision to an epic-local ADR. After archiving,
+to a global ADR, and a group-scoped decision to a group-local ADR. After archiving,
 reset `handoff.open_decisions` to an empty list.
 
 ## File format: .agent/tasks/state.yml
 
 ```yaml
-active_flow: build_epic # planning | build_epic | fix_bug
-active_epic_id: e02
+active_flow: build_group # planning | build_group | fix_bug
+active_group_id: e02
 active_story_id: e02s01
 active_bug_id: null
 release:
   target_version: null
   last_tag: v2.28.0
   last_publish: null
-epic_cycle:
+group_cycle:
   current_step: develop-tdd
   next_skill: develop-tdd
   completed_steps: [kickoff-branch]
@@ -132,10 +132,10 @@ handoff:
 
 ## Anti-patterns
 
-- **Duplicate plan**: do not copy the release plan or an epic capsule into
+- **Duplicate plan**: do not copy the release plan or a task group into
   `state.yaml`.
 - **Stale state**: forgetting to update `state.yaml` after a major refactor.
-- **Status in the release plan**: story and epic status live only in the execution
+- **Status in the release plan**: story and group status live only in the execution
   status.
 
 ## Verify

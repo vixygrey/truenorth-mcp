@@ -7,7 +7,7 @@ description: 'A bug-fix orchestrator. Sets the fix_bug flow, reads the BUG repor
 
 **Boundary**: Orchestrator flow — chains `investigate-bug` (entry point + RCA via `diagnose-root`) → `develop-tdd` → `validate-fix`. Does not implement RCA or write bug files directly.
 
-Orchestrates **fix_bug** flow without mixing epic build state.
+Orchestrates **fix_bug** flow without mixing group build state.
 
 > **HARD GATE** — Set `.agent/tasks/state.yml` `active_flow: fix_bug` and `bug_cycle.current_step: 1` before starting.
 
@@ -17,7 +17,7 @@ Valid entry **without a user-reported bug** when:
 
 - **Preflight** or **CI** is red at kickoff or verify-work
 - The project baseline is red, per the `truenorth_verify_gate` tool
-- A reproducible gate failure during unrelated epic work exceeds quick-fix guardrails
+- A reproducible gate failure during unrelated group work exceeds quick-fix guardrails
 
 Record the gate failure via `investigate-bug` (or inline in fix-bug step 1) in the external tracker, then run the standard fix_bug chain.
 

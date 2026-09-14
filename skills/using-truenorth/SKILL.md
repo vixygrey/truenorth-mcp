@@ -61,9 +61,9 @@ UTILITY     terse-mode, craft-skill, edit-document (any phase)
 
 The operational source of truth, served through the `truenorth://` resources:
 
-- `.agent/tasks/state.yml`: the session, the active epic and story, the handoff.
-- `.agent/tasks/release-plan.yml`: the release index and the epic list.
-- The epic capsules: the stories and tasks, each with a verify command.
+- `.agent/tasks/state.yml`: the session, the active group and story, the handoff.
+- `.agent/tasks/release-plan.yml`: the release index and the group list.
+- The task groups: the stories and tasks, each with a verify command.
 - `.agent/tasks/execution-status.yml`: done or pending per story.
 
 ## Key conventions
@@ -74,7 +74,7 @@ The operational source of truth, served through the `truenorth://` resources:
   Never create a tracker issue from a skill. Use a local file instead.
 - **One skill, one thing.** When unsure which skill to call, call `survey-context`.
   It reads the current state and recommends the next step.
-- **A verify for every step.** Every epic task has a runnable verify command.
+- **A verify for every step.** Every group task has a runnable verify command.
   Evidence over claims.
 - **Find a skill with `search_skills`.** The catalog is served live.
 

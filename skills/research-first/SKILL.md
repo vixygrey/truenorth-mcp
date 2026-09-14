@@ -9,7 +9,7 @@ description: 'Look before you build. Search the registries, the repo, the existi
 
 ## Process
 
-1. Read the product scope, the release plan and epic capsules, and the current task
+1. Read the product scope, the release plan and task groups, and the current task
    statement.
 2. Search in order: this repo, then the skill catalog with the `search_skills`
    tool, then the package registries, then the web docs.
@@ -18,7 +18,7 @@ description: 'Look before you build. Search the registries, the repo, the existi
    code.
 4. For each candidate, note the name, the URL or path, and the fit (adopt, extend,
    compose, or build).
-5. Append a prior-art section to the product-scope notes or the active epic story.
+5. Append a prior-art section to the product-scope notes or the active group story.
 
 ## Outcome matrix
 

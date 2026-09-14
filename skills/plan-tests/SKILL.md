@@ -1,29 +1,29 @@
 ---
 name: plan-tests
-description: 'Design a risk-scaled test architecture for an epic before implementation begins. Produces prioritized scenarios, a test-level distribution, and fixture plans.'
+description: 'Design a risk-scaled test architecture for a task group before implementation begins. Produces prioritized scenarios, a test-level distribution, and fixture plans.'
 ---
 
 # Plan Tests
 
-> **Spine position**: between `slice-tasks` and `plan-work` for an epic with `risk: P0` or `P1`. Optional for P2 or P3, and can be waived in `state.yaml`.
+> **Spine position**: between `slice-tasks` and `plan-work` for a task group with `risk: P0` or `P1`. Optional for P2 or P3, and can be waived in `state.yaml`.
 
 Bridge the gap between slicing and planning by designing the test suite as a
-first-class system. Produces the epic test plan.
+first-class system. Produces the group test plan.
 
 ## Pre-flight
 
-- Read the story list for the active epic.
+- Read the story list for the active group.
 
 ## Core workflow
 
-1. **Analyze the epic**: read the sliced stories in the active epic capsule.
+1. **Analyze the group**: read the sliced stories in the active task group.
 2. **Risk assessment**: map each behavior to a P0 to P3 risk tier.
 3. **Level strategy**: classify each scenario as unit, integration, or E2E.
 4. **Fixture design**: plan the factories, network intercepts, and mocks. See
    REFERENCE.md.
 5. **NFR plan**: define verifiable commands for the non-functional requirements.
    Skip when `--lite`.
-6. **Publish**: generate the epic test plan.
+6. **Publish**: generate the group test plan.
 
 ## Hard gates and guardrails
 
@@ -39,7 +39,7 @@ first-class system. Produces the epic test plan.
 
 ## Verify
 
-Confirm the epic test plan exists for the active epic.
+Confirm the group test plan exists for the active group.
 
 ## Handoff
 

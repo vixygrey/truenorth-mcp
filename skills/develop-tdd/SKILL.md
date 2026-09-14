@@ -1,13 +1,13 @@
 ---
 name: develop-tdd
-description: Test-driven development with a red-green-refactor loop using vertical slices. Use it for a feature (an epic task) or a bug (a BUG report).
+description: Test-driven development with a red-green-refactor loop using vertical slices. Use it for a feature (a group task) or a bug (a BUG report).
 ---
 
 # Develop TDD
 
 > **HARD GATE**: Do NOT proceed on `main` or `master`. Run `kickoff-branch` first to create a feature branch or worktree.
 >
-> **HARD GATE**: Do NOT write code before you have a plan. New feature: `plan-work` to epic capsule tasks. Bug: `investigate-bug` to a BUG report, or use the `fix-bug` orchestrator.
+> **HARD GATE**: Do NOT write code before you have a plan. New feature: `plan-work` to task group tasks. Bug: `investigate-bug` to a BUG report, or use the `fix-bug` orchestrator.
 >
 > **RECURSIVE DISCIPLINE**: this lifecycle applies to every task, including updating these skills. Never skip planning because a task is meta or documentation.
 
@@ -37,8 +37,8 @@ deviating from production-grade craft.
 
 ### 1. Planning
 
-- [ ] Read the active epic story tasks or the BUG report. Understand the verify steps.
-- [ ] When a test plan exists for the active epic, read it before the first test. Implement the P0 scenarios before P1. P2 and P3 are optional per the time budget.
+- [ ] Read the active group story tasks or the BUG report. Understand the verify steps.
+- [ ] When a test plan exists for the active group, read it before the first test. Implement the P0 scenarios before P1. P2 and P3 are optional per the time budget.
 - [ ] Confirm the interface changes and the behaviors to test. Prioritize them.
 - [ ] Design the interfaces for testability. Identify deep-module opportunities.
 - [ ] Get user approval on the plan.
@@ -89,7 +89,7 @@ principles. Never refactor while RED.
 
 ### 6. Verify
 
-After every behavior cycle, run the verify command from the active epic task
+After every behavior cycle, run the verify command from the active group task
 through the `truenorth_verify_gate` tool. Show the evidence before you declare the
 step done.
 
@@ -100,7 +100,7 @@ procedure in [REFERENCE.md](REFERENCE.md#ci-dry-run).
 
 ### 7. Manual verification handover
 
-Once every test passes, locate the verification script in the active epic capsule,
+Once every test passes, locate the verification script in the active task group,
 present it to the user step by step, and wait for confirmation of behavioral
 correctness.
 
@@ -121,7 +121,7 @@ correctness.
 
 ## Verify
 
-Run the verify command from the active epic task through the `truenorth_verify_gate`
+Run the verify command from the active group task through the `truenorth_verify_gate`
 tool. A pass returns exit 0.
 
 ## Handoff

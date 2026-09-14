@@ -109,9 +109,9 @@ gh pr merge --squash --delete-branch
 The release itself is tag-driven. A `v*` tag triggers the release workflow, which
 builds and publishes. The merge does not publish on its own.
 
-### 7a. Archive the completed epic capsule
+### 7a. Archive the completed task group
 
-> **HARD GATE**: when every epic story is done, archive the capsule.
+> **HARD GATE**: when every group story is done, archive the capsule.
 
 Move the completed capsule to the archive under the task group directory.
 
