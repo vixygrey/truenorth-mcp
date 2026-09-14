@@ -1,12 +1,13 @@
 # ADR-0007: Single AGENTS.md Spine with Tool-Specific Context Derivatives
 
-**Status:** Accepted
+**Status:** Superseded by the repo-root `AGENTS.md` wired to the `.agent/` layout
 **Date:** 2026-07-06
 **Epic:** e37 (Reach — Universal Agent Portability)
 
 ## Context
 
 Before e37, bigpowers maintained multiple tool-specific context files:
+
 - `CLAUDE.md` — operational root doc for Claude Code (also read by Cursor)
 - `GEMINI.md` — root doc for Gemini CLI
 - `opencode.json` — OpenCode configuration
@@ -23,12 +24,14 @@ files (one per tool) or converge on a single source of truth?
 ## Options Considered
 
 ### Option A: Multi-file (status quo ante)
+
 - Each tool gets its own context file (CLAUDE.md, GEMINI.md, etc.)
 - Each file contains the same bigpowers instructions in different formatting
 - Pro: Familiar to users of each tool
 - Con: Drift, maintenance burden, inconsistent coverage, higher cognitive load for multi-tool users
 
 ### Option B: Single AGENTS.md spine with symlink derivatives (selected)
+
 - One `AGENTS.md` is the canonical source of truth
 - Tool-specific files (`CLAUDE.md`, `GEMINI.md`, etc.) become symlinks to AGENTS.md
 - Tools that read AGENTS.md natively get no derivative (Cline, native AGENTS.md readers)
@@ -36,6 +39,7 @@ files (one per tool) or converge on a single source of truth?
 - Declared in `scripts/targets.yaml` per target via `context.mode`
 
 ### Option C: Single AGENTS.md spine with content-copy derivatives
+
 - Same single source as Option B
 - But copies the file content rather than symlinking
 - Pro: Works on Windows without Developer Mode; survives file moves
@@ -60,6 +64,7 @@ Adopt **Option B** as the primary strategy with **Option C as fallback**:
 ## Consequences
 
 ### Positive
+
 - Single source of truth — no drift between CLAUDE.md and GEMINI.md
 - New tool integration = one registry row, not a new context file
 - `generate-context-bundle.sh` regenerates all derivatives from one command
@@ -67,12 +72,14 @@ Adopt **Option B** as the primary strategy with **Option C as fallback**:
 - Multi-tool users get consistent instructions across all tools
 
 ### Negative
+
 - Symlinks break on Windows without Developer Mode — mitigated by copy fallback
 - Tools that don't follow symlinks (some CI sandboxes) need explicit copy mode
 - Legacy users expecting `CLAUDE.md` may be confused (mitigated by CLAUDE.md symlink)
 - `open code` command in some editors may not follow symlinks
 
 ### Migration
+
 - Old `CLAUDE.md` content moves to `AGENTS.md` as canonical source
 - `CLAUDE.md` becomes a Context Derivative (managed symlink)
 - `seed-conventions` emits AGENTS.md from `docs/templates/AGENTS.md`
@@ -80,6 +87,7 @@ Adopt **Option B** as the primary strategy with **Option C as fallback**:
 - All existing consumers (CI scripts, hooks, docs) that read CLAUDE.md continue to work via symlink
 
 ## References
+
 - epic.yaml (e37 Reach — Universal Agent Portability)
 - docs/templates/AGENTS.md (canonical template)
 - scripts/targets.yaml (Integration Registry — target declarations)

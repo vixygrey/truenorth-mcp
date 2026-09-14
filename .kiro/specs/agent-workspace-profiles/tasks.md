@@ -271,8 +271,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 10.8, 12.2, 10.10_
 
-- [ ] 20. Migrate and author ADRs
-  - [ ] 20.1 Migrate, supersede, and add ADRs under `specs/adr/`
+- [x] 20. Migrate and author ADRs
+  - [x] 20.1 Migrate, supersede, and add ADRs under `specs/adr/`
     - Migrate the still-valid bigpowers ADRs into `specs/adr/`: 0001 verb-noun-naming, 0003 prescriptive-core-loop, 0004 context-isolation, 0005 hard-gate-mandate, 0006 model-routing
     - Mark ADR 0002 local-first-specs and ADR 0007 agents-md-spine superseded, each with a pointer to the replacing decision
     - Add new ADRs for this spec: the `.agent`-versus-`specs` split, methodology profiles, tracker-owns-bugs, and cockpit relocation
