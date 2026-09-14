@@ -6,7 +6,7 @@ description: 'A release-index builder. Sequence elaborated task groups into .age
 # Plan Release
 
 > **HARD GATE** — Do NOT run this skill unless `elaborate-spec` has produced a clear spec or the user has already defined the feature in detail. If the problem is still fuzzy, run `elaborate-spec` first.
-> **HARD GATE** — `.agent/product/SCOPE_LATEST.yaml` (or legacy `.agent/product/SCOPE_LATEST.yaml`) must exist. If missing, run `scope-work` first.
+> **HARD GATE** — `.agent/product/scope.yml` must exist. If missing, run `scope-work` first.
 
 Synthesize the conversation context into `.agent/tasks/release-plan.yml` (index) and shard detail into the task group under `.agent/tasks/`. No new interview — only clarify if something is genuinely ambiguous.
 

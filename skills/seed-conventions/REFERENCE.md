@@ -117,7 +117,7 @@ Stack: [language, framework, runtime]
 - **Workflow Mandate:** You MUST use the project skills (for example, `plan-work`, `develop-tdd`, `orchestrate-project`) to perform tasks. DO NOT write code directly in response to a user prompt like "build this feature".
 - **Always Green:** Preflight and CI must be green before forward work. Reproducible gate failures require **fix-or-log** (quick-fix → fix-bug) per CONVENTIONS § Discovered Defects.
 - Read specs/ before writing code.
-- All planning and specifications MUST be written to `specs/` (`product/SCOPE_LATEST.yaml`, `release-plan.yaml`, `epics/`) before any code is generated.
+- All planning and specifications MUST be written under `.agent/` (`.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, and the task group directories) before any code is generated.
 - Write the minimum code that solves the stated problem. Nothing extra.
 - Run tests after every change. Show evidence before declaring done.
 - One clarifying question beats a wrong assumption baked into 200 lines.

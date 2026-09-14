@@ -7,7 +7,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 ### PHASE 1: DISCOVER
 
 - **Goal**: Understand the problem completely and map existing context.
-- **Deliverables**: `requirements/VISION_LATEST.yaml`, `requirements/SCOPE_LATEST.yaml`, `plans/TECH_STACK_LATEST.md`.
+- **Deliverables**: `.agent/product/vision.yml`, `.agent/product/scope.yml`, the project tech-stack note.
 - **Skills**: `survey-context`, `elaborate-spec`, `grill-me`.
 - **Gate**: Confirm ("Is the problem clear?").
 
@@ -74,7 +74,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 **Use Case**: Hotfixes, minor improvements, refactors on well-tested code.
 **Behavior**:
 
-- Skip Discover if `requirements/SCOPE_LATEST.yaml` exists.
+- Skip Discover if `.agent/product/scope.yml` exists.
 - Skip Elaborate if design decisions are already locked.
 - Skip Verify if coverage ≥95% + all tests PASS.
 - Soft gates auto-approve if baseline conditions are met.

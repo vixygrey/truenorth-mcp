@@ -62,35 +62,40 @@ function parseSimpleEpic(text) {
 }
 
 function readSpecsStatus(projectDir) {
-  const specsDir = path.join(projectDir, 'specs');
-  const stateText = readFileSafe(path.join(specsDir, 'state.yaml')) || '';
-  const releaseText = readFileSafe(path.join(specsDir, 'release-plan.yaml')) || '';
-  const execText = readFileSafe(path.join(specsDir, 'execution-status.yaml')) || '';
-  const planningText = readFileSafe(path.join(specsDir, 'planning-status.yaml')) || '';
+  // The cockpit lives under .agent/tasks/ after the relocation.
+  const tasksDir = path.join(projectDir, '.agent', 'tasks');
+  const stateText = readFileSafe(path.join(tasksDir, 'state.yml')) || '';
+  const releaseText = readFileSafe(path.join(tasksDir, 'release-plan.yml')) || '';
+  const execText = readFileSafe(path.join(tasksDir, 'execution-status.yml')) || '';
 
   const stateScalars = parseTopLevelScalars(stateText);
   const state = {
     active_flow: stateScalars.active_flow,
-    active_epic_id: stateScalars.active_epic_id || stateScalars.active_epic,
+    // Read the neutral grouping key, falling back to the legacy epic keys.
+    active_group_id:
+      stateScalars.active_group_id || stateScalars.active_group || stateScalars.active_epic,
     git: parseNestedBlock(stateText, 'git'),
     handoff: parseNestedBlock(stateText, 'handoff'),
-    epic_cycle: parseNestedBlock(stateText, 'epic_cycle'),
+    group_cycle:
+      parseNestedBlock(stateText, 'group_cycle') || parseNestedBlock(stateText, 'epic_cycle'),
   };
 
   const release = parseNestedBlock(releaseText, 'release');
   const devStatus = parseNestedBlock(execText, 'development_status');
-  const epics = parseEpicsFromReleasePlan(releaseText);
+  const groups = parseEpicsFromReleasePlan(releaseText);
 
-  const activeEpicId = state.active_epic_id;
-  let activeEpic = null;
-  const epicMeta = epics.find((e) => e.id === activeEpicId);
-  if (epicMeta && epicMeta.file) {
-    const epicText = readFileSafe(path.join(specsDir, epicMeta.file));
-    if (epicText) activeEpic = parseSimpleEpic(epicText);
+  const activeGroupId = state.active_group_id;
+  let activeGroup = null;
+  const groupMeta = groups.find((g) => g.id === activeGroupId);
+  if (groupMeta && groupMeta.file) {
+    const groupText = readFileSafe(path.join(tasksDir, groupMeta.file));
+    if (groupText) activeGroup = parseSimpleEpic(groupText);
   }
 
+  // Planning status is no longer tracked in an in-repo file, so it is empty.
   const planning = {};
-  if (planningText) {
+  if (false) {
+    const planningText = '';
     const wfBlocks = planningText.split(/\n\s{2}([a-z-]+):/);
     for (let i = 1; i < wfBlocks.length; i += 2) {
       const key = wfBlocks[i];
@@ -104,14 +109,14 @@ function readSpecsStatus(projectDir) {
     projectDir,
     state,
     release,
-    epics: epics.map((e) => ({
-      ...e,
-      status: devStatus[e.id] || 'pending',
+    groups: groups.map((g) => ({
+      ...g,
+      status: devStatus[g.id] || 'pending',
     })),
     execution_status: devStatus,
     planning_status: planning,
-    active_epic: activeEpic,
-    active_epic_id: activeEpicId,
+    active_group: activeGroup,
+    active_group_id: activeGroupId,
   };
 }
 
