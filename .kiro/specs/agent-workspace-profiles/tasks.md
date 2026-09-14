@@ -166,7 +166,7 @@ skill reference).
     - Assert the absent-directory and parse-failure read errors, the retained last-good, and that other resources keep serving
     - **Validates: Requirements 9.3, 9.4, 9.5, 9.6**
 
-- [ ] 9. Greenfield scaffold tool
+- [x] 9. Greenfield scaffold tool
   - [x] 9.1 Implement `tools/scaffold.rs` core emission
     - Define `ScaffoldArgs` (optional `profile`, 1 to 64 chars) with a strict `schemars` schema
     - Resolve the profile; absent uses issue-per-task; an unknown name makes no file change and returns an error naming the value and the known names
@@ -184,7 +184,7 @@ skill reference).
     - Include a grouping field in the issue forms when the profile vocabulary is epic or milestone; omit the issue-id field when the profile is kanban or generic
     - _Requirements: 5.6, 5.7, 5.8, 5.9, 5.10, 5.11_
 
-  - [ ]\* 9.3 Write property and golden tests for the scaffold
+  - [x]\* 9.3 Write property and golden tests for the scaffold
     - **Property 13: Greenfield scaffold is non-destructive** — for any pre-existing subset of scaffold targets, assert the bytes stay unchanged and a skip message names each; assert an unknown profile makes no file change
     - Golden: snapshot the emitted `.agent/` tree, root docs, the two hooks, and the `.github/` templates per profile; assert no `Cargo.toml`, `package.json`, or source tree, and that `git config core.hooksPath .githooks` is printed, not run
     - Assert that runtime tools never call `write_repo_seed`

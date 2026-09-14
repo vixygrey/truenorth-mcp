@@ -423,3 +423,9 @@ fn result_json(profile: Profile, emissions: &[Emission]) -> serde_json::Value {
 #[cfg(test)]
 #[path = "scaffold_tests.rs"]
 mod tests;
+
+// Property and golden tests (Property 13) live in a separate sibling so the example-based
+// unit tests stay focused. The `#[path]` include keeps them a child module of `scaffold`.
+#[cfg(test)]
+#[path = "scaffold_prop_tests.rs"]
+mod prop_tests;
