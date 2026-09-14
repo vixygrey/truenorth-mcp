@@ -9,5 +9,6 @@ pub mod gates;
 pub mod hooks;
 pub mod lifecycle;
 pub mod ontology;
+pub mod scaffold;
 pub mod skills;
 pub mod tdd;

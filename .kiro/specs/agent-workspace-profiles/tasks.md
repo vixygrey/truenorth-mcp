@@ -166,8 +166,8 @@ skill reference).
     - Assert the absent-directory and parse-failure read errors, the retained last-good, and that other resources keep serving
     - **Validates: Requirements 9.3, 9.4, 9.5, 9.6**
 
-- [ ] 9. Greenfield scaffold tool
-  - [ ] 9.1 Implement `tools/scaffold.rs` core emission
+- [x] 9. Greenfield scaffold tool
+  - [x] 9.1 Implement `tools/scaffold.rs` core emission
     - Define `ScaffoldArgs` (optional `profile`, 1 to 64 chars) with a strict `schemars` schema
     - Resolve the profile; absent uses issue-per-task; an unknown name makes no file change and returns an error naming the value and the known names
     - Emit the `.agent/` tree and the cockpit seed files for the profile's `starter_files`; produce a language-agnostic scaffold with no `Cargo.toml`, no `package.json`, and no source tree
@@ -176,7 +176,7 @@ skill reference).
     - Register the tool in `src/tools/mod.rs`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.12_
 
-  - [ ] 9.2 Emit git hooks and `.github/` templates from the scaffold
+  - [x] 9.2 Emit git hooks and `.github/` templates from the scaffold
     - Emit `.githooks/commit-msg` and `.githooks/post-merge`, templated per profile, through `write_repo_seed`
     - Print `git config core.hooksPath .githooks` to standard output and do not run it
     - Emit `.github/commit-template.md` and `.github/pull-request-template.md` as neutral, profile-identical templates stating the atomic-and-conventional-commit rule
@@ -184,7 +184,7 @@ skill reference).
     - Include a grouping field in the issue forms when the profile vocabulary is epic or milestone; omit the issue-id field when the profile is kanban or generic
     - _Requirements: 5.6, 5.7, 5.8, 5.9, 5.10, 5.11_
 
-  - [ ]\* 9.3 Write property and golden tests for the scaffold
+  - [x]\* 9.3 Write property and golden tests for the scaffold
     - **Property 13: Greenfield scaffold is non-destructive** — for any pre-existing subset of scaffold targets, assert the bytes stay unchanged and a skip message names each; assert an unknown profile makes no file change
     - Golden: snapshot the emitted `.agent/` tree, root docs, the two hooks, and the `.github/` templates per profile; assert no `Cargo.toml`, `package.json`, or source tree, and that `git config core.hooksPath .githooks` is printed, not run
     - Assert that runtime tools never call `write_repo_seed`
