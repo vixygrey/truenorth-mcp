@@ -265,8 +265,8 @@ skill reference).
     - Commit as its own revertible batch
     - _Requirements: 10.7, 10.10_
 
-- [ ] 19. Remove upstream infra directories and `metrics/`
-  - [ ] 19.1 Remove the upstream infra directories
+- [x] 19. Remove upstream infra directories and `metrics/`
+  - [x] 19.1 Remove the upstream infra directories
     - Remove `benchmarks/`, `archive/`, `migrations/`, `security/`, `tech-architecture/`, `wayfinder/`, `workflows/`, `agent-guide/`, `templates/`, and `metrics/`
     - Commit as its own revertible batch
     - _Requirements: 10.8, 12.2, 10.10_
