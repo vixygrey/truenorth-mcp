@@ -13,16 +13,16 @@ software. Find the live catalog with the `search_skills` and `index_skills` tool
 ## Install
 
 Install the npm wrapper for the project, which resolves the platform binary and
-runs the MCP server. The `init` subcommand scaffolds the `specs/` directory when it
-is absent.
+runs the MCP server. The `init` subcommand scaffolds the workspace when it
+is absent. Runtime state lands under `.agent/`. Narrative lands under `specs/`.
 
 ## What this is
 
 A curated set of skills organized around the developer lifecycle. Each skill does
 one thing. A skill references another by name only, so coupling stays low and
-cohesion stays high. Every written output goes to `specs/` at the project root. The
-server serves each skill through the `get_skill` tool at a full, reasoning, or lean
-tier.
+cohesion stays high. Runtime state lands under `.agent/`. Narrative lands under
+`specs/`. The server serves each skill through the `get_skill` tool at a full,
+reasoning, or lean tier.
 
 ## The lifecycle at a glance
 
@@ -61,15 +61,15 @@ UTILITY     terse-mode, craft-skill, edit-document (any phase)
 
 The operational source of truth, served through the `truenorth://` resources:
 
-- `specs/state.yaml`: the session, the active epic and story, the handoff.
-- `specs/release-plan.yaml`: the release index and the epic list.
+- `.agent/tasks/state.yml`: the session, the active epic and story, the handoff.
+- `.agent/tasks/release-plan.yml`: the release index and the epic list.
 - The epic capsules: the stories and tasks, each with a verify command.
-- `specs/execution-status.yaml`: done or pending per story.
+- `.agent/tasks/execution-status.yml`: done or pending per story.
 
 ## Key conventions
 
-- **specs/ is your memory.** Every domain doc, plan, and investigation output goes
-  in `specs/` at the project root.
+- **The workspace is your memory.** Runtime state lands under `.agent/`. Every
+  domain doc, plan, and investigation narrative lands under `specs/`.
 - **Integrate through the tools.** Use the git tooling and the tag-driven release.
   Never create a tracker issue from a skill. Use a local file instead.
 - **One skill, one thing.** When unsure which skill to call, call `survey-context`.

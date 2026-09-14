@@ -31,6 +31,6 @@ description: 'Look before you build. Search the registries, the repo, the existi
 
 ## Verify
 
-→ verify: `grep -rq 'Prior Art' specs/product specs/release-plan.yaml specs/epics 2>/dev/null`
+→ verify: `grep -rq 'Prior Art' .agent/product .agent/tasks/release-plan.yml 2>/dev/null`
 
 See [REFERENCE.md](REFERENCE.md) for search commands and registry checklist.

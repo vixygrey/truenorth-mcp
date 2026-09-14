@@ -21,8 +21,8 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Process
 
-1. **Read state** — `specs/state.yaml`: `handoff.next_skill`, `active_flow`, `metrics.story_start`, open decisions.
-2. **Check the locks** — read `specs/agent-locks.yaml` and look for a stale lock.
+1. **Read state** — `.agent/tasks/state.yml`: `handoff.next_skill`, `active_flow`, `metrics.story_start`, open decisions.
+2. **Check for contention** — there is no in-repo lock file. Look for two agents on the same task instead.
 3. **Inspect terminals** — list background shells; note PIDs, last output timestamp, exit codes.
 4. **Classify stall type:**
    - **waiting_approval** — tool blocked on user consent
@@ -32,7 +32,7 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
    - **external_io** — network, CI, or deploy wait without timeout
    - **unknown** — escalate with evidence bundle
 5. **Recommend recovery** — one action only (resume, kill PID, re-dispatch with smaller brief, escalate to user).
-6. **Write report** — `specs/verifications/STALL-<timestamp>.md` with classification, evidence, and recommended next skill.
+6. **Write the verification note** with classification, evidence, and recommended next skill.
 
 ## Integration
 
@@ -45,9 +45,9 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Verify
 
-→ verify: `test -f specs/state.yaml`
+→ verify: `test -f .agent/tasks/state.yml`
 
 ## Handoff
 
 Gate: READY → next: survey-context (if state unclear) or resume prior skill from `state.yaml`
-Writes: `specs/verifications/STALL-*.md`
+Writes: the verification note

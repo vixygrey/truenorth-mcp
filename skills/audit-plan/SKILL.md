@@ -51,7 +51,7 @@ Assess an incoming project plan for alignment with the project principles, ident
 
 3. **Close gaps conversationally** — for each ❌ or ⚠️, ask one question at a time. Record each answer before moving to the next.
 
-4. **Write `specs/PLAN-AUDIT_LATEST.md`**:
+4. **Write the plan audit report**:
 
 ```markdown
 # Plan Audit — <project>
@@ -94,4 +94,4 @@ NOT READY — N gaps remain; close before proceeding
 
 ## Verify
 
-→ verify: `test -f specs/PLAN-AUDIT_LATEST.md && grep -q Verdict specs/PLAN-AUDIT_LATEST.md`
+→ verify: the plan audit report exists and includes a `Verdict` line.

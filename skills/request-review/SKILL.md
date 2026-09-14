@@ -45,7 +45,7 @@ Iteration loop (at most 5):
 ### 1. Prepare the review brief
 
 Write a self-contained brief for each reviewer. Include what was built (the feature,
-not the implementation), which files changed, the relevant `specs/` artifacts, what
+not the implementation), which files changed, the relevant planning artifacts, what
 the conventions require, the verify command, and what you are most uncertain about.
 
 Security focus: when the epic has a threat model, include the relevant vulnerability

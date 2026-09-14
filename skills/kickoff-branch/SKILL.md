@@ -71,7 +71,7 @@ git checkout -b <task-slug>
 
 ### 4a. Verify a clean baseline
 
-> **HARD GATE**: acquire the story lock in `specs/agent-locks.yaml` before you run the tests. When the story is already locked, abort. When it is unlocked, add the entry and proceed.
+There is no in-repo lock file. Before you run the tests, confirm no other agent works the same story. When another agent holds it, abort.
 
 Run preflight, the project's full local verification stack, through the
 `truenorth_verify_gate` tool, and confirm green before you write any code.

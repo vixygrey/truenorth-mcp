@@ -17,7 +17,7 @@ Idempotent prep, so the build-phase commands succeed on the first run.
 3. Install the dependencies (`npm ci`, `bundle install`). Prefer a lockfile install.
 4. Copy `.env.example` to `.env` when documented. Never commit a secret.
 5. Run a smoke check: lint plus one fast test, or `--version` on the key tools.
-6. Record the versions in `specs/state.yaml` under the environment section.
+6. Record the versions in `.agent/tasks/state.yml` under the environment section.
 
 ## Verify
 

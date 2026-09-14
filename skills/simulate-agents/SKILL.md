@@ -17,9 +17,9 @@ Two roles, **isolated contexts** (no shared state with BUILD agent):
 1. Read story Verification Script + changed files diff.
 2. Spawn Mock User: step through UAT script; log failures.
 3. Spawn Auditor: run `audit-code` checklist cold.
-4. Write `specs/SIMULATION-<feature>.md` with both reports.
+4. Write the simulation report with both reports.
 5. Failed items → `respond-review` or `plan-work` gaps — do not skip human review.
 
 ## Verify
 
-→ verify: `test -f skills/simulate-agents/SKILL.md && test -d specs/verifications`
+→ verify: `test -f skills/simulate-agents/SKILL.md`

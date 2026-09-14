@@ -17,7 +17,7 @@ apply a stack-appropriate template, and verify locally before anything reaches C
 ## Forge resolution
 
 Resolve the forge, first match wins: an explicit forge setting, then `forge:` in
-`specs/forge.yaml`, then the `origin` remote URL, else `unknown`.
+`.agent/config/forge.yml`, then the `origin` remote URL, else `unknown`.
 
 GitHub has templates under `.github/workflows/`. GitLab, Bitbucket, Codeberg, and
 Gitea are detected but unsupported. For an unsupported forge, write nothing and
@@ -65,7 +65,7 @@ the app type, the site URL.
 ### 3. Unsupported forges
 
 Write nothing. Report the options: provide a template for the forge, pin
-`forge: github` in `specs/forge.yaml` when the remote is misdetected, or write the
+`forge: github` in `.agent/config/forge.yml` when the remote is misdetected, or write the
 CI config by hand.
 
 ### 4. Validate the workflow

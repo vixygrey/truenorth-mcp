@@ -17,7 +17,7 @@ Finalize a completed feature branch: verify the coverage gates, integrate onto
 
 ## Integrate mode
 
-Read the `workflow_mode` key from `specs/state.yaml` (`team-pr` or `solo-git`).
+Read the `workflow_mode` key from `.agent/tasks/state.yml` (`team-pr` or `solo-git`).
 
 | Mode           | When                               | Ship path                                   |
 | -------------- | ---------------------------------- | ------------------------------------------- |
@@ -62,7 +62,7 @@ blocks the merge unless it is documented.
 ### 2b. Traceability gate
 
 Run `gate-trace` before the merge. A FAIL blocks the merge. A CONCERNS requires an
-explicit override in `specs/state.yaml`. A WAIVED applies when no matrix is
+explicit override in `.agent/tasks/state.yml`. A WAIVED applies when no matrix is
 available.
 
 > **Adversarial refute framing**: the final pre-merge check refutes, it does not rubber-stamp. Before you declare ready, actively try to disprove traceability completeness: a missing story tag, absent verify evidence, a stale security review. Proceed only when the refutation fails.
@@ -113,11 +113,9 @@ builds and publishes. The merge does not publish on its own.
 
 > **HARD GATE**: when every epic story is done, archive the capsule.
 
-```bash
-mv specs/epics/eNN-slug specs/epics/archive/
-```
+Move the completed capsule to the archive under the task group directory.
 
-### 7b. CI verification and agent-lock release
+### 7b. CI verification
 
 > **HARD GATE**: Do NOT declare success until CI completes. Confirm three independent facts: the commit landed, the workflow is green, and the release is visible. See [REFERENCE.md](REFERENCE.md#three-independent-facts-release).
 
@@ -134,5 +132,5 @@ Report: "Branch released.".
 
 ## Verify
 
-Confirm `gh` is available, `specs/state.yaml` exists, and the verify-work skill is
+Confirm `gh` is available, `.agent/tasks/state.yml` exists, and the verify-work skill is
 present. Run the final verification through the `truenorth_verify_gate` tool.

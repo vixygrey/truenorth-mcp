@@ -1,6 +1,6 @@
 ---
 name: survey-context
-description: 'A per-task context bootstrap. Reads the existing specs/ and tech-architecture docs to map the current lifecycle phase and suggest the next skill. Use it at the start of any task, when returning after a break, or when unsure what to do next. For deriving a tech-stack doc from scratch, use map-codebase first.'
+description: 'A per-task context bootstrap. Reads the existing narrative docs and the project tech-stack note to map the current lifecycle phase and suggest the next skill. Use it at the start of any task, when returning after a break, or when unsure what to do next. For deriving a tech-stack note from scratch, use map-codebase first.'
 ---
 
 # Survey Context
@@ -8,9 +8,9 @@ description: 'A per-task context bootstrap. Reads the existing specs/ and tech-a
 Read the project current state and give a phase map plus a next-skill
 recommendation. This is the "where am I?" skill. Run it at the start of every task.
 
-> Use this versus map-codebase: `survey-context` consumes the existing specs and docs (fast, it does not re-derive). `map-codebase` builds the tech-stack doc from scratch by scanning the codebase. Run `map-codebase` when the tech-stack doc does not exist yet. Run `survey-context` when it does.
+> Use this versus map-codebase: `survey-context` consumes the existing narrative docs (fast, it does not re-derive). `map-codebase` builds the tech-stack note from scratch by scanning the codebase. Run `map-codebase` when the tech-stack note does not exist yet. Run `survey-context` when it does.
 
-> **HARD GATE**: read the specs/ files before you suggest a next step. When the state is stale or contradicts the codebase, request clarification rather than assuming intent.
+> **HARD GATE**: read the cockpit and narrative files before you suggest a next step. When the state is stale or contradicts the codebase, request clarification rather than assuming intent.
 
 The six phases: discover, elaborate, plan, build, verify, release.
 
@@ -22,17 +22,17 @@ When the project conventions doc exists at the root, read it first. It contains 
 rules every agent must follow in this project. Read it through the
 `truenorth://conventions` resource when available.
 
-### 2. Read specs/
+### 2. Read the cockpit and narrative
 
-Scan the `specs/` directory. Read the cockpit through the `truenorth://state` and
+Scan the runtime state under `.agent/` and the narrative under `specs/`. Read the cockpit through the `truenorth://state` and
 `truenorth://cockpit` resources when available. For each YAML file, note whether it
 exists, whether the keys are populated, and the `handoff.next_skill`.
 
-- `specs/state.yaml`: the session, the active flow, the epic, the git state, the
+- `.agent/tasks/state.yml`: the session, the active flow, the epic, the git state, the
   handoff.
-- `specs/release-plan.yaml`: the target version, the WSJF epic index.
-- `specs/execution-status.yaml`: the flat story and epic status.
-- `specs/product/`, `specs/epics/`, `specs/bugs/`: scope, epic capsules, bug reports.
+- `.agent/tasks/release-plan.yml`: the target version, the WSJF epic index.
+- `.agent/tasks/execution-status.yml`: the flat story and epic status.
+- `.agent/product/`, the task group under `.agent/tasks/`, the bug references under `.agent/tasks/bugs.yml`: scope, epic capsules, bug references.
 
 ### 3. Read the project agent guide
 
@@ -91,7 +91,7 @@ with no active fix branch, an epic task with no verify command, or a git hash in
 ### 8. Record the story-start timestamp
 
 At story start, write `metrics.story_start` with the current ISO-8601 timestamp to
-`specs/state.yaml` as an informational progress marker only, not a measurement input.
+`.agent/tasks/state.yml` as an informational progress marker only, not a measurement input.
 
 ## Utility outputs
 

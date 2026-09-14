@@ -1,6 +1,6 @@
 ---
 name: session-state
-description: 'Track implementation decisions and progress in specs/state.yaml to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached.'
+description: 'Track implementation decisions and progress in .agent/tasks/state.yml to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached.'
 ---
 
 # Session State
@@ -19,7 +19,7 @@ conventions ensure token-efficient writing.
 
 ## Goal
 
-Maintain a single source of truth for the current session in `specs/state.yaml`.
+Maintain a single source of truth for the current session in `.agent/tasks/state.yml`.
 Read and write it through the `truenorth://state` resource when available. This
 complements the long-term docs and the delivery detail in the epic capsules and the
 release plan.
@@ -35,7 +35,7 @@ handoff:
   open_decisions:
     - 'Use folder mode for e07 (more than 5 stories)'
   required_reading:
-    - specs/epics/e02-verification/epic.yaml
+    - .agent/tasks/e02-verification/epic.yaml
   next_skill: develop-tdd
 ```
 
@@ -51,20 +51,20 @@ handoff:
 
 ### 1. Initialize (session start)
 
-When `specs/state.yaml` does not exist, or you are starting a new major phase:
+When `.agent/tasks/state.yml` does not exist, or you are starting a new major phase:
 
 - [ ] Read the release plan and the product scope.
 - [ ] Get the git metadata through the git-context tool: the current branch and the
       short hash.
-- [ ] Create `specs/state.yaml` with the active flow, the git block, the handoff,
+- [ ] Create `.agent/tasks/state.yml` with the active flow, the git block, the handoff,
       and the epic cycle when in a build.
 
 ### 2. Load (context refresh)
 
 When starting a new session or after a context flush:
 
-- [ ] Read `specs/state.yaml` to understand where the previous agent left off.
-- [ ] Read `specs/execution-status.yaml` for the story progress.
+- [ ] Read `.agent/tasks/state.yml` to understand where the previous agent left off.
+- [ ] Read `.agent/tasks/execution-status.yml` for the story progress.
 - [ ] Verify the git branch and hash match `state.yaml`.
 
 ### 3. Update (a decision point or milestone)
@@ -103,7 +103,7 @@ Archive a verbose decision before a context transition. Move a system-wide decis
 to a global ADR, and an epic-scoped decision to an epic-local ADR. After archiving,
 reset `handoff.open_decisions` to an empty list.
 
-## File format: specs/state.yaml
+## File format: .agent/tasks/state.yml
 
 ```yaml
 active_flow: build_epic # planning | build_epic | fix_bug

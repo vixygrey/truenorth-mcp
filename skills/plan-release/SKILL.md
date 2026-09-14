@@ -1,31 +1,31 @@
 ---
 name: plan-release
-description: 'A release-index builder. Sequence elaborated epics into specs/release-plan.yaml with WSJF ordering and BCP baselines. Not a planning-spine substitute: it does not scope work or write story tasks. Use it after elaborate-spec when the user wants a versioned release index of epics.'
+description: 'A release-index builder. Sequence elaborated epics into .agent/tasks/release-plan.yml with WSJF ordering and BCP baselines. Not a planning-spine substitute: it does not scope work or write story tasks. Use it after elaborate-spec when the user wants a versioned release index of epics.'
 ---
 
 # Plan Release
 
 > **HARD GATE** — Do NOT run this skill unless `elaborate-spec` has produced a clear spec or the user has already defined the feature in detail. If the problem is still fuzzy, run `elaborate-spec` first.
-> **HARD GATE** — `specs/product/SCOPE_LATEST.yaml` (or legacy `specs/product/SCOPE_LATEST.yaml`) must exist. If missing, run `scope-work` first.
+> **HARD GATE** — `.agent/product/SCOPE_LATEST.yaml` (or legacy `.agent/product/SCOPE_LATEST.yaml`) must exist. If missing, run `scope-work` first.
 
-Synthesize the conversation context into `specs/release-plan.yaml` (index) and shard detail under `specs/epics/`. No new interview — only clarify if something is genuinely ambiguous.
+Synthesize the conversation context into `.agent/tasks/release-plan.yml` (index) and shard detail into the task group under `.agent/tasks/`. No new interview — only clarify if something is genuinely ambiguous.
 
 ## Outputs
 
-| File                                       | Content                                                                                                                          |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `specs/release-plan.yaml`                  | `release.version`, semver bump hint, WSJF-ordered epic list with `id`, `capsule_dir`, `wsjf`, `bcps` — **no story status**       |
-| `specs/epics/eNN-<slug>/epic.yaml`         | Epic manifest: `id`, `title`, `wsjf`, `total_bcps`, `status`, `stories[]` list                                                   |
-| `specs/epics/eNN-<slug>/eNNsYY-<slug>.md`  | Story spec in the countable-story-format with 20 sections and Gherkin acceptance criteria |
-| `specs/epics/eNN-<slug>/eNNsYY-tasks.yaml` | Decoupled task checklist with `verify:` commands per task                                                                        |
-| `specs/execution-status.yaml`              | Flat key-value store for story status (`eNNsYY: todo`)                                                                           |
+| File                                       | Content                                                                                                                    |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `.agent/tasks/release-plan.yml`            | `release.version`, semver bump hint, WSJF-ordered epic list with `id`, `capsule_dir`, `wsjf`, `bcps` — **no story status** |
+| `.agent/tasks/<capsule>/epic.yaml`         | Epic manifest: `id`, `title`, `wsjf`, `total_bcps`, `status`, `stories[]` list                                             |
+| `.agent/tasks/<capsule>/eNNsYY-<slug>.md`  | Story spec in the countable-story-format with 20 sections and Gherkin acceptance criteria                                  |
+| `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` | Decoupled task checklist with `verify:` commands per task                                                                  |
+| `.agent/tasks/execution-status.yml`        | Flat key-value store for story status (`eNNsYY: todo`)                                                                     |
 
 ## Epic Capsule Structure
 
 All epics use capsule directories (no flat/folder distinction):
 
 ```
-specs/epics/e01-auth-system/
+.agent/tasks/e01-auth-system/
 ├── epic.yaml              # Epic manifest
 ├── adr/                   # Epic-local ADRs (created lazily)
 ├── e01s01-login.md        # Story spec (countable-story-format)
@@ -47,7 +47,7 @@ From the conversation context, define:
 
 WSJF-sort epics: score = (Business Value + Time Criticality + Risk Reduction) / Job Size. Highest score first.
 
-> **Security risk boost:** If an epic's `specs/security/epics/<id>/THREAT_MODEL.md` identifies HIGH or CRITICAL risk, add +2 to the WSJF numerator (BV + TC + RR + 2) to reflect the urgency of addressing security concerns before they ship. Document the boost in the epic's note field in release-plan.yaml.
+> **Security risk boost:** If the security review report for an epic identifies HIGH or CRITICAL risk, add +2 to the WSJF numerator (BV + TC + RR + 2) to reflect the urgency of addressing security concerns before they ship. Document the boost in the epic's note field in release-plan.yaml.
 
 ### 2. Write acceptance criteria (Gherkin)
 
@@ -57,7 +57,7 @@ For each story, write at least one happy-path and one edge-case scenario (counta
 
 Every task must have a `verify:` command. No verify command = not a task.
 
-### 4. Save specs/release-plan.yaml
+### 4. Save .agent/tasks/release-plan.yml
 
 > **Do NOT hand-track the real version.** The release is tag-driven. A `v*` tag
 > triggers the release. The `version` here is a non-authoritative label. Read the
@@ -133,18 +133,18 @@ tasks:
 
 Confirm the release plan and the epic capsules parse as valid YAML.
 
-### 7b. Generate bug registry summary
+### 7b. Generate bug summary
 
-Read `specs/bugs/registry.yaml` and add a `bugs:` section to `release-plan.yaml` with totals by status (`fixed`, `deferred`, `wontfix`, `open`): `bugs: { total: N, fixed: N, deferred: N, wontfix: N, registry: specs/bugs/registry.yaml }`.
+Read the bug references under `.agent/tasks/bugs.yml` and add a `bugs:` section to `release-plan.yaml` with totals by status (`fixed`, `deferred`, `wontfix`, `open`): `bugs: { total: N, fixed: N, deferred: N, wontfix: N, ref: .agent/tasks/bugs.yml }`.
 
 ### 8. Sync execution status
 
-Update `specs/execution-status.yaml` so each story key reflects its status from the
+Update `.agent/tasks/execution-status.yml` so each story key reflects its status from the
 epic manifests.
 
 ### 9. Snapshot on planning close (optional)
 
-Copy to `specs/product/snapshots/release-<version>/` when the user approves the plan.
+Copy to `.agent/product/snapshots/release-<version>/` when the user approves the plan.
 
 ### 10. Suggest next steps
 

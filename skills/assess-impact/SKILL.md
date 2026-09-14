@@ -27,13 +27,13 @@ grep -rn "[symbol-name]" . --include="*.ts" | grep -v node_modules
 git log --oneline -10 -- [file-path]
 ```
 
-→ verify: `test -f specs/IMPACT_LATEST.md || test -d specs/bugs`
+→ verify: `test -d .agent || test -d skills`
 
 ### 3. Map to release plan stories
 
-Read `specs/release-plan.yaml + epic capsule directories` (if it exists). For each dependent found in Step 2, identify which story owns that module. List stories that will be affected by the change.
+Read `.agent/tasks/release-plan.yml + epic capsule directories` (if it exists). For each dependent found in Step 2, identify which story owns that module. List stories that will be affected by the change.
 
-→ verify: `test -f specs/release-plan.yaml && grep -ci "stor" specs/release-plan.yaml`
+→ verify: `test -f .agent/tasks/release-plan.yml && grep -ci "stor" .agent/tasks/release-plan.yml`
 
 ### 4. List test coverage
 
@@ -43,7 +43,7 @@ Find tests that exercise the target:
 grep -rn "[symbol-name]" . --include="*.test.*" --include="*.spec.*"
 ```
 
-→ verify: `test -d specs/epics || test -d skills`
+→ verify: `test -d skills`
 
 ### 5. Classify risk
 
@@ -53,7 +53,7 @@ grep -rn "[symbol-name]" . --include="*.test.*" --include="*.spec.*"
 | Medium | 3–10 callers, partial test coverage                |
 | High   | > 10 callers, or shared API/interface, or no tests |
 
-### 6. Write specs/IMPACT_LATEST.md
+### 6. Write the impact report
 
 ```
 ## Target
@@ -76,7 +76,7 @@ grep -rn "[symbol-name]" . --include="*.test.*" --include="*.spec.*"
 [Proceed / Add tests first / Discuss design]
 ```
 
-→ verify: `grep "Risk:" specs/IMPACT_LATEST.md`
+→ verify: the report includes a `Risk:` line.
 
 Suggest `plan-work` once risk is understood and any test gaps are noted.
 
@@ -88,4 +88,4 @@ In `--lightweight` mode (used by build-epic step 2), assign a numeric risk score
 - Fan-out (how many dependencies the module itself uses): 0–3 points
 - Recent churn (git log --oneline -5 count): 0–3 points
 
-**Risk score > 7**: Gate — require a `grill-me` session before proceeding to implementation. Document the grill-me result in the impact report at `specs/IMPACT-<epic>-<story>.md`.
+**Risk score > 7**: Gate — require a `grill-me` session before proceeding to implementation. Document the grill-me result in the impact report.

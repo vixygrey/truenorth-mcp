@@ -5,9 +5,9 @@ description: 'Run a four-phase root-cause analysis: reproduce, isolate, hypothes
 
 # Diagnose Root
 
-**Boundary**: Canonical, reusable 4-phase RCA engine. Invoked by `investigate-bug` (as step 2 of the end-to-end flow) and by `fix-bug` (when no bug file exists). Does not write the bug file — that is `investigate-bug`'s responsibility.
+**Boundary**: Canonical, reusable 4-phase RCA engine. Invoked by `investigate-bug` (as step 2 of the end-to-end flow) and by `fix-bug` (when no bug record exists). Does not write the bug record. The external tracker owns bug detail.
 
-Four phases — do not skip. Update the active `specs/bugs/BUG-*.md` file at each phase.
+Four phases, do not skip. Record the findings for each phase in the external tracker.
 
 ## Phases
 
@@ -20,4 +20,4 @@ Four phases — do not skip. Update the active `specs/bugs/BUG-*.md` file at eac
 
 ## Verify
 
-→ verify: `[ "$(grep -lE 'Reproduce' specs/bugs/BUG-*.md 2>/dev/null | grep -cv "\.okf\.md$")" -ge 1 ]`
+→ verify: phase 4 confirms one root cause with evidence, recorded in the external tracker.

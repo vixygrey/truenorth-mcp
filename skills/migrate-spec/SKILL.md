@@ -17,13 +17,13 @@ description: 'Detect a foreign spec artifact (GSD, spec-kit, or BMAD) and transf
 
 # Migrate Spec
 
-Transform existing GSD, spec-kit, or BMAD planning artifacts into the project `specs/` model. No code is written — the output is a set of project-format spec files the user can use immediately.
+Transform existing GSD, spec-kit, or BMAD planning artifacts into the project layout. Runtime state goes under `.agent/`. Human-authored narrative goes under `specs/`. No code is written. The output is a set of project-format files the user can use immediately.
 
 ## Quick start
 
 1. Run this skill from the root of the project being migrated (not this project's own repo).
 2. The skill auto-detects the source framework and presents its findings before transforming anything.
-3. All output goes to `specs/` at the project root.
+3. Runtime state goes under `.agent/`. Human-authored narrative goes under `specs/`.
 
 ---
 
@@ -54,7 +54,7 @@ Scan for the fingerprints below. Stop at first match; if multiple match, list th
 
 If none found: ask the user which framework before proceeding.
 
-→ verify: `test -d specs && test -f specs/state.yaml`
+→ verify: `test -d specs && test -f .agent/tasks/state.yml`
 
 ### Step 2 — Inventory the source artifacts
 
@@ -86,7 +86,7 @@ See [REFERENCE.md — in_scope format with ID tracking](./REFERENCE.md#in_scope-
 
 #### Traceability Output (FR-XX, UJ-XX)
 
-When source has FR-XX or UJ-XX IDs, emit `specs/product/REQUIREMENTS_TRACE.yaml` for end-to-end requirement traceability:
+When source has FR-XX or UJ-XX IDs, emit `.agent/product/REQUIREMENTS_TRACE.yaml` for end-to-end requirement traceability:
 
 See [REFERENCE.md](REFERENCE.md) — `trace:...`
 
@@ -100,11 +100,11 @@ See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirement
 >
 > → verify: `git rev-parse --git-dir >/dev/null 2>&1 && test -d specs`
 
-→ verify: `test -d specs && [ "$(ls specs/*.md specs/*.yaml 2>/dev/null | wc -l | tr -d " ")" -gt 0 ]`
+→ verify: `test -f .agent/tasks/state.yml`
 
 ### Step 4 — Generate state.yaml
 
-Always regenerate `specs/state.yaml` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
+Always regenerate `.agent/tasks/state.yml` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
 
 See [REFERENCE.md](REFERENCE.md) — `active_flow: null...`
 
@@ -112,4 +112,4 @@ If no open decisions were found during migration, the `open_decisions` list may 
 
 See [REFERENCE.md](REFERENCE.md) — `handoff:...`
 
-→ verify: `grep -q handoff: specs/state.yaml`
+→ verify: `grep -q handoff: .agent/tasks/state.yml`

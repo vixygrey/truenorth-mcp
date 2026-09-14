@@ -9,25 +9,25 @@ description: 'Planning spine step 2 of 3. Slice the work: break a scoped PRD int
 
 > **Spine position:** Step 2 — scope-work → slice-tasks → plan-work.
 
-Produce **epic capsule story tasks** in `specs/epics/eNN-slug/` — vertical slices, each independently deliverable and testable. Output: decoupled `eNNsYY-tasks.yaml` files with runnable verify commands. Legacy `specs/epics/ (see slice-tasks)` is deprecated; use capsule dirs + `execution-status.yaml`.
+Produce **epic capsule story tasks** in the task group under `.agent/tasks/` — vertical slices, each independently deliverable and testable. Output: decoupled `eNNsYY-tasks.yaml` files with runnable verify commands. Use capsule dirs + `execution-status.yaml`.
 
 ## Pre-flight
 
-- [ ] Does `specs/product/SCOPE_LATEST.yaml` exist? If not, run `scope-work` first — you can't slice what you haven't bounded.
+- [ ] Does `.agent/product/SCOPE_LATEST.yaml` exist? If not, run `scope-work` first — you can't slice what you haven't bounded.
 - [ ] Is the `release-plan.yaml` populated with the epics you're slicing? Epic IDs (e01, e02…) should exist before you create stories.
 - [ ] Do you understand the difference between a horizontal layer and a vertical slice? (See anti-patterns below.)
 
 ## Process
 
-0. **Read planning-context.yaml** — If `specs/planning-context.yaml` exists, read it first:
+0. **Read planning-context.yaml** — If `.agent/tasks/planning-context.yml` exists, read it first:
 
    ```bash
-   test -f specs/planning-context.yaml && echo "Context found" || echo "No context — starting fresh"
+   test -f .agent/tasks/planning-context.yml && echo "Context found" || echo "No context — starting fresh"
    ```
 
    Use `feature_name`, `constraints`, and `out_of_scope` to inform slice boundaries. `key_decisions` in the file may constrain how stories are cut (e.g., "no external deps" constrains slice 2). If absent, proceed normally.
 
-1. **Read context** — Read `specs/product/SCOPE_LATEST.yaml` and/or `specs/release-plan.yaml`. Understand what the epic delivers end-to-end.
+1. **Read context** — Read `.agent/product/SCOPE_LATEST.yaml` and/or `.agent/tasks/release-plan.yml`. Understand what the epic delivers end-to-end.
 
 2. **Cut tracer-bullet slices** — Identify the thinnest possible vertical path through the stack that delivers user value. Start with this slice; it will catch integration issues first. For example:
    - A search feature: first slice is "user types query → API returns results" (no filters, no pagination, no ranking — just the plumbing working end-to-end).
@@ -57,12 +57,12 @@ Produce **epic capsule story tasks** in `specs/epics/eNN-slug/` — vertical sli
 
 ## Output
 
-- `specs/epics/eNN-slug/eNNsYY-tasks.yaml` — per-story task breakdown with verify commands
-- `specs/epics/eNN-slug/epic.yaml` — updated with story list and BCPs
-- `specs/release-plan.yaml` — updated WSJF ordering (if needed)
+- `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` — per-story task breakdown with verify commands
+- `.agent/tasks/<capsule>/epic.yaml` — updated with story list and BCPs
+- `.agent/tasks/release-plan.yml` — updated WSJF ordering (if needed)
 
 ## Verify
 
-→ verify: `[ "$(find specs/epics -name '*-tasks.yaml' 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]`
+→ verify: `[ "$(find .agent/tasks -name '*-tasks.yaml' 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]`
 
 <!-- story: e03s01 -->

@@ -7,7 +7,7 @@ description: 'Run a skill quality benchmark from a benchmark definition. N-run w
 
 > **HARD GATE** — Do NOT use benchmark scores to declare a skill "good" or "bad" in isolation. Benchmarks measure relative quality vs. a baseline — they catch regressions, they do not certify correctness.
 
-Reads benchmark definitions from `specs/benchmarks/`, executes each scenario's grader with and without the skill loaded, and writes a structured `pass@k` report with delta grading that `evolve-skill` consumes.
+Reads benchmark definitions, executes each scenario's grader with and without the skill loaded, and writes a structured `pass@k` benchmark report with delta grading that `evolve-skill` consumes.
 
 ## With/Without-Skill Delta Grading
 
@@ -53,7 +53,7 @@ baseline mode to pin the results as the baseline.
    - `Δ = pass@k_with − pass@k_without` — causal contribution
    - Round to 2 decimal places
 
-5. **Write benchmark.json** to `specs/benchmarks/reports/benchmark-<skill>.json`:
+5. **Write the JSON benchmark report**:
 
    ```json
    {
@@ -75,7 +75,7 @@ baseline mode to pin the results as the baseline.
    }
    ```
 
-6. **Write YAML report** to `specs/benchmarks/reports/BENCHMARK-<skill>-<YYYY-MM-DD>.yaml`:
+6. **Write the YAML benchmark report**:
 
    ```yaml
    skill: survey-context

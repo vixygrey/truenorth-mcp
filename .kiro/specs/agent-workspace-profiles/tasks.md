@@ -229,7 +229,7 @@ skill reference).
     - Assert `git status` reports the `.agent/` tree as trackable
     - _Requirements: 1.13_
 
-- [ ] 13. Checkpoint - Confirm the runtime re-point holds before cleanup
+- [x] 13. Checkpoint - Confirm the runtime re-point holds before cleanup
   - Make sure that all tests pass and every retained skill and runtime reference still resolves. Ask the user if questions arise. Do not start the destructive `specs/` cleanup (tasks 15 to 20) unless the runtime re-point and the skill rewrite hold.
 
 - [ ] 14. Skill rewrite off removed `specs/` paths

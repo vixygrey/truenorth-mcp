@@ -11,7 +11,7 @@ replacement for orchestrate-project.
 Orchestrate the build flow for a single epic: survey, plan tasks, kickoff, TDD,
 verify, audit, commit, release.
 
-> **HARD GATE**: set `active_flow: build_epic` and `active_epic: eNN` in `specs/state.yaml` before starting.
+> **HARD GATE**: set `active_flow: build_epic` and `active_epic: eNN` in `.agent/tasks/state.yml` before starting.
 >
 > **HARD GATE**: not on `main` or `master` before step 3 (kickoff-branch).
 
@@ -31,8 +31,8 @@ verify, audit, commit, release.
 
 ## Process
 
-1. Read `specs/state.yaml`, `specs/execution-status.yaml`,
-   `specs/release-plan.yaml`, and the active epic capsule.
+1. Read `.agent/tasks/state.yml`, `.agent/tasks/execution-status.yml`,
+   `.agent/tasks/release-plan.yml`, and the active epic capsule.
    - On story start (step 1): record the `started_at` ISO-8601 timestamp under the
      story key in the execution status. Record a task's progress through the
      `truenorth_record_task` tool.
@@ -96,6 +96,6 @@ mid-epic.
 
 ## Verify
 
-Confirm the cockpit files exist (`specs/state.yaml`, `specs/execution-status.yaml`,
-`specs/release-plan.yaml`) and the gate skills are present (assess-impact,
+Confirm the cockpit files exist (`.agent/tasks/state.yml`, `.agent/tasks/execution-status.yml`,
+`.agent/tasks/release-plan.yml`) and the gate skills are present (assess-impact,
 audit-code, security-review).
