@@ -1,8 +1,9 @@
 //! Ontology tools: `truenorth_generate_ontology` and `truenorth_verify_ontology`.
 //!
-//! `truenorth_generate_ontology` seeds `specs/ontology.yaml` as a new file with the
-//! domain, a timestamp, the baseline global constraints, and an entities scaffold
-//! (Requirements 4.1, 4.3, 9.9). It rejects invalid input without writing (Requirement
+//! `truenorth_generate_ontology` seeds `.agent/ontology.yml` with the domain, a
+//! timestamp, the baseline global constraints, and an entities scaffold (Requirements
+//! 4.1, 4.3, 9.9). It writes through the single write guard and overwrites only the empty
+//! stub. It rejects invalid input without writing (Requirement
 //! 4.2) and refuses to overwrite an existing file (Requirement 9.10).
 //!
 //! `truenorth_verify_ontology` scans code against the ontology (Requirements 4.7, 4.8,
@@ -46,9 +47,9 @@ pub struct VerifyOntologyArgs {
 
 #[tool_router(router = ontology_router, vis = "pub")]
 impl TrueNorthServer {
-    /// Seed `specs/ontology.yaml` from the domain and source paths.
+    /// Seed `.agent/ontology.yml` from the domain and source paths.
     #[tool(
-        description = "Seed specs/ontology.yaml with the domain, baseline constraints, and an entities scaffold."
+        description = "Seed .agent/ontology.yml with the domain, baseline constraints, and an entities scaffold."
     )]
     pub async fn truenorth_generate_ontology(
         &self,
@@ -71,14 +72,20 @@ impl TrueNorthServer {
             ));
         }
 
-        let path = ontology_path(&self.ctx.repo_root);
-        // Seed only: refuse to overwrite an existing ontology (Requirement 9.10).
-        if path.exists() {
-            return Err(ErrorData::invalid_request(
-                "specs/ontology.yaml already exists. Edit it directly rather than regenerating."
-                    .to_string(),
-                None,
-            ));
+        // Overwrite only the empty stub. A real ontology is left for the human to edit
+        // (Requirement 4.5, 4.6, 4.7). The resource may seed the stub first, so the stub
+        // must remain overwritable.
+        let primary = ontology_path(&self.ctx.repo_root);
+        if primary.is_file() {
+            let existing = read_and_parse(&primary)?;
+            if !existing.is_empty_stub() {
+                return Err(ErrorData::invalid_request(
+                    ".agent/ontology.yml already exists. Edit it directly rather than \
+                     regenerating."
+                        .to_string(),
+                    None,
+                ));
+            }
         }
 
         let ontology = seed_ontology(&args.domain, &args.source_paths);
@@ -86,19 +93,22 @@ impl TrueNorthServer {
             ErrorData::internal_error(format!("could not serialize the ontology: {e}"), None)
         })?;
 
-        // Write only after the seed-check. A failure leaves no partial file, since the
-        // file did not exist (Requirement 4.4).
-        write_new_file(&path, &yaml).map_err(|e| {
-            ErrorData::internal_error(
-                format!("could not write specs/ontology.yaml: {e}. No file was created."),
-                None,
-            )
-        })?;
+        // Write through the single guard, so the target stays under `.agent/`
+        // (Requirement 4.2, 4.4).
+        let rel = std::path::Path::new("ontology.yml");
+        crate::engine::agent_ws::write_under_agent(&self.ctx.repo_root, rel, &yaml).map_err(
+            |e| {
+                ErrorData::internal_error(
+                    format!("could not write .agent/ontology.yml: {e}. No file was created."),
+                    None,
+                )
+            },
+        )?;
 
         Ok(CallToolResult::success(vec![ContentBlock::text(
             serde_json::json!({
                 "domain": args.domain,
-                "path": "specs/ontology.yaml",
+                "path": ".agent/ontology.yml",
                 "entities": ontology.entities.len(),
                 "constraints": ontology.constraints.len(),
             })
@@ -107,12 +117,27 @@ impl TrueNorthServer {
     }
 
     /// Scan code against the ontology and report the first violation, if any.
-    #[tool(description = "Scan code for prohibited aliases against specs/ontology.yaml.")]
+    #[tool(description = "Scan code for prohibited aliases against .agent/ontology.yml.")]
     pub async fn truenorth_verify_ontology(
         &self,
         params: Parameters<VerifyOntologyArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         let ontology = self.read_ontology()?;
+
+        // A not-yet-defined ontology passes with an informational note, so a pass against
+        // an empty ontology does not read as false assurance (Requirement 4.10).
+        if ontology.is_empty_stub() {
+            return Ok(CallToolResult::success(vec![ContentBlock::text(
+                serde_json::json!({
+                    "passed": true,
+                    "files_scanned": 0,
+                    "note": "The ontology is not yet defined (empty stub). \
+                             Run truenorth_generate_ontology to define it."
+                })
+                .to_string(),
+            )]));
+        }
+
         let scope = self.resolve_scope(params.0.scope_paths)?;
 
         // Empty scope passes with zero files scanned (Requirement 4.8).
@@ -139,18 +164,18 @@ impl TrueNorthServer {
 }
 
 impl TrueNorthServer {
-    /// Read and parse `specs/ontology.yaml`, erroring when it is absent or malformed.
+    /// Read and parse the ontology, erroring when it is absent or malformed.
+    ///
+    /// Prefers `.agent/ontology.yml` and falls back to a legacy `specs/ontology.yaml`
+    /// (Requirement 4.3).
     fn read_ontology(&self) -> Result<Ontology, ErrorData> {
-        let path = ontology_path(&self.ctx.repo_root);
-        let text = std::fs::read_to_string(&path).map_err(|_| {
+        let path = ontology_read_path(&self.ctx.repo_root).ok_or_else(|| {
             ErrorData::invalid_request(
-                "specs/ontology.yaml not found. Run truenorth_generate_ontology first.".to_string(),
+                ".agent/ontology.yml not found. Run truenorth_generate_ontology first.".to_string(),
                 None,
             )
         })?;
-        serde_yaml::from_str(&text).map_err(|e| {
-            ErrorData::invalid_request(format!("specs/ontology.yaml failed to parse: {e}"), None)
-        })
+        read_and_parse(&path)
     }
 
     /// Resolve the scan scope: explicit paths, else the git-changed files in scope
@@ -168,9 +193,40 @@ impl TrueNorthServer {
     }
 }
 
-/// The `specs/ontology.yaml` path under a repository root.
+/// The primary ontology backing file, matching the resource (Requirement 4.1).
 fn ontology_path(repo_root: &Path) -> PathBuf {
+    repo_root.join(".agent").join("ontology.yml")
+}
+
+/// The legacy ontology backing file, a read-only fallback (Requirement 4.3).
+fn legacy_ontology_path(repo_root: &Path) -> PathBuf {
     repo_root.join("specs").join("ontology.yaml")
+}
+
+/// Resolve the read path: `.agent/ontology.yml`, else the legacy `specs/ontology.yaml`.
+///
+/// Returns `None` when neither exists. A write always targets `.agent/`, so the legacy
+/// file is never mutated (Requirement 4.4).
+fn ontology_read_path(repo_root: &Path) -> Option<PathBuf> {
+    let primary = ontology_path(repo_root);
+    if primary.is_file() {
+        return Some(primary);
+    }
+    let legacy = legacy_ontology_path(repo_root);
+    legacy.is_file().then_some(legacy)
+}
+
+/// Read and parse an ontology file into an [`Ontology`], mapping errors to MCP errors.
+fn read_and_parse(path: &Path) -> Result<Ontology, ErrorData> {
+    let text = std::fs::read_to_string(path).map_err(|_| {
+        ErrorData::invalid_request(
+            ".agent/ontology.yml not found. Run truenorth_generate_ontology first.".to_string(),
+            None,
+        )
+    })?;
+    serde_yaml::from_str(&text).map_err(|e| {
+        ErrorData::invalid_request(format!(".agent/ontology.yml failed to parse: {e}"), None)
+    })
 }
 
 /// Build the seed ontology from the domain and source paths.
@@ -266,15 +322,6 @@ fn scan_scope(repo_root: &Path, scope: &[PathBuf], ontology: &Ontology) -> Vec<V
         violations.extend(analyzer.scan(rel, &contents, ontology));
     }
     violations
-}
-
-/// Write a new file, creating parent directories. The caller has confirmed the file does
-/// not exist, so a failure leaves no prior content to corrupt.
-fn write_new_file(path: &Path, contents: &str) -> std::io::Result<()> {
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::write(path, contents)
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

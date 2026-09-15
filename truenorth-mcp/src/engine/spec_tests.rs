@@ -211,3 +211,47 @@ fn repo_root_file(relative: &str) -> Option<PathBuf> {
     let path = repo_root.join(relative);
     path.exists().then_some(path)
 }
+
+// ── Empty stub ontology (issue #143, Requirement 4.9) ─────────────────────────────────
+
+#[test]
+fn empty_stub_is_the_empty_stub() {
+    assert!(Ontology::empty_stub().is_empty_stub());
+}
+
+#[test]
+fn empty_stub_round_trips_as_the_empty_stub() {
+    // The serialized stub, re-parsed, is still the empty stub. This pins the resource seed
+    // (which serializes empty_stub) to the generate-tool stub check (which parses and calls
+    // is_empty_stub), so the two cannot drift.
+    let yaml = serde_yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
+    let parsed: Ontology = serde_yaml::from_str(&yaml).expect("parse stub");
+    assert!(parsed.is_empty_stub());
+}
+
+#[test]
+fn a_real_ontology_is_not_the_empty_stub() {
+    let mut ontology = Ontology::empty_stub();
+    ontology.domain = "orders".to_string();
+    assert!(!ontology.is_empty_stub());
+
+    let mut with_entity = Ontology::empty_stub();
+    with_entity.entities.push(Entity {
+        name: "Order".to_string(),
+        description: "An order.".to_string(),
+        primary_key: "id".to_string(),
+        invariants: Vec::new(),
+        states: Vec::new(),
+        transitions: BTreeMap::new(),
+        prohibited_aliases: Vec::new(),
+    });
+    assert!(!with_entity.is_empty_stub());
+}
+
+#[test]
+fn is_empty_stub_ignores_the_timestamp() {
+    // A stub with only a timestamp set is still the not-yet-defined stub.
+    let mut stub = Ontology::empty_stub();
+    stub.last_updated = "2026-09-15T00:00:00Z".to_string();
+    assert!(stub.is_empty_stub());
+}

@@ -140,6 +140,32 @@ pub struct Ontology {
     pub constraints: Vec<Constraint>,
 }
 
+impl Ontology {
+    /// The empty stub ontology: version `1`, an empty domain, no entities, no constraints.
+    ///
+    /// The resource seeds this on first read, and the generate tool overwrites only a file
+    /// that matches it (Requirement 4.6, 4.9). One definition, so the seed and the
+    /// stub check cannot drift.
+    pub fn empty_stub() -> Self {
+        Self {
+            version: "1".to_string(),
+            domain: String::new(),
+            last_updated: String::new(),
+            entities: Vec::new(),
+            constraints: Vec::new(),
+        }
+    }
+
+    /// Whether this ontology is the empty stub (Requirement 4.6).
+    ///
+    /// The check ignores `version` and `last_updated`, because a real ontology is defined
+    /// by its domain, entities, or constraints. An empty domain with no entities and no
+    /// constraints is the not-yet-defined stub, whatever its timestamp.
+    pub fn is_empty_stub(&self) -> bool {
+        self.domain.is_empty() && self.entities.is_empty() && self.constraints.is_empty()
+    }
+}
+
 /// A domain entity in the ontology (design §3.2).
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
 pub struct Entity {

@@ -200,7 +200,7 @@ impl ResourceDoc {
             }
             ResourceDoc::Ontology => {
                 serde_yaml::from_str::<serde_yaml::Value>(&text).map_err(|e| {
-                    ResourceReadError::Invalid(format!("ontology.yaml failed to parse: {e}"))
+                    ResourceReadError::Invalid(format!(".agent/ontology.yml failed to parse: {e}"))
                 })?;
                 return Ok(text);
             }
@@ -216,15 +216,16 @@ impl ResourceDoc {
 
 /// The minimal ontology document seeded on first read (Requirement 2.4).
 ///
-/// It is a valid, empty ontology: a domain placeholder with no entities or constraints.
-/// The generate tool (task 12) replaces it with a full ontology. The resource parses it
-/// as a YAML document, so this stub reads back cleanly.
-const ONTOLOGY_SEED: &str = "\
-version: '1'
-domain: ''
-entities: []
-constraints: []
-";
+/// It is the shared empty stub from [`crate::engine::spec::Ontology::empty_stub`],
+/// serialized to YAML. Defining the stub once means the seed and the generate-tool
+/// overwrite check cannot drift (Requirement 4.9). The generate tool replaces it with a
+/// full ontology. The resource parses it as a YAML document, so this stub reads back
+/// cleanly.
+fn ontology_seed() -> Result<String, ResourceReadError> {
+    serde_yaml::to_string(&crate::engine::spec::Ontology::empty_stub()).map_err(|e| {
+        ResourceReadError::Invalid(format!("could not serialize the ontology stub: {e}"))
+    })
+}
 
 /// Create the ontology backing file under `.agent/` on first read (Requirements 2.4, 2.5).
 ///
@@ -234,7 +235,8 @@ constraints: []
 /// (Requirement 2.5).
 fn create_ontology_on_read(repo_root: &std::path::Path) -> Result<PathBuf, ResourceReadError> {
     let rel = std::path::Path::new("ontology.yml");
-    crate::engine::agent_ws::write_under_agent(repo_root, rel, ONTOLOGY_SEED).map_err(|e| {
+    let seed = ontology_seed()?;
+    crate::engine::agent_ws::write_under_agent(repo_root, rel, &seed).map_err(|e| {
         ResourceReadError::Invalid(format!(
             "could not create .agent/ontology.yml: {e}. No file was created."
         ))
