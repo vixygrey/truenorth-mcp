@@ -99,9 +99,18 @@ When the plan touches shared state, async, or multi-threaded code:
 ## Feed the ontology
 
 The canonical terms and the invariants you capture here are the raw material for
-the project ontology. When the session resolves a canonical term or a prohibited
+the project ontology.
+
+The ontology tools apply only when the project enables the ontology feature. The
+feature is on by default. A project turns it off with `features.ontology: false`
+in `.agent/config/rules.yml`. When the feature is off, the
+`truenorth_generate_ontology` and `truenorth_verify_ontology` tools are absent.
+Do not call them then. The domain-modeling and terminology work above still
+stands on its own.
+
+When the feature is on and the session resolves a canonical term or a prohibited
 alias for a core entity, seed or update the ontology with the
-`truenorth_generate_ontology` tool, then check the codebase against it with the
+`truenorth_generate_ontology` tool. Then check the codebase against it with the
 `truenorth_verify_ontology` tool. This turns the agreed domain language into an
 enforced gate, not just prose.
 
