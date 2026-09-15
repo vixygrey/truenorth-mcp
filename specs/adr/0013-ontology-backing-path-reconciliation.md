@@ -1,6 +1,6 @@
 # ADR-0013: Ontology Backing Path Reconciliation
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 ## Context
