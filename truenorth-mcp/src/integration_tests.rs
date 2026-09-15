@@ -164,6 +164,22 @@ async fn connect(
     Ok((client, handle))
 }
 
+/// Connect a client to a server built with explicit feature flags.
+async fn connect_with(
+    root: std::path::PathBuf,
+    features: crate::engine::features::Features,
+) -> anyhow::Result<(Client, tokio::task::JoinHandle<anyhow::Result<()>>)> {
+    let (server_transport, client_transport) = tokio::io::duplex(8192);
+    let ctx = crate::server::ServerContext::with_features(root, features);
+    let server = TrueNorthServer::from_context(ctx);
+    let handle = tokio::spawn(async move {
+        server.serve(server_transport).await?.waiting().await?;
+        anyhow::Ok(())
+    });
+    let client = ().serve(client_transport).await?;
+    Ok((client, handle))
+}
+
 #[tokio::test]
 async fn reads_a_legacy_specs_cockpit_over_the_client() -> anyhow::Result<()> {
     // Requirement 2.9: a legacy specs/ cockpit is served when the .agent/ file is absent.
@@ -271,6 +287,79 @@ async fn scaffolds_a_project_over_the_client() -> anyhow::Result<()> {
     // Language-agnostic: no code manifests.
     assert!(!root.join("Cargo.toml").exists());
     assert!(!root.join("package.json").exists());
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
+async fn disabled_ontology_is_absent_over_the_client() -> anyhow::Result<()> {
+    // Requirement 3.2, 3.3, 3.4: with the ontology feature disabled, the resource is not
+    // listed, a read of its URI errors as unknown, and no ontology file is seeded.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+
+    let (client, handle) = connect_with(
+        root.clone(),
+        crate::engine::features::Features { ontology: false },
+    )
+    .await?;
+
+    // The ontology resource is not listed; the others still are (Requirement 3.2, 3.6).
+    let resources = client.list_all_resources().await?;
+    let uris: Vec<&str> = resources.iter().map(|r| r.uri.as_str()).collect();
+    assert!(
+        !uris.contains(&"truenorth://ontology"),
+        "ontology is not listed"
+    );
+    assert!(uris.contains(&"truenorth://state"), "state is still listed");
+    assert!(
+        uris.contains(&"truenorth://conventions"),
+        "conventions is still listed"
+    );
+
+    // A read of the ontology URI errors as an unknown resource (Requirement 3.3).
+    let read = client
+        .read_resource(ReadResourceRequestParams::new("truenorth://ontology"))
+        .await;
+    assert!(read.is_err(), "reading a disabled ontology URI errors");
+
+    // No ontology file was seeded (Requirement 3.4).
+    assert!(
+        !root.join(".agent/ontology.yml").exists(),
+        "no ontology file is seeded when the feature is disabled"
+    );
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
+async fn enabled_ontology_is_listed_and_seeds_on_read() -> anyhow::Result<()> {
+    // Requirement 3.1, 3.5: the enabled default lists the ontology resource and seeds the
+    // backing file on first read.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+
+    let (client, handle) = connect_with(
+        root.clone(),
+        crate::engine::features::Features { ontology: true },
+    )
+    .await?;
+
+    let resources = client.list_all_resources().await?;
+    let uris: Vec<&str> = resources.iter().map(|r| r.uri.as_str()).collect();
+    assert!(uris.contains(&"truenorth://ontology"), "ontology is listed");
+
+    // First read seeds the backing file under .agent/ (Requirement 3.5).
+    let ontology = read_text(&client, "truenorth://ontology").await?;
+    assert!(ontology.contains("entities"), "the seeded ontology parses");
+    assert!(
+        root.join(".agent/ontology.yml").is_file(),
+        "seeded under .agent/"
+    );
 
     client.cancel().await?;
     handle.abort();

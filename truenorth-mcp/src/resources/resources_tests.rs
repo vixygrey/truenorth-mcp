@@ -220,3 +220,69 @@ fn one_broken_resource_does_not_block_others() {
     assert!(ResourceDoc::State.read_current(root).is_err());
     assert!(ResourceDoc::Ontology.read_current(root).is_ok());
 }
+
+// ── Ontology feature gate (issue #142, Property 17, Property 18) ──────────────────────
+
+/// The enabled and disabled flags, for readable test setup.
+const ENABLED: Features = Features { ontology: true };
+const DISABLED: Features = Features { ontology: false };
+
+#[test]
+fn served_resources_includes_ontology_when_enabled() {
+    let served = served_resources(ENABLED);
+    assert!(served.contains(&ResourceDoc::Ontology));
+    assert_eq!(served.len(), ALL_RESOURCES.len());
+}
+
+#[test]
+fn served_resources_excludes_ontology_when_disabled() {
+    let served = served_resources(DISABLED);
+    assert!(!served.contains(&ResourceDoc::Ontology));
+    // Only the ontology resource is dropped; the rest stay served (Requirement 3.6).
+    assert_eq!(served.len(), ALL_RESOURCES.len() - 1);
+    for doc in [
+        ResourceDoc::State,
+        ResourceDoc::Cockpit,
+        ResourceDoc::Conventions,
+        ResourceDoc::Adr,
+    ] {
+        assert!(served.contains(&doc), "{doc:?} must stay served");
+    }
+}
+
+#[test]
+fn served_from_uri_resolves_ontology_only_when_enabled() {
+    assert_eq!(
+        served_from_uri("truenorth://ontology", ENABLED),
+        Some(ResourceDoc::Ontology)
+    );
+    // Disabled: the ontology URI is unknown, so the server maps it to unknown-resource
+    // (Requirement 3.3).
+    assert_eq!(served_from_uri("truenorth://ontology", DISABLED), None);
+}
+
+#[test]
+fn served_from_uri_leaves_other_resources_resolvable_when_disabled() {
+    assert_eq!(
+        served_from_uri("truenorth://state", DISABLED),
+        Some(ResourceDoc::State)
+    );
+    assert_eq!(
+        served_from_uri("truenorth://conventions", DISABLED),
+        Some(ResourceDoc::Conventions)
+    );
+}
+
+#[test]
+fn disabled_ontology_uri_resolution_seeds_no_file() {
+    // Requirement 3.4: a disabled ontology URI resolves to None, so read_current never
+    // runs and no .agent/ontology.yml is created.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+
+    assert_eq!(served_from_uri("truenorth://ontology", DISABLED), None);
+    assert!(
+        !root.join(".agent/ontology.yml").exists(),
+        "no ontology file is seeded when the feature is disabled"
+    );
+}

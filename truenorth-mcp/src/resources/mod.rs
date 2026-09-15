@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
+use crate::engine::features::Features;
 use crate::engine::validate::{validate_release_plan, validate_state};
 
 pub mod adr;
@@ -42,6 +43,27 @@ pub const ALL_RESOURCES: [ResourceDoc; 5] = [
     ResourceDoc::Ontology,
     ResourceDoc::Adr,
 ];
+
+/// The resources served under the resolved feature flags (Requirement 3.1, 3.2).
+///
+/// When the ontology feature is disabled, `truenorth://ontology` is omitted, so it is
+/// neither listed nor resolvable. A read of it is then an unknown resource (Requirement
+/// 3.3), and no ontology file is seeded (Requirement 3.4). Every other resource is served
+/// unchanged (Requirement 3.6).
+pub fn served_resources(features: Features) -> Vec<ResourceDoc> {
+    ALL_RESOURCES
+        .into_iter()
+        .filter(|doc| *doc != ResourceDoc::Ontology || features.ontology)
+        .collect()
+}
+
+/// Resolve a URI to a served resource under the flags (Requirement 3.3).
+///
+/// Returns `None` for `truenorth://ontology` when the ontology feature is disabled, so the
+/// server maps it to the unknown-resource error, exactly as it does for any unknown URI.
+pub fn served_from_uri(uri: &str, features: Features) -> Option<ResourceDoc> {
+    ResourceDoc::from_uri(uri).filter(|doc| *doc != ResourceDoc::Ontology || features.ontology)
+}
 
 /// An error reading a resource (Requirement 5.7).
 #[derive(Debug, PartialEq, Eq)]
