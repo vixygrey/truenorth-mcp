@@ -1,6 +1,6 @@
 # ADR-0012: Optional Ontology Feature Flag
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-15
 
 ## Context
