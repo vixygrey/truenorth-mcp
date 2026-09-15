@@ -13,7 +13,7 @@ use tempfile::TempDir;
 use super::*;
 
 fn server(repo: &TempDir) -> TrueNorthServer {
-    TrueNorthServer::new(repo.path().to_path_buf())
+    TrueNorthServer::test_server(repo.path().to_path_buf())
 }
 
 async fn scaffold(srv: &TrueNorthServer, profile: Option<&str>) -> Result<(), ErrorData> {

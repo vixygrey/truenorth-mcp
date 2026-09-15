@@ -40,7 +40,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
 
     // Wire the server and a client over an in-memory duplex transport.
     let (server_transport, client_transport) = tokio::io::duplex(8192);
-    let server = TrueNorthServer::new(root.clone());
+    let server = TrueNorthServer::test_server(root.clone());
     let server_handle = tokio::spawn(async move {
         server.serve(server_transport).await?.waiting().await?;
         anyhow::Ok(())
@@ -155,7 +155,7 @@ async fn connect(
     root: std::path::PathBuf,
 ) -> anyhow::Result<(Client, tokio::task::JoinHandle<anyhow::Result<()>>)> {
     let (server_transport, client_transport) = tokio::io::duplex(8192);
-    let server = TrueNorthServer::new(root);
+    let server = TrueNorthServer::test_server(root);
     let handle = tokio::spawn(async move {
         server.serve(server_transport).await?.waiting().await?;
         anyhow::Ok(())

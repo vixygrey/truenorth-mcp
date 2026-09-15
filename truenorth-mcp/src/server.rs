@@ -2,8 +2,8 @@
 //!
 //! [`TrueNorthServer`] holds the tool router and the [`ServerContext`]. Each tools
 //! submodule attaches a named `#[tool_router]` impl to this type, and the routers merge
-//! in [`TrueNorthServer::new`]. The full aggregation of tools and resources lands in a
-//! later task; this establishes the shared type and the first tool router.
+//! in [`TrueNorthServer::from_context`]. The production constructor
+//! [`TrueNorthServer::resolve`] resolves the per-project feature flags from disk.
 //!
 //! Design: Part II §1 (entrypoint), §2 (tools).
 
@@ -22,23 +22,51 @@ use rmcp::{
     model::{Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
 };
 
+use crate::engine::features::{self, Features, FeaturesError};
 use crate::resources::{ALL_RESOURCES, ResourceCache, ResourceDoc, ResourceReadError};
 
-/// The shared context: the resolved repository root and the resource cache.
+/// The shared context: the resolved repository root, the resource cache, and the resolved
+/// per-project feature flags.
 #[derive(Debug, Default)]
 pub struct ServerContext {
     /// The governed repository root.
     pub repo_root: PathBuf,
     /// The last-good resource content cache (Requirement 5.7).
     pub resource_cache: ResourceCache,
+    /// The resolved per-project feature flags (Requirement 1.2).
+    ///
+    /// Read by the ontology tool gate (issue #141) and the ontology resource gate
+    /// (issue #142). The field lands here first; its production readers arrive with those
+    /// gates, so the allow prevents a premature dead-code error under `clippy -D warnings`.
+    /// Remove the allow once #141 reads `ctx.features.ontology`.
+    #[allow(dead_code)]
+    pub features: Features,
 }
 
 impl ServerContext {
-    /// Build a context rooted at `repo_root`.
-    pub fn new(repo_root: PathBuf) -> Self {
+    /// Build a context, resolving the feature flags from disk (Requirement 1.2).
+    ///
+    /// Reads `.agent/config/rules.yml`. An absent file resolves to the default-enabled
+    /// flags (Requirement 1.3). A present-but-broken file returns a typed error naming the
+    /// path (Requirement 1.7, 1.8).
+    ///
+    /// # Errors
+    ///
+    /// Returns [`FeaturesError`] when a present `rules.yml` cannot be read or parsed.
+    pub fn resolve(repo_root: PathBuf) -> Result<Self, FeaturesError> {
+        let features = features::resolve(&repo_root)?;
+        Ok(Self::with_features(repo_root, features))
+    }
+
+    /// Build a context from explicit feature flags, reading no disk.
+    ///
+    /// This is the dependency-injected constructor. A test builds a deterministic context,
+    /// enabled or disabled, without writing a `rules.yml` to a temp directory.
+    pub fn with_features(repo_root: PathBuf, features: Features) -> Self {
         Self {
             repo_root,
             resource_cache: ResourceCache::new(),
+            features,
         }
     }
 
@@ -61,13 +89,23 @@ pub struct TrueNorthServer {
 }
 
 impl TrueNorthServer {
-    /// Build the server for a repository root.
+    /// Build the server for a repository root, resolving the feature flags from disk.
     ///
-    /// The tool router is the merge of every tools submodule's named router. Task 8a
-    /// wires the skills router; later tasks add the rest.
-    pub fn new(repo_root: PathBuf) -> Self {
+    /// # Errors
+    ///
+    /// Returns [`FeaturesError`] when a present `.agent/config/rules.yml` cannot be read or
+    /// parsed (Requirement 1.7, 1.8).
+    pub fn resolve(repo_root: PathBuf) -> Result<Self, FeaturesError> {
+        Ok(Self::from_context(ServerContext::resolve(repo_root)?))
+    }
+
+    /// Assemble the server from a built context.
+    ///
+    /// The tool router is the merge of every tools submodule's named router. Issue #141
+    /// gates the ontology router on the feature flag; today it merges unconditionally.
+    fn from_context(ctx: ServerContext) -> Self {
         Self {
-            ctx: Arc::new(ServerContext::new(repo_root)),
+            ctx: Arc::new(ctx),
             tool_router: Self::skills_router()
                 + Self::catalog_router()
                 + Self::lifecycle_router()
@@ -98,6 +136,18 @@ impl TrueNorthServer {
                  and resources."
                 .to_string(),
         )
+    }
+}
+
+#[cfg(test)]
+impl TrueNorthServer {
+    /// A default-enabled server for tests, built from an injected context and no disk read.
+    ///
+    /// Tests that need a disabled feature build the context with
+    /// `ServerContext::with_features(root, Features { ontology: false })` and call
+    /// [`TrueNorthServer::from_context`] directly.
+    pub fn test_server(repo_root: PathBuf) -> Self {
+        Self::from_context(ServerContext::with_features(repo_root, Features::default()))
     }
 }
 
@@ -154,3 +204,9 @@ fn resource_error(error: ResourceReadError) -> ErrorData {
         ResourceReadError::Invalid(detail) => ErrorData::invalid_request(detail, None),
     }
 }
+
+// Tests live in a sibling file to hold this module under the size guidance. The
+// `#[path]` include keeps them a child module of `server`.
+#[cfg(test)]
+#[path = "server_tests.rs"]
+mod tests;

@@ -37,7 +37,7 @@ fn valid_args() -> RecordBugArgs {
 }
 
 fn server(repo: &TempDir) -> TrueNorthServer {
-    TrueNorthServer::new(repo.path().to_path_buf())
+    TrueNorthServer::test_server(repo.path().to_path_buf())
 }
 
 fn bugs_path(repo: &TempDir) -> std::path::PathBuf {

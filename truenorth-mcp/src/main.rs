@@ -45,7 +45,17 @@ async fn main() -> std::process::ExitCode {
     };
     tracing::info!(repo_root = %repo_root.display(), "resolved repository root");
 
-    let server = TrueNorthServer::new(repo_root.clone());
+    // Build the server, resolving the per-project feature flags from
+    // `.agent/config/rules.yml`. A present-but-broken config is a non-zero exit with the
+    // named path (Requirement 1.7, 1.8).
+    let server = match TrueNorthServer::resolve(repo_root.clone()) {
+        Ok(server) => server,
+        Err(error) => {
+            tracing::error!(%error, "could not resolve the feature config");
+            eprintln!("truenorth-mcp: {error}");
+            return std::process::ExitCode::FAILURE;
+        }
+    };
 
     // Serve over stdio. `serve` fails when the transport cannot initialize.
     let running = match server.serve(stdio()).await {

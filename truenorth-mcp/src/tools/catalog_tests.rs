@@ -11,7 +11,10 @@ use tempfile::tempdir;
 /// Build a `TrueNorthServer` rooted at a temp dir.
 fn server_at(root: &std::path::Path) -> TrueNorthServer {
     TrueNorthServer {
-        ctx: Arc::new(crate::server::ServerContext::new(root.to_path_buf())),
+        ctx: Arc::new(crate::server::ServerContext::with_features(
+            root.to_path_buf(),
+            crate::engine::features::Features::default(),
+        )),
         tool_router: rmcp::handler::server::router::tool::ToolRouter::new(),
     }
 }
