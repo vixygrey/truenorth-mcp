@@ -35,11 +35,8 @@ pub struct ServerContext {
     pub resource_cache: ResourceCache,
     /// The resolved per-project feature flags (Requirement 1.2).
     ///
-    /// Read by the ontology tool gate (issue #141) and the ontology resource gate
-    /// (issue #142). The field lands here first; its production readers arrive with those
-    /// gates, so the allow prevents a premature dead-code error under `clippy -D warnings`.
-    /// Remove the allow once #141 reads `ctx.features.ontology`.
-    #[allow(dead_code)]
+    /// Read by the ontology tool gate in [`TrueNorthServer::from_context`] and, from issue
+    /// #142, the ontology resource gate.
     pub features: Features,
 }
 
@@ -101,19 +98,26 @@ impl TrueNorthServer {
 
     /// Assemble the server from a built context.
     ///
-    /// The tool router is the merge of every tools submodule's named router. Issue #141
-    /// gates the ontology router on the feature flag; today it merges unconditionally.
+    /// The tool router is the merge of every tools submodule's named router. The ontology
+    /// router merges only when the ontology feature is enabled (Requirement 2.1). When the
+    /// feature is disabled, neither ontology tool is advertised or callable (Requirement
+    /// 2.2), and every other router is unchanged (Requirement 2.3).
     fn from_context(ctx: ServerContext) -> Self {
+        let mut tool_router = Self::skills_router()
+            + Self::catalog_router()
+            + Self::lifecycle_router()
+            + Self::gates_router()
+            + Self::tdd_router()
+            + Self::bugref_router()
+            + Self::scaffold_router();
+
+        if ctx.features.ontology {
+            tool_router += Self::ontology_router();
+        }
+
         Self {
             ctx: Arc::new(ctx),
-            tool_router: Self::skills_router()
-                + Self::catalog_router()
-                + Self::lifecycle_router()
-                + Self::gates_router()
-                + Self::tdd_router()
-                + Self::ontology_router()
-                + Self::bugref_router()
-                + Self::scaffold_router(),
+            tool_router,
         }
     }
 
