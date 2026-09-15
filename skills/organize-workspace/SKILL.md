@@ -5,7 +5,7 @@ description: 'Scan the active workspace for a disposable artifact (a log, a cach
 
 # Organize Workspace
 
-> **HARD GATE** — **HARD GATE** — Workspace structure must reflect domain structure. If the codebase feels disorganized, flag it. Disorganization != 'just a style thing;' it is a signal of domain misalignment.
+> **HARD GATE** — Workspace structure must reflect domain structure. If the codebase feels disorganized, flag it. Disorganization != 'just a style thing;' it is a signal of domain misalignment.
 
 ## Principles
 

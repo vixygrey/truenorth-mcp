@@ -5,7 +5,7 @@ description: 'An interactive QA session. The user reports bugs conversationally,
 
 # Inspect Quality
 
-> **HARD GATE** — **HARD GATE** — Quality metrics (coverage, lint, cyclomatic complexity, security scans) must be monitored. If a metric degrades, surface it as a blocker. Do NOT accept regressions.
+> **HARD GATE** — Quality metrics (coverage, lint, cyclomatic complexity, security scans) must be monitored. If a metric degrades, surface it as a blocker. Do NOT accept regressions.
 
 Run an interactive QA session. The user describes problems they're encountering. You clarify, explore the codebase for context, and log each issue to the bug references under `.agent/tasks/bugs.yml` with a structured, durable format.
 

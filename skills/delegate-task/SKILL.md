@@ -7,7 +7,7 @@ description: 'Delegate one complex task to a single subagent, and review its wor
 
 # Delegate Task
 
-> **HARD GATE** — **HARD GATE** — Delegated work must have clear success criteria and verification commands. The delegate must be able to verify completion independently.
+> **HARD GATE** — Delegated work must have clear success criteria and verification commands. The delegate must be able to verify completion independently.
 
 Delegate a single complex task to a subagent with a two-stage review gate before accepting the result. Use when oversight of a single task matters more than speed.
 

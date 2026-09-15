@@ -5,7 +5,7 @@ description: 'Apply the F.I.R.S.T test-quality rubric to a test suite or individ
 
 # Enforce FIRST
 
-> **HARD GATE** — **HARD GATE** — Before shipping, ALL enforcement checks must pass: lint, typecheck, tests, coverage gates. Do NOT disable or skip checks to get to green.
+> **HARD GATE** — Before shipping, ALL enforcement checks must pass: lint, typecheck, tests, coverage gates. Do NOT disable or skip checks to get to green.
 
 Apply the F.I.R.S.T rubric per CONVENTIONS.md §Tests to evaluate and improve tests.
 
