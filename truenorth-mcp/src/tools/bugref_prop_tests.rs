@@ -64,7 +64,7 @@ proptest! {
         tags in prop::collection::vec("[a-z][a-z0-9-]{0,10}", 0..4),
     ) {
         let repo = repo_with_task();
-        let srv = TrueNorthServer::new(repo.path().to_path_buf());
+        let srv = TrueNorthServer::test_server(repo.path().to_path_buf());
 
         let linked_ref = if use_known { KNOWN_REF.to_string() } else { other_ref.clone() };
 

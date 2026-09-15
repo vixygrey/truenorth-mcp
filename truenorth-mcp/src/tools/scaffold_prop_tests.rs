@@ -17,7 +17,7 @@ use super::*;
 use crate::engine::profile::ALL_PROFILES;
 
 fn run_scaffold(repo: &TempDir, profile: Option<&str>) {
-    let srv = TrueNorthServer::new(repo.path().to_path_buf());
+    let srv = TrueNorthServer::test_server(repo.path().to_path_buf());
     let fut = srv.truenorth_scaffold_project(Parameters(ScaffoldArgs {
         profile: profile.map(str::to_string),
     }));
@@ -81,7 +81,7 @@ proptest! {
     fn scaffold_unknown_profile_writes_nothing(name in "[a-z][a-z0-9-]{0,20}") {
         prop_assume!(crate::engine::profile::by_name(&name).is_none());
         let repo = TempDir::new().expect("temp repo");
-        let srv = TrueNorthServer::new(repo.path().to_path_buf());
+        let srv = TrueNorthServer::test_server(repo.path().to_path_buf());
         let fut = srv.truenorth_scaffold_project(Parameters(ScaffoldArgs {
             profile: Some(name),
         }));

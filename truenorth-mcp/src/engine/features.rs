@@ -21,12 +21,9 @@
 //! Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10.
 //! Design: optional-ontology §1, ADR-0012.
 
-// The feature flags are consumed by the server context (issue #140) and the ontology tool
-// and resource gates (issues #141, #142). The reader is exercised by its unit tests but has
-// no non-test caller until #140 wires it onto the context, so the module-scoped allow
-// prevents a premature dead-code error under `clippy -D warnings`. Remove this allow once
-// #140 wires the consumer, matching the pattern in `engine::profile` and `engine::agent_ws`.
-#![allow(dead_code)]
+// The feature flags are consumed by `ServerContext` (issue #140). The ontology tool and
+// resource gates (issues #141, #142) read `ctx.features` to decide what to register and
+// serve.
 
 use std::path::Path;
 
