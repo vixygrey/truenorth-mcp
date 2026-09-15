@@ -2,14 +2,14 @@
 
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ARTIFACT_DIR` | `dist` | Build output directory |
-| `DEPLOY_URL` | *(required)* | Live URL for smoke test |
-| `DEPLOY_TIMEOUT` | `300` | Max wait for deploy completion (seconds) |
-| `DEPLOY_POLL_INTERVAL` | `30` | Polling interval (seconds) |
-| `RETRY_MAX` | `3` | Max deploy retry attempts |
-| `BUILD_COMMAND` | *(auto-detect)* | Override build command |
+| Variable               | Default         | Description                              |
+| ---------------------- | --------------- | ---------------------------------------- |
+| `ARTIFACT_DIR`         | `dist`          | Build output directory                   |
+| `DEPLOY_URL`           | *(required)*    | Live URL for smoke test                  |
+| `DEPLOY_TIMEOUT`       | `300`           | Max wait for deploy completion (seconds) |
+| `DEPLOY_POLL_INTERVAL` | `30`            | Polling interval (seconds)               |
+| `RETRY_MAX`            | `3`             | Max deploy retry attempts                |
+| `BUILD_COMMAND`        | *(auto-detect)* | Override build command                   |
 
 
 ---

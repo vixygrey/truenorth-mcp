@@ -4,11 +4,11 @@
 
 Add a `tier:` column to each eval row:
 
-| Tier | Gate behaviour |
-|------|----------------|
-| `EXPERIMENTAL` | Log only — does not block |
+| Tier             | Gate behaviour                                                        |
+| ---------------- | --------------------------------------------------------------------- |
+| `EXPERIMENTAL`   | Log only — does not block                                             |
 | `USUALLY_PASSES` | Warn on failure; blocks only when paired with failing `ALWAYS_PASSES` |
-| `ALWAYS_PASSES` | Hard block on any failure |
+| `ALWAYS_PASSES`  | Hard block on any failure                                             |
 
 ## EVALS template
 

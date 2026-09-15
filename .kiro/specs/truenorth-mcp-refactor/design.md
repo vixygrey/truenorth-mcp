@@ -157,7 +157,7 @@ ontology scan + resource notification, §7 npm distribution).
 | `truenorth_tdd_cycle`                        | active/gate      | Enforce Red → Green → Refactor step transitions           |
 | `truenorth_generate_ontology`                | active/ontology  | Synthesize `specs/ontology.yaml` from sources             |
 | `truenorth_verify_ontology`                  | active/gate      | Phase-4 gate: reject lexical/semantic drift               |
-| `get_skill`                                  | catalog (tiered) | Read a skill at `full \| reasoning \| lean` tier          |
+| `get_skill`                                  | catalog (tiered) | Read a skill at `full \| reasoning \| lean` tier            |
 | `index_skills`                               | legacy catalog   | Enumerate `skills/*/SKILL.md` + phase                     |
 | `read_skill`                                 | legacy catalog   | Parse a SKILL.md (frontmatter/headings/sections)          |
 | `search_skills`                              | legacy catalog   | Substring search over skill metadata                      |
@@ -926,7 +926,7 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 | `sync-skills.sh`, `generate-skill-index.sh`, `build-skill-graph.sh` | Dynamic MCP tools/resources: `get_skill` (tiered), `index_skills`, `build_skill_graph` at runtime (ADR-4) |
 | 13 per-harness skill mirror directories                             | One canonical `skills/` served through tiered rendering (§4). Agnosticism is runtime, not static fan-out  |
 | `bin/*.js`, `install.sh`, `mcp-server.js`                           | `npm/bin/truenorth.js` runner + platform packages + `init` scaffold (§7)                                  |
-| Static full-markdown mirrors                                        | Tiered rendering (`full \| reasoning \| lean`) computed per call (§4)                                     |
+| Static full-markdown mirrors                                        | Tiered rendering (`full \| reasoning \| lean`) computed per call (§4)                                       |
 
 ## Correctness Properties
 

@@ -67,19 +67,19 @@ score from 1 (speculative) to 10 (certain). Only findings ≥ 8 are reported.
 
 Once confidence ≥ 8 is confirmed, map to severity:
 
-| Severity | Impact | Examples |
-|----------|--------|---------|
-| **CRITICAL** | Remote compromise, full data breach | RCE, auth bypass with admin escalation, SQLi with data exfiltration |
-| **HIGH** | Significant security boundary crossed | SSRF to internal services, hardcoded cloud credentials, insecure deserialization |
-| **MEDIUM** | Limited impact or requires conditions | Stored XSS behind auth, IDOR on non-sensitive data, weak but not broken crypto |
-| **LOW** | Defense-in-depth, minimal blast radius | Missing security header, verbose error messages in non-production |
+| Severity     | Impact                                 | Examples                                                                         |
+| ------------ | -------------------------------------- | -------------------------------------------------------------------------------- |
+| **CRITICAL** | Remote compromise, full data breach    | RCE, auth bypass with admin escalation, SQLi with data exfiltration              |
+| **HIGH**     | Significant security boundary crossed  | SSRF to internal services, hardcoded cloud credentials, insecure deserialization |
+| **MEDIUM**   | Limited impact or requires conditions  | Stored XSS behind auth, IDOR on non-sensitive data, weak but not broken crypto   |
+| **LOW**      | Defense-in-depth, minimal blast radius | Missing security header, verbose error messages in non-production                |
 
 ## Quality Gate
 
 The confidence rubric double-checks each finding against three lenses:
 
-| Lens | Question |
-|------|----------|
-| **Exploitability** | Can a real attacker trigger this from a trust boundary? |
-| **Actionability** | Would a security engineer accept a fix recommendation for this? |
-| **Precedent** | Has this type of finding passed/failed human review before? |
+| Lens               | Question                                                        |
+| ------------------ | --------------------------------------------------------------- |
+| **Exploitability** | Can a real attacker trigger this from a trust boundary?         |
+| **Actionability**  | Would a security engineer accept a fix recommendation for this? |
+| **Precedent**      | Has this type of finding passed/failed human review before?     |

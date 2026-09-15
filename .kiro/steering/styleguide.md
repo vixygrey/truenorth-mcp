@@ -83,6 +83,15 @@ not ship a workaround as if it were the solution.
 - **Formatters/linters are non-negotiable and settle all style debates:**
   `cargo fmt` + `cargo clippy` (deny warnings in CI) for Rust; the repo's JS
   formatter for the wrapper. Run before every commit.
+- **Markdown tables use the space-padded style.** Pad every cell to its column
+  width and pad the delimiter row to match, so a column reads as an aligned
+  block. Write `| --- |`, not `|---|`. This is the majority style already, and it
+  is what a common markdown format-on-save produces, so a padded table stays
+  byte-stable across edits. A table inside a fenced code block is literal content
+  and stays verbatim, so it is exempt. This rule is a shared standard, not a local
+  editor setting. No editor config is checked in to enforce it (`.vscode/` is
+  gitignored), so a contributor keeps the style by hand or through their own
+  formatter.
 - Do **not** reintroduce the retired bash/python pipeline, `sync-skills.sh`,
   per-harness generated skill mirrors, or the `specs/` process machinery. Those
   are being removed.

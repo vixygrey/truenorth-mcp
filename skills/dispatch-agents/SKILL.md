@@ -64,8 +64,8 @@ Every inter-agent message uses a **typed envelope** — no freeform prose betwee
 | `type`         | When                   | Required fields                                                             |
 | -------------- | ---------------------- | --------------------------------------------------------------------------- |
 | `task_brief`   | Dispatch               | `task_id`, `goal`, `in_scope`, `out_of_bounds`, `verify`, `prior_decisions` |
-| `checkpoint`   | Mid-wave progress      | `task_id`, `status` (`running`\|`blocked`), `comment` (one line)            |
-| `result`       | Agent return           | `task_id`, `exit` (`pass`\|`fail`), `summary`, `verify_output`              |
+| `checkpoint`   | Mid-wave progress      | `task_id`, `status` (`running`\|`blocked`), `comment` (one line)             |
+| `result`       | Agent return           | `task_id`, `exit` (`pass`\|`fail`), `summary`, `verify_output`               |
 | `circuit_open` | 3 consecutive failures | `task_id`, `failures` (3), `escalate_to` (`user`)                           |
 
 Example `task_brief` (each agent starts cold — brief size directly controls token cost and hallucination risk):
