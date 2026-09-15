@@ -71,5 +71,5 @@ protocol internals and wire formats. -->
 - [ ] The subject and body follow the Conventional Commits format and the house
       writing rules. See `.github/COMMIT_TEMPLATE.md`.
 - [ ] The branch is a feature branch. It is not a direct commit to `main`.
-- [ ] No AI-attribution footers. The human author owns the commits.
+- [ ] Any AI co-author is credited with a standard `Co-authored-by:` trailer. The human author still owns the commits.
 - [ ] This PR is ready to squash-merge as one commit on `main`.

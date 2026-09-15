@@ -66,7 +66,8 @@ The engineering conventions for this project. The MCP server serves this file as
   tree working.
 - Squash-merge every PR, so each PR becomes one commit on `main`.
 - No direct commit to `main`. Work on a feature branch.
-- No AI-attribution footer. The human author owns the commit.
+- An AI co-author footer is allowed. Use a standard `Co-authored-by:` trailer when an
+  AI agent helped. The human author still owns the commit and is accountable for it.
 - See `.github/COMMIT_TEMPLATE.md` for the full format.
 
 ## Writing

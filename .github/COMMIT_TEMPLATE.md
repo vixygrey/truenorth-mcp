@@ -106,4 +106,5 @@ client tool name.
   this guide, because that message is the permanent history entry.
 - Keep the PR title under 70 characters. Use the body for detail.
 - Structure the body as a summary of the change, what you tested, and any risk.
-- Do not add AI-attribution footers. The human author owns the commit.
+- An AI co-author footer is allowed. Use a standard `Co-authored-by:` trailer when an
+  AI agent helped. The human author still owns the commit and is accountable for it.
