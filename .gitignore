@@ -35,7 +35,3 @@ node_modules/
 # (Requirement 1.13), so it is not ignored here.
 .claude
 .openhands
-
-# bigpowers-mcp generated artifacts (removed with the subproject in #51)
-bigpowers-mcp/graph.jsonl
-bigpowers-mcp/node_modules/
