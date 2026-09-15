@@ -19,14 +19,15 @@ fn server_at(root: &Path) -> TrueNorthServer {
     }
 }
 
-/// Write a valid ontology fixture at specs/ontology.yaml.
+/// Write a valid ontology fixture at .agent/ontology.yml.
 fn seed_ontology_file(root: &Path) {
     let ontology = seed_ontology("orders", &["src/order.rs".to_string()]);
     let mut with_alias = ontology;
     with_alias.entities[0].prohibited_aliases = vec!["is_deleted".to_string()];
     let yaml = serde_yaml::to_string(&with_alias).expect("serialize");
-    fs::create_dir_all(root.join("specs")).expect("specs dir");
-    fs::write(ontology_path(root), yaml).expect("write ontology");
+    let path = ontology_path(root);
+    fs::create_dir_all(path.parent().expect("parent")).expect("agent dir");
+    fs::write(path, yaml).expect("write ontology");
 }
 
 #[test]
@@ -123,4 +124,116 @@ fn scan_scope_clean_code_has_no_violations() {
     .expect("write");
     let violations = scan_scope(root, &[PathBuf::from("order.rs")], &ontology);
     assert!(violations.is_empty());
+}
+
+// ── Path reconciliation (issue #143, Property 19, 20, 21) ─────────────────────────────
+
+use rmcp::handler::server::wrapper::Parameters;
+
+/// Parse the `.agent/ontology.yml` file at a root into an Ontology.
+fn read_agent_ontology(root: &Path) -> Ontology {
+    let text = fs::read_to_string(root.join(".agent/ontology.yml")).expect("read .agent ontology");
+    serde_yaml::from_str(&text).expect("parse")
+}
+
+#[test]
+fn read_ontology_falls_back_to_legacy_specs() {
+    // Requirement 4.3: with no .agent/ontology.yml, a legacy specs/ontology.yaml is read.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let ontology = seed_ontology("legacy-orders", &["src/order.rs".to_string()]);
+    let yaml = serde_yaml::to_string(&ontology).expect("serialize");
+    fs::create_dir_all(root.join("specs")).expect("specs dir");
+    fs::write(root.join("specs/ontology.yaml"), yaml).expect("write legacy");
+
+    let server = server_at(root);
+    let read = server.read_ontology().expect("legacy fallback read");
+    assert_eq!(read.domain, "legacy-orders");
+}
+
+#[tokio::test]
+async fn generate_writes_under_agent() {
+    // Requirement 4.1, 4.2: the generate tool writes .agent/ontology.yml, not specs/.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let server = server_at(root);
+
+    server
+        .truenorth_generate_ontology(Parameters(GenerateOntologyArgs {
+            domain: "orders".to_string(),
+            source_paths: vec!["src/order.rs".to_string()],
+        }))
+        .await
+        .expect("generate");
+
+    assert!(root.join(".agent/ontology.yml").is_file());
+    assert!(!root.join("specs/ontology.yaml").exists());
+    assert_eq!(read_agent_ontology(root).domain, "orders");
+}
+
+#[tokio::test]
+async fn generate_overwrites_the_empty_stub() {
+    // Requirement 4.6: the empty stub is overwritable, so a resource-seeded stub does not
+    // deadlock the generate tool.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let stub = serde_yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
+    fs::create_dir_all(root.join(".agent")).expect("agent dir");
+    fs::write(root.join(".agent/ontology.yml"), stub).expect("seed stub");
+
+    let server = server_at(root);
+    server
+        .truenorth_generate_ontology(Parameters(GenerateOntologyArgs {
+            domain: "orders".to_string(),
+            source_paths: vec!["src/order.rs".to_string()],
+        }))
+        .await
+        .expect("overwrite stub");
+
+    assert_eq!(read_agent_ontology(root).domain, "orders");
+}
+
+#[tokio::test]
+async fn generate_refuses_to_overwrite_a_real_ontology() {
+    // Requirement 4.7: a real ontology is left unchanged and the tool errors.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed_ontology_file(root); // domain "orders", a real ontology
+    let before = fs::read_to_string(root.join(".agent/ontology.yml")).expect("read before");
+
+    let server = server_at(root);
+    let error = server
+        .truenorth_generate_ontology(Parameters(GenerateOntologyArgs {
+            domain: "different".to_string(),
+            source_paths: vec!["src/other.rs".to_string()],
+        }))
+        .await
+        .expect_err("refuse overwrite");
+    assert!(error.message.contains(".agent/ontology.yml"));
+
+    let after = fs::read_to_string(root.join(".agent/ontology.yml")).expect("read after");
+    assert_eq!(before, after, "the real ontology is unchanged");
+}
+
+#[tokio::test]
+async fn verify_notes_the_empty_stub() {
+    // Requirement 4.10: verify against the empty stub passes with the not-yet-defined note.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let stub = serde_yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
+    fs::create_dir_all(root.join(".agent")).expect("agent dir");
+    fs::write(root.join(".agent/ontology.yml"), stub).expect("seed stub");
+
+    let server = server_at(root);
+    let result = server
+        .truenorth_verify_ontology(Parameters(VerifyOntologyArgs { scope_paths: None }))
+        .await
+        .expect("verify passes on stub");
+
+    let text = result.content[0]
+        .as_text()
+        .expect("text content")
+        .text
+        .clone();
+    assert!(text.contains("not yet defined"), "note present: {text}");
 }
