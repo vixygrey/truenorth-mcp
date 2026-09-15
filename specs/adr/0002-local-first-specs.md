@@ -21,3 +21,19 @@ external systems (e.g., future `to-issues`) are opt-in utilities, not core workf
 - `specs/` becomes the project's long-term memory, accumulating across every phase.
 - Losing external tracker sync means no sprint boards, no Gantt charts — deliberate trade-off.
 - `git blame` on `specs/` files gives a full audit trail of decisions.
+
+## Fork reconciliation (TrueNorth)
+
+TrueNorth-MCP keeps the local-first premise: the project state lives on disk, tracked by
+git, and the runtime reads it live rather than calling an external tracker. ADR-0008
+refined where that state lives by splitting the tree into a machine-facing `.agent/` layer
+and a human-facing `specs/` layer, so this ADR is superseded by that split, not by a
+return to remote state.
+
+Two later decisions carry the premise forward. ADR-0011 relocated the cockpit into
+`.agent/`, so the runtime reads `.agent/tasks/state.yml` and `.agent/tasks/release-plan.yml`
+live. ADR-0010 kept bug detail in an external tracker while storing only a lean reference
+on disk, which is the one deliberate, bounded exception to pure local-first.
+
+**Status today:** superseded by ADR-0008; the local-first premise remains in force through
+ADR-0011.

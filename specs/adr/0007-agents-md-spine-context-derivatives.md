@@ -93,3 +93,20 @@ Adopt **Option B** as the primary strategy with **Option C as fallback**:
 - scripts/targets.yaml (Integration Registry — target declarations)
 - scripts/lib/context-wire.sh (symlink_or_copy implementation)
 - specs/tech-architecture/tech-stack.md § Reach Domain (invariants 13–25)
+
+## Fork reconciliation (TrueNorth)
+
+TrueNorth-MCP keeps the single-source-of-truth premise: one canonical `AGENTS.md` at the
+repository root, wired to the `.agent/` layout, rather than N drifting per-tool context
+files. This ADR is superseded by that repo-root `AGENTS.md`.
+
+The bigpowers machinery this ADR described is not present in this repo. There is no
+`scripts/` directory, so `scripts/targets.yaml`, `generate-context-bundle.sh`, and
+`verify-install.sh` do not exist here. The Integration Registry and the symlink or copy
+derivative pipeline were bigpowers infrastructure. TrueNorth is a Rust MCP runtime plus a
+skill library, so it carries the canonical `AGENTS.md` without the derivative-generation
+toolchain. The runtime serves engineering context through the `truenorth://` resources and
+the skill tools instead.
+
+**Status today:** superseded by the repo-root `AGENTS.md`. The `scripts/`-based derivative
+pipeline is bigpowers-only and is not part of TrueNorth.
