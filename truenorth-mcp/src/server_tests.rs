@@ -62,3 +62,50 @@ fn true_north_server_resolve_defaults_to_enabled() {
     let server = TrueNorthServer::resolve(repo.path().to_path_buf()).expect("resolves");
     assert!(server.ctx.features.ontology);
 }
+
+/// The ontology tool names, as registered by the `#[tool]` macro from the method names.
+const ONTOLOGY_TOOLS: [&str; 2] = ["truenorth_generate_ontology", "truenorth_verify_ontology"];
+
+/// Build a server from an injected context with the given ontology flag.
+fn server_with_ontology(enabled: bool) -> TrueNorthServer {
+    let repo = TempDir::new().expect("temp repo");
+    TrueNorthServer::from_context(ServerContext::with_features(
+        repo.path().to_path_buf(),
+        Features { ontology: enabled },
+    ))
+}
+
+#[test]
+fn enabled_registers_both_ontology_tools() {
+    let server = server_with_ontology(true);
+    for name in ONTOLOGY_TOOLS {
+        assert!(
+            server.tool_router.has_route(name),
+            "enabled server must register `{name}`"
+        );
+    }
+}
+
+#[test]
+fn disabled_registers_neither_ontology_tool() {
+    let server = server_with_ontology(false);
+    for name in ONTOLOGY_TOOLS {
+        assert!(
+            !server.tool_router.has_route(name),
+            "disabled server must not register `{name}`"
+        );
+    }
+}
+
+#[test]
+fn disabled_leaves_a_non_ontology_tool_registered() {
+    // A representative non-ontology tool stays registered when ontology is off (R2.3).
+    let disabled = server_with_ontology(false);
+    let enabled = server_with_ontology(true);
+    // `index_skills` is a catalog tool, unaffected by the ontology flag.
+    assert!(disabled.tool_router.has_route("index_skills"));
+    // The two servers differ only by the ontology tools.
+    let disabled_count = disabled.tool_router.list_all().len();
+    let enabled_count = enabled.tool_router.list_all().len();
+    assert_eq!(enabled_count - disabled_count, ONTOLOGY_TOOLS.len());
+}
