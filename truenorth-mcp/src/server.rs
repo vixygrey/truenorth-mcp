@@ -23,7 +23,7 @@ use rmcp::{
 };
 
 use crate::engine::features::{self, Features, FeaturesError};
-use crate::resources::{ALL_RESOURCES, ResourceCache, ResourceDoc, ResourceReadError};
+use crate::resources::{ResourceCache, ResourceReadError, served_from_uri, served_resources};
 
 /// The shared context: the resolved repository root, the resource cache, and the resolved
 /// per-project feature flags.
@@ -102,7 +102,7 @@ impl TrueNorthServer {
     /// router merges only when the ontology feature is enabled (Requirement 2.1). When the
     /// feature is disabled, neither ontology tool is advertised or callable (Requirement
     /// 2.2), and every other router is unchanged (Requirement 2.3).
-    fn from_context(ctx: ServerContext) -> Self {
+    pub(crate) fn from_context(ctx: ServerContext) -> Self {
         let mut tool_router = Self::skills_router()
             + Self::catalog_router()
             + Self::lifecycle_router()
@@ -168,7 +168,7 @@ impl ServerHandler for TrueNorthServer {
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
-        let resources: Vec<Resource> = ALL_RESOURCES
+        let resources: Vec<Resource> = served_resources(self.ctx.features)
             .into_iter()
             .map(|doc| Resource::new(doc.uri(), doc.name()).with_mime_type(doc.mime_type()))
             .collect();
@@ -184,7 +184,10 @@ impl ServerHandler for TrueNorthServer {
         request: ReadResourceRequestParams,
         _context: RequestContext<RoleServer>,
     ) -> Result<ReadResourceResponse, ErrorData> {
-        let doc = ResourceDoc::from_uri(&request.uri).ok_or_else(|| {
+        // Resolve against the flag-filtered set. A disabled ontology URI is unknown here,
+        // so it never reaches read_current and no ontology file is seeded (Requirement 3.3,
+        // 3.4).
+        let doc = served_from_uri(&request.uri, self.ctx.features).ok_or_else(|| {
             ErrorData::invalid_params(format!("unknown resource: {}", request.uri), None)
         })?;
 
