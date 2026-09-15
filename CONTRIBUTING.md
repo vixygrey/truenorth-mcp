@@ -48,6 +48,12 @@ All prose follows the house writing rules in
 `.kiro/steering/writing-rules.md`: short sentences, active voice, approved modals
 (`can`, `will`, `must`), American English, and no em dash.
 
+Markdown tables use the space-padded style: pad each cell to its column width
+and pad the delimiter row to match (`| --- |`, not `|---|`). A table inside a
+fenced code block stays verbatim. The repo checks in no editor config for this,
+because `.vscode/` is gitignored, so keep the style by hand or through your own
+formatter.
+
 ## Releases
 
 A release is tag-driven. A `v*` tag triggers the release workflow, which
