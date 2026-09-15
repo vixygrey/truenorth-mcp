@@ -5,7 +5,7 @@ description: 'Create a detailed refactor plan with tiny commits through a user i
 
 # Plan Refactor
 
-> **HARD GATE** — **HARD GATE** — Before refactoring, document the current behavior and why it is wrong. Extract one invariant that must be preserved. If you skip this, you will break things you don't expect.
+> **HARD GATE** — Before refactoring, document the current behavior and why it is wrong. Extract one invariant that must be preserved. If you skip this, you will break things you don't expect.
 
 Create a detailed refactor plan through a user interview. Save it as the refactor plan.
 
