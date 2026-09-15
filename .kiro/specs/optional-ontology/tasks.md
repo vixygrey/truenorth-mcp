@@ -30,8 +30,8 @@ only).
 
 ## Tasks
 
-- [ ] 1. Feature-flag reader
-  - [ ] 1.1 Implement `engine::features` (`features.rs`)
+- [x] 1. Feature-flag reader
+  - [x] 1.1 Implement `engine::features` (`features.rs`)
     - Define `Features { ontology: bool }` with a `Default` of `ontology: true` (R1.3, R1.4)
     - Define `FeaturesError::{Io, Parse}` naming the config path and cause (R1.7, R1.8)
     - Define `RulesFeatureView` and `FeaturesBlock` that deserialize only the `features`
@@ -41,7 +41,7 @@ only).
       returns `Parse` (R1.8); a present file resolves `ontology` from the block, defaulting a
       missing key to `true` (R1.4, R1.5, R1.6)
     - Register the module in `engine::mod`
-  - [ ] 1.2 Unit tests for `resolve` (P16)
+  - [x] 1.2 Unit tests for `resolve` (P16)
     - Absent `.agent/` resolves enabled; absent `.agent/config/` resolves enabled; absent
       `rules.yml` resolves enabled (the three onboarding shapes: greenfield, bigpowers
       convert, unscaffolded existing project)
@@ -52,8 +52,8 @@ only).
       disk; unreadable file returns `Io`; malformed file returns `Parse`
     - The reader resolves without a layout contract present (R1.10)
 
-- [ ] 2. Carry the flag on the context
-  - [ ] 2.1 Add `features: Features` to `ServerContext` (`server.rs`) (R1.2)
+- [x] 2. Carry the flag on the context
+  - [x] 2.1 Add `features: Features` to `ServerContext` (`server.rs`) (R1.2)
     - Replace the infallible `ServerContext::new` with two constructors: a fallible
       `resolve(repo_root) -> Result<Self, FeaturesError>` that calls `features::resolve`, and
       an infallible `with_features(repo_root, Features)` that reads no disk
@@ -68,61 +68,61 @@ only).
     - Migrate the eleven existing construction sites: production (`main.rs`) to `resolve`;
       tests calling `TrueNorthServer::new` to `test_server`; tests building the struct through
       `ServerContext::new` to `with_features(root, Features::default())`
-  - [ ] 2.2 Tests for the constructors
+  - [x] 2.2 Tests for the constructors
     - `with_features(root, Features::default())` yields `features.ontology == true`;
       `with_features(root, Features { ontology: false })` yields `false`; `resolve` against a
       disabled `rules.yml` yields `false`; `resolve` against a broken `rules.yml` returns the
       typed error
 
-- [ ] 3. Gate the ontology tools (R2)
-  - [ ] 3.1 Conditional router merge in `from_context` (`server.rs`)
+- [x] 3. Gate the ontology tools (R2)
+  - [x] 3.1 Conditional router merge in `from_context` (`server.rs`)
     - Assemble the base router without ontology; add `Self::ontology_router()` only when
       `ctx.features.ontology` is true (R2.1); leave every other router unchanged (R2.3)
-  - [ ] 3.2 Tests (P17, part 1)
+  - [x] 3.2 Tests (P17, part 1)
     - Enabled (`test_server`): the router lists both ontology tools; disabled
       (`with_features(root, Features { ontology: false })`): the router lists neither ontology
       tool and still lists a representative non-ontology tool
 
-- [ ] 4. Gate the ontology resource (R3)
-  - [ ] 4.1 Add `served_resources(features)` and `served_from_uri(uri, features)` (`resources/mod.rs`)
+- [x] 4. Gate the ontology resource (R3)
+  - [x] 4.1 Add `served_resources(features)` and `served_from_uri(uri, features)` (`resources/mod.rs`)
     - `served_resources` filters `ALL_RESOURCES`, omitting `Ontology` when the flag is off
       (R3.1, R3.2); `served_from_uri` resolves against the served set (R3.3)
-  - [ ] 4.2 Wire the two functions into `server.rs`
+  - [x] 4.2 Wire the two functions into `server.rs`
     - `list_resources` maps `served_resources(self.ctx.features)` (R3.2, R3.6)
     - `read_resource` resolves through `served_from_uri(&request.uri, self.ctx.features)`; a
       `None` maps to the existing unknown-resource error (R3.3); the resolution fails before
       `read_current`, so no seed runs (R3.4)
-  - [ ] 4.3 Tests (P17 part 2, P18)
+  - [x] 4.3 Tests (P17 part 2, P18)
     - Disabled: `served_resources` excludes ontology; `served_from_uri` returns `None` for
       the ontology URI; a `read_resource` of the ontology URI returns unknown-resource and
       writes no `.agent/ontology.yml` (assert the file is absent after the read)
     - Enabled: all five resources served; the ontology URI resolves; the seed-on-read
       behavior is unchanged (R3.5)
 
-- [ ] 5. Reconcile the ontology backing path (R4)
-  - [ ] 5.1 Re-point the ontology tool paths (`tools/ontology.rs`)
+- [x] 5. Reconcile the ontology backing path (R4)
+  - [x] 5.1 Re-point the ontology tool paths (`tools/ontology.rs`)
     - `ontology_path` joins `.agent/ontology.yml` (R4.1); add `legacy_ontology_path` for
       `specs/ontology.yaml` and `ontology_read_path` preferring `.agent/` with the legacy
       fallback (R4.3)
     - `read_ontology` reads through `ontology_read_path`; its not-found message names
       `.agent/ontology.yml` (R4.8)
-  - [ ] 5.2 One shared empty-stub definition (`engine::spec`) (R4.9)
+  - [x] 5.2 One shared empty-stub definition (`engine::spec`) (R4.9)
     - Add `Ontology::empty_stub()` and `Ontology::is_empty_stub(&self)` next to the `Ontology`
       model
     - Re-point `ONTOLOGY_SEED` in `resources/mod.rs` to serialize `Ontology::empty_stub`, so
       the seed and the check share one origin
     - Test: parse `ONTOLOGY_SEED` and assert `is_empty_stub` returns true (pins the two)
-  - [ ] 5.3 Generate: stub-only overwrite through the write guard
+  - [x] 5.3 Generate: stub-only overwrite through the write guard
     - When `.agent/ontology.yml` is present and `!existing.is_empty_stub()`, refuse and name
       the path (R4.7); when present and the stub, overwrite (R4.6); when absent, seed (R4.5)
     - Write through `engine::agent_ws::write_under_agent` (R4.2, R4.4); remove the raw
       `write_new_file` helper; the success payload names `.agent/ontology.yml` (R4.8)
-  - [ ] 5.4 Verify notes the empty stub (`tools/ontology.rs`) (R4.10)
+  - [x] 5.4 Verify notes the empty stub (`tools/ontology.rs`) (R4.10)
     - Before scanning, when `ontology.is_empty_stub()`, return a pass with a `note` that the
       ontology is not yet defined (R4.10); a filled ontology scans as before
-  - [ ] 5.5 Correct the stale resource message (`resources/mod.rs`)
+  - [x] 5.5 Correct the stale resource message (`resources/mod.rs`)
     - The ontology parse-error branch names `.agent/ontology.yml` (R4.8)
-  - [ ] 5.6 Tests (P19, P20, P21)
+  - [x] 5.6 Tests (P19, P20, P21)
     - Generate writes `.agent/ontology.yml`; verify reads `.agent/ontology.yml`; verify falls
       back to a legacy `specs/ontology.yaml`; a write leaves the legacy file untouched (P19)
     - Generate against the stub overwrites; generate against a real ontology refuses and
@@ -132,16 +132,16 @@ only).
     - Update existing ontology tests that assert `specs/ontology.yaml` to assert
       `.agent/ontology.yml` (enabled parity)
 
-- [ ] 6. Skill prose (R5)
-  - [ ] 6.1 Edit `skills/model-domain/SKILL.md`
+- [x] 6. Skill prose (R5)
+  - [x] 6.1 Edit `skills/model-domain/SKILL.md`
     - The "Feed the ontology" section states the ontology tools apply only when the project
       enables the ontology feature, and are absent otherwise (R5.1)
     - Keep the domain-modeling and terminology guidance (R5.2); follow the strict-tier house
       writing rules (R5.3)
 
-- [ ] 7. Verify the whole feature
-  - [ ] 7.1 Run `cargo fmt`, `cargo clippy` (deny warnings), and `cargo test`
-  - [ ] 7.2 Confirm the enabled default: a repo with no `.agent/config/rules.yml` still lists
+- [x] 7. Verify the whole feature
+  - [x] 7.1 Run `cargo fmt`, `cargo clippy` (deny warnings), and `cargo test`
+  - [x] 7.2 Confirm the enabled default: a repo with no `.agent/config/rules.yml` still lists
         the ontology resource and both tools, and seeds `.agent/ontology.yml` on first read
-  - [ ] 7.3 Confirm the disabled path end to end against a `rules.yml` with
+  - [x] 7.3 Confirm the disabled path end to end against a `rules.yml` with
         `features.ontology: false`
