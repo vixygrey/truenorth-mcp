@@ -17,12 +17,12 @@ Publish packages to language-specific registries. Detects package type from mani
 
 Read the project root for manifest files to determine the package type:
 
-| Manifest                      | Registry  | Publish command                               |
+| Manifest                      | Registry  | Publish command                               |           |      |        |
 | ----------------------------- | --------- | --------------------------------------------- | --------- | ---- | ------ |
-| `package.json`                | npm       | `npm publish --access public`                 |
-| `Cargo.toml`                  | crates.io | `cargo publish`                               |
-| `setup.py` / `pyproject.toml` | PyPI      | `twine upload dist/*` or `flit publish`       |
-| `Formula/<name>.rb`           | Homebrew  | `brew bump-formula-pr`                        |
+| `package.json`                | npm       | `npm publish --access public`                 |           |      |        |
+| `Cargo.toml`                  | crates.io | `cargo publish`                               |           |      |        |
+| `setup.py` / `pyproject.toml` | PyPI      | `twine upload dist/*` or `flit publish`       |           |      |        |
+| `Formula/<name>.rb`           | Homebrew  | `brew bump-formula-pr`                        |           |      |        |
 | Multiple detected             | Polyglot  | Error: specify registry with `--registry <npm | crates.io | pypi | brew>` |
 
 If no manifest is found, prompt the user to specify the type or pass `--type <npm|crates.io|pypi|brew>`.

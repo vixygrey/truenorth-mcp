@@ -74,12 +74,12 @@ If a ticket turns out to sit past the destination:
 
 ## Map State Transitions
 
-| State | Meaning | Action |
-|-------|---------|--------|
-| **Open, unblocked, unclaimed** | Frontier — ready to take | Claim and resolve |
-| **Open, blocked** | Waiting on something | Wait for blockers to close |
-| **Open, claimed** | Concurrent session working | Skip for now |
-| **Closed** | Decided — lives in Decisions so far | Reference, don't re-open |
+| State                          | Meaning                             | Action                     |
+| ------------------------------ | ----------------------------------- | -------------------------- |
+| **Open, unblocked, unclaimed** | Frontier — ready to take            | Claim and resolve          |
+| **Open, blocked**              | Waiting on something                | Wait for blockers to close |
+| **Open, claimed**              | Concurrent session working          | Skip for now               |
+| **Closed**                     | Decided — lives in Decisions so far | Reference, don't re-open   |
 
 ## Concurrency
 
