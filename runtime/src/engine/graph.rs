@@ -182,14 +182,6 @@ pub fn to_jsonl(graph: &SkillGraph) -> String {
     }
 }
 
-/// Save the graph to `path`, creating parent directories (ports `saveGraph`).
-pub fn save_graph(path: &Path, graph: &SkillGraph) -> std::io::Result<()> {
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::write(path, to_jsonl(graph))
-}
-
 /// Load the graph from a JSONL file, or an empty graph when absent (ports `loadGraph`).
 ///
 /// A malformed line is skipped rather than failing the load, so a partially-written graph
