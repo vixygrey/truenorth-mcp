@@ -11,11 +11,6 @@
 //!
 //! Requirements: 6.1 to 6.10, 7.1 to 7.8. Design: agent-workspace-profiles §6, §7.
 
-// The hook renderers are consumed by the scaffold (task 9). They are unused until the
-// scaffold wires them, so the module-scoped allow prevents a premature dead-code error
-// under `clippy -D warnings`. Remove this allow once task 9 wires the consumer.
-#![allow(dead_code)]
-
 use crate::engine::profile::Profile;
 
 /// The trunk branch the post-merge sweep runs on and never deletes.

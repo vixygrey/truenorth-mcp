@@ -12,12 +12,6 @@
 //!
 //! Requirements: 9.1, 9.2, 9.5, 9.6. Design: Part II §8.
 
-// These validators and the phase mapping are consumed by later tasks: the lifecycle and
-// ontology tools (tasks 9, 12) and the resources layer (task 14). They are unused until
-// those tasks land, so the module-scoped allow prevents a premature dead-code error
-// under `clippy -D warnings`. Remove this allow once task 14 wires the last consumer.
-#![allow(dead_code)]
-
 use thiserror::Error;
 
 use crate::engine::spec::{Phase, ReleasePlanFile, StateFile};

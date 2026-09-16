@@ -10,11 +10,6 @@
 //!
 //! Requirements: 2.7, 2.8. Design: Part II §2.
 
-// The step model is consumed by the tdd_cycle tool (task 11). It is unused until the tool
-// wires it, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 11 wires the consumer.
-#![allow(dead_code)]
-
 use thiserror::Error;
 
 /// A TDD cycle step (design §2).

@@ -17,13 +17,6 @@
 //! Requirements: 1.1, 1.2, 1.3, 1.9, 1.10, 1.11, 1.12, 5.5, 5.6, 5.8, 5.9.
 //! Design: agent-workspace-profiles §1, ADR-6.
 
-// The guard is a public API surface consumed incrementally by later tasks: the cockpit
-// relocation (task 4), the bug-reference tool (task 7), and the scaffold (task 9). The
-// items are unused until those tasks wire them, so the module-scoped allow prevents a
-// premature dead-code error under `clippy -D warnings`. Remove this allow once task 9
-// wires the last consumer.
-#![allow(dead_code)]
-
 use std::path::{Component, Path, PathBuf};
 use std::sync::Mutex;
 
@@ -234,6 +227,11 @@ impl LayoutCache {
     }
 
     /// The last valid layout, when one has been read successfully.
+    ///
+    /// Exercised by the server tests that assert `ServerContext::resolve` caches a complete
+    /// contract (Requirement 1.12). The running server validates on resolve but does not
+    /// read the cache back today, so this carries a non-test allow rather than deletion.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn last_valid(&self) -> Option<Layout> {
         self.last_valid.lock().expect("layout cache lock").clone()
     }

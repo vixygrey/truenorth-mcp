@@ -9,11 +9,6 @@
 //!
 //! Requirements: 4.5, 4.6, 4.9. Design: Part II §6.
 
-// The ontology scan is consumed by the verify-ontology tool (task 12). It is unused until
-// that task lands, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 12 wires the consumer.
-#![allow(dead_code)]
-
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 

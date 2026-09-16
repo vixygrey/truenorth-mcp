@@ -13,13 +13,6 @@
 //!
 //! Requirements: 9.1, 9.3, 9.4, 4.3. Design: Part II §3.1, §3.2, §8.
 
-// These models are the cockpit data surface consumed by later tasks: the lifecycle and
-// ontology tools (tasks 9, 12) and the resources layer (task 14) read and write them.
-// The types are unused until those tasks land, so the module-scoped allow prevents a
-// premature dead-code error under `clippy -D warnings`. Remove this allow once task 14
-// wires the last consumer.
-#![allow(dead_code)]
-
 use std::collections::BTreeMap;
 
 use schemars::JsonSchema;
@@ -62,11 +55,21 @@ pub struct StateFile {
 
 impl StateFile {
     /// The active branch from the `git.branch` field, when present.
+    ///
+    /// A typed accessor over the preserved document. Exercised by the spec tests that
+    /// verify the map-backed model exposes the observed fields (design §3.1). No tool
+    /// reads it today, so it carries a non-test allow rather than being deleted.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn git_branch(&self) -> Option<&str> {
         self.root.get("git")?.get("branch")?.as_str()
     }
 
     /// The `bigpowers_version` value, when present (Requirement 9.4).
+    ///
+    /// A typed accessor over the preserved document, exercised by the backward-compat
+    /// tests (Property 3, Requirement 9.4). No tool reads it today, so it carries a
+    /// non-test allow rather than being deleted.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn bigpowers_version(&self) -> Option<&Value> {
         self.root.get("bigpowers_version")
     }
@@ -99,13 +102,20 @@ pub struct ReleasePlanFile {
 
 impl ReleasePlanFile {
     /// The `build_order` sequence, when present.
+    ///
+    /// A typed accessor over the preserved document. Exercised by the spec tests; no tool
+    /// reads it today (library code uses `root.get` directly), so it carries a non-test
+    /// allow rather than being deleted.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn build_order(&self) -> Option<&Vec<Value>> {
         self.root.get("build_order")?.as_sequence()
     }
 
     /// Append an entry to the `build_order` sequence, creating it when absent.
     ///
-    /// Every other field is preserved (Requirement 9.3).
+    /// Every other field is preserved (Requirement 9.3). Exercised by the spec tests; no
+    /// tool calls it today, so it carries a non-test allow rather than being deleted.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn push_build_order(&mut self, entry: Value) {
         let key = Value::String("build_order".to_string());
         match self.root.get_mut(&key).and_then(Value::as_sequence_mut) {
@@ -117,6 +127,10 @@ impl ReleasePlanFile {
     }
 
     /// Read a top-level field by key, when present.
+    ///
+    /// Exercised by the spec tests; library code reads `root.get` directly, so this
+    /// carries a non-test allow rather than being deleted.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.root.get(key)
     }

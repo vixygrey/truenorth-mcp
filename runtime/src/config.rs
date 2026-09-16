@@ -8,15 +8,6 @@
 //!
 //! Requirements: 1.4, 1.5, 1.6, 1.7, 1.8. Design: Part II §1 (Config), §5 (Sandbox).
 
-// The config module is a public API surface consumed incrementally by later tasks:
-// `secret_denylist` / `is_secret_path` by the resource and gate layers (tasks 5, 8, 14),
-// `GIT_SCOPE_DIRS` / `MAX_READ_SKILL_BYTES` by the git and skills layers (tasks 7, 8),
-// and `SandboxConfig` / `DEFAULT_GATE_TIMEOUT` by the gate runner (task 5). The items
-// are unused until those tasks land, so the module-scoped allow prevents a premature
-// dead-code error under `clippy -D warnings`. Remove this allow once task 8 wires the
-// last of these consumers.
-#![allow(dead_code)]
-
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 use std::time::Duration;

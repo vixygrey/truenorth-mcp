@@ -7,12 +7,6 @@
 //!
 //! Requirements: 1.8, 4.7. Design: Part II §1.
 
-// The git helpers are consumed by the git-context and lifecycle tools (tasks 8, 9) and by
-// the ontology tool (task 12). They are unused until those tasks land, so the
-// module-scoped allow prevents a premature dead-code error under `clippy -D warnings`.
-// Remove this allow once task 12 wires the last consumer.
-#![allow(dead_code)]
-
 use std::path::{Path, PathBuf};
 use std::process::Command;
 

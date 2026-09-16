@@ -7,11 +7,6 @@
 //!
 //! Requirements: 7.2, 7.3. Design: Part II §1.
 
-// The parser is consumed by the legacy catalog tools (task 8b). It is unused until they
-// wire it, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 8b wires the consumer.
-#![allow(dead_code)]
-
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 

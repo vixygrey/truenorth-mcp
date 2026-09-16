@@ -323,9 +323,11 @@ impl ResourceCache {
     }
 
     /// The last-good content for a resource, when one has been read successfully.
-    // Read by the resource tests and by the server wiring in task 15. Remove this allow
-    // once task 15 consumes it in the running server.
-    #[allow(dead_code)]
+    ///
+    /// Exercised by the resource tests that assert the last-good retention on a failed
+    /// read (Requirement 5.7). The server serves fresh reads and does not surface the
+    /// cached value directly today, so this carries a non-test allow rather than deletion.
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn last_good(&self, doc: ResourceDoc) -> Option<String> {
         self.last_good
             .lock()

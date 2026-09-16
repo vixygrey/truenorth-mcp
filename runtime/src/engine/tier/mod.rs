@@ -21,11 +21,6 @@
 //!
 //! Requirements: 6.6, 6.7, 6.8. Design: Part II §4.
 
-// The tier transforms are consumed by the `get_skill` tool (task 8). They are unused
-// until that task lands, so the module-scoped allow prevents a premature dead-code error
-// under `clippy -D warnings`. Remove this allow once task 8 wires the consumer.
-#![allow(dead_code)]
-
 use std::sync::OnceLock;
 
 use regex::Regex;
