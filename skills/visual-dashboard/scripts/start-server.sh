@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the bigpowers dashboard server and output connection info
+# Start the truenorth dashboard server and output connection info
 # Usage: start-server.sh [--project-dir <path>] [--host <bind-host>] [--url-host <display-host>] [--foreground] [--background]
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -62,9 +62,9 @@ fi
 SESSION_ID="$$-$(date +%s)"
 
 if [[ -n "$PROJECT_DIR" ]]; then
-  SESSION_DIR="${PROJECT_DIR}/.bigpowers/dashboard/${SESSION_ID}"
+  SESSION_DIR="${PROJECT_DIR}/.truenorth/dashboard/${SESSION_ID}"
 else
-  SESSION_DIR="/tmp/bigpowers-dashboard-${SESSION_ID}"
+  SESSION_DIR="/tmp/truenorth-dashboard-${SESSION_ID}"
 fi
 
 STATE_DIR="${SESSION_DIR}/state"
@@ -88,11 +88,11 @@ fi
 
 if [[ "$FOREGROUND" == "true" ]]; then
   echo "$$" > "$PID_FILE"
-  env BIGPOWERS_DASHBOARD_DIR="$SESSION_DIR" BIGPOWERS_DASHBOARD_HOST="$BIND_HOST" BIGPOWERS_DASHBOARD_URL_HOST="$URL_HOST" BIGPOWERS_DASHBOARD_OWNER_PID="$OWNER_PID" node server.cjs
+  env TRUENORTH_DASHBOARD_DIR="$SESSION_DIR" TRUENORTH_DASHBOARD_HOST="$BIND_HOST" TRUENORTH_DASHBOARD_URL_HOST="$URL_HOST" TRUENORTH_DASHBOARD_OWNER_PID="$OWNER_PID" node server.cjs
   exit $?
 fi
 
-nohup env BIGPOWERS_DASHBOARD_DIR="$SESSION_DIR" BIGPOWERS_DASHBOARD_HOST="$BIND_HOST" BIGPOWERS_DASHBOARD_URL_HOST="$URL_HOST" BIGPOWERS_DASHBOARD_OWNER_PID="$OWNER_PID" node server.cjs > "$LOG_FILE" 2>&1 &
+nohup env TRUENORTH_DASHBOARD_DIR="$SESSION_DIR" TRUENORTH_DASHBOARD_HOST="$BIND_HOST" TRUENORTH_DASHBOARD_URL_HOST="$URL_HOST" TRUENORTH_DASHBOARD_OWNER_PID="$OWNER_PID" node server.cjs > "$LOG_FILE" 2>&1 &
 SERVER_PID=$!
 disown "$SERVER_PID" 2>/dev/null
 echo "$SERVER_PID" > "$PID_FILE"

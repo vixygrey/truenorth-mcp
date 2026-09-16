@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stop the bigpowers dashboard server and clean up
+# Stop the truenorth dashboard server and clean up
 # Usage: stop-server.sh <session_dir>
 
 SESSION_DIR="$1"
