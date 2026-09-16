@@ -196,26 +196,25 @@ fn dedupe_directives(md: &str) -> String {
 
 /// Truncate text to at most `budget` estimated tokens (lean tier, #83).
 ///
-/// The truncation keeps whole lines. It stops adding lines once the running token estimate
-/// would exceed the budget. A single line longer than the budget is kept whole, so a
-/// load-bearing directive is never cut mid-line. The estimate comes from
-/// [`estimate_tokens`], so the budget and the tier tests share one measurement unit.
+/// The truncation keeps whole lines. It stops adding a line once the running text would
+/// exceed the budget under [`estimate_tokens`], the single measurement unit the lean tier
+/// and its tests share. A single line longer than the budget is kept whole, so a
+/// load-bearing directive is never cut mid-line.
 fn truncate_to_budget(md: &str, budget: usize) -> String {
     let mut out: Vec<&str> = Vec::new();
+    // The running character count of the joined output. Estimating tokens from this once
+    // per candidate matches `estimate_tokens` over the final joined text, rather than
+    // summing per-line estimates, which would drift by a line through rounding.
     let mut chars = 0usize;
-    // The budget is in estimated tokens. Convert to a character cap once, so the running
-    // count matches `estimate_tokens` over the joined output rather than summing per-line
-    // rounding, which would drift by a line.
-    let char_budget = budget.saturating_mul(super::CHARS_PER_TOKEN);
 
     for (index, line) in md.lines().enumerate() {
         // Account for the newline that rejoins this line to the previous one.
         let separator = usize::from(index > 0);
-        let line_chars = line.chars().count() + separator;
-        if chars + line_chars > char_budget && !out.is_empty() {
+        let candidate_chars = chars + line.chars().count() + separator;
+        if super::estimate_tokens_from_chars(candidate_chars) > budget && !out.is_empty() {
             break;
         }
-        chars += line_chars;
+        chars = candidate_chars;
         out.push(line);
     }
 
