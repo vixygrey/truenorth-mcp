@@ -1,6 +1,6 @@
 ---
 name: audit-plan
-description: 'Evaluate an incoming project plan against the project principles and conventions, surface gaps, and produce a READY or NOT READY verdict before engagement begins. Use it when a new project arrives, when adapting a foreign plan, or before running seed-conventions on an unfamiliar codebase.'
+description: "Evaluate an incoming project plan against the project principles and conventions, surface gaps, and produce a READY or NOT READY verdict before engagement begins. Use it when a new project arrives, when adapting a foreign plan, or before running seed-conventions on an unfamiliar codebase."
 ---
 
 # Audit Plan

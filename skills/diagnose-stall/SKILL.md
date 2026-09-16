@@ -1,6 +1,6 @@
 ---
 name: diagnose-stall
-description: 'Diagnose why agent orchestration stopped producing progress. A silent stall in a loop, dispatch-agents, or execute-plan. Use it when work appears hung, there is no output for several minutes, or a subagent never returned.'
+description: "Diagnose why agent orchestration stopped producing progress. A silent stall in a loop, dispatch-agents, or execute-plan. Use it when work appears hung, there is no output for several minutes, or a subagent never returned."
 ---
 
 # Diagnose Stall

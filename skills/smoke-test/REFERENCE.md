@@ -50,32 +50,32 @@ Run the smoke checks against the deployed URL. A standalone runner:
 
 ```yaml
 # smoke-checks.yaml — auto-loaded if present at project root
-base_url: 'https://example.com'
+base_url: "https://example.com"
 checks:
-  - name: 'Homepage'
-    path: '/'
+  - name: "Homepage"
+    path: "/"
     method: GET
     expected_status: 200
-    content_signal: 'example'
+    content_signal: "example"
     max_response_time_ms: 3000
 
-  - name: 'API Health'
-    path: '/api/health'
+  - name: "API Health"
+    path: "/api/health"
     method: GET
     expected_status: 200
-    content_signal: 'ok|healthy'
+    content_signal: "ok|healthy"
 
-  - name: 'API Jogos'
-    path: '/api/jogos'
+  - name: "API Jogos"
+    path: "/api/jogos"
     method: GET
     expected_status: 200
-    content_signal: 'jogos|games'
+    content_signal: "jogos|games"
 
-  - name: 'Not Found handling'
-    path: '/nonexistent'
+  - name: "Not Found handling"
+    path: "/nonexistent"
     method: GET
     expected_status: 404
-    content_signal: 'not found|404'
+    content_signal: "not found|404"
 ```
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: gate-trace
-description: 'Deterministic traceability quality gate. Reads the coverage matrix and blind-spot data, applies decision rules with an oracle-confidence downgrade, and emits a PASS, CONCERNS, FAIL, or WAIVED verdict. Use it before release-branch to gate a merge on traceability.'
+description: "Deterministic traceability quality gate. Reads the coverage matrix and blind-spot data, applies decision rules with an oracle-confidence downgrade, and emits a PASS, CONCERNS, FAIL, or WAIVED verdict. Use it before release-branch to gate a merge on traceability."
 ---
 
 # Gate Trace
@@ -69,8 +69,8 @@ To verify the outcome, run the project verify command through the
 ```yaml
 gate_trace:
   verdict: PASS|CONCERNS|FAIL|WAIVED
-  generated_at: '<ISO 8601>'
-  rationale: '<human-readable explanation>'
+  generated_at: "<ISO 8601>"
+  rationale: "<human-readable explanation>"
   heuristic_ratio: <0.0-1.0>
   downgrade_applied: <true|false>
 ```

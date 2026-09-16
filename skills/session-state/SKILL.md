@@ -1,6 +1,6 @@
 ---
 name: session-state
-description: 'Track implementation decisions and progress in .agent/tasks/state.yml to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached.'
+description: "Track implementation decisions and progress in .agent/tasks/state.yml to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached."
 ---
 
 # Session State
@@ -31,9 +31,9 @@ When ending a session or before a context-heavy spawn, update the `handoff` bloc
 
 ```yaml
 handoff:
-  last_step_completed: 'e02s01 verify-work passed'
+  last_step_completed: "e02s01 verify-work passed"
   open_decisions:
-    - 'Use folder mode for e07 (more than 5 stories)'
+    - "Use folder mode for e07 (more than 5 stories)"
   required_reading:
     - .agent/tasks/e02-verification/group.yml
   next_skill: develop-tdd

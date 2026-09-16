@@ -155,7 +155,7 @@ jobs:
 name: Deploy
 on:
   workflow_run:
-    workflows: ['Test Build Release']
+    workflows: ["Test Build Release"]
     types: [completed]
 
 permissions:
@@ -167,7 +167,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  SITE_URL: 'https://CHANGE-ME.example.com'
+  SITE_URL: "https://CHANGE-ME.example.com"
 
 jobs:
   deploy:

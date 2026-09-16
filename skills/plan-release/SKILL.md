@@ -1,6 +1,6 @@
 ---
 name: plan-release
-description: 'A release-index builder. Sequence elaborated task groups into .agent/tasks/release-plan.yml with WSJF ordering and BCP baselines. Not a planning-spine substitute: it does not scope work or write story tasks. Use it after elaborate-spec when the user wants a versioned release index of task groups.'
+description: "A release-index builder. Sequence elaborated task groups into .agent/tasks/release-plan.yml with WSJF ordering and BCP baselines. Not a planning-spine substitute: it does not scope work or write story tasks. Use it after elaborate-spec when the user wants a versioned release index of task groups."
 ---
 
 # Plan Release
@@ -65,8 +65,8 @@ Every task must have a `verify:` command. No verify command = not a task.
 
 ```yaml
 release:
-  version: '2.29.0' # a mirror of the next expected tag, not authoritative
-  codename: 'Feature Name'
+  version: "2.29.0" # a mirror of the next expected tag, not authoritative
+  codename: "Feature Name"
   status: planning # planning | in_progress | released
   bump_hint: minor # patch | minor | major
 groups:
@@ -120,12 +120,12 @@ status: todo
 bcps: 3
 tasks:
   - id: 1
-    description: 'Add login form component tests'
-    verify: 'npm test -- login-form.test.tsx'
+    description: "Add login form component tests"
+    verify: "npm test -- login-form.test.tsx"
     status: todo
   - id: 2
-    description: 'Implement login form with validation'
-    verify: 'npm test -- login-form.test.tsx'
+    description: "Implement login form with validation"
+    verify: "npm test -- login-form.test.tsx"
     status: todo
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: compose-workflow
-description: 'Chain multiple skills into a custom workflow recipe. Use it when a project repeats a non-standard skill sequence, or when the user wants a documented playbook beyond the orchestrate-project modes.'
+description: "Chain multiple skills into a custom workflow recipe. Use it when a project repeats a non-standard skill sequence, or when the user wants a documented playbook beyond the orchestrate-project modes."
 ---
 
 # Compose Workflow

@@ -1,6 +1,6 @@
 ---
 name: define-language
-description: 'Extract a DDD-style ubiquitous-language glossary from the current conversation, flagging ambiguities and proposing canonical terms. Saves the glossary. Use it to define domain terms, build a glossary, harden terminology, or create a ubiquitous language.'
+description: "Extract a DDD-style ubiquitous-language glossary from the current conversation, flagging ambiguities and proposing canonical terms. Saves the glossary. Use it to define domain terms, build a glossary, harden terminology, or create a ubiquitous language."
 ---
 
 # Define Language

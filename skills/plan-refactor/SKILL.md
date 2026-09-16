@@ -1,6 +1,6 @@
 ---
 name: plan-refactor
-description: 'Create a detailed refactor plan with tiny commits through a user interview, then save it as the refactor plan. Use it to plan a refactor, create a refactoring RFC, or break a refactor into safe incremental steps.'
+description: "Create a detailed refactor plan with tiny commits through a user interview, then save it as the refactor plan. Use it to plan a refactor, create a refactoring RFC, or break a refactor into safe incremental steps."
 ---
 
 # Plan Refactor

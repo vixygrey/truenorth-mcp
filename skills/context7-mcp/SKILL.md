@@ -1,6 +1,6 @@
 ---
 name: context7-mcp
-description: 'Fetch current library docs through the Context7 MCP server instead of training data. Use it when the user asks about a framework, an API, setup, or a code example for a specific library.'
+description: "Fetch current library docs through the Context7 MCP server instead of training data. Use it when the user asks about a framework, an API, setup, or a code example for a specific library."
 ---
 
 # Context7 MCP

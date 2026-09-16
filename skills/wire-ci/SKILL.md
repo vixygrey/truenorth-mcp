@@ -1,6 +1,6 @@
 ---
 name: wire-ci
-description: 'CI pipeline setup with forge-neutral guidance and local validation. Detects the forge from the git remote, generates a workflow for a supported forge, and skips honestly for the rest. The CI counterpart of wire-observability.'
+description: "CI pipeline setup with forge-neutral guidance and local validation. Detects the forge from the git remote, generates a workflow for a supported forge, and skips honestly for the rest. The CI counterpart of wire-observability."
 ---
 
 # Wire CI

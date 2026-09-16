@@ -1,6 +1,6 @@
 ---
 name: slice-tasks
-description: 'Planning spine step 2 of 3. Slice the work: break a scoped PRD into vertical-slice stories in the task groups. Use it after scope-work, before plan-work. Not a substitute for scope-work or plan-work.'
+description: "Planning spine step 2 of 3. Slice the work: break a scoped PRD into vertical-slice stories in the task groups. Use it after scope-work, before plan-work. Not a substitute for scope-work or plan-work."
 ---
 
 # story: e45s29

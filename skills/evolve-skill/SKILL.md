@@ -1,6 +1,6 @@
 ---
 name: evolve-skill
-description: 'Benchmark-gated skill evolution. Consume a benchmark report, propose a plan-work change, edit the skill via craft-skill, re-run the benchmark, and record an ADR. Use it when a skill underperforms on a benchmark or stocktake finds a systemic gap.'
+description: "Benchmark-gated skill evolution. Consume a benchmark report, propose a plan-work change, edit the skill via craft-skill, re-run the benchmark, and record an ADR. Use it when a skill underperforms on a benchmark or stocktake finds a systemic gap."
 ---
 
 # Evolve Skill

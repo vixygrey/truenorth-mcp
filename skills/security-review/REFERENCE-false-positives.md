@@ -63,6 +63,7 @@ Findings that survive exclusions get a confidence score (1–10):
 ## Signal Quality Criteria
 
 For remaining findings, assess:
+
 1. Is there a concrete, exploitable vulnerability with a clear attack path?
 2. Does this represent a real security risk (vs theoretical best practice)?
 3. Are there specific code locations and reproduction steps?

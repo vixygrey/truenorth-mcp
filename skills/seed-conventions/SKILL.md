@@ -1,6 +1,6 @@
 ---
 name: seed-conventions
-description: 'Generate the project agent guide and conventions for a brand-new project through a brief interview, and confirm the .agent/ workspace layout. The entry point for a greenfield project. Use it when starting a new project from scratch, or when there is no agent guide yet.'
+description: "Generate the project agent guide and conventions for a brand-new project through a brief interview, and confirm the .agent/ workspace layout. The entry point for a greenfield project. Use it when starting a new project from scratch, or when there is no agent guide yet."
 ---
 
 # Seed Conventions

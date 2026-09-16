@@ -41,7 +41,7 @@ git check-ignore -v <path>   # was ignored?
 
 **Goal:** stop regenerated junk from polluting `git status`, without hiding real source.
 
-1. **Read** root `.gitignore` and, in monorepos, `apps/*/.gitignore` / `packages/*/.gitignore` as needed. Check **`.git/info/exclude`** for machine-only rules that should *not* be committed (keep personal noise there; don’t copy into shared `.gitignore` unless the team agrees).
+1. **Read** root `.gitignore` and, in monorepos, `apps/*/.gitignore` / `packages/*/.gitignore` as needed. Check **`.git/info/exclude`** for machine-only rules that should _not_ be committed (keep personal noise there; don’t copy into shared `.gitignore` unless the team agrees).
 2. **Per-path checks** (last match wins; shows which file defined the rule):
 
    ```sh
@@ -53,7 +53,7 @@ git check-ignore -v <path>   # was ignored?
    - Leading `/` = relative to the `.gitignore`’s directory (e.g. `/dist/` = only that folder at that level, not all nested `dist` unless intended).
    - `**` for deep trees, e.g. `**/*.log`, when noise appears at many depths.
    - **Negation** (`!`) is tricky: later rules, parent dirs, and `git add -f` interact—prefer narrow positive ignores over `!` unless you already use negation in that file.
-4. **Do not** add rules that would ignore: application source, small JSON/YAML config the repo tracks, or `!important` assets. When unsure, run `git check-ignore -v` on a *known good* file that must stay tracked.
+4. **Do not** add rules that would ignore: application source, small JSON/YAML config the repo tracks, or `!important` assets. When unsure, run `git check-ignore -v` on a _known good_ file that must stay tracked.
 5. **Tracked but should be ignored** (user already committed `build/` once): this skill does not silently fix history; flag `git rm -r --cached <path>` + `.gitignore` as a **separate** explicit step the user must approve.
 6. **Global excludes** (optional heads-up for “why is this still ignored?”):
 

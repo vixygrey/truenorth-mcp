@@ -77,10 +77,14 @@ export class BrowserExtractor {
       this._browser = await this._puppeteer.launch(opts);
       log.info('browser-launched');
     } catch (err) {
-      if (err.message.includes('chrome') || err.message.includes('Chromium') || err.message.includes('executable')) {
+      if (
+        err.message.includes('chrome') ||
+        err.message.includes('Chromium') ||
+        err.message.includes('executable')
+      ) {
         throw new Error(
           `Chrome/Chromium not found. Install Puppeteer with: npm install puppeteer\n` +
-          `Or set CHROME_PATH env var to your Chrome binary. Error: ${err.message}`
+            `Or set CHROME_PATH env var to your Chrome binary. Error: ${err.message}`,
         );
       }
       throw err;
@@ -107,7 +111,7 @@ export class BrowserExtractor {
       if (err.message.includes('Timeout') || err.message.includes('timed out')) {
         throw new Error(
           `Page load timed out after ${TIMEOUTS.PAGE_LOAD_MS}ms.\n` +
-          `The prototype may be a SPA or have slow network requests. Error: ${err.message}`
+            `The prototype may be a SPA or have slow network requests. Error: ${err.message}`,
         );
       }
       throw err;
@@ -118,7 +122,7 @@ export class BrowserExtractor {
 
   async _setColorScheme(page, mode) {
     await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: mode }]);
-    await page.evaluate(() => new Promise(r => requestAnimationFrame(r)));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)));
   }
 
   /**
@@ -130,7 +134,7 @@ export class BrowserExtractor {
     const declared = new Set();
 
     // Parse font names from Google Fonts URLs
-    for (const url of (extraction.declaredFonts || [])) {
+    for (const url of extraction.declaredFonts || []) {
       const match = url.match(/family=([^:&]+)/);
       if (match) {
         for (const fam of decodeURIComponent(match[1]).split('|')) {
@@ -140,7 +144,7 @@ export class BrowserExtractor {
     }
 
     // Add @font-face families
-    for (const fam of (extraction.fontFaceFamilies || [])) {
+    for (const fam of extraction.fontFaceFamilies || []) {
       declared.add(fam);
     }
 
@@ -148,7 +152,7 @@ export class BrowserExtractor {
 
     // Get all computed font families
     const computedFamilies = new Set();
-    for (const style of (extraction.styles || [])) {
+    for (const style of extraction.styles || []) {
       if (style.fontFamily) {
         // fontFamily may be a stack like "Inter, sans-serif" — take first
         computedFamilies.add(style.fontFamily.split(',')[0].replace(/['"]/g, '').trim());
@@ -157,21 +161,25 @@ export class BrowserExtractor {
 
     // Check each declared font
     for (const font of declared) {
-      const found = [...computedFamilies].some(cf =>
-        cf.toLowerCase() === font.toLowerCase() ||
-        cf.toLowerCase().includes(font.toLowerCase())
+      const found = [...computedFamilies].some(
+        (cf) =>
+          cf.toLowerCase() === font.toLowerCase() || cf.toLowerCase().includes(font.toLowerCase()),
       );
       if (!found) {
         warnings.push(
           `Font "${font}" was declared in <link>/@font-face but not rendered. ` +
-          `Check font loading (CDN may be blocked, or font name mismatch). ` +
-          `Computed fonts: ${[...computedFamilies].join(', ')}`
+            `Check font loading (CDN may be blocked, or font name mismatch). ` +
+            `Computed fonts: ${[...computedFamilies].join(', ')}`,
         );
       }
     }
 
     if (warnings.length > 0) {
-      log.warn('font-mismatch', { declaredCount: declared.size, computedCount: computedFamilies.size, warnings });
+      log.warn('font-mismatch', {
+        declaredCount: declared.size,
+        computedCount: computedFamilies.size,
+        warnings,
+      });
     }
 
     return warnings;
@@ -181,12 +189,14 @@ export class BrowserExtractor {
     const lightColors = new Set();
     const darkColors = new Set();
 
-    for (const s of (lightStyles || [])) {
-      if (s.backgroundColor && s.backgroundColor !== 'rgba(0, 0, 0, 0)') lightColors.add(s.backgroundColor);
+    for (const s of lightStyles || []) {
+      if (s.backgroundColor && s.backgroundColor !== 'rgba(0, 0, 0, 0)')
+        lightColors.add(s.backgroundColor);
       if (s.color && s.color !== 'rgba(0, 0, 0, 0)') lightColors.add(s.color);
     }
-    for (const s of (darkStyles || [])) {
-      if (s.backgroundColor && s.backgroundColor !== 'rgba(0, 0, 0, 0)') darkColors.add(s.backgroundColor);
+    for (const s of darkStyles || []) {
+      if (s.backgroundColor && s.backgroundColor !== 'rgba(0, 0, 0, 0)')
+        darkColors.add(s.backgroundColor);
       if (s.color && s.color !== 'rgba(0, 0, 0, 0)') darkColors.add(s.color);
     }
 

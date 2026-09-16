@@ -5,6 +5,7 @@
 **DO NOT write all tests first, then all implementation.** This is "horizontal slicing" — treating RED as "write all tests" and GREEN as "write all code."
 
 This produces **crap tests**:
+
 - Tests written in bulk test _imagined_ behavior, not _actual_ behavior
 - You end up testing the _shape_ of things rather than user-facing behavior
 - Tests become insensitive to real changes
@@ -30,6 +31,7 @@ RIGHT (vertical):
 ### Red Phase
 
 Write a failing test first:
+
 - Test describes the desired observable behavior through the public interface
 - Run the test to confirm it fails for the right reason (not a syntax error, not a typo)
 - Commit: `git commit -m "test(<scope>): <description>"`
@@ -37,6 +39,7 @@ Write a failing test first:
 ### Green Phase
 
 Write the minimum code to make the test pass:
+
 - No extra logic, no anticipated future cases, no premature optimization
 - Focus only on making the current test pass
 - Commit: `git commit -m "feat(<scope>): <description>"` or `"fix(<scope>): <description>"`
@@ -44,6 +47,7 @@ Write the minimum code to make the test pass:
 ### Refactor Phase
 
 Improve structure without changing behavior:
+
 - Extract duplication, apply SOLID principles where natural, deepen modules
 - Run tests after each refactor step to ensure behavior is preserved
 - Commit: `git commit -m "refactor(<scope>): <description>"`

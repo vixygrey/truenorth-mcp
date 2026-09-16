@@ -1,6 +1,6 @@
 ---
 name: extract-design
-description: 'Extract a DESIGN.md file from an HTML prototype (a design tool export or any styled page) using a headless browser, producing machine-readable tokens and generated prose. Use it when the user has an HTML prototype and wants a DESIGN.md to anchor the project visual identity, or right after a new project is scaffolded.'
+description: "Extract a DESIGN.md file from an HTML prototype (a design tool export or any styled page) using a headless browser, producing machine-readable tokens and generated prose. Use it when the user has an HTML prototype and wants a DESIGN.md to anchor the project visual identity, or right after a new project is scaffolded."
 ---
 
 # Extract DESIGN.md from HTML

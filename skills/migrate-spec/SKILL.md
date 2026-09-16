@@ -1,6 +1,6 @@
 ---
 name: migrate-spec
-description: 'Detect a foreign spec artifact (GSD, spec-kit, or BMAD) and transform it into the project YAML layout (the state, the release plan, the task groups, the requirements, the plans, and the ADRs). Use it when migrating foreign spec docs.'
+description: "Detect a foreign spec artifact (GSD, spec-kit, or BMAD) and transform it into the project YAML layout (the state, the release plan, the task groups, the requirements, the plans, and the ADRs). Use it when migrating foreign spec docs."
 ---
 
 # story: e25s01

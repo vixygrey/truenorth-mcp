@@ -1,6 +1,6 @@
 ---
 name: diagnose-root
-description: 'Run a four-phase root-cause analysis: reproduce, isolate, hypothesize, verify. Use it when a bug is confirmed but the root cause is unclear, after investigate-bug, or when the user mentions root-cause analysis.'
+description: "Run a four-phase root-cause analysis: reproduce, isolate, hypothesize, verify. Use it when a bug is confirmed but the root cause is unclear, after investigate-bug, or when the user mentions root-cause analysis."
 ---
 
 # Diagnose Root

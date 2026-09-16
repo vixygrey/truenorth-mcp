@@ -121,11 +121,11 @@ Transform — populate `handoff` in `.agent/tasks/state.yml`:
 
 ```yaml
 handoff:
-  last_step_completed: '<phase/plan from HANDOFF>'
+  last_step_completed: "<phase/plan from HANDOFF>"
   open_decisions:
-    - '<blocking reason if any>'
+    - "<blocking reason if any>"
   required_reading:
-    - '<required_reading list>'
+    - "<required_reading list>"
   next_skill: survey-context
 ```
 

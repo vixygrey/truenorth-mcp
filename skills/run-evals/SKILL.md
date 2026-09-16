@@ -1,6 +1,6 @@
 ---
 name: run-evals
-description: 'Eval-driven development. Define capability and regression evals before building. A code grader uses a verify command, a model grader uses an explicit rubric. Log pass@k. Use it before develop-tdd on a new feature, or when measuring agent capability over runs.'
+description: "Eval-driven development. Define capability and regression evals before building. A code grader uses a verify command, a model grader uses an explicit rubric. Log pass@k. Use it before develop-tdd on a new feature, or when measuring agent capability over runs."
 ---
 
 # Run Evals

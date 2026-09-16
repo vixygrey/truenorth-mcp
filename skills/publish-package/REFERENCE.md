@@ -30,7 +30,6 @@
 | `--otp <code>`      | One-time password for npm 2FA                                   |
 | `--no-verify`       | Skip prerequisite checks (use with caution)                     |
 
-
 ---
 
 ## Examples
@@ -63,7 +62,6 @@ publish-package
 $ publish-package
 FAIL: NPM_TOKEN not set. Set via: export NPM_TOKEN=<token> or add to .npmrc
 ```
-
 
 ---
 

@@ -317,7 +317,8 @@ async function main() {
 
 function formatLint(r) {
   if (r.skipped) return 'Lint skipped.';
-  const engine = r.source === 'baseline' ? ' (in-repo baseline; @google/design.md not available)' : '';
+  const engine =
+    r.source === 'baseline' ? ' (in-repo baseline; @google/design.md not available)' : '';
   return `Lint: ${r.summary.errors} errors, ${r.summary.warnings} warnings, ${r.summary.info} info${engine}`;
 }
 

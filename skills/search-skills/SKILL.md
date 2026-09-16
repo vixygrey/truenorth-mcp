@@ -1,6 +1,6 @@
 ---
 name: search-skills
-description: 'Find the right skill from a natural-language intent using the catalog search. Use it when unsure which skill to invoke, or at the start of research-first.'
+description: "Find the right skill from a natural-language intent using the catalog search. Use it when unsure which skill to invoke, or at the start of research-first."
 ---
 
 # Search Skills

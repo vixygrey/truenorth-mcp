@@ -31,25 +31,33 @@ Each ticket holds one question, sized to one 100K token agent session:
 ## Ticket Types in Detail
 
 ### Research (AFK)
+
 Surfacing facts from docs, APIs, or knowledge bases that a decision waits on.
+
 - Resolved by a `/research` subagent
 - Use when knowledge outside the working directory is required
 - **Label:** `wayfinder:research`
 
 ### Prototype (HITL)
+
 Raise fidelity by building cheap, rough, concrete artifact to react to — outline, stub, UI/logic code.
+
 - Use the `/prototype` skill
 - Links the prototype as an asset
 - Use when "how should it look" or "how should it behave" is key
 - **Label:** `wayfinder:prototype`
 
 ### Grilling (HITL)
+
 Conversation via `/grilling` and `/domain-modeling` skills, one question at a time.
+
 - The default case for clarifying decisions
 - **Label:** `wayfinder:grilling`
 
 ### Task (HITL or AFK)
+
 Manual work unblocking a decision — signing up for service, provisioning access, moving data.
+
 - This is the **only** type that does rather than decides
 - Earns its place by unblocking a decision, not by delivering the destination
 - Agent drives AFK tasks alone; HITL tasks get precise checklist
