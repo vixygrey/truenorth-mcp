@@ -22,6 +22,32 @@ fn seed_rules(body: &str) -> TempDir {
 }
 
 #[test]
+fn graph_path_resolves_under_agent_tasks() {
+    // The skill-graph cache lives under `.agent/`, not in the crate source tree (#162,
+    // ADR-0008). The absolute path and the guard-relative path must agree.
+    let repo = TempDir::new().expect("temp repo");
+    let ctx = ServerContext::with_features(repo.path().to_path_buf(), Features::default());
+    let expected = repo
+        .path()
+        .join(".agent")
+        .join("tasks")
+        .join("skill-graph.jsonl");
+    assert_eq!(ctx.graph_path(), expected);
+    // The guard-relative path is `graph_path` minus the repo `.agent/` prefix.
+    assert_eq!(
+        ctx.graph_path(),
+        repo.path()
+            .join(".agent")
+            .join(ServerContext::graph_rel_path())
+    );
+    // The path is not in the crate source tree.
+    assert!(
+        !ctx.graph_path()
+            .starts_with(repo.path().join("truenorth-mcp"))
+    );
+}
+
+#[test]
 fn with_features_default_is_enabled() {
     let repo = TempDir::new().expect("temp repo");
     let ctx = ServerContext::with_features(repo.path().to_path_buf(), Features::default());

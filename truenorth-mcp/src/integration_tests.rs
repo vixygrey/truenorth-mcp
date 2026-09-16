@@ -112,6 +112,42 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[tokio::test]
+async fn build_skill_graph_writes_the_cache_under_agent() -> anyhow::Result<()> {
+    // #162: the persisted skill graph is a regenerable cache under .agent/, written
+    // through the write guard (ADR-0008). It must not land in the crate source tree.
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+
+    let (client, handle) = connect(root.clone()).await?;
+
+    call_tool(&client, "build_skill_graph", serde_json::json!({})).await?;
+
+    // The cache is written under .agent/tasks/, not in the crate source tree.
+    assert!(
+        root.join(".agent/tasks/skill-graph.jsonl").is_file(),
+        "the graph cache is written under .agent/tasks/"
+    );
+    assert!(
+        !root.join("truenorth-mcp/graph.jsonl").exists(),
+        "the graph is not written into the crate source tree"
+    );
+
+    // The graph is readable back through read_graph, so the round-trip holds.
+    let result = client
+        .call_tool(CallToolRequestParams::new("read_graph").with_arguments(serde_json::Map::new()))
+        .await?;
+    assert!(
+        !result.is_error.unwrap_or(false),
+        "read_graph resolves the cache written under .agent/"
+    );
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
 /// Read a resource's first text content block.
 async fn read_text(
     client: &rmcp::service::RunningService<rmcp::RoleClient, ()>,

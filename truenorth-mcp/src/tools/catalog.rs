@@ -12,12 +12,13 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::{Deserialize, Serialize};
 
+use crate::engine::agent_ws;
 use crate::engine::git::{self, GitAction, GitError};
 use crate::engine::graph::{self, SkillGraph};
 use crate::engine::skill::{SkillError, discover_skills, read_skill_raw};
 use crate::engine::skill_parser::{ParsedSkill, parse_skill};
 use crate::engine::skill_validate::validate_skill;
-use crate::server::TrueNorthServer;
+use crate::server::{ServerContext, TrueNorthServer};
 
 /// Render a serializable value as a pretty JSON tool result.
 fn json_result<T: Serialize>(value: &T) -> Result<CallToolResult, ErrorData> {
@@ -127,14 +128,18 @@ impl TrueNorthServer {
     pub async fn build_skill_graph(&self) -> Result<CallToolResult, ErrorData> {
         let parsed = self.parse_all_skills();
         let graph = graph::build_graph(&parsed);
-        let path = self.ctx.graph_path();
-        graph::save_graph(&path, &graph).map_err(|e| {
+        // Write the cache under `.agent/` through the single write guard (ADR-0008). The
+        // guard rejects any target outside `.agent/` and writes atomically, so the graph
+        // never lands in the crate source tree.
+        let jsonl = graph::to_jsonl(&graph);
+        agent_ws::write_under_agent(&self.ctx.repo_root, ServerContext::graph_rel_path(), &jsonl)
+            .map_err(|e| {
             ErrorData::internal_error(format!("could not persist the skill graph: {e}"), None)
         })?;
         json_result(&serde_json::json!({
             "entities": graph.entities.len(),
             "relations": graph.relations.len(),
-            "graph_path": path.display().to_string(),
+            "graph_path": self.ctx.graph_path().display().to_string(),
         }))
     }
 
