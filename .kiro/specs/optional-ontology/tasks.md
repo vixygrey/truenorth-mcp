@@ -9,7 +9,7 @@ ontology tools onto `.agent/ontology.yml` behind the single write guard. It then
 the `model-domain` skill prose.
 
 The runtime crate is written in **Rust** (rmcp, serde, serde_yaml, schemars, tokio). The
-crate root is `truenorth-mcp/truenorth-mcp/`. These languages are fixed by the design.
+crate root is `truenorth-mcp/runtime/`. These languages are fixed by the design.
 
 Tasks build incrementally. The feature reader lands and tests before the context field that
 carries it. The context field lands before the tool and resource gates that read it. The

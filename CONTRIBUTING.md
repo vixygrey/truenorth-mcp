@@ -21,7 +21,7 @@ This project uses an issue-first, trunk-based workflow.
 Run the full local verification.
 
 ```bash
-cd truenorth-mcp
+cd runtime
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
 cargo test

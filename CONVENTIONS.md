@@ -25,7 +25,7 @@ The engineering conventions for this project. The MCP server serves this file as
 
 ## Language and tooling
 
-- The runtime is a Rust crate (`truenorth-mcp/`), MCP over stdio.
+- The runtime is a Rust crate (`runtime/`), MCP over stdio.
 - The distribution is a thin Node.js wrapper (`npm/`) that resolves the platform
   binary and runs it.
 - `cargo fmt` and `cargo clippy` settle Rust style. CI denies warnings. Run both
