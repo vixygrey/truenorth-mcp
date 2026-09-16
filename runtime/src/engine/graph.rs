@@ -7,11 +7,6 @@
 //!
 //! Requirements: 7.8, 7.9. Design: Part II §1.
 
-// The graph is consumed by the legacy catalog tools (task 8b). It is unused until they
-// wire it, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 8b wires the consumer.
-#![allow(dead_code)]
-
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -180,14 +175,6 @@ pub fn to_jsonl(graph: &SkillGraph) -> String {
     } else {
         format!("{}\n", lines.join("\n"))
     }
-}
-
-/// Save the graph to `path`, creating parent directories (ports `saveGraph`).
-pub fn save_graph(path: &Path, graph: &SkillGraph) -> std::io::Result<()> {
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::write(path, to_jsonl(graph))
 }
 
 /// Load the graph from a JSONL file, or an empty graph when absent (ports `loadGraph`).

@@ -7,11 +7,6 @@
 //!
 //! Requirements: 6.1, 6.3, 7.1. Design: Part II §1.
 
-// The skill helpers are consumed by the skills tools (task 8). They are unused until the
-// tools wire them, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 8b wires the last consumer.
-#![allow(dead_code)]
-
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;

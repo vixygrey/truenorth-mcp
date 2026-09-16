@@ -13,11 +13,6 @@
 //!
 //! Requirements: 11.1, 11.2, 11.3, 11.4, 11.5. Design: Overview, Part II §4, §5, §6.
 
-// This module is consumed by the skills tool and the agnosticism tests (task 16). It is
-// unused until those wire it, so the module-scoped allow prevents a premature dead-code
-// error under `clippy -D warnings`. Remove this allow once task 16 wires the consumer.
-#![allow(dead_code)]
-
 use std::sync::OnceLock;
 
 use regex::Regex;
@@ -35,6 +30,11 @@ pub const ADAPTATION_NOTE: &str = "No model-specific or harness-specific adaptat
 /// The set covers Anthropic-style XML wrapper tags (for example `<thinking>`) and
 /// vendor-directed meta-instructions that name a specific model vendor (for example
 /// "you are Claude" or "as ChatGPT"). A payload that matches is not agnostic.
+///
+/// The agnosticism tests use it to assert emitted payloads carry no vendor scaffolding
+/// (Requirement 11.1). The transforms produce agnostic output by construction, so no tool
+/// calls this at runtime; it carries a non-test allow rather than being deleted.
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn has_vendor_scaffolding(text: &str) -> bool {
     vendor_pattern().is_match(text)
 }

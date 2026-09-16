@@ -11,11 +11,6 @@
 //!
 //! Requirements: 5.3, 5.6. Design: Part II §6 (resource notification).
 
-// The watcher is consumed by the server wiring and resources layer (tasks 14, 15). It is
-// unused until those tasks land, so the module-scoped allow prevents a premature
-// dead-code error under `clippy -D warnings`. Remove this allow once task 15 wires it.
-#![allow(dead_code)]
-
 use std::collections::BTreeSet;
 use std::path::Path;
 use std::sync::mpsc;

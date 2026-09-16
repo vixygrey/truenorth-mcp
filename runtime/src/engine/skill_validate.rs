@@ -6,11 +6,6 @@
 //!
 //! Requirements: 7.1. Design: Part II §1.
 
-// The validator is consumed by the validate_skill tool (task 8b). It is unused until it
-// wires the check, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 8b wires the consumer.
-#![allow(dead_code)]
-
 use std::path::Path;
 use std::sync::OnceLock;
 

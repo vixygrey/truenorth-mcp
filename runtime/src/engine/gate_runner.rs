@@ -12,11 +12,6 @@
 //!
 //! Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6. Design: Part II §5.
 
-// The gate runner is consumed by the verify-gate tool (task 10). It is unused until that
-// task lands, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 10 wires the consumer.
-#![allow(dead_code)]
-
 use std::process::{Command, Stdio};
 use std::time::Duration;
 

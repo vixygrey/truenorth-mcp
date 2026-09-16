@@ -93,13 +93,16 @@ fn jsonl_round_trips() {
 }
 
 #[test]
-fn save_and_load_round_trip() {
+fn write_and_load_round_trip() {
     let dir = tempdir().expect("temp dir");
     let path = dir.path().join("truenorth-mcp").join("graph.jsonl");
     let skill = parsed("develop-tdd", "# TDD\n");
     let graph = build_graph(&[skill]);
 
-    save_graph(&path, &graph).expect("save graph");
+    // Persist through the same serialize path the catalog tool uses (`to_jsonl` plus a
+    // guarded write), then confirm `load_graph` reads it back from disk.
+    std::fs::create_dir_all(path.parent().expect("graph parent")).expect("graph dir");
+    std::fs::write(&path, to_jsonl(&graph)).expect("write graph");
     let loaded = load_graph(&path);
     assert_eq!(graph, loaded);
 }

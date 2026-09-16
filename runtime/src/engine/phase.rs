@@ -7,11 +7,6 @@
 //!
 //! Requirements: 7.1. Design: Part II §8.
 
-// The phase map is consumed by the skills tools (task 8). It is unused until they wire
-// it, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 8 wires the consumer.
-#![allow(dead_code)]
-
 /// The lifecycle phase for a skill name (ports `phaseForSkill`).
 ///
 /// An unmapped name returns `"Other"`, matching the legacy default.

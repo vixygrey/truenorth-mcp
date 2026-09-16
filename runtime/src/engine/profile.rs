@@ -15,13 +15,6 @@
 //! Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7. Design: agent-workspace-profiles §3,
 //! ADR-8.
 
-// The profile table and its resolution are consumed by later tasks: the neutral grouping
-// key in `record_task` (task 5), the scaffold (task 9), and the emitted hooks (task 10).
-// The items are unused until those tasks wire them, so the module-scoped allow prevents a
-// premature dead-code error under `clippy -D warnings`. Remove this allow once task 10
-// wires the last consumer.
-#![allow(dead_code)]
-
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};

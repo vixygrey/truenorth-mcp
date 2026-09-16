@@ -21,11 +21,6 @@
 //!
 //! Requirements: 6.6, 6.7, 6.8. Design: Part II §4.
 
-// The tier transforms are consumed by the `get_skill` tool (task 8). They are unused
-// until that task lands, so the module-scoped allow prevents a premature dead-code error
-// under `clippy -D warnings`. Remove this allow once task 8 wires the consumer.
-#![allow(dead_code)]
-
 use std::sync::OnceLock;
 
 use regex::Regex;
@@ -46,15 +41,29 @@ pub const TIER_LEAN_TOKEN_BUDGET: usize = 1500;
 /// the model-agnostic and lean-dependency principles.
 pub(super) const CHARS_PER_TOKEN: usize = 4;
 
+/// Estimate the model-token count from a character count (#83).
+///
+/// The estimate is the character count divided by [`CHARS_PER_TOKEN`], rounded up. This is
+/// the primitive behind [`estimate_tokens`], so the lean truncation (which tracks a
+/// running character count) and the string-based estimate share one definition.
+pub(super) fn estimate_tokens_from_chars(chars: usize) -> usize {
+    chars.div_ceil(CHARS_PER_TOKEN)
+}
+
 /// Estimate the model-token count of `text` (#83).
 ///
 /// The estimate is the character count divided by [`CHARS_PER_TOKEN`], rounded up. It is
 /// closer to real model cost than a whitespace-word count, and it credits a pass that
 /// removes characters without removing words, for example the table-padding strip. It is
-/// the single measurement unit for the lean tier: both the truncation budget and the tier
-/// tests use it.
+/// the measurement unit the lean-tier tests use to assert the budget invariants (lean is
+/// within budget and below the full-tier ratio, #62, #83).
+///
+/// The running truncation uses [`estimate_tokens_from_chars`] directly, so in a non-test
+/// build this string wrapper has no caller. It is the test-facing public measurement API,
+/// so it is allowed to be unused outside tests rather than deleted.
+#[cfg_attr(not(test), allow(dead_code))]
 pub fn estimate_tokens(text: &str) -> usize {
-    text.chars().count().div_ceil(CHARS_PER_TOKEN)
+    estimate_tokens_from_chars(text.chars().count())
 }
 
 /// A skill rendering tier (design §4).

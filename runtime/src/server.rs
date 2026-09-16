@@ -22,11 +22,12 @@ use rmcp::{
     model::{Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
 };
 
+use crate::engine::agent_ws::{LayoutCache, LayoutError};
 use crate::engine::features::{self, Features, FeaturesError};
 use crate::resources::{ResourceCache, ResourceReadError, served_from_uri, served_resources};
 
-/// The shared context: the resolved repository root, the resource cache, and the resolved
-/// per-project feature flags.
+/// The shared context: the resolved repository root, the resource cache, the resolved
+/// per-project feature flags, and the last-good layout contract.
 #[derive(Debug, Default)]
 pub struct ServerContext {
     /// The governed repository root.
@@ -38,6 +39,11 @@ pub struct ServerContext {
     /// Read by the ontology tool gate in [`TrueNorthServer::from_context`] and, from issue
     /// #142, the ontology resource gate.
     pub features: Features,
+    /// The last-good `.agent/` layout contract (Requirement 1.12).
+    ///
+    /// [`ServerContext::resolve`] validates the contract at startup. A later broken read
+    /// leaves the cached contract intact, so the runtime keeps the last valid state.
+    pub layout: LayoutCache,
 }
 
 impl ServerContext {
@@ -50,20 +56,57 @@ impl ServerContext {
     /// # Errors
     ///
     /// Returns [`FeaturesError`] when a present `rules.yml` cannot be read or parsed.
+    ///
+    /// The layout-contract validation is non-fatal. An absent `.agent/layout.yml` (a legacy
+    /// `specs/` cockpit or an unscaffolded repo) is skipped. A present-but-incomplete
+    /// contract is logged as a warning and the server keeps serving, retaining the last
+    /// valid contract (Requirement 1.12).
     pub fn resolve(repo_root: PathBuf) -> Result<Self, FeaturesError> {
         let features = features::resolve(&repo_root)?;
-        Ok(Self::with_features(repo_root, features))
+        let ctx = Self::with_features(repo_root, features);
+        ctx.validate_layout();
+        Ok(ctx)
     }
 
     /// Build a context from explicit feature flags, reading no disk.
     ///
     /// This is the dependency-injected constructor. A test builds a deterministic context,
-    /// enabled or disabled, without writing a `rules.yml` to a temp directory.
+    /// enabled or disabled, without writing a `rules.yml` to a temp directory. It does not
+    /// validate the layout; [`ServerContext::resolve`] does that at startup.
     pub fn with_features(repo_root: PathBuf, features: Features) -> Self {
         Self {
             repo_root,
             resource_cache: ResourceCache::new(),
             features,
+            layout: LayoutCache::new(),
+        }
+    }
+
+    /// Validate the `.agent/` layout contract and cache the last valid result.
+    ///
+    /// The check is non-fatal (Requirement 1.12). An absent contract file means the repo
+    /// has no `.agent/layout.yml` yet (a legacy `specs/` cockpit or an unscaffolded repo),
+    /// so the server serves without a cached contract. A present-but-incomplete contract
+    /// is logged; the server keeps serving and retains the last valid contract.
+    fn validate_layout(&self) {
+        match self.layout.read(&self.repo_root) {
+            Ok(_) => {
+                tracing::debug!("the .agent/ layout contract validated");
+            }
+            Err(LayoutError::Io { source, .. })
+                if source.kind() == std::io::ErrorKind::NotFound =>
+            {
+                // No `.agent/layout.yml` present. The repo is a legacy cockpit or is not
+                // scaffolded yet. Serve without a cached contract.
+                tracing::debug!("no .agent/layout.yml contract present; skipping validation");
+            }
+            Err(error @ LayoutError::Io { .. }) => {
+                // A present contract file that could not be read (permissions, for example).
+                tracing::warn!(%error, "the .agent/layout.yml contract could not be read");
+            }
+            Err(error @ LayoutError::MissingEntry { .. }) => {
+                tracing::warn!(%error, "the .agent/ layout contract is incomplete");
+            }
         }
     }
 

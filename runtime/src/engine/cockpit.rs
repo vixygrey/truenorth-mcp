@@ -8,11 +8,6 @@
 //!
 //! Requirements: 2.3, 2.5, 2.12, 9.3. Design: Part II §2, §8.
 
-// These helpers are consumed by the lifecycle tools (task 9). They are unused until the
-// tools wire them, so the module-scoped allow prevents a premature dead-code error under
-// `clippy -D warnings`. Remove this allow once task 9 wires the consumer.
-#![allow(dead_code)]
-
 use std::path::{Path, PathBuf};
 
 use serde_yaml::Value;

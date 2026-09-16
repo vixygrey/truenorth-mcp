@@ -6,6 +6,11 @@
 //! The tool router and resource handlers attach to `TrueNorthServer` as those tasks
 //! land, so the server capabilities grow in place.
 
+// Dead code is a defect, not a warning (styleguide "No dead code"). A genuinely
+// test-facing public helper carries a narrow `#[cfg_attr(not(test), allow(dead_code))]`
+// with a reason; a blanket module-scoped allow is not permitted.
+#![deny(dead_code)]
+
 mod config;
 mod engine;
 mod resources;

@@ -48,6 +48,22 @@ fn ignores_non_markdown_files() {
 }
 
 #[test]
+fn skips_a_secret_named_markdown_file() {
+    // Requirement 1.7: a stray file matching the secret denylist is never served, even
+    // when it carries the ADR `.md` extension.
+    let repo = TempDir::new().expect("temp repo");
+    seed_adr(&repo, "0001-first.md", "# First\n");
+    seed_adr(&repo, "credentials.md", "SECRET=leak\n");
+
+    let content = read_adr_dir(&repo.path().join("specs").join("adr")).expect("read adr");
+    assert!(content.contains("# First"));
+    assert!(
+        !content.contains("SECRET=leak"),
+        "a secret-denylist file must not be served"
+    );
+}
+
+#[test]
 fn absent_directory_is_not_found() {
     // Requirement 9.5: an absent specs/adr/ returns a NotFound naming the directory.
     let repo = TempDir::new().expect("temp repo");
