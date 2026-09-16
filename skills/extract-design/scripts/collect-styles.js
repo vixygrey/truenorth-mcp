@@ -7,7 +7,7 @@ export function collect(page) {
     const title = document.title || '';
 
     // Collect computed styles from every visible element
-    document.querySelectorAll('body, body *').forEach(el => {
+    document.querySelectorAll('body, body *').forEach((el) => {
       const cs = getComputedStyle(el);
       const tag = el.tagName.toLowerCase();
       const rect = el.getBoundingClientRect();
@@ -43,7 +43,7 @@ export function collect(page) {
 
     // Collect declared fonts from <link> tags
     const declaredFonts = [];
-    document.querySelectorAll('link[rel="stylesheet"]').forEach(l => {
+    document.querySelectorAll('link[rel="stylesheet"]').forEach((l) => {
       declaredFonts.push(l.href);
     });
 
@@ -83,26 +83,31 @@ export async function collectPseudoStates(page, componentStyles) {
   for (const comp of componentStyles) {
     // Hover state
     try {
-      const hoverStyles = await page.evaluate((signature) => {
-        const elements = document.querySelectorAll('body, body *');
-        for (const el of elements) {
-          const cs = getComputedStyle(el);
-          const bg = cs.backgroundColor;
-          const rect = el.getBoundingClientRect();
-          const w = Math.round(rect.width);
-          const h = Math.round(rect.height);
+      const hoverStyles = await page.evaluate(
+        (signature) => {
+          const elements = document.querySelectorAll('body, body *');
+          for (const el of elements) {
+            const cs = getComputedStyle(el);
+            const bg = cs.backgroundColor;
+            const rect = el.getBoundingClientRect();
+            const w = Math.round(rect.width);
+            const h = Math.round(rect.height);
 
-          if (bg === signature.bg &&
+            if (
+              bg === signature.bg &&
               Math.abs(w - signature.width) < 10 &&
-              Math.abs(h - signature.height) < 10) {
-            return {
-              index: Array.from(document.querySelectorAll('body, body *')).indexOf(el),
-              exists: true,
-            };
+              Math.abs(h - signature.height) < 10
+            ) {
+              return {
+                index: Array.from(document.querySelectorAll('body, body *')).indexOf(el),
+                exists: true,
+              };
+            }
           }
-        }
-        return { exists: false };
-      }, { bg: comp.backgroundColor, width: comp.width || 0, height: comp.height || 0 });
+          return { exists: false };
+        },
+        { bg: comp.backgroundColor, width: comp.width || 0, height: comp.height || 0 },
+      );
 
       if (hoverStyles.exists) {
         // Use Puppeteer's hover API (not page.evaluate for pseudo-classes)
@@ -117,12 +122,20 @@ export async function collectPseudoStates(page, componentStyles) {
             const target = els[idx];
             if (!target) return null;
             const cs = getComputedStyle(target);
-            return { backgroundColor: cs.backgroundColor, color: cs.color, borderColor: cs.borderColor, boxShadow: cs.boxShadow };
+            return {
+              backgroundColor: cs.backgroundColor,
+              color: cs.color,
+              borderColor: cs.borderColor,
+              boxShadow: cs.boxShadow,
+            };
           }, hoverStyles.index);
 
           if (hoverComputed) {
             const changed = {};
-            if (hoverComputed.backgroundColor !== comp.backgroundColor && hoverComputed.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+            if (
+              hoverComputed.backgroundColor !== comp.backgroundColor &&
+              hoverComputed.backgroundColor !== 'rgba(0, 0, 0, 0)'
+            ) {
               changed.backgroundColor = hoverComputed.backgroundColor;
             }
             if (hoverComputed.color !== comp.textColor) {

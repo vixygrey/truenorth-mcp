@@ -1,6 +1,6 @@
 ---
 name: orchestrate-project
-description: 'A meta-skill that enforces the six-phase core loop (discover, elaborate, plan, build, verify, release) with hard gates. Use it to coordinate a multi-phase project with quality checkpoints across the lifecycle.'
+description: "A meta-skill that enforces the six-phase core loop (discover, elaborate, plan, build, verify, release) with hard gates. Use it to coordinate a multi-phase project with quality checkpoints across the lifecycle."
 ---
 
 # Orchestrate

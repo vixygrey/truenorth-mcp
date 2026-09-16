@@ -285,13 +285,13 @@ Source IDs (REQ-XX, FR-XX, UJ-XX) are emitted as first-class YAML fields:
 ```yaml
 in_scope:
   - id: REQ-001
-    description: 'User can register with email and password'
-    source: 'REQUIREMENTS.md'
+    description: "User can register with email and password"
+    source: "REQUIREMENTS.md"
   - id: FR-015
-    description: 'Auth service must support OAuth2 token flow'
-    source: 'prd.md'
+    description: "Auth service must support OAuth2 token flow"
+    source: "prd.md"
   - id: REQ-AUTO-002 # auto-generated when source had no ID
-    description: 'Dashboard displays user profile'
+    description: "Dashboard displays user profile"
     # auto-generated: true  (optional comment for tracking)
 ```
 
@@ -313,28 +313,28 @@ trace:
   # Functional Requirements
   - id: FR-001
     type: functional_requirement
-    description: 'User can register with email/password'
-    source_artifact: 'prd.md'
-    group_id: 'e02-auth-ui'
+    description: "User can register with email/password"
+    source_artifact: "prd.md"
+    group_id: "e02-auth-ui"
     group_kind: epic
-    story: 'e02s01'
+    story: "e02s01"
     verify: "grep -q 'FR-001' .agent/product/scope.yml && echo OK"
 
   # User Journeys
   - id: UJ-001
     type: user_journey
-    description: 'New user completes registration flow'
-    source_artifact: 'epic-auth-ui.md'
-    group_id: 'e02-auth-ui'
+    description: "New user completes registration flow"
+    source_artifact: "epic-auth-ui.md"
+    group_id: "e02-auth-ui"
     group_kind: epic
-    story: 'e02s01'
+    story: "e02s01"
     verify: "grep -q 'UJ-001' .agent/tasks/e02-auth-ui/story.yml && echo OK"
 
 metadata:
-  source_framework: 'BMAD'
-  migrated_at: '2026-06-26T12:00:00Z'
+  source_framework: "BMAD"
+  migrated_at: "2026-06-26T12:00:00Z"
   total_requirements: 2
-  coverage: 'All FR-XX and UJ-XX IDs from source mapped'
+  coverage: "All FR-XX and UJ-XX IDs from source mapped"
 ```
 
 **When the source has no FR-XX/UJ-XX:** skip `REQUIREMENTS_TRACE.yaml`. Add a note
@@ -384,7 +384,7 @@ git:
   pushed: false
 
 handoff:
-  last_step_completed: 'Migrated from <framework> on <date>'
+  last_step_completed: "Migrated from <framework> on <date>"
   open_decisions: [] # Empty when all decisions were resolved during migration
   required_reading:
     - .agent/product/vision.yml
@@ -431,7 +431,7 @@ in_scope:
 
 # DEPRECATED — comment-only
 in_scope:
-  - "User can register with email/password"  # REQ-001
+  - "User can register with email/password" # REQ-001
 ```
 
 ---
@@ -516,7 +516,7 @@ the user-journey specs, before the technical pass begins:
 ```yaml
 two_pass_spec:
   journey_pass: complete
-  approved_at: '2026-06-26T12:00:00Z'
+  approved_at: "2026-06-26T12:00:00Z"
   technical_pass: pending
 ```
 

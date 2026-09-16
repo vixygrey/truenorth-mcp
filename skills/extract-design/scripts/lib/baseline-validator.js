@@ -290,8 +290,12 @@ function contrastFindings(colors, label) {
 /// Reports added, removed, and modified color roles, and flags a regression when the new
 /// file has more lint errors than the old one.
 export function baselineDiff(oldPath, newPath) {
-  const oldFm = existsSync(oldPath) ? parseFrontMatter(readFileSync(oldPath, 'utf8')) : emptyFrontMatter();
-  const newFm = existsSync(newPath) ? parseFrontMatter(readFileSync(newPath, 'utf8')) : emptyFrontMatter();
+  const oldFm = existsSync(oldPath)
+    ? parseFrontMatter(readFileSync(oldPath, 'utf8'))
+    : emptyFrontMatter();
+  const newFm = existsSync(newPath)
+    ? parseFrontMatter(readFileSync(newPath, 'utf8'))
+    : emptyFrontMatter();
 
   const oldErrors = existsSync(oldPath) ? baselineLint(oldPath).summary.errors : 0;
   const newErrors = existsSync(newPath) ? baselineLint(newPath).summary.errors : 0;

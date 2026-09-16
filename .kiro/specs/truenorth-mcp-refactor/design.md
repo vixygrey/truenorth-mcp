@@ -157,7 +157,7 @@ ontology scan + resource notification, §7 npm distribution).
 | `truenorth_tdd_cycle`                        | active/gate      | Enforce Red → Green → Refactor step transitions           |
 | `truenorth_generate_ontology`                | active/ontology  | Synthesize `specs/ontology.yaml` from sources             |
 | `truenorth_verify_ontology`                  | active/gate      | Phase-4 gate: reject lexical/semantic drift               |
-| `get_skill`                                  | catalog (tiered) | Read a skill at `full \| reasoning \| lean` tier            |
+| `get_skill`                                  | catalog (tiered) | Read a skill at `full \| reasoning \| lean` tier          |
 | `index_skills`                               | legacy catalog   | Enumerate `skills/*/SKILL.md` + phase                     |
 | `read_skill`                                 | legacy catalog   | Parse a SKILL.md (frontmatter/headings/sections)          |
 | `search_skills`                              | legacy catalog   | Substring search over skill metadata                      |
@@ -564,7 +564,7 @@ pub struct Constraint {
 Example emitted file:
 
 ```yaml
-version: '1'
+version: "1"
 domain: order-fulfillment
 last_updated: 2026-07-26T00:00:00Z
 entities:
@@ -572,8 +572,8 @@ entities:
     description: A customer purchase moving through fulfillment.
     primary_key: order_id
     invariants:
-      - 'total_cents >= 0'
-      - 'cancelled orders cannot ship'
+      - "total_cents >= 0"
+      - "cancelled orders cannot ship"
     states: [draft, placed, shipped, cancelled]
     transitions:
       draft: [placed, cancelled]
@@ -583,9 +583,9 @@ entities:
     prohibited_aliases: [is_deleted, order_no, purchase]
 constraints:
   - id: C-01
-    rule: 'Soft deletion uses deleted_at: Option<DateTime<Utc>>, never a boolean flag.'
+    rule: "Soft deletion uses deleted_at: Option<DateTime<Utc>>, never a boolean flag."
   - id: C-02
-    rule: 'Boolean state flags (is_*) are prohibited; model states explicitly.'
+    rule: "Boolean state flags (is_*) are prohibited; model states explicitly."
 ```
 
 ### §4. Tier-Transform Algorithms
@@ -778,7 +778,7 @@ before committing).
 ```js
 #!/usr/bin/env node
 // Thin runner: resolve the platform-native binary and spawn it (stdio passthrough).
-const { spawnSync } = require('node:child_process');
+const { spawnSync } = require("node:child_process");
 const platformPkg = `@truenorth-mcp/${process.platform}-${process.arch}`;
 let binary;
 try {
@@ -787,7 +787,7 @@ try {
   console.error(`truenorth-mcp: no prebuilt binary for ${process.platform}-${process.arch}`);
   process.exit(1);
 }
-const res = spawnSync(binary, process.argv.slice(2), { stdio: 'inherit' });
+const res = spawnSync(binary, process.argv.slice(2), { stdio: "inherit" });
 process.exit(res.status ?? 1);
 ```
 
@@ -926,7 +926,7 @@ into the runtime or a single source-of-truth), **Keep** (load-bearing or standar
 | `sync-skills.sh`, `generate-skill-index.sh`, `build-skill-graph.sh` | Dynamic MCP tools/resources: `get_skill` (tiered), `index_skills`, `build_skill_graph` at runtime (ADR-4) |
 | 13 per-harness skill mirror directories                             | One canonical `skills/` served through tiered rendering (§4). Agnosticism is runtime, not static fan-out  |
 | `bin/*.js`, `install.sh`, `mcp-server.js`                           | `npm/bin/truenorth.js` runner + platform packages + `init` scaffold (§7)                                  |
-| Static full-markdown mirrors                                        | Tiered rendering (`full \| reasoning \| lean`) computed per call (§4)                                       |
+| Static full-markdown mirrors                                        | Tiered rendering (`full \| reasoning \| lean`) computed per call (§4)                                     |
 
 ## Correctness Properties
 

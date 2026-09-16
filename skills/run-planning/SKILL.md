@@ -1,6 +1,6 @@
 ---
 name: run-planning
-description: 'The discover-phase advancer. Drives the discover-phase checklist through survey-context, scope-work, research-first, elaborate-spec, plan-release, and slice-tasks. Not a duplicate of plan-work or the planning spine. It orchestrates the pre-coding discover phase only.'
+description: "The discover-phase advancer. Drives the discover-phase checklist through survey-context, scope-work, research-first, elaborate-spec, plan-release, and slice-tasks. Not a duplicate of plan-work or the planning spine. It orchestrates the pre-coding discover phase only."
 ---
 
 # story: e24s03
@@ -73,9 +73,9 @@ The planning progress record uses this schema:
 
 ```yaml
 context_capsule: # written by elaborate-spec; cleared on cycle completion
-  written_at: '2026-06-22T03:00:00Z'
+  written_at: "2026-06-22T03:00:00Z"
   written_by: elaborate-spec
-  feature_name: 'add dark mode'
+  feature_name: "add dark mode"
 workflows:
   survey-context:
     required: true
@@ -86,7 +86,7 @@ workflows:
   research-first:
     required: false
     status: optional
-    note: 'Skip if no external dependencies'
+    note: "Skip if no external dependencies"
   elaborate-spec:
     required: false
     status: optional

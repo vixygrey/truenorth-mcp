@@ -242,7 +242,7 @@ Search the draft for each pattern. Every hit outside code blocks and quoted text
 | semicolon `;`                                             | Semicolon (8.1)                | Two sentences.                                |
 | `e.g.`, `i.e.`, `etc.`                                    | Latin abbreviation (GR-6)      | "for example", "that is", name the items.     |
 | `simply`, `easily`, `seamlessly`, `robust`                | Filler (no fact)               | Delete.                                       |
-| ` if ` or ` when ` mid-sentence                           | Trailing condition (5.4)       | Move the condition to the start. Add a comma. |
+| `if` or `when` mid-sentence                               | Trailing condition (5.4)       | Move the condition to the start. Add a comma. |
 
 ### Countable checks
 

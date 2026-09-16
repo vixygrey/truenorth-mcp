@@ -1,6 +1,6 @@
 ---
 name: plan-tests
-description: 'Design a risk-scaled test architecture for a task group before implementation begins. Produces prioritized scenarios, a test-level distribution, and fixture plans.'
+description: "Design a risk-scaled test architecture for a task group before implementation begins. Produces prioritized scenarios, a test-level distribution, and fixture plans."
 ---
 
 # Plan Tests

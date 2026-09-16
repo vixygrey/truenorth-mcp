@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "description": "TrueNorth-MCP native binary for Linux on arm64.",
   "license": "MIT",
-  "os": ["linux"],
-  "cpu": ["arm64"],
-  "files": ["truenorth-mcp"]
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "truenorth-mcp"
+  ]
 }

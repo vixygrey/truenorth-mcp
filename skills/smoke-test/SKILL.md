@@ -1,6 +1,6 @@
 ---
 name: smoke-test
-description: 'Post-deploy health check against a live URL. Validates the HTTP status, the response content, and the critical endpoints. Run it standalone or as the final step of the deploy skill.'
+description: "Post-deploy health check against a live URL. Validates the HTTP status, the response content, and the critical endpoints. Run it standalone or as the final step of the deploy skill."
 ---
 
 # Smoke Test
@@ -18,12 +18,12 @@ and an optional response-time threshold.
 The smoke checks live in `smoke-checks.yaml` at the project root:
 
 ```yaml
-base_url: 'https://example.com'
+base_url: "https://example.com"
 checks:
-  - name: 'Homepage'
-    path: '/'
+  - name: "Homepage"
+    path: "/"
     expected_status: 200
-    content_signal: 'welcome|ok'
+    content_signal: "welcome|ok"
     max_response_time_ms: 3000
 ```
 

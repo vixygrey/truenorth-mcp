@@ -1,6 +1,6 @@
 ---
 name: run-benchmark
-description: 'Run a skill quality benchmark from a benchmark definition. N-run with-and-without-skill delta grading, a train/validation split, and pass@k reports. Use it before and after evolve-skill to prove a quality change is an improvement, not a regression.'
+description: "Run a skill quality benchmark from a benchmark definition. N-run with-and-without-skill delta grading, a train/validation split, and pass@k reports. Use it before and after evolve-skill to prove a quality change is an improvement, not a regression."
 ---
 
 # Run Benchmark
@@ -79,7 +79,7 @@ baseline mode to pin the results as the baseline.
 
    ```yaml
    skill: survey-context
-   run_date: '2026-06-22'
+   run_date: "2026-06-22"
    runs_per_scenario: 3
    train:
      pass_at_k_with: 0.92

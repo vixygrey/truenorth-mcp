@@ -5,12 +5,11 @@
 | Variable               | Default         | Description                              |
 | ---------------------- | --------------- | ---------------------------------------- |
 | `ARTIFACT_DIR`         | `dist`          | Build output directory                   |
-| `DEPLOY_URL`           | *(required)*    | Live URL for smoke test                  |
+| `DEPLOY_URL`           | _(required)_    | Live URL for smoke test                  |
 | `DEPLOY_TIMEOUT`       | `300`           | Max wait for deploy completion (seconds) |
 | `DEPLOY_POLL_INTERVAL` | `30`            | Polling interval (seconds)               |
 | `RETRY_MAX`            | `3`             | Max deploy retry attempts                |
-| `BUILD_COMMAND`        | *(auto-detect)* | Override build command                   |
-
+| `BUILD_COMMAND`        | _(auto-detect)_ | Override build command                   |
 
 ---
 
@@ -37,13 +36,13 @@ while true; do
     echo "FAIL: deploy status polling timed out after ${DEPLOY_TIMEOUT}s"
     exit 1
   fi
-  
+
   status=$(get_deploy_status)  # platform-specific status check
   if [ "$status" = "ready" ] || [ "$status" = "done" ]; then
     echo "Deploy completed in ${elapsed}s"
     break
   fi
-  
+
   sleep "$DEPLOY_POLL_INTERVAL"
 done
 ```

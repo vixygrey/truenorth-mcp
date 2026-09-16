@@ -9,17 +9,44 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = resolve(__dirname, 'fixtures');
 
-let p = 0, f = 0, s = 0;
+let p = 0,
+  f = 0,
+  s = 0;
 
-function t(name, fn) { try { fn(); p++; console.log(`  ✓ ${name}`); } catch (e) { f++; console.log(`  ✗ ${name}: ${e.message}`); } }
-function skip(name, reason) { s++; console.log(`  - ${name} (skipped: ${reason})`); }
-function assert(c, m) { if (!c) throw new Error(m || 'Assertion failed'); }
-function includes(text, sub, m) { assert(text.includes(sub), m || `Expected "${sub}" in text`); }
+function t(name, fn) {
+  try {
+    fn();
+    p++;
+    console.log(`  ✓ ${name}`);
+  } catch (e) {
+    f++;
+    console.log(`  ✗ ${name}: ${e.message}`);
+  }
+}
+function skip(name, reason) {
+  s++;
+  console.log(`  - ${name} (skipped: ${reason})`);
+}
+function assert(c, m) {
+  if (!c) throw new Error(m || 'Assertion failed');
+}
+function includes(text, sub, m) {
+  assert(text.includes(sub), m || `Expected "${sub}" in text`);
+}
 
 // --- Check Puppeteer availability ---
 function checkPuppeteer() {
-  try { import.meta.resolve('puppeteer'); return 'puppeteer'; }
-  catch { try { import.meta.resolve('puppeteer-core'); return 'puppeteer-core'; } catch { return null; } }
+  try {
+    import.meta.resolve('puppeteer');
+    return 'puppeteer';
+  } catch {
+    try {
+      import.meta.resolve('puppeteer-core');
+      return 'puppeteer-core';
+    } catch {
+      return null;
+    }
+  }
 }
 const puppeteerPkg = checkPuppeteer();
 
@@ -44,22 +71,39 @@ t('classifyTypography returns valid structure', async () => {
 
 t('classifySpacing returns valid structure', async () => {
   const { classifySpacing } = await import('../scripts/classify-spacing.js');
-  assert((classifySpacing([])).spacing);
+  assert(classifySpacing([]).spacing);
 });
 
 t('classifyRounded returns valid structure', async () => {
   const { classifyRounded } = await import('../scripts/classify-rounded.js');
-  assert((classifyRounded([])).rounded);
+  assert(classifyRounded([]).rounded);
 });
 
 t('colors cluster neutrals vs accents', async () => {
   const { classifyColors } = await import('../scripts/classify-colors.js');
   const m = [
-    { backgroundColor: 'rgba(255,255,255,1)', color: 'rgba(0,0,0,1)', borderColor: 'rgba(0,0,0,0)', width: 1440, height: 900, text: '' },
-    { backgroundColor: 'rgba(255,0,0,1)', color: 'rgba(255,255,255,1)', borderColor: 'rgba(0,0,0,0)', width: 100, height: 48, text: 'Click' },
+    {
+      backgroundColor: 'rgba(255,255,255,1)',
+      color: 'rgba(0,0,0,1)',
+      borderColor: 'rgba(0,0,0,0)',
+      width: 1440,
+      height: 900,
+      text: '',
+    },
+    {
+      backgroundColor: 'rgba(255,0,0,1)',
+      color: 'rgba(255,255,255,1)',
+      borderColor: 'rgba(0,0,0,0)',
+      width: 100,
+      height: 48,
+      text: 'Click',
+    },
   ];
   const r = classifyColors(m, 'light');
-  assert(Object.keys(r.colors).length >= 2, `Expected >=2 colors, got ${Object.keys(r.colors).length}`);
+  assert(
+    Object.keys(r.colors).length >= 2,
+    `Expected >=2 colors, got ${Object.keys(r.colors).length}`,
+  );
   assert(r.colors.surface, 'Expected surface color');
   assert(r.colors.tertiary, 'Expected accent color (tertiary)');
 });
@@ -68,25 +112,75 @@ t('dark mode classification differs from light', async () => {
   const { classifyColors } = await import('../scripts/classify-colors.js');
   // Dark mode: dark bg = surface, light text = on-surface, bright accent
   const m = [
-    { backgroundColor: 'rgba(10,10,30,1)', color: 'rgba(220,220,240,1)', borderColor: 'rgba(0,0,0,0)', width: 1440, height: 900, text: '' },
-    { backgroundColor: 'rgba(200,200,210,1)', color: 'rgba(10,10,30,1)', borderColor: 'rgba(0,0,0,0)', width: 300, height: 200, text: 'Card' },
-    { backgroundColor: 'rgba(100,150,255,1)', color: 'rgba(255,255,255,1)', borderColor: 'rgba(0,0,0,0)', width: 120, height: 48, text: 'Click' },
+    {
+      backgroundColor: 'rgba(10,10,30,1)',
+      color: 'rgba(220,220,240,1)',
+      borderColor: 'rgba(0,0,0,0)',
+      width: 1440,
+      height: 900,
+      text: '',
+    },
+    {
+      backgroundColor: 'rgba(200,200,210,1)',
+      color: 'rgba(10,10,30,1)',
+      borderColor: 'rgba(0,0,0,0)',
+      width: 300,
+      height: 200,
+      text: 'Card',
+    },
+    {
+      backgroundColor: 'rgba(100,150,255,1)',
+      color: 'rgba(255,255,255,1)',
+      borderColor: 'rgba(0,0,0,0)',
+      width: 120,
+      height: 48,
+      text: 'Click',
+    },
   ];
   const light = classifyColors(m, 'light');
   const dark = classifyColors(m, 'dark');
-  assert(light.colors.surface !== dark.colors.surface || Object.keys(light.colors).length > 1,
-    'Dark mode should produce different or equivalent color assignments');
+  assert(
+    light.colors.surface !== dark.colors.surface || Object.keys(light.colors).length > 1,
+    'Dark mode should produce different or equivalent color assignments',
+  );
 });
 
 t('typography detects Inter from mock styles', async () => {
   const { classifyTypography } = await import('../scripts/classify-typography.js');
   const m = [
-    { text: 'Heading', fontFamily: 'Inter', fontSize: '48px', fontWeight: '700', lineHeight: '1.1', letterSpacing: '-0.02em', tag: 'h1' },
-    { text: 'Body', fontFamily: 'Inter', fontSize: '16px', fontWeight: '400', lineHeight: '1.5', letterSpacing: 'normal', tag: 'p' },
-    { text: 'Caption', fontFamily: 'Inter', fontSize: '12px', fontWeight: '600', lineHeight: '1.33', letterSpacing: '0.05em', tag: 'span' },
+    {
+      text: 'Heading',
+      fontFamily: 'Inter',
+      fontSize: '48px',
+      fontWeight: '700',
+      lineHeight: '1.1',
+      letterSpacing: '-0.02em',
+      tag: 'h1',
+    },
+    {
+      text: 'Body',
+      fontFamily: 'Inter',
+      fontSize: '16px',
+      fontWeight: '400',
+      lineHeight: '1.5',
+      letterSpacing: 'normal',
+      tag: 'p',
+    },
+    {
+      text: 'Caption',
+      fontFamily: 'Inter',
+      fontSize: '12px',
+      fontWeight: '600',
+      lineHeight: '1.33',
+      letterSpacing: '0.05em',
+      tag: 'span',
+    },
   ];
   const r = classifyTypography(m);
-  assert(Object.keys(r.typography).length >= 2, `Expected >=2 levels, got ${Object.keys(r.typography).length}`);
+  assert(
+    Object.keys(r.typography).length >= 2,
+    `Expected >=2 levels, got ${Object.keys(r.typography).length}`,
+  );
 });
 
 t('spacing computes GCD correctly', async () => {
@@ -108,25 +202,60 @@ t('spacing detects half-step', async () => {
 
 t('rounded detects full pill value', async () => {
   const { classifyRounded } = await import('../scripts/classify-rounded.js');
-  const m = [{ borderRadius: '16px' },{ borderRadius: '16px' },{ borderRadius: '9999px' },{ borderRadius: '9999px' }];
+  const m = [
+    { borderRadius: '16px' },
+    { borderRadius: '16px' },
+    { borderRadius: '9999px' },
+    { borderRadius: '9999px' },
+  ];
   assert(classifyRounded(m).rounded.full);
 });
 
 t('rounded detects none for zero-radius', async () => {
   const { classifyRounded } = await import('../scripts/classify-rounded.js');
-  assert(classifyRounded([{ borderRadius: '0px' },{ borderRadius: '0px' }]).rounded.none);
+  assert(classifyRounded([{ borderRadius: '0px' }, { borderRadius: '0px' }]).rounded.none);
 });
 
 t('detectComponents finds buttons and cards', async () => {
   const { detectComponents } = await import('../scripts/detect-components.js');
   const m = [
-    { isButton: true, width: 120, height: 48, backgroundColor: 'rgba(255,255,255,1)', color: 'rgba(0,0,0,1)', borderRadius: '24px', padding: '0 24px', text: 'Click' },
-    { isButton: false, width: 400, height: 200, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '16px', padding: '24px', text: '' },
-    { isInput: true, width: 300, height: 48, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '24px', padding: '20px', text: '' },
+    {
+      isButton: true,
+      width: 120,
+      height: 48,
+      backgroundColor: 'rgba(255,255,255,1)',
+      color: 'rgba(0,0,0,1)',
+      borderRadius: '24px',
+      padding: '0 24px',
+      text: 'Click',
+    },
+    {
+      isButton: false,
+      width: 400,
+      height: 200,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderRadius: '16px',
+      padding: '24px',
+      text: '',
+    },
+    {
+      isInput: true,
+      width: 300,
+      height: 48,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderRadius: '24px',
+      padding: '20px',
+      text: '',
+    },
   ];
   const r = await detectComponents(m);
-  assert(Object.keys(r.components).length >= 2, `Expected >=2 components, got ${Object.keys(r.components).length}`);
-  assert(r.detectedPatterns.includes('button-primary') || r.detectedPatterns.includes('input-field'));
+  assert(
+    Object.keys(r.components).length >= 2,
+    `Expected >=2 components, got ${Object.keys(r.components).length}`,
+  );
+  assert(
+    r.detectedPatterns.includes('button-primary') || r.detectedPatterns.includes('input-field'),
+  );
 });
 
 t('detectComponents returns empty on unstyleable input', async () => {
@@ -139,36 +268,68 @@ t('detectComponents returns empty on unstyleable input', async () => {
 t('generateProse produces all 8 sections', async () => {
   const { generateProse } = await import('../scripts/generate-prose.js');
   const prose = generateProse({
-    name: 'Test', colors: { surface: '#FFF', 'on-surface': '#000', tertiary: '#E4002B' },
+    name: 'Test',
+    colors: { surface: '#FFF', 'on-surface': '#000', tertiary: '#E4002B' },
     typography: { 'body-md': { fontFamily: 'Inter', fontSize: '16px', fontWeight: '400' } },
-    spacing: { unit: '8px' }, rounded: { sm: '4px' }, components: {},
-    hints: { dominantColorFamily: 'light', styleSignals: ['swiss'], fontCount: 1, glassDetected: false },
+    spacing: { unit: '8px' },
+    rounded: { sm: '4px' },
+    components: {},
+    hints: {
+      dominantColorFamily: 'light',
+      styleSignals: ['swiss'],
+      fontCount: 1,
+      glassDetected: false,
+    },
     detectedPatterns: [],
   });
-  ['## Overview','## Colors','## Typography','## Layout','## Elevation','## Shapes','## Components',"## Do's and Don'ts"]
-    .forEach(sec => assert(prose.includes(sec), `Missing: ${sec}`));
+  [
+    '## Overview',
+    '## Colors',
+    '## Typography',
+    '## Layout',
+    '## Elevation',
+    '## Shapes',
+    '## Components',
+    "## Do's and Don'ts",
+  ].forEach((sec) => assert(prose.includes(sec), `Missing: ${sec}`));
 });
 
 t('generateProse handles glassmorphism style', async () => {
   const { generateProse } = await import('../scripts/generate-prose.js');
   const prose = generateProse({
-    name: 'Glass', colors: { surface: '#0B1326' },
-    typography: {}, spacing: {}, rounded: {}, components: {},
-    hints: { dominantColorFamily: 'dark', styleSignals: ['glassmorphism'], fontCount: 1, glassDetected: true },
+    name: 'Glass',
+    colors: { surface: '#0B1326' },
+    typography: {},
+    spacing: {},
+    rounded: {},
+    components: {},
+    hints: {
+      dominantColorFamily: 'dark',
+      styleSignals: ['glassmorphism'],
+      fontCount: 1,
+      glassDetected: true,
+    },
     detectedPatterns: [],
   });
-  assert(prose.includes('glassmorphism') || prose.includes('frosted'), 'Should mention glass/glassmorphism');
+  assert(
+    prose.includes('glassmorphism') || prose.includes('frosted'),
+    'Should mention glass/glassmorphism',
+  );
 });
 
 t('writeDESIGNmd produces valid DESIGN.md file', async () => {
   const { writeDESIGNmd } = await import('../scripts/write-designd.js');
   const tmp = '/tmp/ed-test-output.md';
   writeDESIGNmd({
-    name: 'Test System', version: 'alpha',
+    name: 'Test System',
+    version: 'alpha',
     colors: { primary: '#111', surface: '#FFF' },
     typography: { 'body-md': { fontFamily: 'Inter', fontSize: '16px', fontWeight: '400' } },
-    spacing: { unit: '8px' }, rounded: { sm: '4px' },
-    components: { 'button-primary': { backgroundColor: '#E4002B', textColor: '#FFF', rounded: '4px' } },
+    spacing: { unit: '8px' },
+    rounded: { sm: '4px' },
+    components: {
+      'button-primary': { backgroundColor: '#E4002B', textColor: '#FFF', rounded: '4px' },
+    },
     prose: '## Overview\n\nTest.\n',
     outputPath: tmp,
   });
@@ -186,9 +347,15 @@ t('writeDESIGNmd handles dark mode colors', async () => {
   const { writeDESIGNmd } = await import('../scripts/write-designd.js');
   const tmp = '/tmp/ed-test-dark.md';
   writeDESIGNmd({
-    name: 'Dark', colors: { surface: '#111' }, typography: {}, spacing: {}, rounded: {}, components: {},
+    name: 'Dark',
+    colors: { surface: '#111' },
+    typography: {},
+    spacing: {},
+    rounded: {},
+    components: {},
     colorsDark: { surface: '#222', 'on-surface': '#EEE' },
-    prose: '## Overview\n\nDark.\n', outputPath: tmp,
+    prose: '## Overview\n\nDark.\n',
+    outputPath: tmp,
   });
   const c = readFileSync(tmp, 'utf8');
   assert(c.includes('colors-dark:'));
@@ -221,9 +388,12 @@ if (puppeteerPkg) {
     const result = await ex.extract(fixture);
     const styles = result.light.styles;
     assert(styles.length > 0);
-    const hasGlass = styles.some(s => s.backdropFilter && s.backdropFilter !== 'none');
+    const hasGlass = styles.some((s) => s.backdropFilter && s.backdropFilter !== 'none');
     // Note: file:// may not load Google Fonts CDN — expected
-    assert(result.light.declaredFonts !== undefined, 'Should collect <link> declarations even if unloaded');
+    assert(
+      result.light.declaredFonts !== undefined,
+      'Should collect <link> declarations even if unloaded',
+    );
   });
 
   t('BrowserExtractor handles minimal-no-styles fixture (degraded)', async () => {
@@ -276,9 +446,11 @@ t('all 16 script modules resolve imports correctly', async () => {
     '../scripts/extract.js',
   ];
   for (const script of scripts) {
-    try { await import(script); }
-    catch (e) {
-      if (e.code === 'ERR_MODULE_NOT_FOUND') throw new Error(`Broken import in ${script}: ${e.message}`);
+    try {
+      await import(script);
+    } catch (e) {
+      if (e.code === 'ERR_MODULE_NOT_FOUND')
+        throw new Error(`Broken import in ${script}: ${e.message}`);
       if (!e.message.includes('puppeteer') && !e.message.includes('Cannot find package')) throw e;
     }
   }
@@ -300,7 +472,12 @@ t('classifySpacing handles all-zero values', async () => {
 
 t('classifyRounded handles mixed px+rem units', async () => {
   const { classifyRounded } = await import('../scripts/classify-rounded.js');
-  const m = [{ borderRadius: '16px' },{ borderRadius: '1rem' },{ borderRadius: '16px' },{ borderRadius: '1rem' }];
+  const m = [
+    { borderRadius: '16px' },
+    { borderRadius: '1rem' },
+    { borderRadius: '16px' },
+    { borderRadius: '1rem' },
+  ];
   assert(classifyRounded(m).rounded.sm || classifyRounded(m).rounded.md);
 });
 
@@ -383,20 +560,29 @@ t('baselineLint flags a below-AA contrast pair as an error', () => {
   const fp = writeFixture('low', LOW_CONTRAST);
   const r = baselineLint(fp);
   assert(r.summary.errors >= 1, 'low contrast should error');
-  assert(r.findings.some((x) => x.rule === 'contrast-aa'), 'a contrast-aa finding is present');
+  assert(
+    r.findings.some((x) => x.rule === 'contrast-aa'),
+    'a contrast-aa finding is present',
+  );
 });
 
 t('baselineLint errors on a missing required role', () => {
-  const fp = writeFixture('noroles', `---
+  const fp = writeFixture(
+    'noroles',
+    `---
 name: NoRoles
 colors:
   primary: "#123456"
 ---
 
 ## Overview
-`);
+`,
+  );
   const r = baselineLint(fp);
-  assert(r.findings.some((x) => x.rule === 'role-missing'), 'missing surface/on-surface errors');
+  assert(
+    r.findings.some((x) => x.rule === 'role-missing'),
+    'missing surface/on-surface errors',
+  );
 });
 
 t('baselineLint errors on malformed (missing) front matter', () => {
@@ -423,7 +609,9 @@ t('baselineLint result shape matches the CLI lint contract', () => {
 
 t('baselineDiff reports added, removed, and modified color roles', () => {
   const oldFp = writeFixture('diff-old', GOOD);
-  const newFp = writeFixture('diff-new', `---
+  const newFp = writeFixture(
+    'diff-new',
+    `---
 name: Changed
 colors:
   surface: "#ffffff"
@@ -432,7 +620,8 @@ colors:
 ---
 
 ## Overview
-`);
+`,
+  );
   const d = baselineDiff(oldFp, newFp);
   assert(d.tokens.colors.modified.includes('on-surface'), 'on-surface changed value');
   assert(d.tokens.colors.added.includes('primary'), 'primary is new');
@@ -488,7 +677,9 @@ spacing:
 
 t('baselineDiff reports typography added, removed, and modified', () => {
   const oldFp = writeFixture('typo-old', TYPO);
-  const newFp = writeFixture('typo-new', `---
+  const newFp = writeFixture(
+    'typo-new',
+    `---
 name: Typed2
 colors:
   surface: "#ffffff"
@@ -505,7 +696,8 @@ typography:
 ---
 
 ## Overview
-`);
+`,
+  );
   const d = baselineDiff(oldFp, newFp);
   assert(d.tokens.typography.added.includes('display-lg'), 'display-lg is new');
   assert(d.tokens.typography.removed.includes('title-lg'), 'title-lg was removed');
@@ -515,12 +707,17 @@ typography:
 t('baselineLint warns when typography is empty', () => {
   const fp = writeFixture('typo-empty', GOOD);
   const r = baselineLint(fp);
-  assert(r.findings.some((x) => x.rule === 'typography-empty'), 'empty typography warns');
+  assert(
+    r.findings.some((x) => x.rule === 'typography-empty'),
+    'empty typography warns',
+  );
   assert(r.summary.errors === 0, 'an empty typography block is a warning, not an error');
 });
 
 t('baselineLint warns when no body-tier level is present', () => {
-  const fp = writeFixture('typo-nobody', `---
+  const fp = writeFixture(
+    'typo-nobody',
+    `---
 name: NoBody
 colors:
   surface: "#ffffff"
@@ -532,13 +729,19 @@ typography:
 ---
 
 ## Overview
-`);
+`,
+  );
   const r = baselineLint(fp);
-  assert(r.findings.some((x) => x.rule === 'typography-no-body'), 'no body-tier warns');
+  assert(
+    r.findings.some((x) => x.rule === 'typography-no-body'),
+    'no body-tier warns',
+  );
 });
 
 t('baselineLint warns on a non-length fontSize', () => {
-  const fp = writeFixture('typo-badsize', `---
+  const fp = writeFixture(
+    'typo-badsize',
+    `---
 name: BadSize
 colors:
   surface: "#ffffff"
@@ -550,13 +753,19 @@ typography:
 ---
 
 ## Overview
-`);
+`,
+  );
   const r = baselineLint(fp);
-  assert(r.findings.some((x) => x.rule === 'typography-fontsize-invalid'), 'non-length fontSize warns');
+  assert(
+    r.findings.some((x) => x.rule === 'typography-fontsize-invalid'),
+    'non-length fontSize warns',
+  );
 });
 
 t('baselineLint errors on an unparseable color value', () => {
-  const fp = writeFixture('bad-color', `---
+  const fp = writeFixture(
+    'bad-color',
+    `---
 name: BadColor
 colors:
   surface: "#ffffff"
@@ -567,9 +776,13 @@ typography:
 ---
 
 ## Overview
-`);
+`,
+  );
   const r = baselineLint(fp);
-  assert(r.findings.some((x) => x.rule === 'color-unparseable'), 'unparseable color errors');
+  assert(
+    r.findings.some((x) => x.rule === 'color-unparseable'),
+    'unparseable color errors',
+  );
   assert(r.summary.errors >= 1);
 });
 
@@ -582,7 +795,11 @@ const { DesignValidator } = await import('../scripts/lib/validator.js');
 const shapeFixture = writeFixture('routing', GOOD);
 
 t('validator falls back to the baseline when the CLI is absent', () => {
-  const v = new DesignValidator({ runCommand: () => { throw new Error('no npx'); } });
+  const v = new DesignValidator({
+    runCommand: () => {
+      throw new Error('no npx');
+    },
+  });
   const r = v.lint(shapeFixture);
   assert(r.source === 'baseline', `expected baseline, got ${r.source}`);
   assert(r.skipped === false, 'baseline never skips');
@@ -590,11 +807,14 @@ t('validator falls back to the baseline when the CLI is absent', () => {
 });
 
 t('validator uses the CLI when the probe succeeds', () => {
-  const v = new DesignValidator({ runCommand: (c) => {
-    if (c.includes('--help')) return '';
-    if (c.includes('lint')) return JSON.stringify({ summary: { errors: 0, warnings: 1, info: 0 }, findings: [] });
-    return '';
-  } });
+  const v = new DesignValidator({
+    runCommand: (c) => {
+      if (c.includes('--help')) return '';
+      if (c.includes('lint'))
+        return JSON.stringify({ summary: { errors: 0, warnings: 1, info: 0 }, findings: [] });
+      return '';
+    },
+  });
   const r = v.lint(shapeFixture);
   assert(r.source === 'cli', `expected cli, got ${r.source}`);
   assert(r.summary.warnings === 1);
@@ -602,16 +822,22 @@ t('validator uses the CLI when the probe succeeds', () => {
 });
 
 t('validator falls back when the CLI probe passes but the lint invocation fails', () => {
-  const v = new DesignValidator({ runCommand: (c) => {
-    if (c.includes('--help')) return '';
-    throw new Error('cli crashed');
-  } });
+  const v = new DesignValidator({
+    runCommand: (c) => {
+      if (c.includes('--help')) return '';
+      throw new Error('cli crashed');
+    },
+  });
   const r = v.lint(shapeFixture);
   assert(r.source === 'baseline', 'a failed CLI lint falls back to the baseline');
 });
 
 t('validator diff falls back to the baseline when the CLI is absent', () => {
-  const v = new DesignValidator({ runCommand: () => { throw new Error('no npx'); } });
+  const v = new DesignValidator({
+    runCommand: () => {
+      throw new Error('no npx');
+    },
+  });
   const d = v.diff(shapeFixture, shapeFixture);
   assert(d.source === 'baseline');
   assert(d.skipped === false);
@@ -620,10 +846,24 @@ t('validator diff falls back to the baseline when the CLI is absent', () => {
 
 // Clean up the baseline fixtures.
 for (const n of [
-  'good','low','noroles','nofm','shape','diff-old','diff-new','routing',
-  'typo-old','typo-new','typo-empty','typo-nobody','typo-badsize','bad-color',
+  'good',
+  'low',
+  'noroles',
+  'nofm',
+  'shape',
+  'diff-old',
+  'diff-new',
+  'routing',
+  'typo-old',
+  'typo-new',
+  'typo-empty',
+  'typo-nobody',
+  'typo-badsize',
+  'bad-color',
 ]) {
-  try { nodeFs.unlinkSync(`/tmp/ed-baseline-${n}.md`); } catch {}
+  try {
+    nodeFs.unlinkSync(`/tmp/ed-baseline-${n}.md`);
+  } catch {}
 }
 
 // ================================================================

@@ -86,15 +86,15 @@ After the user confirms the summary in step 4, persist the key decisions:
 
 ```yaml
 # .agent/tasks/planning-context.yml — written by elaborate-spec; consumed by scope-work and slice-tasks
-feature_name: '<from step 1>'
-problem_statement: '<one paragraph>'
+feature_name: "<from step 1>"
+problem_statement: "<one paragraph>"
 constraints:
-  - '<constraint 1>'
+  - "<constraint 1>"
 out_of_scope:
-  - '<excluded item 1>'
+  - "<excluded item 1>"
 key_decisions:
-  - decision: '<what was decided>'
-    rationale: '<why>'
+  - decision: "<what was decided>"
+    rationale: "<why>"
 ```
 
 If `.agent/tasks/planning-context.yml` already exists, ask: `"Planning context from a prior session exists. Update it? [Y/n]"`. Overwrite on Y; leave unchanged on N.

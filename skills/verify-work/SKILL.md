@@ -100,31 +100,31 @@ After UAT passes, write structured evidence for the story:
 
 ```yaml
 story_id: e01s01
-verified_at: '2026-06-11T14:30:00Z'
+verified_at: "2026-06-11T14:30:00Z"
 verifier: verify-work
 phases:
   smoke:
     passed: true
   build:
     passed: true
-    command: 'npm run build'
+    command: "npm run build"
   typecheck:
     passed: true
   lint:
     passed: true
   tests:
     passed: true
-    coverage: '94.2%'
+    coverage: "94.2%"
   terminal_verdict:
-    command: 'npm test'
+    command: "npm test"
     exit_code: 0
-    captured_at: '2026-06-11T14:25:00Z'
-    note: 'Single run. Do not merge output from other attempts.'
+    captured_at: "2026-06-11T14:25:00Z"
+    note: "Single run. Do not merge output from other attempts."
   manual:
     steps:
-      - step: 'Open /login'
-        expected: 'Login form renders'
-        actual: 'Login form rendered correctly'
+      - step: "Open /login"
+        expected: "Login form renders"
+        actual: "Login form rendered correctly"
         passed: true
   gaps:
     closed: true

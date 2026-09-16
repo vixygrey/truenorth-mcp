@@ -1,6 +1,6 @@
 ---
 name: align-grid
-description: 'Build an editorial or report webpage on a genuine Müller-Brockmann modular grid (International Typographic Style), not a decorative one. Encodes the discipline (columns, modules, and a baseline, grotesque type, flush-left, a restrained black-white-red palette) and the front-end engineering to make the grid real and verified: one CSS-variable source of truth, an interactive grid-toggle overlay, subgrid bands so every element snaps to a column line, an 8px baseline lock, and runtime optical alignment. Ships with a scaffold generator and a verification harness.'
+description: "Build an editorial or report webpage on a genuine Müller-Brockmann modular grid (International Typographic Style), not a decorative one. Encodes the discipline (columns, modules, and a baseline, grotesque type, flush-left, a restrained black-white-red palette) and the front-end engineering to make the grid real and verified: one CSS-variable source of truth, an interactive grid-toggle overlay, subgrid bands so every element snaps to a column line, an 8px baseline lock, and runtime optical alignment. Ships with a scaffold generator and a verification harness."
 ---
 
 # Müller-Brockmann Grid Systems — built real, visible, and verified
@@ -78,18 +78,18 @@ A 180px headline whose layout box is exactly on line 1 still looks misaligned ag
 
 ```js
 // after document.fonts.ready and on resize:
-var cvs = document.createElement('canvas'),
-  ctx = cvs.getContext('2d');
-document.querySelectorAll('.masthead,.numeral,.shead h2,.h2b').forEach(function (el) {
-  el.style.marginLeft = '0px';
+var cvs = document.createElement("canvas"),
+  ctx = cvs.getContext("2d");
+document.querySelectorAll(".masthead,.numeral,.shead h2,.h2b").forEach(function (el) {
+  el.style.marginLeft = "0px";
   var cs = getComputedStyle(el),
-    ch = (el.textContent || '').trim()[0];
+    ch = (el.textContent || "").trim()[0];
   if (!ch) return;
-  if (cs.textTransform === 'uppercase') ch = ch.toUpperCase();
-  ctx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
-  ctx.textAlign = 'left';
+  if (cs.textTransform === "uppercase") ch = ch.toUpperCase();
+  ctx.font = cs.fontStyle + " " + cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+  ctx.textAlign = "left";
   var abl = ctx.measureText(ch).actualBoundingBoxLeft; // +ve = ink overhangs left of box
-  if (isFinite(abl)) el.style.marginLeft = abl.toFixed(2) + 'px'; // shift box so INK lands on the line
+  if (isFinite(abl)) el.style.marginLeft = abl.toFixed(2) + "px"; // shift box so INK lands on the line
 });
 ```
 

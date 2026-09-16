@@ -52,6 +52,7 @@ Stories with WSJF < 1.5 are cut candidates: high effort, low combined value.
 ## Example
 
 Story: "Add OAuth login"
+
 - Business Value: 8 (removes major sign-up friction)
 - Time Criticality: 5 (Q3 launch nice, not hard)
 - Risk Reduction: 3 (minor security improvement)

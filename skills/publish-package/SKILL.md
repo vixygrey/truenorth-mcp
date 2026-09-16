@@ -1,6 +1,6 @@
 ---
 name: publish-package
-description: 'Package-registry publishing for npm, crates.io, PyPI, and Homebrew. Verifies prerequisites, runs the publish command, confirms success, and surfaces actionable error hints on failure.'
+description: "Package-registry publishing for npm, crates.io, PyPI, and Homebrew. Verifies prerequisites, runs the publish command, confirms success, and surfaces actionable error hints on failure."
 ---
 
 # Publish Package

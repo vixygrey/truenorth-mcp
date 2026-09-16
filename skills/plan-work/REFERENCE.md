@@ -38,15 +38,15 @@ status: failing
 bcps: 3
 tasks:
   - id: 1
-    description: 'Add login form component tests'
-    verify: 'npm test -- login-form.test.tsx'
+    description: "Add login form component tests"
+    verify: "npm test -- login-form.test.tsx"
     risk: P1
     status: failing # flip to passing only after verify exits 0 (e45s06)
     allure:
       severity: high # P0→critical, P1→high, P2→normal, P3→minor
       categories:
-        - 'Auth'
-        - 'Security Review'
+        - "Auth"
+        - "Security Review"
 ```
 
 **Allure severity mapping:**

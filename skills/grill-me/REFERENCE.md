@@ -7,6 +7,7 @@ Triggered by "grill me with docs" or when a plan depends on a specific library o
 ## Step 1 — Identify the dependencies
 
 From the plan or conversation, list:
+
 - Every external library being used
 - Every third-party API being called
 - Every framework behavior being relied upon
@@ -22,6 +23,7 @@ WebFetch the official docs for [library/API]
 ```
 
 Prioritize:
+
 - The API reference for the specific method being used
 - The changelog for the version in use (breaking changes)
 - Migration guides if upgrading from a previous version
@@ -50,6 +52,7 @@ Document each discrepancy clearly.
 ## Step 5 — Update the plan
 
 For each confirmed discrepancy, recommend a concrete fix:
+
 - Correct method signature
 - Correct argument order
 - Alternative approach that matches what the library actually supports
@@ -58,6 +61,7 @@ For each confirmed discrepancy, recommend a concrete fix:
 ## Step 6 — Sign off
 
 When all major assumptions have been validated against docs, report:
+
 - Which assumptions were confirmed ✓
 - Which were corrected ✗ + what the correct approach is
 - Which remain uncertain → recommend `spike-prototype`

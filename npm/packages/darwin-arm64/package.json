@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "description": "TrueNorth-MCP native binary for macOS on arm64.",
   "license": "MIT",
-  "os": ["darwin"],
-  "cpu": ["arm64"],
-  "files": ["truenorth-mcp"]
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "truenorth-mcp"
+  ]
 }

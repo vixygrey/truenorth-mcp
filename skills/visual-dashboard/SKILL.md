@@ -1,6 +1,6 @@
 ---
 name: visual-dashboard
-description: 'Start a browser-based dashboard that visualizes the architecture, the implementation plans, and the project status. Reads the cockpit files (state, release plan, task groups, planning status) and serves a read-only view.'
+description: "Start a browser-based dashboard that visualizes the architecture, the implementation plans, and the project status. Reads the cockpit files (state, release plan, task groups, planning status) and serves a read-only view."
 ---
 
 # Visual Dashboard

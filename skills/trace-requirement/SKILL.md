@@ -1,6 +1,6 @@
 ---
 name: trace-requirement
-description: 'Link the story ids from the release plan and the task groups to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code.'
+description: "Link the story ids from the release plan and the task groups to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code."
 ---
 
 # Trace Requirement

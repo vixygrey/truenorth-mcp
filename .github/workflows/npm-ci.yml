@@ -38,7 +38,7 @@ jobs:
         if: steps.wrapper.outputs.present == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Run the wrapper tests
         if: steps.wrapper.outputs.present == 'true'

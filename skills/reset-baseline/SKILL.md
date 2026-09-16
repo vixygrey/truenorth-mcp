@@ -1,6 +1,6 @@
 ---
 name: reset-baseline
-description: 'Restore the project to a known clean state between agent runs or experiments. Use it between benchmark runs, after a failed spike, or when the user wants a clean working tree.'
+description: "Restore the project to a known clean state between agent runs or experiments. Use it between benchmark runs, after a failed spike, or when the user wants a clean working tree."
 ---
 
 # Reset Baseline

@@ -1,6 +1,6 @@
 ---
 name: edit-document
-description: 'Edit and improve a document by restructuring sections, improving clarity, and tightening prose. Use it to edit, revise, restructure, or improve any document, including a narrative doc under specs/, an article, a README, or technical writing.'
+description: "Edit and improve a document by restructuring sections, improving clarity, and tightening prose. Use it to edit, revise, restructure, or improve any document, including a narrative doc under specs/, an article, a README, or technical writing."
 ---
 
 # Edit Document

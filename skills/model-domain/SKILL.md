@@ -1,6 +1,6 @@
 ---
 name: model-domain
-description: 'A grilling session that challenges a plan against the existing domain model, sharpens terminology, and updates the project tech-stack note and the ADRs inline as decisions crystallize. Use it to stress-test a plan against the project domain language and documented decisions.'
+description: "A grilling session that challenges a plan against the existing domain model, sharpens terminology, and updates the project tech-stack note and the ADRs inline as decisions crystallize. Use it to stress-test a plan against the project domain language and documented decisions."
 ---
 
 # Model Domain

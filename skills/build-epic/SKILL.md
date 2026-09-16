@@ -1,6 +1,6 @@
 ---
 name: build-epic
-description: 'The task-group build cycle. Reads the state, the execution status, and one task group, then advances the build flow one step per invocation in resume mode. Use it instead of an ad-hoc execute-plan for release work.'
+description: "The task-group build cycle. Reads the state, the execution status, and one task group, then advances the build flow one step per invocation in resume mode. Use it instead of an ad-hoc execute-plan for release work."
 ---
 
 # Build Epic
@@ -55,8 +55,8 @@ verify, audit, commit, release.
      stories:
        e01s01:
          status: done
-         started_at: '2026-07-12T16:00:00-03:00'
-         completed_at: '2026-07-12T18:45:00-03:00'
+         started_at: "2026-07-12T16:00:00-03:00"
+         completed_at: "2026-07-12T18:45:00-03:00"
      ```
 
 8. **Traceability refresh**: before step 8, refresh the traceability data and
