@@ -60,6 +60,8 @@
       font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding:11px 14px;}
     .toggle .dot{width:9px;height:9px;border-radius:50%;background:#555;}
     body.grid-on .toggle{background:var(--accent);} body.grid-on .toggle .dot{background:#fff;}
+    /* Visible keyboard focus for interactive controls (WCAG 2.4.7). */
+    .toggle:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
 
     /* ===== COCKPIT STYLES ===== */
     header { padding: var(--lh) 0; background: var(--paper); color: var(--ink); display: flex; gap: var(--gutter); flex-wrap: wrap; border-bottom: 2px solid var(--ink); margin-bottom: var(--lh); }
@@ -71,9 +73,24 @@
     .epic { padding: 0 0 calc(var(--lh) - 1px) 0; margin-bottom: var(--lh); border-bottom: 1px solid #eee; }
     .epic:last-child { margin-bottom: 0; border-bottom: none; }
     .epic strong { color: var(--ink); }
+    /* Status is signaled by a symbol and a word, not by color alone (WCAG 1.4.1).
+       The color is redundant emphasis on top of the text marker. */
     .done { color: #0a7; }
+    .done::before { content: '\2713\00a0'; } /* check mark */
     .pending { color: #c80; }
+    .pending::before { content: '\25cb\00a0'; } /* open circle */
     #err { color: #c00; padding: var(--lh) 0; grid-column: 1 / -1; }
+    #err:not([hidden])::before { content: 'Error: '; font-weight: 600; }
+
+    /* Respect a reduced-motion preference (WCAG 2.3.3). */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
