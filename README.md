@@ -27,8 +27,9 @@ through a resource.
 
 ## Install
 
-Install the npm wrapper. It resolves the platform binary and runs the server. The
-`init` subcommand scaffolds the `specs/` directory when it is absent.
+Install the npm wrapper. It resolves the platform binary and runs the server. Scaffold
+a new project by calling the `truenorth_scaffold_project` tool from your MCP client,
+which seeds the `.agent/` tree for a methodology profile.
 
 ## Build from source
 

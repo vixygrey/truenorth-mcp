@@ -1,22 +1,22 @@
-// The TrueNorth-MCP launcher logic, factored into pure functions so the resolution and
-// scaffold behavior is testable without spawning a process.
+// The TrueNorth-MCP launcher logic, factored into pure functions so the binary
+// resolution is testable without spawning a process.
 //
-// Requirements: 8.3, 8.4, 8.5, 8.9, 8.10. Design: Part II §7.
+// Requirements: 8.3, 8.4, 8.9. Design: Part II §7.
 
 'use strict';
 
 const { spawnSync } = require('node:child_process');
-const fs = require('node:fs');
-const path = require('node:path');
 
 // The platforms with a published native binary. Windows is out of scope (Requirement 8.8).
 const SUPPORTED = new Set(['darwin-arm64', 'darwin-x64', 'linux-x64', 'linux-arm64']);
 
-// The state files the init scaffold seeds into a fresh specs/ cockpit.
-const SPECS_SEED = {
-  'state.yaml': 'active_epic: null\nactive_story: null\nhandoff:\n  next_skill: null\n',
-  'release-plan.yaml': 'release:\n  version: 0.1.0\nbuild_order: []\n',
-};
+// The message the `init` subcommand prints. The runtime owns scaffolding through the
+// truenorth_scaffold_project MCP tool, which seeds the .agent/ tree for a methodology
+// profile. The wrapper stays thin and does not scaffold (#182).
+const INIT_MESSAGE =
+  'truenorth-mcp: `init` is retired. Scaffold a project by calling the ' +
+  '`truenorth_scaffold_project` tool from your MCP client, which seeds the .agent/ ' +
+  'tree for a methodology profile.\n';
 
 // The platform package name for a platform and arch, for example
 // `@truenorth-mcp/darwin-arm64`.
@@ -42,37 +42,18 @@ function resolveBinary(platform, arch, resolver) {
   return resolver(`${pkg}/truenorth-mcp`);
 }
 
-// Scaffold a fresh specs/ cockpit under `cwd` (Requirement 8.5).
-//
-// Returns `{ scaffolded: true }` when it created the cockpit, or
-// `{ scaffolded: false, reason }` when specs/ already exists (Requirement 8.10). The
-// caller reports the skip to stderr.
-function scaffoldSpecs(cwd) {
-  const specsDir = path.join(cwd, 'specs');
-  if (fs.existsSync(specsDir)) {
-    return { scaffolded: false, reason: 'specs/ already exists' };
-  }
-  fs.mkdirSync(specsDir, { recursive: true });
-  for (const [name, contents] of Object.entries(SPECS_SEED)) {
-    fs.writeFileSync(path.join(specsDir, name), contents);
-  }
-  return { scaffolded: true };
-}
-
 // Run the launcher with an injected environment, for testing.
 //
-// `deps` carries `argv`, `platform`, `arch`, `cwd`, `resolver`, `spawn`, `stderr`, and
-// `exit`, so the tests drive the flow without touching the real process. Returns the exit
-// code (the real entry passes it to `process.exit`).
+// `deps` carries `argv`, `platform`, `arch`, `resolver`, `spawn`, `stderr`, and `exit`, so
+// the tests drive the flow without touching the real process. Returns the exit code (the
+// real entry passes it to `process.exit`).
 function run(deps) {
-  const { argv, platform, arch, cwd, resolver, spawn, stderr, exit } = deps;
+  const { argv, platform, arch, resolver, spawn, stderr, exit } = deps;
 
-  // The `init` subcommand scaffolds the cockpit and returns without spawning.
+  // The `init` subcommand is retired. The runtime owns scaffolding through the
+  // truenorth_scaffold_project tool, so the wrapper prints a pointer and exits (#182).
   if (argv[0] === 'init') {
-    const result = scaffoldSpecs(cwd);
-    if (!result.scaffolded) {
-      stderr(`truenorth-mcp: scaffolding skipped, ${result.reason}\n`);
-    }
+    stderr(INIT_MESSAGE);
     return exit(0);
   }
 
@@ -101,7 +82,6 @@ function realDeps() {
     argv: process.argv.slice(2),
     platform: process.platform,
     arch: process.arch,
-    cwd: process.cwd(),
     resolver: (request) => require.resolve(request),
     spawn: spawnSync,
     stderr: (text) => process.stderr.write(text),
@@ -114,7 +94,6 @@ module.exports = {
   platformPackage,
   isSupported,
   resolveBinary,
-  scaffoldSpecs,
   run,
   realDeps,
 };
