@@ -35,3 +35,7 @@ node_modules/
 # (Requirement 1.13), so it is not ignored here.
 .claude
 .openhands
+
+# The skill graph is a regenerable cache, rebuilt on demand by build_skill_graph.
+# The rest of `.agent/` is tracked; only this cache file is ignored.
+.agent/tasks/skill-graph.jsonl

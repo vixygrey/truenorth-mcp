@@ -7,7 +7,7 @@
 //!
 //! Design: Part II §1 (entrypoint), §2 (tools).
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use rmcp::handler::server::router::tool::ToolRouter;
@@ -67,9 +67,24 @@ impl ServerContext {
         }
     }
 
-    /// The persisted skill-graph path, `<repo_root>/truenorth-mcp/graph.jsonl`.
+    /// The persisted skill-graph cache path, `<repo_root>/.agent/tasks/skill-graph.jsonl`.
+    ///
+    /// The graph is a regenerable cache, rebuilt on demand by `build_skill_graph`, so it
+    /// lives under `.agent/` and not in the crate source tree (ADR-0008). The write goes
+    /// through the `.agent/` write guard; see `build_skill_graph`.
     pub fn graph_path(&self) -> PathBuf {
-        self.repo_root.join("truenorth-mcp").join("graph.jsonl")
+        self.repo_root
+            .join(".agent")
+            .join("tasks")
+            .join("skill-graph.jsonl")
+    }
+
+    /// The graph cache path relative to `.agent/`, for the write guard.
+    ///
+    /// `write_under_agent` takes a path relative to `.agent/`, so this returns
+    /// `tasks/skill-graph.jsonl` to match `graph_path`.
+    pub fn graph_rel_path() -> &'static Path {
+        Path::new("tasks/skill-graph.jsonl")
     }
 }
 
