@@ -1,0 +1,13 @@
+{
+  "name": "truenorth-mcp-tooling",
+  "private": true,
+  "description": "Repo-level dev tooling for TrueNorth-MCP. Not published. The distributed npm wrapper lives in npm/.",
+  "license": "MIT",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
+  }
+}

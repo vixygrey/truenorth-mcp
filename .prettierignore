@@ -1,0 +1,27 @@
+# Rust owns its formatting through `cargo fmt`. Prettier must not touch it.
+runtime/
+**/*.rs
+**/Cargo.toml
+**/Cargo.lock
+
+# Dependencies and build output.
+node_modules/
+target/
+dist/
+build/
+
+# Runtime-owned cockpit. The runtime writes these YAML files through its write guard.
+# Reformatting them here would fight the runtime and the round-trip preservation.
+.agent/
+
+# HTML templates. Prettier's HTML parser rejects the visual-dashboard templates (inline
+# script and template markup), and its opinionated HTML reflow could break the rendered
+# dashboard. Leave HTML to hand-editing.
+**/*.html
+
+# Legal and third-party text kept verbatim.
+LICENSE
+THIRD-PARTY-NOTICES.md
+
+# Lockfiles and generated data.
+**/*.jsonl

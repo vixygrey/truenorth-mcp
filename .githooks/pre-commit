@@ -1,0 +1,21 @@
+#!/bin/sh
+# pre-commit hook: check formatting on staged files with Prettier.
+#
+# Enable the repo hooks once with:
+#   git config core.hooksPath .githooks
+#
+# This hook is the fast local signal. CI runs the same check as the real gate.
+
+# Collect staged files that are added, copied, or modified.
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# Let Prettier decide which of the staged files it owns (it honors .prettierignore).
+# `--check` exits non-zero when any file is not formatted.
+if ! printf '%s\n' "$staged" | xargs npx --no-install prettier --check 2>/dev/null; then
+  echo "pre-commit: some staged files are not formatted." >&2
+  echo "  fix them with: npm run format" >&2
+  echo "  then re-stage and commit." >&2
+  exit 1
+fi
+exit 0
