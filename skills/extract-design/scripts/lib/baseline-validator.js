@@ -77,25 +77,31 @@ export function contrastRatio(fg, bg) {
 }
 
 /// Parse the DESIGN.md front matter that write-designd.js produces. Returns
-/// `{ frontMatterPresent, name, colors, colorsDark }`, hand-parsed to avoid a YAML
-/// dependency. `colors` and `colors-dark` are flat `role -> value` maps.
+/// `{ frontMatterPresent, name, colors, colorsDark, typography }`, hand-parsed to avoid a
+/// YAML dependency. `colors` and `colors-dark` are flat `role -> value` maps. `typography`
+/// is a nested `level -> { prop -> value }` map.
 export function parseFrontMatter(text) {
-  const out = { frontMatterPresent: false, name: null, colors: {}, colorsDark: {} };
+  const out = { frontMatterPresent: false, name: null, colors: {}, colorsDark: {}, typography: {} };
   if (!text.startsWith('---\n')) return out;
   const end = text.indexOf('\n---', 4);
   if (end === -1) return out;
   out.frontMatterPresent = true;
   const body = text.slice(4, end);
-  let section = null; // null | 'colors' | 'colors-dark'
+  // section: null | 'colors' | 'colors-dark' | 'typography'. typographyLevel tracks the
+  // current nested key while inside the typography block.
+  let section = null;
+  let typographyLevel = null;
   for (const raw of body.split('\n')) {
     if (raw === '') continue;
-    const indented = /^\s+/.test(raw);
+    const indent = raw.length - raw.replace(/^\s+/, '').length;
     const line = raw.trim();
-    if (!indented) {
-      // A top-level key. `colors:` and `colors-dark:` open a nested map; anything else
-      // (name, version, typography, spacing, ...) closes the color sections.
+
+    if (indent === 0) {
+      // A top-level key opens or closes a section.
+      typographyLevel = null;
       if (line === 'colors:') section = 'colors';
       else if (line === 'colors-dark:') section = 'colors-dark';
+      else if (line === 'typography:') section = 'typography';
       else {
         section = null;
         const nameMatch = line.match(/^name:\s*(.+)$/);
@@ -103,11 +109,29 @@ export function parseFrontMatter(text) {
       }
       continue;
     }
-    if (!section) continue;
-    const pair = line.match(/^([\w-]+):\s*(.+)$/);
-    if (!pair) continue;
-    const target = section === 'colors' ? out.colors : out.colorsDark;
-    target[pair[1]] = stripQuotes(pair[2]);
+
+    if (section === 'colors' || section === 'colors-dark') {
+      const pair = line.match(/^([\w-]+):\s*(.+)$/);
+      if (!pair) continue;
+      const target = section === 'colors' ? out.colors : out.colorsDark;
+      target[pair[1]] = stripQuotes(pair[2]);
+      continue;
+    }
+
+    if (section === 'typography') {
+      // A level header has no value (`  body-md:`). A property line has a value and sits at
+      // a deeper indent (`    fontSize: 16px`).
+      const levelHeader = line.match(/^([\w-]+):$/);
+      if (levelHeader) {
+        typographyLevel = levelHeader[1];
+        out.typography[typographyLevel] = {};
+        continue;
+      }
+      const prop = line.match(/^([\w-]+):\s*(.+)$/);
+      if (prop && typographyLevel) {
+        out.typography[typographyLevel][prop[1]] = stripQuotes(prop[2]);
+      }
+    }
   }
   return out;
 }
@@ -164,7 +188,69 @@ export function baselineLint(filePath) {
     findings.push(...contrastFindings(fm.colorsDark, 'colors-dark'));
   }
 
+  findings.push(...unparseableColorFindings(fm.colors, 'colors'));
+  if (Object.keys(fm.colorsDark).length) {
+    findings.push(...unparseableColorFindings(fm.colorsDark, 'colors-dark'));
+  }
+
+  findings.push(...typographyFindings(fm.typography));
+
   return toResult(findings);
+}
+
+/// A CSS length the baseline understands: a number with a unit, or a bare `0`.
+function isLength(value) {
+  if (typeof value !== 'string') return false;
+  return /^-?\d*\.?\d+(px|rem|em|%|pt|vh|vw)$/.test(value.trim()) || value.trim() === '0';
+}
+
+/// A color value that does not parse is a defect: it cannot render and it silently drops
+/// out of the contrast check. Report it directly rather than leaving it as a skipped pair.
+function unparseableColorFindings(colors, label) {
+  const findings = [];
+  for (const [role, value] of Object.entries(colors)) {
+    if (parseColor(value) === null) {
+      findings.push({
+        severity: 'error',
+        rule: 'color-unparseable',
+        message: `${label}: \`${role}\` value \`${value}\` is not a parseable color.`,
+      });
+    }
+  }
+  return findings;
+}
+
+/// Typography completeness and value checks. An empty typography block, or one with no
+/// body-tier level, is a warning: the palette has no defined reading text. A `fontSize`
+/// that is not a length is a warning, since the value cannot render.
+function typographyFindings(typography) {
+  const findings = [];
+  const levels = Object.keys(typography);
+  if (levels.length === 0) {
+    findings.push({
+      severity: 'warning',
+      rule: 'typography-empty',
+      message: 'The front matter defines no typography levels.',
+    });
+    return findings;
+  }
+  if (!levels.some((l) => l.startsWith('body-'))) {
+    findings.push({
+      severity: 'warning',
+      rule: 'typography-no-body',
+      message: 'Typography defines no body-tier level (a `body-*` level for reading text).',
+    });
+  }
+  for (const [level, props] of Object.entries(typography)) {
+    if ('fontSize' in props && !isLength(props.fontSize)) {
+      findings.push({
+        severity: 'warning',
+        rule: 'typography-fontsize-invalid',
+        message: `typography: \`${level}\` fontSize \`${props.fontSize}\` is not a length.`,
+      });
+    }
+  }
+  return findings;
 }
 
 /// Contrast findings for one color map. An `on-*` role present without its background, or
@@ -185,11 +271,8 @@ function contrastFindings(colors, label) {
     }
     const ratio = contrastRatio(fg, bg);
     if (ratio === null) {
-      findings.push({
-        severity: 'info',
-        rule: 'contrast-unparsed',
-        message: `${label}: could not parse \`${fgRole}\` or \`${bgRole}\` as a color.`,
-      });
+      // An unparseable value is reported once by `color-unparseable` (an error). Do not
+      // also emit a redundant info here.
       continue;
     }
     if (ratio < WCAG_AA_NORMAL) {
@@ -207,28 +290,63 @@ function contrastFindings(colors, label) {
 /// Reports added, removed, and modified color roles, and flags a regression when the new
 /// file has more lint errors than the old one.
 export function baselineDiff(oldPath, newPath) {
-  const oldColors = existsSync(oldPath) ? parseFrontMatter(readFileSync(oldPath, 'utf8')).colors : {};
-  const newColors = existsSync(newPath) ? parseFrontMatter(readFileSync(newPath, 'utf8')).colors : {};
-
-  const added = [];
-  const removed = [];
-  const modified = [];
-  for (const role of Object.keys(newColors)) {
-    if (!(role in oldColors)) added.push(role);
-    else if (oldColors[role] !== newColors[role]) modified.push(role);
-  }
-  for (const role of Object.keys(oldColors)) {
-    if (!(role in newColors)) removed.push(role);
-  }
+  const oldFm = existsSync(oldPath) ? parseFrontMatter(readFileSync(oldPath, 'utf8')) : emptyFrontMatter();
+  const newFm = existsSync(newPath) ? parseFrontMatter(readFileSync(newPath, 'utf8')) : emptyFrontMatter();
 
   const oldErrors = existsSync(oldPath) ? baselineLint(oldPath).summary.errors : 0;
   const newErrors = existsSync(newPath) ? baselineLint(newPath).summary.errors : 0;
 
   return {
-    tokens: { colors: { added, removed, modified }, typography: { added: [], removed: [], modified: [] } },
+    tokens: {
+      colors: diffFlatMap(oldFm.colors, newFm.colors),
+      typography: diffNestedMap(oldFm.typography, newFm.typography),
+    },
     regression: newErrors > oldErrors,
     skipped: false,
   };
+}
+
+function emptyFrontMatter() {
+  return { frontMatterPresent: false, name: null, colors: {}, colorsDark: {}, typography: {} };
+}
+
+/// Diff two flat `key -> value` maps. A key present in both with a changed value is
+/// modified.
+function diffFlatMap(oldMap, newMap) {
+  const added = [];
+  const removed = [];
+  const modified = [];
+  for (const key of Object.keys(newMap)) {
+    if (!(key in oldMap)) added.push(key);
+    else if (oldMap[key] !== newMap[key]) modified.push(key);
+  }
+  for (const key of Object.keys(oldMap)) {
+    if (!(key in newMap)) removed.push(key);
+  }
+  return { added, removed, modified };
+}
+
+/// Diff two nested `key -> { prop -> value }` maps. A key present in both is modified when
+/// any property is added, removed, or changed.
+function diffNestedMap(oldMap, newMap) {
+  const added = [];
+  const removed = [];
+  const modified = [];
+  for (const key of Object.keys(newMap)) {
+    if (!(key in oldMap)) added.push(key);
+    else if (!shallowEqual(oldMap[key], newMap[key])) modified.push(key);
+  }
+  for (const key of Object.keys(oldMap)) {
+    if (!(key in newMap)) removed.push(key);
+  }
+  return { added, removed, modified };
+}
+
+function shallowEqual(a, b) {
+  const ak = Object.keys(a);
+  const bk = Object.keys(b);
+  if (ak.length !== bk.length) return false;
+  return ak.every((k) => a[k] === b[k]);
 }
 
 /// Fold a findings list into the CLI-compatible lint result shape.

@@ -441,6 +441,139 @@ colors:
 });
 
 // ================================================================
+// Typography baseline tests (#175)
+// ================================================================
+console.log('\nTypography baseline tests\n');
+
+const TYPO = `---
+name: Typed
+colors:
+  surface: "#ffffff"
+  on-surface: "#000000"
+typography:
+  body-md:
+    fontFamily: Inter
+    fontSize: 16px
+    fontWeight: 400
+  title-lg:
+    fontFamily: Inter
+    fontSize: 24px
+    fontWeight: 600
+---
+
+## Overview
+`;
+
+t('parseFrontMatter reads a nested typography block', () => {
+  const fm = parseFrontMatter(TYPO);
+  assert(Object.keys(fm.typography).length === 2, 'two levels parsed');
+  assert(fm.typography['body-md'].fontFamily === 'Inter');
+  assert(fm.typography['body-md'].fontSize === '16px');
+  assert(fm.typography['title-lg'].fontWeight === '600');
+});
+
+t('parseFrontMatter ends the typography block at the next top-level key', () => {
+  const fm = parseFrontMatter(`---
+name: T
+typography:
+  body-md:
+    fontSize: 16px
+spacing:
+  unit: "8px"
+---
+`);
+  assert(Object.keys(fm.typography).length === 1, 'only body-md is typography');
+  assert(fm.typography['body-md'].fontSize === '16px');
+});
+
+t('baselineDiff reports typography added, removed, and modified', () => {
+  const oldFp = writeFixture('typo-old', TYPO);
+  const newFp = writeFixture('typo-new', `---
+name: Typed2
+colors:
+  surface: "#ffffff"
+  on-surface: "#000000"
+typography:
+  body-md:
+    fontFamily: Roboto
+    fontSize: 16px
+    fontWeight: 400
+  display-lg:
+    fontFamily: Inter
+    fontSize: 64px
+    fontWeight: 700
+---
+
+## Overview
+`);
+  const d = baselineDiff(oldFp, newFp);
+  assert(d.tokens.typography.added.includes('display-lg'), 'display-lg is new');
+  assert(d.tokens.typography.removed.includes('title-lg'), 'title-lg was removed');
+  assert(d.tokens.typography.modified.includes('body-md'), 'body-md fontFamily changed');
+});
+
+t('baselineLint warns when typography is empty', () => {
+  const fp = writeFixture('typo-empty', GOOD);
+  const r = baselineLint(fp);
+  assert(r.findings.some((x) => x.rule === 'typography-empty'), 'empty typography warns');
+  assert(r.summary.errors === 0, 'an empty typography block is a warning, not an error');
+});
+
+t('baselineLint warns when no body-tier level is present', () => {
+  const fp = writeFixture('typo-nobody', `---
+name: NoBody
+colors:
+  surface: "#ffffff"
+  on-surface: "#000000"
+typography:
+  title-lg:
+    fontFamily: Inter
+    fontSize: 24px
+---
+
+## Overview
+`);
+  const r = baselineLint(fp);
+  assert(r.findings.some((x) => x.rule === 'typography-no-body'), 'no body-tier warns');
+});
+
+t('baselineLint warns on a non-length fontSize', () => {
+  const fp = writeFixture('typo-badsize', `---
+name: BadSize
+colors:
+  surface: "#ffffff"
+  on-surface: "#000000"
+typography:
+  body-md:
+    fontFamily: Inter
+    fontSize: huge
+---
+
+## Overview
+`);
+  const r = baselineLint(fp);
+  assert(r.findings.some((x) => x.rule === 'typography-fontsize-invalid'), 'non-length fontSize warns');
+});
+
+t('baselineLint errors on an unparseable color value', () => {
+  const fp = writeFixture('bad-color', `---
+name: BadColor
+colors:
+  surface: "#ffffff"
+  on-surface: "notacolor"
+typography:
+  body-md:
+    fontSize: 16px
+---
+
+## Overview
+`);
+  const r = baselineLint(fp);
+  assert(r.findings.some((x) => x.rule === 'color-unparseable'), 'unparseable color errors');
+  assert(r.summary.errors >= 1);
+});
+
+// ================================================================
 // Validator routing tests (CLI enhancement vs baseline fallback)
 // ================================================================
 console.log('\nValidator routing tests\n');
@@ -486,7 +619,10 @@ t('validator diff falls back to the baseline when the CLI is absent', () => {
 });
 
 // Clean up the baseline fixtures.
-for (const n of ['good','low','noroles','nofm','shape','diff-old','diff-new','routing']) {
+for (const n of [
+  'good','low','noroles','nofm','shape','diff-old','diff-new','routing',
+  'typo-old','typo-new','typo-empty','typo-nobody','typo-badsize','bad-color',
+]) {
   try { nodeFs.unlinkSync(`/tmp/ed-baseline-${n}.md`); } catch {}
 }
 
