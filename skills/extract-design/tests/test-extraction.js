@@ -256,7 +256,7 @@ if (puppeteerPkg) {
 // ================================================================
 console.log('\nHardening tests\n');
 
-t('all 15 script modules resolve imports correctly', async () => {
+t('all 16 script modules resolve imports correctly', async () => {
   const scripts = [
     '../scripts/lib/constants.js',
     '../scripts/lib/logging.js',
@@ -264,6 +264,7 @@ t('all 15 script modules resolve imports correctly', async () => {
     '../scripts/lib/state.js',
     '../scripts/lib/browser.js',
     '../scripts/lib/validator.js',
+    '../scripts/lib/baseline-validator.js',
     '../scripts/collect-styles.js',
     '../scripts/classify-colors.js',
     '../scripts/classify-typography.js',
@@ -302,6 +303,192 @@ t('classifyRounded handles mixed px+rem units', async () => {
   const m = [{ borderRadius: '16px' },{ borderRadius: '1rem' },{ borderRadius: '16px' },{ borderRadius: '1rem' }];
   assert(classifyRounded(m).rounded.sm || classifyRounded(m).rounded.md);
 });
+
+// ================================================================
+// Baseline validator tests (in-repo, no CLI, no network)
+// ================================================================
+console.log('\nBaseline validator tests\n');
+
+const bv = await import('../scripts/lib/baseline-validator.js');
+const { parseColor, contrastRatio, parseFrontMatter, baselineLint, baselineDiff } = bv;
+const nodeFs = await import('node:fs');
+
+// Write a DESIGN.md fixture to a temp path and return it.
+function writeFixture(name, body) {
+  const fp = `/tmp/ed-baseline-${name}.md`;
+  nodeFs.writeFileSync(fp, body, 'utf8');
+  return fp;
+}
+
+const GOOD = `---
+version: alpha
+name: Good System
+colors:
+  surface: "#ffffff"
+  on-surface: "#000000"
+  background: "#ffffff"
+  on-background: "#111111"
+---
+
+## Overview
+`;
+
+const LOW_CONTRAST = `---
+version: alpha
+name: Low
+colors:
+  surface: "#ffffff"
+  on-surface: "#cccccc"
+---
+
+## Overview
+`;
+
+t('parseColor handles hex, 3-digit hex, rgb, and rgba', () => {
+  assert(parseColor('#000000').r === 0 && parseColor('#000000').g === 0);
+  assert(parseColor('#fff').r === 255, '3-digit hex expands');
+  assert(parseColor('rgb(10, 20, 30)').b === 30);
+  assert(parseColor('rgba(10, 20, 30, 0.5)').r === 10);
+  assert(parseColor('not-a-color') === null, 'unparseable returns null');
+});
+
+t('contrastRatio computes WCAG ratios', () => {
+  assert(Math.abs(contrastRatio('#000000', '#ffffff') - 21) < 0.01, 'black/white is 21:1');
+  assert(Math.abs(contrastRatio('#ffffff', '#ffffff') - 1) < 0.01, 'white/white is 1:1');
+  assert(contrastRatio('#zzz', '#fff') === null, 'unparseable returns null');
+});
+
+t('parseFrontMatter reads name and color sections', () => {
+  const fm = parseFrontMatter(GOOD);
+  assert(fm.frontMatterPresent === true);
+  assert(fm.name === 'Good System', `name was ${fm.name}`);
+  assert(fm.colors.surface === '#ffffff');
+  assert(fm.colors['on-surface'] === '#000000');
+});
+
+t('parseFrontMatter reports absent front matter', () => {
+  const fm = parseFrontMatter('# Just a heading\n\nNo front matter.\n');
+  assert(fm.frontMatterPresent === false);
+});
+
+t('baselineLint passes a well-formed DESIGN.md', () => {
+  const fp = writeFixture('good', GOOD);
+  const r = baselineLint(fp);
+  assert(r.summary.errors === 0, `expected 0 errors, got ${r.summary.errors}`);
+  assert(r.skipped === false);
+  assert(Array.isArray(r.findings));
+});
+
+t('baselineLint flags a below-AA contrast pair as an error', () => {
+  const fp = writeFixture('low', LOW_CONTRAST);
+  const r = baselineLint(fp);
+  assert(r.summary.errors >= 1, 'low contrast should error');
+  assert(r.findings.some((x) => x.rule === 'contrast-aa'), 'a contrast-aa finding is present');
+});
+
+t('baselineLint errors on a missing required role', () => {
+  const fp = writeFixture('noroles', `---
+name: NoRoles
+colors:
+  primary: "#123456"
+---
+
+## Overview
+`);
+  const r = baselineLint(fp);
+  assert(r.findings.some((x) => x.rule === 'role-missing'), 'missing surface/on-surface errors');
+});
+
+t('baselineLint errors on malformed (missing) front matter', () => {
+  const fp = writeFixture('nofm', '# No front matter\n\nBody only.\n');
+  const r = baselineLint(fp);
+  assert(r.summary.errors >= 1);
+  assert(r.findings.some((x) => x.rule === 'front-matter-missing'));
+});
+
+t('baselineLint errors on an absent file', () => {
+  const r = baselineLint('/tmp/ed-baseline-does-not-exist.md');
+  assert(r.findings.some((x) => x.rule === 'file-missing'));
+});
+
+t('baselineLint result shape matches the CLI lint contract', () => {
+  const fp = writeFixture('shape', GOOD);
+  const r = baselineLint(fp);
+  assert(typeof r.summary.errors === 'number');
+  assert(typeof r.summary.warnings === 'number');
+  assert(typeof r.summary.info === 'number');
+  assert(Array.isArray(r.findings));
+  assert(r.skipped === false);
+});
+
+t('baselineDiff reports added, removed, and modified color roles', () => {
+  const oldFp = writeFixture('diff-old', GOOD);
+  const newFp = writeFixture('diff-new', `---
+name: Changed
+colors:
+  surface: "#ffffff"
+  on-surface: "#222222"
+  primary: "#0000ff"
+---
+
+## Overview
+`);
+  const d = baselineDiff(oldFp, newFp);
+  assert(d.tokens.colors.modified.includes('on-surface'), 'on-surface changed value');
+  assert(d.tokens.colors.added.includes('primary'), 'primary is new');
+  assert(d.tokens.colors.removed.includes('background'), 'background was removed');
+  assert(d.skipped === false);
+});
+
+// ================================================================
+// Validator routing tests (CLI enhancement vs baseline fallback)
+// ================================================================
+console.log('\nValidator routing tests\n');
+
+const { DesignValidator } = await import('../scripts/lib/validator.js');
+const shapeFixture = writeFixture('routing', GOOD);
+
+t('validator falls back to the baseline when the CLI is absent', () => {
+  const v = new DesignValidator({ runCommand: () => { throw new Error('no npx'); } });
+  const r = v.lint(shapeFixture);
+  assert(r.source === 'baseline', `expected baseline, got ${r.source}`);
+  assert(r.skipped === false, 'baseline never skips');
+  assert(typeof r.summary.errors === 'number');
+});
+
+t('validator uses the CLI when the probe succeeds', () => {
+  const v = new DesignValidator({ runCommand: (c) => {
+    if (c.includes('--help')) return '';
+    if (c.includes('lint')) return JSON.stringify({ summary: { errors: 0, warnings: 1, info: 0 }, findings: [] });
+    return '';
+  } });
+  const r = v.lint(shapeFixture);
+  assert(r.source === 'cli', `expected cli, got ${r.source}`);
+  assert(r.summary.warnings === 1);
+  assert(r.skipped === false);
+});
+
+t('validator falls back when the CLI probe passes but the lint invocation fails', () => {
+  const v = new DesignValidator({ runCommand: (c) => {
+    if (c.includes('--help')) return '';
+    throw new Error('cli crashed');
+  } });
+  const r = v.lint(shapeFixture);
+  assert(r.source === 'baseline', 'a failed CLI lint falls back to the baseline');
+});
+
+t('validator diff falls back to the baseline when the CLI is absent', () => {
+  const v = new DesignValidator({ runCommand: () => { throw new Error('no npx'); } });
+  const d = v.diff(shapeFixture, shapeFixture);
+  assert(d.source === 'baseline');
+  assert(d.skipped === false);
+  assert(d.tokens && d.tokens.colors, 'baseline diff has the token shape');
+});
+
+// Clean up the baseline fixtures.
+for (const n of ['good','low','noroles','nofm','shape','diff-old','diff-new','routing']) {
+  try { nodeFs.unlinkSync(`/tmp/ed-baseline-${n}.md`); } catch {}
+}
 
 // ================================================================
 // Summary
