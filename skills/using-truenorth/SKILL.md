@@ -13,8 +13,10 @@ software. Find the live catalog with the `search_skills` and `index_skills` tool
 ## Install
 
 Install the npm wrapper for the project, which resolves the platform binary and
-runs the MCP server. The `init` subcommand scaffolds the workspace when it
-is absent. Runtime state lands under `.agent/`. Narrative lands under `specs/`.
+runs the MCP server. Scaffold a new project by calling the
+`truenorth_scaffold_project` tool, which seeds the `.agent/` tree for a
+methodology profile. Runtime state lands under `.agent/`. Narrative lands under
+`specs/`.
 
 ## What this is
 

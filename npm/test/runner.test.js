@@ -1,7 +1,7 @@
 // Tests for the npm launcher (task 18.3), using the built-in node:test runner so the
 // wrapper needs no test dependencies.
 //
-// Requirements: 8.3, 8.4, 8.5, 8.9, 8.10.
+// Requirements: 8.3, 8.4, 8.9. The `init` scaffold is retired (#182).
 
 'use strict';
 
@@ -90,28 +90,16 @@ test('run maps a null spawn status to exit code 1', () => {
   assert.strictEqual(state.exitCode, 1);
 });
 
-test('init scaffolds specs when absent', () => {
+test('init points to the scaffold tool and creates no files', () => {
+  // #182: the wrapper no longer scaffolds. `init` prints a pointer to the
+  // truenorth_scaffold_project tool, exits 0, and writes nothing to disk.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-init-'));
   const { deps, state } = harness({ argv: ['init'], cwd: dir });
   runner.run(deps);
   assert.strictEqual(state.exitCode, 0);
-  assert.ok(fs.existsSync(path.join(dir, 'specs', 'state.yaml')));
-  assert.ok(fs.existsSync(path.join(dir, 'specs', 'release-plan.yaml')));
-  fs.rmSync(dir, { recursive: true, force: true });
-});
-
-test('init skips and reports when specs already exists', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-init-'));
-  fs.mkdirSync(path.join(dir, 'specs'));
-  fs.writeFileSync(path.join(dir, 'specs', 'state.yaml'), 'active_epic: e01\n');
-  const { deps, state } = harness({ argv: ['init'], cwd: dir });
-  runner.run(deps);
-  assert.strictEqual(state.exitCode, 0);
-  assert.match(state.stderr, /scaffolding skipped/);
-  // The existing content is left unchanged.
-  assert.strictEqual(
-    fs.readFileSync(path.join(dir, 'specs', 'state.yaml'), 'utf8'),
-    'active_epic: e01\n',
-  );
+  assert.match(state.stderr, /truenorth_scaffold_project/);
+  // The wrapper spawns nothing and creates no specs/ tree.
+  assert.strictEqual(state.spawned, null);
+  assert.ok(!fs.existsSync(path.join(dir, 'specs')));
   fs.rmSync(dir, { recursive: true, force: true });
 });
