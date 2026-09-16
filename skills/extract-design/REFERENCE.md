@@ -68,8 +68,11 @@ The design-token linter has two layers.
 The in-repo baseline validator (`scripts/lib/baseline-validator.js`) is the always
 available floor. It runs no subprocess and makes no network call, so the DESIGN.md HARD
 GATE holds offline and in a locked-down environment. It checks the front-matter structure,
-the required color roles (`surface`, `on-surface`), and the WCAG AA contrast ratio (4.5:1)
-on the foreground and background color pairs. It returns the same result shape as the CLI.
+the required color roles (`surface`, `on-surface`), the WCAG AA contrast ratio (4.5:1) on
+the foreground and background color pairs, typography completeness (a `body-*` level for
+reading text), and unparseable color values and font sizes. Its diff reports added,
+removed, and modified color roles and typography levels. It returns the same result shape
+as the CLI.
 
 The external `@google/design.md` CLI is an optional enhancement. The validator invokes it
 through `npx` at a pinned version, `@google/design.md@0.4.0`. The pin keeps a run
