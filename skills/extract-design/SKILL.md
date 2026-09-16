@@ -9,7 +9,7 @@ description: 'Extract a DESIGN.md file from an HTML prototype (a design tool exp
 >
 > **HARD GATE**: Do NOT claim certainty where the evidence is thin. Flag a low-confidence color role, component classification, or prose assertion with an agent note that states what was observed and asks for validation during grill-me.
 >
-> **HARD GATE**: Do NOT ship DESIGN.md without running the design-token linter. Unvalidated output is unverified output. When the linter is unavailable offline, flag it prominently in the terminal and in the DESIGN.md prose.
+> **HARD GATE**: Do NOT ship DESIGN.md without running the design-token linter. Unvalidated output is unverified output. The in-repo baseline validator always runs, so this gate holds offline. When the external `@google/design.md` CLI is present, it adds richer checks on top. Flag any lint error in the terminal and in the DESIGN.md prose.
 
 ## Flow
 
@@ -55,12 +55,14 @@ description: 'Extract a DESIGN.md file from an HTML prototype (a design tool exp
 
 - A headless browser (a Chrome binary), wrapped behind a browser-extractor
   interface for testability.
-- A design-token linter (soft dependency), invoked through `npx` at a pinned version.
-  Warn and skip when offline. See [REFERENCE.md](REFERENCE.md) for the pin.
+- A design-token linter, in two layers. The in-repo baseline validator always runs and
+  needs no network. The external `@google/design.md` CLI is an optional enhancement,
+  invoked through `npx` at a pinned version. See [REFERENCE.md](REFERENCE.md) for both.
 
 ## Verify
 
-Confirm the extraction produced a valid design artifact and the linter passed, or
-that a degradation was flagged when the linter was unavailable.
+Confirm the extraction produced a valid design artifact and the linter passed. The
+baseline validator always runs, so a lint result is always present, from the baseline or
+the external CLI.
 
 See [REFERENCE.md](REFERENCE.md) for the extraction algorithms and heuristics.

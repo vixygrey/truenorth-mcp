@@ -63,9 +63,18 @@ Retry with backoff (3 attempts, 1s/2s/4s), Timeout (30s page load, 10s pseudo-st
 
 ## Linter Dependency
 
-The design-token linter is a soft dependency. The validator invokes it through `npx` at a
-pinned version, `@google/design.md@0.4.0`. The pin keeps a run reproducible and prevents an
-unpinned floating release from changing lint output between runs. When the linter is
-unavailable, for example offline or in a locked-down environment, the validator returns a
-skipped result and the skill flags the skip in the terminal and in the DESIGN.md prose.
+The design-token linter has two layers.
+
+The in-repo baseline validator (`scripts/lib/baseline-validator.js`) is the always
+available floor. It runs no subprocess and makes no network call, so the DESIGN.md HARD
+GATE holds offline and in a locked-down environment. It checks the front-matter structure,
+the required color roles (`surface`, `on-surface`), and the WCAG AA contrast ratio (4.5:1)
+on the foreground and background color pairs. It returns the same result shape as the CLI.
+
+The external `@google/design.md` CLI is an optional enhancement. The validator invokes it
+through `npx` at a pinned version, `@google/design.md@0.4.0`. The pin keeps a run
+reproducible and prevents an unpinned floating release from changing lint output between
+runs. When the CLI is present, the validator uses its richer structural and reference
+checks. When the CLI is absent or an invocation fails, the validator falls back to the
+baseline rather than skipping. The terminal summary names which layer produced the result.
 Update the version in `scripts/lib/validator.js` (`DESIGN_MD_VERSION`) to move the pin.

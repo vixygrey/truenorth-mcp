@@ -295,8 +295,7 @@ async function main() {
     if (allU.length > 5) log.user(`  ... and ${allU.length - 5} more`);
   }
 
-  if (lr && !lr.skipped) log.user(`\n${formatLint(lr)}`);
-  else log.user('\nValidation skipped (@google/design.md not available).');
+  if (lr) log.user(`\n${formatLint(lr)}`);
 
   log.user(`\nDuration: ${elapsed}s  |  Next: grill-me`);
 
@@ -318,7 +317,8 @@ async function main() {
 
 function formatLint(r) {
   if (r.skipped) return 'Lint skipped.';
-  return `Lint: ${r.summary.errors} errors, ${r.summary.warnings} warnings, ${r.summary.info} info`;
+  const engine = r.source === 'baseline' ? ' (in-repo baseline; @google/design.md not available)' : '';
+  return `Lint: ${r.summary.errors} errors, ${r.summary.warnings} warnings, ${r.summary.info} info${engine}`;
 }
 
 function formatDiff(dr) {
