@@ -7,6 +7,7 @@ The following analytical lenses should inform `plan-work` and `audit-code` sessi
 **CD3 = Value / Duration**
 
 Use this lens when:
+
 - Prioritizing epics by business impact
 - Assessing the cost of deferring a story
 - Making trade-off decisions between scope and schedule
@@ -26,7 +27,7 @@ Structured threat modeling framework for API, auth, and data-handling code.
 - **Denial of Service:** Can an attacker disrupt service availability?
 - **Elevation of Privilege:** Can an attacker gain admin or elevated access?
 
-Use STRIDE to review `specs/tech-architecture/TECH_STACK_LATEST.md` and spot-check `develop-tdd` for auth/API changes.
+Use STRIDE to review `.agent/spec/architecture.md` and spot-check `develop-tdd` for auth/API changes.
 
 ---
 
@@ -77,7 +78,7 @@ For projects with sensitive data or external APIs, model threats per OWASP Top 1
 9. **Using Components with Known Vulnerabilities** — Dependencies, versions?
 10. **Insufficient Logging & Monitoring** — Audit trails, alerting, incident response?
 
-Document mitigations in `specs/tech-architecture/TECH_STACK_LATEST.md`.
+Document mitigations in `.agent/spec/architecture.md`.
 -->
 
 ---
@@ -85,6 +86,7 @@ Document mitigations in `specs/tech-architecture/TECH_STACK_LATEST.md`.
 ## Using This Document
 
 Before starting a phase:
+
 - Read the relevant sections of this document
 - In `plan-work`, ensure every task considers the applicable lens
 - In `audit-code`, verify that completed work passes the lens checks

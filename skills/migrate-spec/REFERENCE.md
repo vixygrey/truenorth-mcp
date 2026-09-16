@@ -1,72 +1,32 @@
 # Migrate Spec — Reference
 
+Transformation rules for spec-kit and BMAD projects, plus learnings to adopt and
+output formats. Runtime state goes under `.agent/`. Human-authored narrative goes
+under `specs/`.
+
+See [REFERENCE-GSD.md](./REFERENCE-GSD.md) for the full GSD mapping.
+
 ## Navigation
 
-| Lines   | Section                                                                                                 |
-| ------- | ------------------------------------------------------------------------------------------------------- |
-| 1       | Title                                                                                                   |
-| 3–68    | Navigation                                                                                              |
-| 69–70   | spec-kit → project Mapping                                                                              |
-| 71–84   | Artifact Locations                                                                                      |
-| 85–94   | `spec.md` → `specs/product/SCOPE_LATEST.yaml` + `specs/tech-architecture/TECH_STACK_LATEST.md`          |
-| 95–105  | `plan.md` → `specs/tech-architecture/TECH_STACK_LATEST.md` + `specs/release-plan.yaml` + `specs/epics/` |
-| 106–114 | `tasks.md` → `specs/epics/` (via slice-tasks)                                                           |
-| 115–120 | `.specify/` state                                                                                       |
-| 121–122 | BMAD → project Mapping                                                                                  |
-| 123–141 | Artifact Locations                                                                                      |
-| 142–148 | `product-brief.md` / `prfaq-{project}.md` → `specs/product/VISION_LATEST.yaml`                          |
-| 149–160 | `prd.md` → `specs/product/SCOPE_LATEST.yaml` + `GLOSSARY_LATEST.yaml`                                   |
-| 161–167 | `addendum.md` + `decision-log.md` → `specs/adr/` + `specs/DECISION-LOG_LATEST.md`                       |
-| 168–174 | `architecture.md` → `specs/tech-architecture/TECH_STACK_LATEST.md` + `specs/adr/`                       |
-| 175–178 | `epic-*.md` → `specs/release-plan.yaml` + `specs/epics/eNN-*.yaml`                                      |
-| 179–182 | `story-*.md` → `specs/epics/` stories                                                                   |
-| 183–188 | `project-context.md` → the project agent guide                                                          |
-| 189–192 | Learnings to Adopt                                                                                      |
-| 193–198 | From GSD                                                                                                |
-| 199–204 | From spec-kit                                                                                           |
-| 205–212 | From BMAD                                                                                               |
-| 213–214 | Output Formats                                                                                          |
-| 215–224 | ADR format (project)                                                                                    |
-| 225–227 | Context                                                                                                 |
-| 228–230 | Decision                                                                                                |
-| 231–234 | Consequences                                                                                            |
-| 235–246 | DECISION-LOG.md format                                                                                  |
-| 247–257 | MIGRATION-AUDIT.md format                                                                               |
-| 258–264 | Summary                                                                                                 |
-| 265–274 | High Priority Findings                                                                                  |
-| 275–278 | Information                                                                                             |
-| 279–285 | Next Steps                                                                                              |
-| 286–306 | in_scope format with ID tracking                                                                        |
-| 307–341 | REQUIREMENTS_TRACE.yaml format                                                                          |
-| 342–397 | `specs/state.yaml` template format                                                                      |
-| 398–416 | Reference block 1                                                                                       |
-| 417–432 | Reference block 2                                                                                       |
-| 433–451 | Reference block 3                                                                                       |
-| 452–474 | Reference block 4                                                                                       |
-| 475–482 | Reference block 5                                                                                       |
-| 483–484 | Findings                                                                                                |
-| 485–489 | High Priority                                                                                           |
-| 490–495 | Information                                                                                             |
-| 496–509 | Reference block 6                                                                                       |
-| 510–542 | Step 7 — Post-migration: Optional two-pass spec writing gate                                            |
-| 543–574 | Step 8 — Post-migration: Optional methodology doc template                                              |
-| 575–600 | Artifact Mapping Summary                                                                                |
-| 601–610 | Rules                                                                                                   |
-| 611–621 | Step 5 — Surface learnings (optional)                                                                   |
-| 622–644 | Step 6 — Adversarial review (optional)                                                                  |
-| 645–646 | Findings                                                                                                |
-| 647–651 | High Priority                                                                                           |
-| 652–660 | Information                                                                                             |
-
-# migrate-spec Reference — spec-kit, BMAD, Learnings
-
-Transformation rules for spec-kit and BMAD projects, plus learnings to adopt and output formats.
-
-See [REFERENCE-GSD.md](./REFERENCE-GSD.md) for full GSD → project YAML mapping.
+| Section                                             |
+| --------------------------------------------------- |
+| spec-kit mapping                                    |
+| BMAD mapping                                        |
+| Learnings to adopt                                  |
+| Output formats (ADR, decision log, migration audit) |
+| `in_scope` format with ID tracking                  |
+| `REQUIREMENTS_TRACE.yaml` format                    |
+| `.agent/tasks/state.yml` template format            |
+| Step 5 — Surface learnings (optional)               |
+| Step 6 — Adversarial review (optional)              |
+| Step 7 — Two-pass spec writing gate (optional)      |
+| Step 8 — Methodology doc template (optional)        |
+| Artifact mapping summary                            |
+| Rules                                               |
 
 ---
 
-## spec-kit → project Mapping
+## spec-kit → TrueNorth Mapping
 
 ### Artifact Locations
 
@@ -82,46 +42,50 @@ project-root/
         └── log.jsonl
 ```
 
-### `spec.md` → `specs/product/SCOPE_LATEST.yaml` + `specs/tech-architecture/TECH_STACK_LATEST.md`
+### `spec.md` → `.agent/product/scope.yml` + `.agent/spec/architecture.md`
 
-spec-kit `spec.md` focuses on: who uses it, user journeys, success criteria, what's in/out of scope.
-
-Transform:
-
-- User journeys → `SCOPE_LATEST.yaml` success criteria / `in_scope` entries
-- In/out of scope → `in_scope` / `out_of_scope` sections
-- Domain terms / glossary → `requirements/GLOSSARY_LATEST.yaml`
-- Problem statement / vision → `requirements/VISION_LATEST.yaml`
-
-### `plan.md` → `specs/tech-architecture/TECH_STACK_LATEST.md` + `specs/release-plan.yaml` + `specs/epics/`
-
-spec-kit `plan.md` covers: technology stack, architectural patterns, implementation constraints.
+spec-kit `spec.md` covers who uses the product, the user journeys, the success
+criteria, and what is in and out of scope.
 
 Transform:
 
-- Technology decisions → `plans/TECH_STACK_LATEST.md` Technology section
-- Architecture patterns → Architecture section
-- Hard decisions with trade-offs → `specs/adr/NNNN-{slug}.md`
-- Phased approach / milestones → `release-plan.yaml` epic entries
-- Implementation steps → `epics/eNN-*.yaml` task list with `verify:`
+- User journeys become `scope.yml` success criteria and `in_scope` entries.
+- In and out of scope become the `in_scope` and `out_of_scope` sections.
+- Domain terms and the glossary become `.agent/product/glossary.yml`.
+- The problem statement and vision become `.agent/product/vision.yml`.
 
-### `tasks.md` → `specs/epics/` (via slice-tasks)
+### `plan.md` → `.agent/spec/architecture.md` + `.agent/tasks/release-plan.yml` + `.agent/tasks/<group>/`
 
-spec-kit tasks are atomic, verifiable in isolation — same principle as the project `verify:` mandate.
+spec-kit `plan.md` covers the technology stack, the architectural patterns, and the
+implementation constraints.
 
 Transform:
 
-- Copy tasks into epic shard `tasks[]`; preserve task numbers
-- Add `verify:` line if spec-kit task has an acceptance criterion
-- Group into epics matching `release-plan.yaml` entries
+- Technology decisions become the Technology section of `.agent/spec/architecture.md`.
+- Architecture patterns become the Architecture section.
+- A hard decision with a trade-off becomes `specs/adr/NNNN-{slug}.md`.
+- A phased approach or milestones become task-group entries in `release-plan.yml`.
+- Implementation steps become the task list under `.agent/tasks/<group>/` with
+  `verify:`.
+
+### `tasks.md` → `.agent/tasks/<group>/` (via slice-tasks)
+
+spec-kit tasks are atomic and verifiable in isolation, the same principle as the
+TrueNorth `verify:` mandate.
+
+Transform:
+
+- Copy the tasks into the task group's `tasks[]`. Preserve the task numbers.
+- Add a `verify:` line when a spec-kit task has an acceptance criterion.
+- Group the tasks under the task groups that match the `release-plan.yml` entries.
 
 ### `.specify/` state
 
-Discard — workflow engine state; not meaningful in the project skill model.
+Discard. This is workflow-engine state, not meaningful in the TrueNorth skill model.
 
 ---
 
-## BMAD → project Mapping
+## BMAD → TrueNorth Mapping
 
 ### Artifact Locations
 
@@ -142,86 +106,105 @@ project-root/
     └── story-{slug}.md
 ```
 
-### `product-brief.md` / `prfaq-{project}.md` → `specs/product/VISION_LATEST.yaml`
+### `product-brief.md` / `prfaq-{project}.md` → `.agent/product/vision.yml`
 
 Transform:
 
-- Vision + core value → `VISION_LATEST.yaml` north_star / success_criteria
-- Target users → notes in VISION or SCOPE
-- prfaq customer FAQ → can inform success criteria in SCOPE
+- The vision and core value become the `north_star` and `success_criteria` of
+  `vision.yml`.
+- Target users become notes in `vision.yml` or `scope.yml`.
+- A prfaq customer FAQ can inform the success criteria in `scope.yml`.
 
-### `prd.md` → `specs/product/SCOPE_LATEST.yaml` + `GLOSSARY_LATEST.yaml`
+### `prd.md` → `.agent/product/scope.yml` + `.agent/product/glossary.yml`
 
-BMAD `prd.md` has: Glossary, FR-XX functional requirements, UJ-XX user journeys, NFRs, assumptions.
-
-Transform:
-
-- Glossary → `GLOSSARY_LATEST.yaml`
-- FR-XX items → `in_scope` with IDs preserved
-- UJ-XX user journeys → success criteria
-- NFRs → `constraints` section
-- `[ASSUMPTION: ...]` inline tags → collected in scope YAML
-- Out-of-scope features → `out_of_scope`
-
-### `addendum.md` + `decision-log.md` → `specs/adr/` + `specs/DECISION-LOG_LATEST.md`
+BMAD `prd.md` has a glossary, FR-XX functional requirements, UJ-XX user journeys,
+NFRs, and assumptions.
 
 Transform:
 
-- Hard, irreversible, surprising decisions → individual `specs/adr/NNNN-{slug}.md`
-- Lightweight decisions → `specs/DECISION-LOG_LATEST.md` (date | decision | rationale)
-- `addendum.md` change signals → note in `SCOPE_LATEST.yaml` metadata
+- The glossary becomes `.agent/product/glossary.yml`.
+- FR-XX items become `in_scope` entries with the IDs preserved.
+- UJ-XX user journeys become success criteria.
+- NFRs become the `constraints` section.
+- Inline `[ASSUMPTION: ...]` tags are collected in the scope YAML.
+- Out-of-scope features become `out_of_scope`.
 
-### `architecture.md` → `specs/tech-architecture/TECH_STACK_LATEST.md` + `specs/adr/`
+### `addendum.md` + `decision-log.md` → `specs/adr/` + `.agent/spec/decision-log.md`
 
 Transform:
 
-- ADR sections → individual `specs/adr/NNNN-{slug}.md` files
-- System overview / data models → TECH_STACK Architecture section
-- API contracts → keep at `docs/api.md` or similar; link from TECH_STACK
+- A hard, irreversible, surprising decision becomes an individual
+  `specs/adr/NNNN-{slug}.md`.
+- A lightweight decision goes to `.agent/spec/decision-log.md` (date, decision,
+  rationale).
+- An `addendum.md` change signal becomes a note in the `scope.yml` metadata.
 
-### `epic-*.md` → `specs/release-plan.yaml` + `specs/epics/eNN-*.yaml`
+### `architecture.md` → `.agent/spec/architecture.md` + `specs/adr/`
 
-Each epic → one release-plan entry + one epic shard. Acceptance criteria → story tasks with `verify:`.
+Transform:
 
-### `story-*.md` → `specs/epics/` stories
+- ADR sections become individual `specs/adr/NNNN-{slug}.md` files.
+- The system overview and data models become the Architecture section of
+  `.agent/spec/architecture.md`.
+- API contracts stay at `docs/api.md` or similar and are linked from
+  `architecture.md`.
 
-Each story → one story entry in epic shard. Acceptance criteria → `verify:` lines.
+### `epic-*.md` → `.agent/tasks/release-plan.yml` + `.agent/tasks/<group>/`
+
+Each epic becomes one release-plan entry with `group_kind: epic` plus one task
+group. Acceptance criteria become story tasks with `verify:`.
+
+### `story-*.md` → `.agent/tasks/<group>/` stories
+
+Each story becomes one story entry in the task group. Acceptance criteria become
+`verify:` lines.
 
 ### `project-context.md` → the project agent guide
 
-Add a "## Project Context" section to the project agent guide. Copy tech stack, coding rules, preferences verbatim.
+Add a "## Project Context" section to the project agent guide. Copy the tech stack,
+coding rules, and preferences verbatim.
 
 ---
 
 ## Learnings to Adopt
 
-Optional enhancements to offer the user after migration. Present as checkboxes.
+Optional enhancements to offer the user after migration. Present them as checkboxes.
 
 ### From GSD
 
-- [x] **`specs/tech-architecture/METHODOLOGY_LATEST.md`** — Standing analytical lenses. Agents read before planning. (adopted: optional Step 8 template scaffold)
-- [x] **`handoff` block in state.yaml** — Last skill, last step, required reading for next session. (adopted: mandatory in Step 4 output)
-- [x] **ID tracking in SCOPE_LATEST.yaml** — FR/UJ IDs for spec → plan → verification traceability. (adopted in Step 3 transform)
+- [x] **`.agent/spec/methodology.md`** — standing analytical lenses. Agents read it
+      before planning. (adopted: optional Step 8 template scaffold)
+- [x] **`handoff` block in `state.yml`** — last skill, last step, and required
+      reading for the next session. (adopted: mandatory in Step 4 output)
+- [x] **ID tracking in `scope.yml`** — FR and UJ IDs for spec-to-plan-to-verification
+      traceability. (adopted in the Step 3 transform)
 
 ### From spec-kit
 
-- [x] **Two-pass spec writing** — User-journey pass first, then technical-decisions pass. (adopted: optional post-migration gate)
-- [ ] **Explicit inter-phase gate** — "Approve to proceed?" at end of `elaborate-spec`.
-- [ ] **Epic task isolation** — Each task completable in isolation; `depends-on` explicit in epic YAML.
+- [x] **Two-pass spec writing** — a user-journey pass first, then a
+      technical-decisions pass. (adopted: optional post-migration gate)
+- [ ] **Explicit inter-phase gate** — an "Approve to proceed?" at the end of
+      `elaborate-spec`.
+- [ ] **Task isolation** — each task completable in isolation, with `depends-on`
+      explicit in the task group.
 
 ### From BMAD
 
-- [x] **FR-XX + UJ-XX in SCOPE_LATEST.yaml** — Rigorous traceability. (adopted: REQUIREMENTS_TRACE.yaml emitted on migration)
-- [ ] **`specs/DECISION-LOG_LATEST.md`** — Lightweight decisions below ADR threshold.
-- [x] **Adversarial review pass** — Critique epic shard before `develop-tdd`. (adopted: optional Step 6 in migration)
+- [x] **FR-XX and UJ-XX in `scope.yml`** — rigorous traceability. (adopted:
+      `REQUIREMENTS_TRACE.yaml` emitted on migration)
+- [ ] **`.agent/spec/decision-log.md`** — lightweight decisions below the ADR
+      threshold.
+- [x] **Adversarial review pass** — critique the task group before `develop-tdd`.
+      (adopted: optional Step 6 in migration)
 
 ---
 
 ## Output Formats
 
-### ADR format (project)
+### ADR format
 
-Use `model-domain/ADR-FORMAT.md`. Only create when all three apply: hard to reverse, surprising without context, result of a real trade-off.
+Use `model-domain/ADR-FORMAT.md`. Create an ADR only when all three apply: it is
+hard to reverse, surprising without context, and the result of a real trade-off.
 
 ```markdown
 # ADR-NNNN: {Title}
@@ -242,9 +225,10 @@ Use `model-domain/ADR-FORMAT.md`. Only create when all three apply: hard to reve
 [What becomes easier or harder?]
 ```
 
-### DECISION-LOG.md format
+### Decision-log format
 
-For lightweight decisions that don't warrant a full ADR:
+For a lightweight decision that does not warrant a full ADR, append to
+`.agent/spec/decision-log.md`:
 
 ```markdown
 # Decision Log
@@ -254,9 +238,10 @@ For lightweight decisions that don't warrant a full ADR:
 | 2026-05-19 | Use Postgres | Existing ops expertise | SQLite (limited), DynamoDB (no local dev) |
 ```
 
-### MIGRATION-AUDIT.md format
+### Migration-audit format
 
-Post-migration adversarial review report. Written to `specs/archive/MIGRATION-AUDIT.md` when Step 6 runs:
+The post-migration adversarial review report. Written to
+`.agent/spec/migration-audit.md` when Step 6 runs:
 
 ```markdown
 # Migration Audit — <project-name>
@@ -270,27 +255,27 @@ Post-migration adversarial review report. Written to `specs/archive/MIGRATION-AU
 - TODO markers: N
 - FIXME markers: N
 - MISSING markers: N
-- Epics without verify: N
+- Task groups without verify: N
 
 ## High Priority Findings
 
-- **Artifact:** specs/epics/e02-auth-ui/epic.yaml
+- **Artifact:** .agent/tasks/e02-auth-ui/story.yml
   **Issue:** Story e02s01 has no verify: commands in tasks
-  **Recommendation:** Add runnable verify command before develop-tdd
+  **Recommendation:** Add a runnable verify command before develop-tdd
 
-- **Artifact:** specs/state.yaml
-  **Issue:** open_decisions list empty without comment explanation
-  **Recommendation:** Add # comment if all decisions were resolved during migration
+- **Artifact:** .agent/tasks/state.yml
+  **Issue:** open_decisions list empty without a comment
+  **Recommendation:** Add a # comment when all decisions were resolved during migration
 
 ## Information
 
-- Artifact specs/epics/e01-auth/epic.yaml contains TODO: "Define Neon Auth client URL injection" (normal for fresh migration)
+- Artifact .agent/tasks/e01-auth/story.yml contains TODO: "Define Neon Auth client URL injection" (normal for a fresh migration)
 
 ## Next Steps
 
-1. Address high-priority findings before plan-work
-2. Run the project verification through the `truenorth_verify_gate` tool to enforce code quality gates
-3. Begin develop-tdd on highest-WSJF epic
+1. Address the high-priority findings before plan-work.
+2. Run the project verification through the `truenorth_verify_gate` tool to enforce the code-quality gates.
+3. Begin develop-tdd on the highest-WSJF task group.
 ```
 
 ### in_scope format with ID tracking
@@ -310,13 +295,18 @@ in_scope:
     # auto-generated: true  (optional comment for tracking)
 ```
 
-**When source has no IDs:** If the user opts in, auto-generated IDs follow the `REQ-{NNN}` format with an optional `# auto-generated` comment.
+**When the source has no IDs:** if the user opts in, auto-generated IDs follow the
+`REQ-{NNN}` format with an optional `# auto-generated` comment.
 
-**When source has mixed IDs:** Entries with source IDs get `id:` fields; entries without IDs receive auto-generated IDs. A comment block at the top of `in_scope` documents which IDs were auto-generated.
+**When the source has mixed IDs:** an entry with a source ID gets an `id:` field.
+An entry without an ID receives an auto-generated ID. A comment block at the top of
+`in_scope` documents which IDs were auto-generated.
 
 ### REQUIREMENTS_TRACE.yaml format
 
-Emitted when source has FR-XX (functional requirement) or UJ-XX (user journey) IDs. Maps source requirements to the project epic/story structure and verification commands:
+Emitted at `.agent/product/REQUIREMENTS_TRACE.yaml` when the source has FR-XX
+(functional requirement) or UJ-XX (user journey) IDs. It maps source requirements
+onto the task-group structure and the verification commands:
 
 ```yaml
 trace:
@@ -325,18 +315,20 @@ trace:
     type: functional_requirement
     description: 'User can register with email/password'
     source_artifact: 'prd.md'
-    epic: 'e02-auth-ui'
+    group_id: 'e02-auth-ui'
+    group_kind: epic
     story: 'e02s01'
-    verify: "grep -q 'FR-001' specs/product/SCOPE_LATEST.yaml && echo OK"
+    verify: "grep -q 'FR-001' .agent/product/scope.yml && echo OK"
 
   # User Journeys
   - id: UJ-001
     type: user_journey
     description: 'New user completes registration flow'
     source_artifact: 'epic-auth-ui.md'
-    epic: 'e02-auth-ui'
+    group_id: 'e02-auth-ui'
+    group_kind: epic
     story: 'e02s01'
-    verify: "grep -q 'UJ-001' specs/epics/e02-auth-ui/epic.yaml && echo OK"
+    verify: "grep -q 'UJ-001' .agent/tasks/e02-auth-ui/story.yml && echo OK"
 
 metadata:
   source_framework: 'BMAD'
@@ -345,21 +337,25 @@ metadata:
   coverage: 'All FR-XX and UJ-XX IDs from source mapped'
 ```
 
-**When source has no FR-XX/UJ-XX:** Skip REQUIREMENTS_TRACE.yaml. Add note to `state.yaml` handoff: "No FR-XX/UJ-XX IDs found — traceability file skipped".
+**When the source has no FR-XX/UJ-XX:** skip `REQUIREMENTS_TRACE.yaml`. Add a note
+to the `state.yml` handoff: "No FR-XX/UJ-XX IDs found, traceability file skipped".
 
-**Existing trace file:** If REQUIREMENTS_TRACE.yaml exists, prompt user: "Overwrite? [yes / merge / skip]". Merge appends new entries; skip leaves existing file intact.
+**Existing trace file:** when `REQUIREMENTS_TRACE.yaml` exists, prompt the user:
+"Overwrite? [yes / merge / skip]". Merge appends new entries. Skip leaves the
+existing file intact.
 
-### `specs/state.yaml` template format
+### `.agent/tasks/state.yml` template format
 
-Generated during Step 4 of migration. Regenerate from scratch in the project YAML format. The **handoff block is mandatory**:
+Generated during Step 4 of migration. Regenerate it from scratch in the TrueNorth
+YAML format. The **handoff block is mandatory**:
 
 ```yaml
 active_flow: null
-active_epic_id: null
+active_group_id: null
 active_story_id: null
-completed_epic: false
+completed_group: false
 
-epic_cycle:
+group_cycle:
   current_step: null
   next_skill: null
   story_bcps: null
@@ -389,15 +385,15 @@ git:
 
 handoff:
   last_step_completed: 'Migrated from <framework> on <date>'
-  open_decisions: [] # Empty if all decisions resolved during migration
+  open_decisions: [] # Empty when all decisions were resolved during migration
   required_reading:
-    - specs/product/VISION_LATEST.yaml
-    - specs/product/SCOPE_LATEST.yaml
-    - specs/tech-architecture/TECH_STACK_LATEST.md
-    - specs/release-plan.yaml
+    - .agent/product/vision.yml
+    - .agent/product/scope.yml
+    - .agent/spec/architecture.md
+    - .agent/tasks/release-plan.yml
   next_skill: survey-context
 
-two_pass_spec: # Optional: only if user activates two-pass spec writing gate
+two_pass_spec: # Optional: only when the user activates the two-pass spec-writing gate
   journey_pass: pending
   technical_pass: pending
   approved_at: null
@@ -405,9 +401,9 @@ two_pass_spec: # Optional: only if user activates two-pass spec writing gate
 
 ---
 
-## Reference block 1
+## Reference block: detection output
 
-```
+```text
 Detected: GSD
 Found:
   ✓ .planning/ROADMAP.md
@@ -417,14 +413,14 @@ Found:
   ✗ .planning/METHODOLOGY.md  (not present)
 
 Skipping:
-  .planning/phases/01-auth/01-01-SUMMARY.md  (execution record; archived only)
+  .planning/phases/01-auth/01-01-SUMMARY.md  (execution record; skipped)
 
 Proceed with migration? [yes / skip <artifact> / abort]
 ```
 
 ---
 
-## Reference block 2
+## Reference block: ID field form
 
 ```yaml
 # CORRECT — first-class id: field
@@ -440,49 +436,34 @@ in_scope:
 
 ---
 
-## Reference block 3
+### Step 5 — Surface learnings (optional)
 
-```yaml
-trace:
-  - id: FR-001
-    type: functional_requirement
-    description: 'User can register with email/password'
-    epic: e02-auth-ui
-    story: e02s01
-    verify: "grep -q 'FR-001' specs/product/SCOPE_LATEST.yaml && echo OK"
-  - id: UJ-001
-    type: user_journey
-    description: 'New user completes registration flow'
-    epic: e02-auth-ui
-    story: e02s01
-```
+After migration, offer the user a brief analysis of what the source framework did
+that TrueNorth does not have yet.
+
+Use the learnings table above. Present it as checkboxes so the user can decide which
+to adopt.
+
+→ verify: `grep -c "\- \[ \]" .agent/tasks/state.yml 2>/dev/null && echo "pending items recorded" || echo "no pending items in state.yml"`
 
 ---
 
-## Reference block 4
+### Step 6 — Adversarial review (optional)
 
-```yaml
-active_flow: null
-active_epic_id: null
-active_story_id: null
+Before the user runs `plan-work`, offer an optional lightweight audit of the migrated
+artifacts. This catches common migration errors early: incomplete specs, missing
+verification commands, and unresolved decisions.
 
-# ... other state fields ...
+Prompt: "Run adversarial review of the migrated artifacts? [yes / skip]"
 
-handoff:
-  last_step_completed: 'Migrated from <framework> on <date>'
-  open_decisions:
-    - 'decision text here'
-  required_reading:
-    - specs/product/VISION_LATEST.yaml
-    - specs/product/SCOPE_LATEST.yaml
-    - specs/tech-architecture/TECH_STACK_LATEST.md
-    - specs/release-plan.yaml
-  next_skill: survey-context
-```
+If yes, perform these checks:
 
----
+1. Scan for incomplete markers. Find TODO, FIXME, and MISSING under `.agent/`.
+2. Verify every task group has `verify:` commands. Parse the task-group files.
+3. Check the `state.yml` handoff. Make sure that `open_decisions` is documented,
+   even when empty.
 
-## Reference block 5
+Collect the findings and write them to `.agent/spec/migration-audit.md`:
 
 ```markdown
 # Migration Audit — <project-name> from <framework>
@@ -494,38 +475,33 @@ handoff:
 
 ### High Priority
 
-- Artifact: specs/epics/e02-auth-ui/epic.yaml
-  Finding: No verify: commands in story tasks
-  Recommendation: Add `verify:` to each task before develop-tdd
+- Artifact: .agent/tasks/e02-auth-ui/story.yml
+  Finding: No verify: commands in the story tasks
+  Recommendation: Add a `verify:` to each task before develop-tdd
 
 ### Information
 
-- Count of TODO markers: 3 (normal for fresh migration)
+- Count of TODO markers: 3 (normal for a fresh migration)
 ```
+
+When findings exist, the handoff block notes: "Adversarial review: N findings, see
+`.agent/spec/migration-audit.md`".
+
+When skip is chosen, add to the handoff: "Adversarial review: skipped, review
+manually before plan-work".
+
+→ verify: `test -f .agent/spec/migration-audit.md && echo "audit completed" || echo "audit skipped or not performed"`
 
 ---
 
-## Reference block 6
+### Step 7 — Two-pass spec writing gate (optional)
 
-```
-Which lenses to include in specs/tech-architecture/METHODOLOGY_LATEST.md?
-
-[x] Cost of Delay (CD3)           — Priority & trade-off assessment
-[ ] STRIDE                        — Security threat modeling
-[ ] F.I.R.S.T                     — Test quality principles
-[ ] Bayesian Updating            — Probabilistic decision-making
-[ ] OWASP Top 10                 — Web security framework
-```
-
----
-
-### Step 7 — Post-migration: Optional two-pass spec writing gate
-
-After Steps 1–6, offer the user an optional two-pass spec writing workflow (spec-kit learning):
+After Steps 1 through 6, offer the user an optional two-pass spec-writing workflow
+(a spec-kit learning):
 
 Prompt: "Use two-pass spec writing (user journeys first, then technical)? [yes / no]"
 
-If **yes**, initialize the gate in `specs/state.yaml`:
+If **yes**, initialize the gate in `.agent/tasks/state.yml`:
 
 ```yaml
 two_pass_spec:
@@ -534,7 +510,8 @@ two_pass_spec:
   approved_at: null
 ```
 
-The journey pass must be marked "complete" by the user (after stakeholder approval of user-journey specs) before the technical pass begins:
+The journey pass must be marked complete by the user, after stakeholder approval of
+the user-journey specs, before the technical pass begins:
 
 ```yaml
 two_pass_spec:
@@ -543,128 +520,86 @@ two_pass_spec:
   technical_pass: pending
 ```
 
-Inform the user: "Journey pass is pending. Run `elaborate-spec` for user journeys, get stakeholder approval, then update `two_pass_spec.journey_pass: complete` in state.yaml before proceeding to technical specs."
+Inform the user: "The journey pass is pending. Run `elaborate-spec` for the user
+journeys, get stakeholder approval, then update `two_pass_spec.journey_pass` to
+`complete` in `state.yml` before you proceed to the technical specs."
 
 If **no**, skip the two-pass gate. Proceed directly to plan-work.
 
-→ verify: `grep -q 'two_pass_spec:' specs/state.yaml && echo "two-pass gate initialized" || echo "two-pass gate not activated"`
+→ verify: `grep -q 'two_pass_spec:' .agent/tasks/state.yml && echo "two-pass gate initialized" || echo "two-pass gate not activated"`
 
 ---
 
-### Step 8 — Post-migration: Optional methodology doc template
+### Step 8 — Methodology doc template (optional)
 
-After Steps 1–7, offer the user an optional analytical framework scaffold (GSD learning):
+After Steps 1 through 7, offer the user an optional analytical-framework scaffold (a
+GSD learning):
 
 Prompt: "Create a methodology doc? [yes / no]"
 
 If **yes**, present a checklist of analytical lenses:
 
 ```
-Which lenses to include in specs/tech-architecture/METHODOLOGY_LATEST.md?
+Which lenses to include in .agent/spec/methodology.md?
 
-[x] Cost of Delay (CD3)           — Priority & trade-off assessment
+[x] Cost of Delay (CD3)           — Priority and trade-off assessment
 [ ] STRIDE                        — Security threat modeling
-[ ] F.I.R.S.T                     — Test quality principles
-[ ] Bayesian Updating            — Probabilistic decision-making
-[ ] OWASP Top 10                 — Web security framework
+[ ] F.I.R.S.T                     — Test-quality principles
+[ ] Bayesian Updating             — Probabilistic decision-making
+[ ] OWASP Top 10                  — Web security framework
 ```
 
-Copy the template from `migrate-spec/templates/METHODOLOGY_LATEST.md` to `specs/tech-architecture/METHODOLOGY_LATEST.md`.
+Copy the template from `migrate-spec/templates/methodology.md` to
+`.agent/spec/methodology.md`.
 
-- Active lenses remain uncommented
-- Unselected lenses are left commented out
-- Populate `{{project_name}}` with the migrated project's name
+- Active lenses stay uncommented.
+- Unselected lenses stay commented out.
+- Populate `{{project_name}}` with the migrated project's name.
 
-If **no**, skip. Add note to handoff: "Methodology doc: skipped — can be added later via `cp migrate-spec/templates/METHODOLOGY_LATEST.md specs/tech-architecture/`"
+If **no**, skip. Add a note to the handoff: "Methodology doc: skipped, can be added
+later by copying `migrate-spec/templates/methodology.md` to `.agent/spec/`".
 
-→ verify: `test -f specs/tech-architecture/METHODOLOGY_LATEST.md && echo "methodology doc created" || echo "methodology doc skipped"`
-
----
+→ verify: `test -f .agent/spec/methodology.md && echo "methodology doc created" || echo "methodology doc skipped"`
 
 ---
 
 ## Artifact Mapping Summary
 
-Full mapping tables: [REFERENCE-GSD.md](./REFERENCE-GSD.md) (GSD) · [REFERENCE.md](./REFERENCE.md) (spec-kit, BMAD, learnings).
+Full mapping tables: [REFERENCE-GSD.md](./REFERENCE-GSD.md) (GSD), this file
+(spec-kit, BMAD, learnings).
 
-| Source                    | Target                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| GSD `ROADMAP.md`          | `specs/release-plan.yaml + epic shards`                                              |
-| GSD `REQUIREMENTS.md`     | `specs/product/SCOPE_LATEST.yaml`                                                    |
-| GSD `CONTEXT.md` (phases) | `specs/tech-architecture/tech-stack.md` + `specs/adr/`                               |
-| GSD `PLAN.md`             | `specs/epics/eNN-slug/epic.yaml` (tasks with verify in `-tasks.yaml`)                |
-| GSD `METHODOLOGY.md`      | `specs/tech-architecture/tech-stack.md`                                              |
-| spec-kit `spec.md`        | `specs/product/SCOPE_LATEST.yaml` + `specs/tech-architecture/tech-stack.md`          |
-| spec-kit `plan.md`        | `specs/tech-architecture/tech-stack.md` + `specs/release-plan.yaml` + `specs/epics/` |
-| spec-kit `tasks.md`       | `specs/epics/ (see slice-tasks)`                                                     |
-| BMAD `prd.md`             | `specs/product/SCOPE_LATEST.yaml`                                                    |
-| BMAD `architecture.md`    | `specs/tech-architecture/tech-stack.md` + `specs/adr/`                               |
-| BMAD `epic-*.md`          | `specs/release-plan.yaml + epic shards`                                              |
-| BMAD `story-*.md`         | `specs/epics/ (see slice-tasks)`                                                     |
-| BMAD `project-context.md` | the project agent guide (append project-specific section)                            |
-| BMAD `decision-log.md`    | `specs/adr/` (one ADR per logged decision)                                           |
-
----
+| Source                    | Target                                                                        |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| GSD `ROADMAP.md`          | `.agent/tasks/release-plan.yml` + task groups                                 |
+| GSD `REQUIREMENTS.md`     | `.agent/product/scope.yml`                                                    |
+| GSD `CONTEXT.md` (phases) | `.agent/spec/architecture.md` + `specs/adr/`                                  |
+| GSD `PLAN.md`             | `.agent/tasks/<group>/` (tasks with verify)                                   |
+| GSD `METHODOLOGY.md`      | `.agent/spec/methodology.md`                                                  |
+| spec-kit `spec.md`        | `.agent/product/scope.yml` + `.agent/spec/architecture.md`                    |
+| spec-kit `plan.md`        | `.agent/spec/architecture.md` + `.agent/tasks/release-plan.yml` + task groups |
+| spec-kit `tasks.md`       | `.agent/tasks/<group>/` (see slice-tasks)                                     |
+| BMAD `prd.md`             | `.agent/product/scope.yml`                                                    |
+| BMAD `architecture.md`    | `.agent/spec/architecture.md` + `specs/adr/`                                  |
+| BMAD `epic-*.md`          | `.agent/tasks/release-plan.yml` + task groups                                 |
+| BMAD `story-*.md`         | `.agent/tasks/<group>/` (see slice-tasks)                                     |
+| BMAD `project-context.md` | the project agent guide (append a project-specific section)                   |
+| BMAD `decision-log.md`    | `specs/adr/` (one ADR per logged decision) or `.agent/spec/decision-log.md`   |
 
 ---
 
 ## Rules
 
-- **Preserve source IDs** — REQ-XX, FR-XX, UJ-XX are emitted as first-class `id:` fields in the project YAML targets (for example, `in_scope` entries). Never silently renumber. See Step 3 ID Tracking subsection for details.
-- **Never merge contradictory docs** — if source has both `CONTEXT.md` and `architecture.md`, create sections in the project `CONTEXT.md`; don't collapse them.
-- **ADRs are opt-in** — only create an ADR when: hard to reverse, surprising without context, result of a real trade-off. Lightweight decisions go to `specs/DECISION-LOG_LATEST.md`.
-- **state.yaml is always regenerated** — never migrate source STATE verbatim; the project state.yaml needs its own format.
-- **specs/ is the only output location** — no files are created outside `specs/` and the project agent guide.
-
----
-
-### Step 5 — Surface learnings (optional)
-
-After migration, offer the user a brief analysis of what the source framework did that the project doesn't have yet.
-
-Use the learnings table from [REFERENCE.md](./REFERENCE.md#learnings-to-adopt). Present as checkboxes so the user can decide which to adopt.
-
-→ verify: `grep -c "\- \[ \]" specs/state.yaml 2>/dev/null && echo "pending items recorded" || echo "no pending items in state.yaml"`
-
----
-
-### Step 6 — Adversarial review (optional)
-
-Before the user runs `plan-work`, offer an optional lightweight audit of the migrated artifacts. This catches common migration errors early — incomplete specs, missing verification commands, unresolved decisions.
-
-Prompt: "Run adversarial review of migrated artifacts? [yes / skip]"
-
-If yes, perform these checks:
-
-1. **Scan for incomplete markers** — Find TODO, FIXME, MISSING in specs/
-2. **Verify every epic has `verify:` commands** — Parse all `eNN-*/epic.yaml` files
-3. **Check state.yaml handoff** — Ensure `open_decisions` is documented (even if empty)
-
-Collect findings and write to `specs/archive/MIGRATION-AUDIT.md`:
-
-```markdown
-# Migration Audit — <project-name> from <framework>
-
-**Date:** <ISO 8601 timestamp>
-**Status:** Pass / Fail with findings
-
----
-
-## Findings
-
-### High Priority
-
-- Artifact: specs/epics/e02-auth-ui/epic.yaml
-  Finding: No verify: commands in story tasks
-  Recommendation: Add `verify:` to each task before develop-tdd
-
-### Information
-
-- Count of TODO markers: 3 (normal for fresh migration)
-```
-
-If findings exist, the handoff block should note: "Adversarial review: N findings — see `specs/archive/MIGRATION-AUDIT.md`"
-
-If skip is chosen, add to handoff: "Adversarial review: skipped — review manually before plan-work"
-
-→ verify: `test -f specs/archive/MIGRATION-AUDIT.md && echo "audit completed" || echo "audit skipped or not performed"`
+- **Preserve source IDs.** REQ-XX, FR-XX, and UJ-XX are emitted as first-class `id:`
+  fields in the TrueNorth YAML targets (for example, `in_scope` entries). Never
+  silently renumber. See the Step 3 ID Tracking subsection in the SKILL.md.
+- **Never merge contradictory docs.** When the source has both `CONTEXT.md` and
+  `architecture.md`, create sections in `.agent/spec/architecture.md`. Do not
+  collapse them.
+- **ADRs are opt-in.** Create an ADR only when the decision is hard to reverse,
+  surprising without context, and the result of a real trade-off. A lightweight
+  decision goes to `.agent/spec/decision-log.md`.
+- **state.yml is always regenerated.** Never migrate the source STATE verbatim. The
+  TrueNorth `state.yml` needs its own format.
+- **`.agent/` and `specs/adr/` are the only outputs.** Runtime state and the
+  product concept go under `.agent/`. An ADR goes to `specs/adr/`. No file is
+  created elsewhere, except the project agent guide.

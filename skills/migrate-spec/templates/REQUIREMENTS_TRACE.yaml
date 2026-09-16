@@ -1,5 +1,6 @@
-# Auto-generated from {{source_framework}} FR-XX / UJ-XX IDs during migration
-# Maps source requirements to bigpowers epic/story structure and verification commands.
+# Auto-generated from {{source_framework}} FR-XX / UJ-XX IDs during migration.
+# Maps source requirements onto the TrueNorth task-group structure and verification
+# commands. Emitted at .agent/product/REQUIREMENTS_TRACE.yaml.
 
 trace:
   # Functional Requirements (FR-XX)
@@ -7,22 +8,24 @@ trace:
     type: functional_requirement
     description: "User can register with email/password"
     source_artifact: "{{source_file}}"
-    epic: "e02-auth-ui"
+    group_id: "e02-auth-ui"
+    group_kind: epic
     story: "e02s01"
-    verify: "grep -q 'FR-001' specs/product/SCOPE_LATEST.yaml && echo OK || echo FAIL"
+    verify: "grep -q 'FR-001' .agent/product/scope.yml && echo OK || echo FAIL"
 
   # User Journeys (UJ-XX)
   - id: UJ-001
     type: user_journey
     description: "New user completes registration flow"
     source_artifact: "{{source_file}}"
-    epic: "e02-auth-ui"
+    group_id: "e02-auth-ui"
+    group_kind: epic
     story: "e02s01"
-    verify: "grep -q 'UJ-001' specs/epics/e02-auth-ui/epic.yaml && echo OK || echo FAIL"
+    verify: "grep -q 'UJ-001' .agent/tasks/e02-auth-ui/story.yml && echo OK || echo FAIL"
 
 # Metadata
 metadata:
-  source_framework: "{{source_framework}}"  # e.g., BMAD, GSD, spec-kit
+  source_framework: "{{source_framework}}" # for example, BMAD, GSD, spec-kit
   migrated_at: "{{timestamp}}"
   total_requirements: "{{count}}"
-  coverage: "All FR-XX and UJ-XX IDs from source mapped to bigpowers artifacts"
+  coverage: "All FR-XX and UJ-XX IDs from source mapped to TrueNorth artifacts"
