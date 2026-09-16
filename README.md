@@ -14,7 +14,7 @@ through a resource.
 
 ## Architecture
 
-- **The runtime**: a Rust crate at `truenorth-mcp/`. It serves the MCP tools and the
+- **The runtime**: a Rust crate at `runtime/`. It serves the MCP tools and the
   `truenorth://` resources over stdio.
 - **The wrapper**: a thin Node.js package at `npm/`. It resolves the platform binary
   and runs it. There is no business logic in the wrapper.
@@ -33,7 +33,7 @@ Install the npm wrapper. It resolves the platform binary and runs the server. Th
 ## Build from source
 
 ```bash
-cd truenorth-mcp
+cd runtime
 cargo build --release
 ```
 

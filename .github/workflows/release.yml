@@ -70,10 +70,10 @@ jobs:
       - name: Cache cargo artifacts
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: truenorth-mcp
+          workspaces: runtime
 
       - name: Build the release binary
-        working-directory: truenorth-mcp
+        working-directory: runtime
         env:
           # The aarch64 Linux target needs its cross-linker; the others use the default.
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
@@ -84,7 +84,7 @@ jobs:
         run: |
           set -euo pipefail
           pkg_dir="npm/packages/${{ matrix.platform }}"
-          cp "truenorth-mcp/target/${{ matrix.target }}/release/truenorth-mcp" "${pkg_dir}/truenorth-mcp"
+          cp "runtime/target/${{ matrix.target }}/release/truenorth-mcp" "${pkg_dir}/truenorth-mcp"
           chmod +x "${pkg_dir}/truenorth-mcp"
 
       - name: Set the package version

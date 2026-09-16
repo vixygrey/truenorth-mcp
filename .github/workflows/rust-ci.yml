@@ -1,6 +1,6 @@
 name: Rust CI
 
-# Build, format, lint, and test the truenorth-mcp crate. The workflow runs on every push
+# Build, format, lint, and test the runtime crate. The workflow runs on every push
 # and pull request so it always reports the required CI Gate status. The cargo steps run
 # only when the crate is present, so the job stays cheap and green on branches or changes
 # that do not touch the crate.
@@ -28,11 +28,11 @@ jobs:
       - name: Detect the crate
         id: crate
         run: |
-          if [ -f truenorth-mcp/Cargo.toml ]; then
+          if [ -f runtime/Cargo.toml ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "The truenorth-mcp crate is not present on this branch. Skipping the Rust checks."
+            echo "The runtime crate is not present on this branch. Skipping the Rust checks."
           fi
 
       - name: Install the stable Rust toolchain
@@ -45,38 +45,38 @@ jobs:
         if: steps.crate.outputs.present == 'true'
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: truenorth-mcp
+          workspaces: runtime
 
       - name: Check formatting
         if: steps.crate.outputs.present == 'true'
-        working-directory: truenorth-mcp
+        working-directory: runtime
         run: cargo fmt --check
 
       - name: Run clippy
         if: steps.crate.outputs.present == 'true'
-        working-directory: truenorth-mcp
+        working-directory: runtime
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Build
         if: steps.crate.outputs.present == 'true'
-        working-directory: truenorth-mcp
+        working-directory: runtime
         run: cargo build --verbose
 
       - name: Run tests
         if: steps.crate.outputs.present == 'true'
-        working-directory: truenorth-mcp
+        working-directory: runtime
         run: cargo test --verbose
 
       # The AST ontology analyzer is optional (feature `tree-sitter`). Gate the feature
       # build too, so the optional path stays clippy-clean and tested.
       - name: Run clippy with the tree-sitter feature
         if: steps.crate.outputs.present == 'true'
-        working-directory: truenorth-mcp
+        working-directory: runtime
         run: cargo clippy --features tree-sitter --all-targets -- -D warnings
 
       - name: Run tests with the tree-sitter feature
         if: steps.crate.outputs.present == 'true'
-        working-directory: truenorth-mcp
+        working-directory: runtime
         run: cargo test --features tree-sitter --verbose
 
   # A single, stable status to require in branch protection. It always runs, so every PR
