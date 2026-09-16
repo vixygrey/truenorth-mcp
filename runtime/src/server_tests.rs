@@ -82,6 +82,77 @@ fn resolve_errors_on_a_broken_config() {
     assert!(matches!(error, FeaturesError::Parse { .. }));
 }
 
+/// The required `.agent/` layout entries, mirroring `agent_ws::REQUIRED_ENTRIES`. Seeded
+/// as directories (no extension in the tuple's `dir` flag) or files.
+const LAYOUT_DIRS: [&str; 5] = ["config", "spec", "tasks", "memories", "telemetry"];
+const LAYOUT_FILES: [&str; 8] = [
+    "layout.yml",
+    "profile.yml",
+    "config/rules.yml",
+    "spec/requirements.md",
+    "tasks/state.yml",
+    "memories/lessons.md",
+    "memories/glossary.md",
+    "telemetry/runs.yml",
+];
+
+/// Seed a complete, valid `.agent/` layout under a fresh temp repository root, so
+/// `ServerContext::resolve` validates and caches the contract (Requirement 1.12).
+fn seed_valid_layout() -> TempDir {
+    let repo = TempDir::new().expect("temp repo");
+    let agent = repo.path().join(".agent");
+    for dir in LAYOUT_DIRS {
+        fs::create_dir_all(agent.join(dir)).expect("create layout dir");
+    }
+    for file in LAYOUT_FILES {
+        let path = agent.join(file);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("create parent");
+        }
+        // `config/rules.yml` is parsed by the features reader, so it must be a valid YAML
+        // mapping. Every other seeded file only needs to exist for the presence check.
+        let body = if file == "config/rules.yml" {
+            "features:\n  ontology: true\n"
+        } else {
+            "seed\n"
+        };
+        fs::write(&path, body).expect("write layout file");
+    }
+    repo
+}
+
+#[test]
+fn resolve_caches_a_complete_layout_contract() {
+    // The wiring: resolve validates `.agent/layout.yml` and caches the last valid contract.
+    let repo = seed_valid_layout();
+    let ctx = ServerContext::resolve(repo.path().to_path_buf()).expect("resolves");
+    let cached = ctx
+        .layout
+        .last_valid()
+        .expect("a complete layout is cached");
+    assert_eq!(cached.agent_root, repo.path().join(".agent"));
+}
+
+#[test]
+fn resolve_skips_when_no_layout_contract_is_present() {
+    // A legacy `specs/` cockpit or an unscaffolded repo has no `.agent/layout.yml`. The
+    // validation is non-fatal and caches nothing (Requirement 1.12).
+    let repo = TempDir::new().expect("temp repo");
+    let ctx = ServerContext::resolve(repo.path().to_path_buf()).expect("resolves");
+    assert!(ctx.layout.last_valid().is_none());
+}
+
+#[test]
+fn resolve_is_non_fatal_on_an_incomplete_layout_contract() {
+    // A present-but-incomplete contract logs a warning and keeps serving, retaining the
+    // last valid contract (here, none). Resolve still succeeds (Requirement 1.12).
+    let repo = seed_valid_layout();
+    fs::remove_file(repo.path().join(".agent").join("tasks").join("state.yml"))
+        .expect("remove a required file");
+    let ctx = ServerContext::resolve(repo.path().to_path_buf()).expect("resolves");
+    assert!(ctx.layout.last_valid().is_none());
+}
+
 #[test]
 fn true_north_server_resolve_defaults_to_enabled() {
     let repo = TempDir::new().expect("temp repo");
