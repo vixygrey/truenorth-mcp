@@ -55,7 +55,8 @@ description: 'Extract a DESIGN.md file from an HTML prototype (a design tool exp
 
 - A headless browser (a Chrome binary), wrapped behind a browser-extractor
   interface for testability.
-- A design-token linter (soft dependency). Warn and skip when offline.
+- A design-token linter (soft dependency), invoked through `npx` at a pinned version.
+  Warn and skip when offline. See [REFERENCE.md](REFERENCE.md) for the pin.
 
 ## Verify
 
