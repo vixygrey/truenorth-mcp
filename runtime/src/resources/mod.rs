@@ -185,6 +185,12 @@ impl ResourceDoc {
             None if self == ResourceDoc::Ontology => create_ontology_on_read(repo_root)?,
             None => return Err(ResourceReadError::NotFound(display_backing(self))),
         };
+
+        // Refuse a read that resolves under the telemetry area (Requirement 1.10) or that
+        // matches the secret denylist (Requirement 1.7). No served resource backs such a
+        // path today, so this is defense in depth against a future backing-path change.
+        reject_excluded_or_secret(repo_root, &path)?;
+
         let text = std::fs::read_to_string(&path)
             .map_err(|_| ResourceReadError::NotFound(display_backing(self)))?;
 
@@ -242,6 +248,32 @@ fn create_ontology_on_read(repo_root: &std::path::Path) -> Result<PathBuf, Resou
         ))
     })?;
     Ok(repo_root.join(".agent").join("ontology.yml"))
+}
+
+/// Reject a resolved read path that is excluded or secret (Requirements 1.7, 1.10).
+///
+/// A path under `.agent/telemetry/` is excluded from agent reads (Requirement 1.10). A
+/// path matching the secret denylist (`.env`, `*.pem`, `secret`, `credentials`) is refused
+/// as defense in depth (Requirement 1.7). The telemetry check runs against the path
+/// relative to the repository root, so it matches the `.agent/telemetry/...` form.
+fn reject_excluded_or_secret(
+    repo_root: &std::path::Path,
+    path: &std::path::Path,
+) -> Result<(), ResourceReadError> {
+    let relative = path.strip_prefix(repo_root).unwrap_or(path);
+    if crate::engine::agent_ws::is_excluded_read(relative) {
+        return Err(ResourceReadError::Invalid(format!(
+            "refused to read `{}`: the telemetry area is excluded from reads.",
+            relative.display()
+        )));
+    }
+    if crate::config::is_secret_path(path) {
+        return Err(ResourceReadError::Invalid(format!(
+            "refused to read `{}`: the path matches the secret denylist.",
+            relative.display()
+        )));
+    }
+    Ok(())
 }
 
 /// The backing file name for an error message.

@@ -37,6 +37,23 @@ fn uri_and_backing_paths_are_stable() {
 }
 
 #[test]
+fn reject_excluded_or_secret_refuses_telemetry_and_secret_paths() {
+    let root = std::path::Path::new("/repo");
+
+    // A telemetry path is excluded from reads (Requirement 1.10).
+    let telemetry = root.join(".agent").join("telemetry").join("runs.yml");
+    assert!(reject_excluded_or_secret(root, &telemetry).is_err());
+
+    // A secret-denylist path is refused (Requirement 1.7).
+    let secret = root.join(".agent").join("config").join(".env");
+    assert!(reject_excluded_or_secret(root, &secret).is_err());
+
+    // An ordinary cockpit path is allowed.
+    let ok = root.join(".agent").join("tasks").join("state.yml");
+    assert!(reject_excluded_or_secret(root, &ok).is_ok());
+}
+
+#[test]
 fn read_returns_current_on_disk_content() {
     // Requirement 5.5: disk is the source of truth.
     let dir = tempdir().expect("temp dir");

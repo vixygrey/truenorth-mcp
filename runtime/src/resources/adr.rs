@@ -43,6 +43,9 @@ pub fn read_adr_dir(dir: &Path) -> Result<String, ResourceReadError> {
                     .extension()
                     .and_then(|ext| ext.to_str())
                     .is_some_and(|ext| ext.eq_ignore_ascii_case(ADR_EXTENSION))
+                // Skip any file matching the secret denylist as defense in depth, so a
+                // stray secret dropped under specs/adr/ is never served (Requirement 1.7).
+                && !crate::config::is_secret_path(path)
         })
         .collect();
     files.sort();
