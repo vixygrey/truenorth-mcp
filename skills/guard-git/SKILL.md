@@ -1,29 +1,42 @@
 ---
 name: guard-git
-description: Block a dangerous git command (push, force push, reset --hard, clean, branch -D, checkout or restore of a path) and enforce Conventional Commits and branch protection before an agent runs it. Install a pre-command hook for the agent harness in use. Use it when the user wants git-safety hooks, to block a destructive git command in an agent, or to mirror the same policy across coding tools.
+description: Block a dangerous git command (force push, reset --hard, clean, branch -D, checkout or restore of a path) before an agent runs it. Install a pre-command hook for the agent harness in use. Use it when the user wants git-safety hooks, to block a destructive git command in an agent, or to mirror the same policy across coding tools.
 ---
 
 # Guard Git
 
-> **HARD GATE**: before committing, verify the branch is not `main` or `master`, the author is correct, and the git user is configured. A bad commit is hard to fix.
+> **HARD GATE**: this hook blocks dangerous git commands only. It does not check the
+> branch, the author, or the commit message. Before committing, verify by hand that the
+> branch is not `main` or `master`, the author is correct, and the git user is configured.
+> A bad commit is hard to fix.
 
-Install a shared hook that blocks a destructive git operation and enforces workflow
-discipline. The hook needs `jq` on the PATH when it runs.
+Install a shared hook that blocks a destructive git command before an agent runs it.
+The hook needs `jq` on the PATH when it runs.
 
-## What gets blocked or enforced
+## What gets blocked
 
-- **Safety**: `git push --force`, `git reset --hard`, `git clean -f`, `git branch -D`, `git checkout .`, `git restore .`.
-- **Discipline**: block a direct commit or push to a protected branch (`main`, `master`), except the deliberate solo land to `main`.
-- **Allow**: `git push origin <feature-branch>` for backup or CI.
-- **Standardization**: enforce Conventional Commits for every `git commit`.
-- **Secrets**: block a commit that contains a common secret pattern (`sk-`, `ghp_`, `AKIA`, `xoxb-`, a `-----BEGIN` private key). See [REFERENCE.md](REFERENCE.md).
+The hook blocks a command that matches a dangerous pattern:
+
+- `git reset --hard`
+- `git clean -fd`, `git clean -f`
+- `git branch -D`
+- `git checkout .`
+- `git restore .`
+- `git push --force`
+
+Any other command is allowed. The hook inspects the command string only; it does not run
+git or read the repository, so it does not enforce branch protection, Conventional
+Commits, or secret scanning. For those, see the advisory guidance in
+[REFERENCE.md](REFERENCE.md) and the `audit-code` skill.
 
 ## Quick start
 
 1. **Scope**: ask project-only versus global. The paths differ per tool.
-2. **Write the hook bundle** from [REFERENCE.md](REFERENCE.md) into the harness hooks directory.
-3. **Make it executable** with `chmod +x` on the hook script.
-4. **Merge** the hook snippet into the correct settings file. Do not wipe an unrelated key.
+2. **Copy** `scripts/block-dangerous-git.sh` and `scripts/lib/git-guardrails-core.sh` into
+   the harness hooks directory, keeping the `lib/` subdirectory next to the script.
+3. **Make it executable** with `chmod +x` on `block-dangerous-git.sh`.
+4. **Merge** the hook snippet from [REFERENCE.md](REFERENCE.md) into the correct settings
+   file. Do not wipe an unrelated key.
 5. **Verify** with the tests in [REFERENCE.md](REFERENCE.md).
 
 The hook mechanism is harness-specific. The policy is identical across harnesses.
@@ -41,7 +54,8 @@ JSON decision on stdout.
 
 ## Customization
 
-To add or remove a pattern or a protected branch, edit the hook script.
+To add or remove a dangerous pattern, edit `GIT_GUARDRAILS_PATTERNS` in
+`scripts/lib/git-guardrails-core.sh`.
 
 ## Advanced
 
