@@ -11,6 +11,8 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use regex::Regex;
+
+use crate::engine::regex_util::compile_static;
 use serde::{Deserialize, Serialize};
 use std::sync::OnceLock;
 
@@ -163,13 +165,22 @@ fn mine_relations(graph: &mut SkillGraph, skill: &ParsedSkill, prose: &str) {
 
 /// Serialize the graph to JSONL, entities first then relations (ports `saveGraph`).
 pub fn to_jsonl(graph: &SkillGraph) -> String {
+    // Entities and relations are plain string-and-vec structs, so serialization does not
+    // fail. Skip any value that somehow fails to serialize rather than panic, so a graph
+    // write never crashes the process.
     let mut lines: Vec<String> = Vec::new();
-    for entity in graph.entities.values() {
-        lines.push(serde_json::to_string(entity).expect("entity serializes"));
-    }
-    for relation in &graph.relations {
-        lines.push(serde_json::to_string(relation).expect("relation serializes"));
-    }
+    lines.extend(
+        graph
+            .entities
+            .values()
+            .filter_map(|entity| serde_json::to_string(entity).ok()),
+    );
+    lines.extend(
+        graph
+            .relations
+            .iter()
+            .filter_map(|relation| serde_json::to_string(relation).ok()),
+    );
     if lines.is_empty() {
         String::new()
     } else {
@@ -298,32 +309,30 @@ fn scalar_string(value: &serde_yaml::Value) -> Option<String> {
     }
 }
 
-// The legacy relation-mining regexes, compiled once.
+// The legacy relation-mining regexes, compiled once from build-constant patterns.
 fn handoff_after_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?i)run\s+(\S+)\s+after\s+(\S+)").expect("regex compiles"))
+    RE.get_or_init(|| compile_static(r"(?i)run\s+(\S+)\s+after\s+(\S+)"))
 }
 fn hard_gate_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?i)HARD GATE:\s*(.+)").expect("regex compiles"))
+    RE.get_or_init(|| compile_static(r"(?i)HARD GATE:\s*(.+)"))
 }
 fn first_token_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"\S+-?\S+").expect("regex compiles"))
+    RE.get_or_init(|| compile_static(r"\S+-?\S+"))
 }
 fn skill_ref_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?i)see\s+skills/(\S+)/SKILL\.md").expect("regex compiles"))
+    RE.get_or_init(|| compile_static(r"(?i)see\s+skills/(\S+)/SKILL\.md"))
 }
 fn conventions_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| {
-        Regex::new(r"(?i)CONVENTIONS\.md(?:\s*[§#]\s*(\S+))?").expect("regex compiles")
-    })
+    RE.get_or_init(|| compile_static(r"(?i)CONVENTIONS\.md(?:\s*[§#]\s*(\S+))?"))
 }
 fn handoff_desc_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"(?i)handoff.*?(\S+-?\S+)").expect("regex compiles"))
+    RE.get_or_init(|| compile_static(r"(?i)handoff.*?(\S+-?\S+)"))
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

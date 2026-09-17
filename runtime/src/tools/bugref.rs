@@ -143,9 +143,17 @@ impl TrueNorthServer {
     /// Read the current `bugs.yml` document, or an empty document when it is absent.
     fn read_bugs(&self) -> Value {
         let path = self.ctx.repo_root.join(".agent").join(BUGS_REL_PATH);
-        match std::fs::read_to_string(&path) {
+        let parsed = match std::fs::read_to_string(&path) {
             Ok(text) => serde_yaml::from_str(&text).unwrap_or_else(|_| empty_bugs_doc()),
             Err(_) => empty_bugs_doc(),
+        };
+        // Guarantee a mapping shape. A hand-edited `bugs.yml` that parses as a non-mapping
+        // (a bare list or a scalar) falls back to an empty document, so the append path
+        // never needs to unwrap the shape.
+        if parsed.is_mapping() {
+            parsed
+        } else {
+            empty_bugs_doc()
         }
     }
 
@@ -201,12 +209,18 @@ fn append_bug(doc: &mut Value, args: &RecordBugArgs) {
     let tags: Vec<Value> = args.tags.iter().map(|t| Value::String(t.clone())).collect();
     entry.insert("tags".into(), Value::Sequence(tags));
 
+    // `read_bugs` guarantees a mapping, but reset a non-mapping doc here too, so the
+    // append never panics on an unexpected shape.
+    if !doc.is_mapping() {
+        *doc = empty_bugs_doc();
+    }
     let key = Value::String("bugs".to_string());
-    let mapping = doc.as_mapping_mut().expect("bugs document is a mapping");
-    match mapping.get_mut(&key).and_then(Value::as_sequence_mut) {
-        Some(bugs) => bugs.push(Value::Mapping(entry)),
-        None => {
-            mapping.insert(key, Value::Sequence(vec![Value::Mapping(entry)]));
+    if let Some(mapping) = doc.as_mapping_mut() {
+        match mapping.get_mut(&key).and_then(Value::as_sequence_mut) {
+            Some(bugs) => bugs.push(Value::Mapping(entry)),
+            None => {
+                mapping.insert(key, Value::Sequence(vec![Value::Mapping(entry)]));
+            }
         }
     }
 }

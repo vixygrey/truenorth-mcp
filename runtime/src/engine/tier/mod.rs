@@ -25,6 +25,8 @@ use std::sync::OnceLock;
 
 use regex::Regex;
 
+use crate::engine::regex_util::compile_static;
+
 mod compress;
 mod tables;
 
@@ -177,8 +179,7 @@ fn marker_pattern() -> &'static Regex {
         // Case-sensitive markers: uppercase GATE / MUST / MUST NOT / NEVER / ALWAYS /
         // INVARIANT signal a rule. The lowercase `verify:` line is the skill's gate
         // command. Every pattern is fixed and compiles at build time.
-        Regex::new(r"(HARD GATE|GATE|MUST NOT|MUST|NEVER|ALWAYS|INVARIANT|REQUIRED|\bverify:)")
-            .expect("marker pattern must compile")
+        compile_static(r"(HARD GATE|GATE|MUST NOT|MUST|NEVER|ALWAYS|INVARIANT|REQUIRED|\bverify:)")
     })
 }
 
@@ -199,10 +200,9 @@ fn meta_pattern() -> &'static Regex {
     PATTERN.get_or_init(|| {
         // Anthropic-style XML wrappers and chain-of-thought priming. Case-insensitive.
         // Every pattern is fixed and compiles at build time.
-        Regex::new(
+        compile_static(
             r"(?i)(</?thinking>|</?scratchpad>|</?reasoning>|think step by step|let'?s (?:think|reason)|take a deep breath)",
         )
-        .expect("meta pattern must compile")
     })
 }
 

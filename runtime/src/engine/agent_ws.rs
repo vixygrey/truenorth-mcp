@@ -18,7 +18,7 @@
 //! Design: agent-workspace-profiles §1, ADR-6.
 
 use std::path::{Component, Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Mutex, PoisonError};
 
 use thiserror::Error;
 
@@ -222,7 +222,12 @@ impl LayoutCache {
     /// [`last_valid`]: LayoutCache::last_valid
     pub fn read(&self, repo_root: &Path) -> Result<Layout, LayoutError> {
         let layout = read_layout(repo_root)?;
-        *self.last_valid.lock().expect("layout cache lock") = Some(layout.clone());
+        // Recover from a poisoned lock rather than panic. The cached layout is still
+        // valid, so a prior panic elsewhere must not take down the layout read.
+        *self
+            .last_valid
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = Some(layout.clone());
         Ok(layout)
     }
 
@@ -233,7 +238,11 @@ impl LayoutCache {
     /// read the cache back today, so this carries a non-test allow rather than deletion.
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn last_valid(&self) -> Option<Layout> {
-        self.last_valid.lock().expect("layout cache lock").clone()
+        // Recover from a poisoned lock rather than panic (see `read`).
+        self.last_valid
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone()
     }
 }
 

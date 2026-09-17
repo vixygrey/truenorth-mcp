@@ -80,12 +80,8 @@ pub fn validate_state(yaml: &str) -> Result<StateFile, ValidationError> {
     check_mapping_field(&state.root, "git", CockpitFile::State)?;
     check_mapping_field(&state.root, "handoff", CockpitFile::State)?;
     if let Some(metrics) = state.root.get("metrics") {
-        expect_mapping(metrics, "metrics", CockpitFile::State)?;
-        check_mapping_field(
-            metrics.as_mapping().expect("metrics is a mapping"),
-            "skill_timings",
-            CockpitFile::State,
-        )?;
+        let metrics = expect_mapping(metrics, "metrics", CockpitFile::State)?;
+        check_mapping_field(metrics, "skill_timings", CockpitFile::State)?;
     }
     Ok(state)
 }
@@ -185,21 +181,20 @@ fn check_mapping_field(
     file: CockpitFile,
 ) -> Result<(), ValidationError> {
     match root.get(field) {
-        Some(value) => expect_mapping(value, field, file),
+        Some(value) => expect_mapping(value, field, file).map(|_| ()),
         None => Ok(()),
     }
 }
 
 /// Reject a value that is not a mapping, naming the field and the file.
-fn expect_mapping(
-    value: &serde_yaml::Value,
+///
+/// Returns the validated mapping, so a caller uses it directly without re-unwrapping.
+fn expect_mapping<'a>(
+    value: &'a serde_yaml::Value,
     field: &str,
     file: CockpitFile,
-) -> Result<(), ValidationError> {
-    if value.is_mapping() {
-        return Ok(());
-    }
-    Err(ValidationError::Schema {
+) -> Result<&'a serde_yaml::Mapping, ValidationError> {
+    value.as_mapping().ok_or_else(|| ValidationError::Schema {
         file: file.name(),
         detail: format!("`{field}` must be a mapping"),
     })

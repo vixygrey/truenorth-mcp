@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Mutex, PoisonError};
 
 use crate::engine::features::Features;
 use crate::engine::validate::{validate_release_plan, validate_state};
@@ -212,9 +212,14 @@ impl ResourceDoc {
             }
             // Conventions is free-form markdown, so it has no schema to validate.
             ResourceDoc::Conventions => return Ok(text),
-            // Adr returns early above, before the file-path resolution, so it never
-            // reaches this match.
-            ResourceDoc::Adr => unreachable!("ADR reads through read_adr_dir"),
+            // Adr returns early above through read_adr_dir, so it does not reach this
+            // match. Return a typed error rather than panic, so a future change that
+            // breaks the early return degrades to an error instead of a crash.
+            ResourceDoc::Adr => {
+                return Err(ResourceReadError::Invalid(
+                    "internal: the ADR resource must read through read_adr_dir".to_string(),
+                ));
+            }
         };
         Ok(text)
     }
@@ -329,18 +334,21 @@ impl ResourceCache {
     /// cached value directly today, so this carries a non-test allow rather than deletion.
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn last_good(&self, doc: ResourceDoc) -> Option<String> {
+        // Recover from a poisoned lock rather than panic. The cached content is still
+        // valid, so a prior panic elsewhere must not take down a resource read.
         self.last_good
             .lock()
-            .expect("cache lock")
+            .unwrap_or_else(PoisonError::into_inner)
             .get(&doc)
             .cloned()
     }
 
     /// Store a resource's content as the last-good value.
     fn store(&self, doc: ResourceDoc, content: &str) {
+        // Recover from a poisoned lock rather than panic (see `last_good`).
         self.last_good
             .lock()
-            .expect("cache lock")
+            .unwrap_or_else(PoisonError::into_inner)
             .insert(doc, content.to_string());
     }
 }

@@ -184,8 +184,8 @@ pub fn secret_denylist() -> &'static [Regex] {
             // Any path containing a `credentials` marker.
             r"(?i)credentials",
         ]
-        .iter()
-        .map(|pattern| Regex::new(pattern).expect("secret denylist pattern must compile"))
+        .into_iter()
+        .map(crate::engine::regex_util::compile_static)
         .collect()
     })
 }
