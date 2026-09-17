@@ -1,9 +1,9 @@
 name: CI
 
-# Build, format, lint, and test the runtime crate, and test the npm wrapper. The workflow
-# runs on every push and pull request so it always reports the required CI Gate status. The
-# per-area steps run only when that area is present, so a job stays cheap and green on a
-# branch or change that does not touch it.
+# Lint, build, and test the runtime crate, test the npm wrapper, and check formatting with
+# Prettier. The workflow runs on every push and pull request so it always reports the
+# required CI Gate status. The per-area steps run only when that area is present, so a job
+# stays cheap and green on a branch or change that does not touch it.
 on:
   push:
   pull_request:
@@ -107,23 +107,58 @@ jobs:
         working-directory: npm
         run: node --test
 
+  format:
+    name: prettier check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Detect the tooling
+        id: tooling
+        run: |
+          if [ -f package.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "The root package.json is not present on this branch. Skipping the format check."
+          fi
+
+      - name: Set up Node.js
+        if: steps.tooling.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dev tooling
+        if: steps.tooling.outputs.present == 'true'
+        run: npm install --no-audit --no-fund
+
+      - name: Check formatting
+        if: steps.tooling.outputs.present == 'true'
+        run: npm run format:check
+
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only
-  # when both the Rust check job and the npm wrapper job passed.
+  # when the Rust check job, the npm wrapper job, and the format job passed.
   gate:
     name: CI Gate
     runs-on: ubuntu-latest
-    needs: [check, wrapper]
+    needs: [check, wrapper, format]
     if: always()
     steps:
-      - name: Confirm the check and wrapper jobs passed
+      - name: Confirm the check, wrapper, and format jobs passed
         run: |
           check_result="${{ needs.check.result }}"
           wrapper_result="${{ needs.wrapper.result }}"
+          format_result="${{ needs.format.result }}"
           echo "check job result: ${check_result}"
           echo "wrapper job result: ${wrapper_result}"
-          if [ "${check_result}" != "success" ] || [ "${wrapper_result}" != "success" ]; then
+          echo "format job result: ${format_result}"
+          if [ "${check_result}" != "success" ] \
+            || [ "${wrapper_result}" != "success" ] \
+            || [ "${format_result}" != "success" ]; then
             echo "A required job did not pass. Failing the gate."
             exit 1
           fi
-          echo "The check and wrapper jobs passed. The gate is green."
+          echo "The check, wrapper, and format jobs passed. The gate is green."
