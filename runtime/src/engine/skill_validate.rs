@@ -12,6 +12,7 @@ use std::sync::OnceLock;
 use regex::Regex;
 use serde::Serialize;
 
+use crate::engine::regex_util::compile_static;
 use crate::engine::skill_parser::ParsedSkill;
 
 /// The line-count cap for a skill.
@@ -148,7 +149,7 @@ pub fn validate_skill(
 /// The verb-noun kebab-case pattern (ports the legacy `VERB_NOUN`).
 fn verb_noun_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"^[a-z]+-[a-z]+(-[a-z]+)*$").expect("regex compiles"))
+    RE.get_or_init(|| compile_static(r"^[a-z]+-[a-z]+(-[a-z]+)*$"))
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

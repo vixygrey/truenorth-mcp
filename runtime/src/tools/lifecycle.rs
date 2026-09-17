@@ -290,7 +290,7 @@ fn check_epic_id(value: &str) -> Result<(), ErrorData> {
 /// The compiled epic-id pattern.
 fn epic_id_re() -> &'static regex::Regex {
     static RE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
-    RE.get_or_init(|| regex::Regex::new(r"^e[0-9]+([a-z0-9-]*)?$").expect("epic-id regex compiles"))
+    RE.get_or_init(|| crate::engine::regex_util::compile_static(r"^e[0-9]+([a-z0-9-]*)?$"))
 }
 
 /// Map a cockpit write error to an MCP error (Requirements 2.11, 2.12).

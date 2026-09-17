@@ -49,10 +49,9 @@ impl OntologyAnalyzer for RegexAnalyzer {
         let links = ConstraintLinks::from_ontology(ontology);
         let mut violations = Vec::new();
 
-        for (alias, matcher) in links.alias_matchers() {
+        for (alias, link, matcher) in links.alias_matchers() {
             for (index, text) in contents.lines().enumerate() {
                 if matcher.is_match(text) {
-                    let link = links.owning_constraint(alias);
                     violations.push(Violation {
                         constraint_id: link.constraint_id.clone(),
                         path: path.to_path_buf(),
@@ -111,8 +110,7 @@ fn grammar_for_extension(path: &Path) -> Option<tree_sitter::Language> {
 impl OntologyAnalyzer for AstAnalyzer {
     fn scan(&self, path: &Path, contents: &str, ontology: &Ontology) -> Vec<Violation> {
         let links = ConstraintLinks::from_ontology(ontology);
-        let aliases = links.aliases();
-        if aliases.is_empty() {
+        if links.is_empty() {
             return Vec::new();
         }
 
@@ -143,8 +141,7 @@ impl OntologyAnalyzer for AstAnalyzer {
             let Ok(text) = node.utf8_text(bytes) else {
                 continue;
             };
-            if let Some(alias) = aliases.iter().find(|alias| alias.as_str() == text) {
-                let link = links.owning_constraint(alias);
+            if let Some((alias, link)) = links.link_for(text) {
                 // tree-sitter rows are 0-based; the violation line is 1-based.
                 let line = node.start_position().row + 1;
                 violations.push(Violation {
@@ -265,24 +262,32 @@ impl ConstraintLinks {
         Self { links }
     }
 
-    /// The owning constraint link for an alias.
-    fn owning_constraint(&self, alias: &str) -> &ConstraintLink {
-        self.links
-            .get(alias)
-            .expect("every scanned alias has a link built from the same ontology")
-    }
-
-    /// Every prohibited alias, used by the AST analyzer to match identifier tokens.
+    /// Whether there are no prohibited aliases to scan for.
     #[cfg(feature = "tree-sitter")]
-    fn aliases(&self) -> Vec<String> {
-        self.links.keys().cloned().collect()
+    fn is_empty(&self) -> bool {
+        self.links.is_empty()
     }
 
-    /// The alias identifier matchers, one per prohibited alias.
-    fn alias_matchers(&self) -> Vec<(&str, Regex)> {
+    /// The constraint link for an alias, when the alias is prohibited.
+    ///
+    /// Returns the link paired with the alias, so a caller reads the link without a
+    /// fallible lookup and without a panic.
+    #[cfg(feature = "tree-sitter")]
+    fn link_for(&self, alias: &str) -> Option<(&str, &ConstraintLink)> {
         self.links
-            .keys()
-            .map(|alias| (alias.as_str(), identifier_matcher(alias)))
+            .get_key_value(alias)
+            .map(|(key, link)| (key.as_str(), link))
+    }
+
+    /// The alias identifier matchers, one per prohibited alias, paired with the owning
+    /// constraint link. Iterating the map directly keeps the alias, its link, and its
+    /// matcher together, so the scan never looks a link up by key.
+    fn alias_matchers(&self) -> Vec<(&str, &ConstraintLink, Regex)> {
+        self.links
+            .iter()
+            .filter_map(|(alias, link)| {
+                identifier_matcher(alias).map(|matcher| (alias.as_str(), link, matcher))
+            })
             .collect()
     }
 }
@@ -292,12 +297,14 @@ impl ConstraintLinks {
 /// The alias matches only as a complete identifier token, bounded by a non-identifier
 /// character or a line edge. So `is_deleted` matches `is_deleted` but not
 /// `is_deleted_at`.
-fn identifier_matcher(alias: &str) -> Regex {
+fn identifier_matcher(alias: &str) -> Option<Regex> {
     let escaped = regex::escape(alias);
     // `(?-w)` is not needed: use explicit boundaries that treat `_` as part of a word, so
     // an underscore-joined longer identifier does not match.
     let pattern = format!(r"(^|[^A-Za-z0-9_])({escaped})($|[^A-Za-z0-9_])");
-    Regex::new(&pattern).expect("alias identifier pattern must compile")
+    // The alias is escaped, so the pattern is well-formed. Return None on the impossible
+    // compile failure rather than panic, so an unexpected alias skips its matcher.
+    Regex::new(&pattern).ok()
 }
 
 /// Report whether a constraint rule references an alias.
@@ -321,7 +328,7 @@ fn glob_patterns(rule: &str) -> Vec<String> {
     static PATTERN: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
     let pattern = PATTERN.get_or_init(|| {
         // A `word_*` glob: an identifier fragment ending in `_*`.
-        Regex::new(r"([A-Za-z0-9_]+_)\*").expect("glob pattern must compile")
+        crate::engine::regex_util::compile_static(r"([A-Za-z0-9_]+_)\*")
     });
     pattern
         .captures_iter(rule)

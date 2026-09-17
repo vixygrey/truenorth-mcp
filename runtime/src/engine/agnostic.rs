@@ -46,10 +46,9 @@ fn vendor_pattern() -> &'static Regex {
         // Anthropic-style XML wrappers, and "you are <vendor>" / "as <vendor>" meta
         // directed at a named model vendor. Case-insensitive. Every branch is fixed and
         // compiles at build time.
-        Regex::new(
+        crate::engine::regex_util::compile_static(
             r"(?i)(</?thinking>|</?reasoning>|</?scratchpad>|</?antml|\b(you are|as)\s+(claude|chatgpt|gpt-?4|gpt-?5|gemini|deepseek|llama|copilot)\b)",
         )
-        .expect("vendor scaffolding pattern must compile")
     })
 }
 

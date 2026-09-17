@@ -66,7 +66,9 @@ fn is_horizontal_rule(line: &str) -> bool {
     if trimmed.len() < 3 {
         return false;
     }
-    let first = trimmed.chars().next().expect("length checked above");
+    let Some(first) = trimmed.chars().next() else {
+        return false;
+    };
     matches!(first, '-' | '*' | '_') && trimmed.chars().all(|c| c == first)
 }
 
@@ -161,7 +163,7 @@ fn strip_step_prefix(title: &str) -> &str {
     static PATTERN: OnceLock<Regex> = OnceLock::new();
     let pattern = PATTERN.get_or_init(|| {
         // A leading step or numeric ordinal, for example `Step 1:` or `1.` or `1)`.
-        Regex::new(r"(?i)^(step\s+\d+\s*:\s*|\d+\s*[.)]\s*)").expect("step prefix must compile")
+        crate::engine::regex_util::compile_static(r"(?i)^(step\s+\d+\s*:\s*|\d+\s*[.)]\s*)")
     });
     match pattern.find(title) {
         Some(m) => &title[m.end()..],
