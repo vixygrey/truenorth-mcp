@@ -222,6 +222,11 @@ pub struct SandboxConfig {
     /// Working directory for the spawned command. It must be under the repository root.
     pub working_dir: PathBuf,
     /// Permitted command binaries, matched against the command's first token.
+    ///
+    /// This gates the leading binary only. The command runs through `/bin/sh -c`, so it is
+    /// a guardrail against a mistyped operator command, not a containment boundary against
+    /// a hostile one. The command is trusted operator configuration, never caller input.
+    /// See the trust-model note on `engine::gate_runner`.
     pub allowlist: Vec<String>,
     /// When `false`, the runner skips execution and requires caller-supplied evidence.
     pub execution_enabled: bool,

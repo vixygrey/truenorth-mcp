@@ -10,6 +10,21 @@
 //! hints. Command execution sits behind the [`CommandRunner`] trait, so the sandbox logic
 //! is testable with a fake runner and only the real runner touches processes.
 //!
+//! # Trust model
+//!
+//! The gate command is trusted operator configuration, not caller input. It comes from the
+//! `TRUENORTH_VERIFY_CMD` environment variable an operator sets per project, and the
+//! allowlist comes from `TRUENORTH_GATE_ALLOWLIST`. No MCP tool argument feeds the command
+//! string: `truenorth_verify_gate` takes only a phase and a mode.
+//!
+//! The command runs through `/bin/sh -c`, so shell features work (pipes, `&&`, redirects,
+//! variable expansion). The allowlist gates the command's first token only. It is a
+//! guardrail against a mistyped or unexpected operator command, not a containment boundary
+//! against a hostile one: a shell metacharacter (for example `;` or `&&`) runs a second
+//! command that the first-token check does not see. That is acceptable because the command
+//! is operator-controlled. Do not treat the allowlist as a sandbox against untrusted
+//! command strings, and do not wire a caller-supplied string into the command.
+//!
 //! Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6. Design: Part II §5.
 
 use std::process::{Command, Stdio};

@@ -55,6 +55,10 @@ The engineering conventions for this project. The MCP server serves this file as
 - A parse or validation failure is not a crash. Return a resource read error, retain
   the last good content, and keep serving the other resources.
 - Preserve an unknown field on read and write, for backward compatibility.
+- The gate command is trusted operator configuration (`TRUENORTH_VERIFY_CMD`), never a
+  tool argument. It runs through `/bin/sh -c`, and the allowlist gates the leading
+  binary only, as a guardrail, not a sandbox against a hostile command. Never wire a
+  caller-supplied string into the gate command.
 
 ## Tests
 
