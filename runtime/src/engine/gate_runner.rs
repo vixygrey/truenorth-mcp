@@ -180,7 +180,8 @@ pub struct SystemCommandRunner;
 
 impl CommandRunner for SystemCommandRunner {
     fn run(&self, command: &str, cfg: &SandboxConfig) -> std::io::Result<CommandResult> {
-        let mut child = Command::new("/bin/sh")
+        let mut builder = Command::new("/bin/sh");
+        builder
             .arg("-c")
             .arg(command)
             .current_dir(&cfg.working_dir)
@@ -188,8 +189,18 @@ impl CommandRunner for SystemCommandRunner {
             .envs(sanitized_env())
             .stdin(Stdio::null())
             .stdout(Stdio::null())
-            .stderr(Stdio::piped())
-            .spawn()?;
+            .stderr(Stdio::piped());
+
+        // On Unix, run the command in its own process group (pgid = child pid). A timeout
+        // then signals the whole group, so a backgrounded descendant cannot outlive the
+        // kill (#184). Windows is out of scope for the binary, so it keeps the default.
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::CommandExt;
+            builder.process_group(0);
+        }
+
+        let mut child = builder.spawn()?;
 
         // Drain stderr on a thread while waiting. A command that writes more than the
         // pipe buffer would otherwise block before exit and trip a false timeout.
@@ -207,11 +218,16 @@ impl CommandRunner for SystemCommandRunner {
                 })
             }
             None => {
-                // Requirement 3.4: hard-kill on timeout.
-                child.kill()?;
+                // Requirement 3.4 and #184: hard-kill the whole process group on timeout,
+                // so a backgrounded descendant does not outlive the direct child.
+                hard_kill(&mut child);
                 let _ = child.wait();
-                // The reader thread ends once the killed process closes its pipe.
-                drop(stderr_reader.map(join_stderr));
+                // Do not join the stderr reader here. On timeout the stderr tail is
+                // discarded anyway, and a surviving descendant that inherited the pipe
+                // would block the join. Detaching keeps `run` prompt on timeout even when
+                // a descendant lingers. The group kill above normally closes the pipe, so
+                // the detached thread ends on its own.
+                drop(stderr_reader);
                 Ok(CommandResult {
                     exit_code: None,
                     stderr: Vec::new(),
@@ -239,6 +255,34 @@ fn spawn_stderr_reader(
 /// Join a stderr reader thread, returning its buffer or an empty one on a join failure.
 fn join_stderr(handle: std::thread::JoinHandle<Vec<u8>>) -> Vec<u8> {
     handle.join().unwrap_or_default()
+}
+
+/// Hard-kill a timed-out gate child and its descendants.
+///
+/// On Unix the child ran in its own process group (see `SystemCommandRunner::run`), so
+/// this signals the whole group with `SIGKILL`. A backgrounded descendant is in the same
+/// group, so it dies too (#184). A group kill that fails (the group is already gone)
+/// falls back to killing the direct child.
+///
+/// On a non-Unix target this kills the direct child only, matching the prior behavior.
+#[cfg(unix)]
+fn hard_kill(child: &mut std::process::Child) {
+    // The group id equals the child pid, because the child leads its own group. Signal
+    // the negative pid to reach every process in the group.
+    let pgid = child.id() as libc::pid_t;
+    // SAFETY: `kill` with a negative pid signals the process group. A stale group id at
+    // worst returns ESRCH, which is harmless. The child is reaped by the caller's `wait`.
+    let group_killed = unsafe { libc::kill(-pgid, libc::SIGKILL) } == 0;
+    if !group_killed {
+        // The group is already gone or could not be signaled. Kill the direct child.
+        let _ = child.kill();
+    }
+}
+
+/// Hard-kill a timed-out gate child (non-Unix fallback: the direct child only).
+#[cfg(not(unix))]
+fn hard_kill(child: &mut std::process::Child) {
+    let _ = child.kill();
 }
 
 /// The current environment with secret-matching values dropped (Requirement 3.6).

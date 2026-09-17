@@ -38,6 +38,13 @@ thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+# Unix-only. The gate sandbox spawns the command in its own process group and, on a
+# timeout, signals the whole group so a backgrounded descendant cannot outlive the kill
+# (#184). `std` exposes `process_group` but no group-signal call, so libc provides
+# `killpg`. Windows is out of scope for the binary, so this is not needed there.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 tempfile = "3"
 # Property-based tests for the design correctness properties (P6 onward). The testing

@@ -215,3 +215,105 @@ fn real_runner_hard_kills_on_timeout() {
     assert!(result.timed_out, "the long sleep must time out");
     assert_eq!(result.exit_code, None);
 }
+
+#[cfg(unix)]
+#[test]
+fn real_runner_kills_a_backgrounded_descendant_on_timeout() {
+    // #184: a timeout kills the whole process group, so a backgrounded descendant does
+    // not outlive the direct `/bin/sh` child.
+    let dir = tempfile::tempdir().expect("temp dir");
+    let pidfile = dir.path().join("descendant.pid");
+    let pidfile_arg = pidfile.display().to_string();
+
+    // The subshell records its pid, then both it and the parent sleep past the timeout.
+    // The subshell redirects its stdio off the inherited stderr pipe, and the timeout path
+    // detaches the stderr reader, so `run` returns promptly. The descendant sleep is
+    // bounded, so a descendant that ever escapes the kill self-cleans in seconds.
+    //
+    // Note: this survival check has teeth on Linux, where a parent-only kill leaves the
+    // backgrounded descendant alive. On macOS a parent-only kill already tears the
+    // descendant down, so there the check passes either way. The
+    // `real_runner_spawns_the_child_in_its_own_process_group` test below covers the
+    // mechanism deterministically on every Unix target.
+    let command = format!("(echo $$ > '{pidfile_arg}'; exec sleep 10) >/dev/null 2>&1 & sleep 10");
+    let mut cfg = SandboxConfig::new(std::env::temp_dir(), vec!["(".to_string()]);
+    cfg.timeout = Duration::from_millis(300);
+    // The allowlist gates the first token, which is `(` here. Allow it so the command runs.
+    let runner = SystemCommandRunner;
+    let result = runner.run(&command, &cfg).expect("run backgrounded sleep");
+    assert!(result.timed_out, "the command must time out");
+
+    // Read the descendant pid the subshell recorded.
+    let pid: i32 = {
+        // The subshell writes the pid almost immediately, but allow a brief moment.
+        let mut attempts = 0;
+        loop {
+            if let Ok(text) = std::fs::read_to_string(&pidfile)
+                && let Ok(pid) = text.trim().parse::<i32>()
+            {
+                break pid;
+            }
+            attempts += 1;
+            assert!(attempts < 50, "the descendant never recorded its pid");
+            std::thread::sleep(Duration::from_millis(20));
+        }
+    };
+
+    // After the group kill, the descendant must be gone. Poll `kill(pid, 0)`, which
+    // returns an error once the process no longer exists.
+    let mut attempts = 0;
+    let alive = loop {
+        // SAFETY: signal 0 performs no kill; it only checks whether the pid is live.
+        let live = unsafe { libc::kill(pid, 0) } == 0;
+        if !live {
+            break false;
+        }
+        attempts += 1;
+        if attempts >= 100 {
+            break true;
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    assert!(
+        !alive,
+        "the backgrounded descendant (pid {pid}) outlived the group kill"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn real_runner_spawns_the_child_in_its_own_process_group() {
+    // #184: the child leads its own process group (pgid == child pid). This is the
+    // mechanism the timeout group-kill relies on, so assert it directly. This is
+    // deterministic on every Unix target, unlike the descendant-survival check above.
+    let dir = tempfile::tempdir().expect("temp dir");
+    let out = dir.path().join("pgid.txt");
+    let out_arg = out.display().to_string();
+
+    // `ps -o pgid= -p $$` prints this shell's process-group id, then the shell prints its
+    // own pid. A `/bin/sh` that leads its own group prints equal values.
+    let command = format!("ps -o pgid= -p $$ > '{out_arg}'; echo $$ >> '{out_arg}'");
+    let cfg = SandboxConfig::new(std::env::temp_dir(), vec!["ps".to_string()]);
+    let runner = SystemCommandRunner;
+    let result = runner.run(&command, &cfg).expect("run ps");
+    assert_eq!(result.exit_code, Some(0), "the ps command must succeed");
+
+    let text = std::fs::read_to_string(&out).expect("read pgid output");
+    let mut lines = text.lines();
+    let pgid: i32 = lines
+        .next()
+        .expect("pgid line")
+        .trim()
+        .parse()
+        .expect("parse pgid");
+    let pid: i32 = lines
+        .next()
+        .expect("pid line")
+        .trim()
+        .parse()
+        .expect("parse pid");
+    assert_eq!(
+        pgid, pid,
+        "the child must lead its own process group (pgid == pid)"
+    );
+}
