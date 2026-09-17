@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 use serde_yaml::Value;
 use thiserror::Error;
 
+use crate::engine::agent_ws::write_under_agent;
 use crate::engine::spec::{Phase, ReleasePlanFile, StateFile};
 use crate::engine::tdd::TddStep;
 use crate::engine::validate::{
@@ -27,7 +28,11 @@ pub enum CockpitError {
     #[error(transparent)]
     Validation(#[from] ValidationError),
 
-    /// The file could not be read or written. The target is unchanged (Requirement 2.12).
+    /// A write through the single guard failed. The target is unchanged (ADR-6, #187).
+    #[error(transparent)]
+    Write(#[from] crate::engine::agent_ws::WriteGuardError),
+
+    /// The file could not be read. The target is unchanged (Requirement 2.12).
     #[error("could not access {file}: {source}. The file was left unchanged.")]
     Io {
         /// The cockpit file path.
@@ -39,16 +44,19 @@ pub enum CockpitError {
 
 /// The path to the relocated state file under a repository root (Requirement 2.1).
 pub fn state_path(repo_root: &Path) -> PathBuf {
-    repo_root.join(".agent").join("tasks").join("state.yml")
+    repo_root.join(".agent").join(STATE_REL)
 }
 
 /// The path to the relocated release-plan file under a repository root (Requirement 2.2).
 pub fn release_plan_path(repo_root: &Path) -> PathBuf {
-    repo_root
-        .join(".agent")
-        .join("tasks")
-        .join("release-plan.yml")
+    repo_root.join(".agent").join(RELEASE_PLAN_REL)
 }
+
+/// The state file path relative to `.agent/`, for the write guard.
+const STATE_REL: &str = "tasks/state.yml";
+
+/// The release-plan file path relative to `.agent/`, for the write guard.
+const RELEASE_PLAN_REL: &str = "tasks/release-plan.yml";
 
 /// The legacy bigpowers state path under `specs/`, for the fallback read (Requirement 2.9).
 fn legacy_state_path(repo_root: &Path) -> PathBuf {
@@ -96,10 +104,8 @@ pub fn advance_phase(
     apply_phase(&mut state, to_phase, artifacts_summary, git_context);
 
     let yaml = validate_state_for_write(&state)?;
-    write_atomic(&state_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
-        file: ".agent/tasks/state.yml".to_string(),
-        source,
-    })
+    write_under_agent(repo_root, Path::new(STATE_REL), &yaml)?;
+    Ok(())
 }
 
 /// Append a task to the release plan with its neutral grouping key (Requirement 2.5, 4.9).
@@ -123,10 +129,8 @@ pub fn record_task(
     apply_task(&mut plan, group_id, group_kind, task_name, verify_command);
 
     let yaml = validate_release_plan_for_write(&plan)?;
-    write_atomic(&release_plan_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
-        file: ".agent/tasks/release-plan.yml".to_string(),
-        source,
-    })
+    write_under_agent(repo_root, Path::new(RELEASE_PLAN_REL), &yaml)?;
+    Ok(())
 }
 
 /// Read the recorded TDD step from `state.yaml`, or `None` when unset (Requirement 2.8).
@@ -166,10 +170,8 @@ pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitErro
     state.set("tdd", Value::Mapping(tdd));
 
     let yaml = validate_state_for_write(&state)?;
-    write_atomic(&state_path(repo_root), &yaml).map_err(|source| CockpitError::Io {
-        file: ".agent/tasks/state.yml".to_string(),
-        source,
-    })
+    write_under_agent(repo_root, Path::new(STATE_REL), &yaml)?;
+    Ok(())
 }
 
 /// Read and validate the state cockpit, or start from an empty state when it is absent.
@@ -287,45 +289,6 @@ fn phase_value(phase: Phase) -> Value {
         .and_then(|v| v.as_str().map(str::to_string))
         .unwrap_or_default();
     Value::String(text)
-}
-
-/// Write `contents` to `path` atomically (Requirement 2.12).
-///
-/// The write goes to a temp file in the same directory, then renames over the target. A
-/// same-directory rename is atomic on the same filesystem, so a reader sees either the old
-/// or the new file, never a partial one. On any failure the target is unchanged.
-///
-/// Crate-visible so the single write guard in [`crate::engine::agent_ws`] delegates the
-/// byte write here, keeping one atomic-write implementation (ADR-6).
-pub(crate) fn write_atomic(path: &Path, contents: &str) -> std::io::Result<()> {
-    let parent = path.parent().unwrap_or_else(|| Path::new("."));
-    std::fs::create_dir_all(parent)?;
-
-    let temp = temp_sibling(path);
-    std::fs::write(&temp, contents)?;
-    match std::fs::rename(&temp, path) {
-        Ok(()) => Ok(()),
-        Err(error) => {
-            // Clean up the temp file so a failed write leaves no residue.
-            let _ = std::fs::remove_file(&temp);
-            Err(error)
-        }
-    }
-}
-
-/// A temp sibling path for the atomic write, unique to the process and target.
-fn temp_sibling(path: &Path) -> PathBuf {
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let pid = std::process::id();
-    let unique = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_nanos())
-        .unwrap_or(0);
-    let parent = path.parent().unwrap_or_else(|| Path::new("."));
-    parent.join(format!(".{name}.{pid}.{unique}.tmp"))
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The
