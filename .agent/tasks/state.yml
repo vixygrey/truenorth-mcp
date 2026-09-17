@@ -1,40 +1,12 @@
 active_flow: null
-active_epic: null
-active_story: null
-bug_id: null
-bigpowers_version: 2.88.2
-bug_cycle: null
+active_group: null
+active_task: null
+phase: null
+tdd:
+  step: null
 handoff:
   next_skill: null
-  context: 'BUG-2026-09-05-golden-gate-missing-node-deps RESOLVED — merged 9a457e62 (PR #120). Golden suite
-    verification-gates 40/40 on the PR (run 34001321546) and on the push-triggered main run 34005859408
-    (success) — the omp-extension gate now runs after npm ci and resolves typebox. Preflight fully green
-    locally before merge (compliance, gates, sync-skills, trace --strict).'
-  epic: null
-epic_cycle: null
-metrics:
-  story_start: null
-  story_end: null
-  skill_timings:
-    survey-context:
-      calls: 0
-      total_seconds: 0
-      avg_seconds: 0
-      _start: '2026-07-26T19:03:50Z'
-    verify-work:
-      calls: 1
-      total_seconds: 1052.0
-      avg_seconds: 1052.0
-    release-branch:
-      calls: 0
-      total_seconds: 0
-      avg_seconds: 0
-      _start: '2026-08-07T11:24:34Z'
-release:
-  ci_verified: true
-  last_commit: 3daf6225
-  last_epic: e79-simple-english-skill
-  last_tag: v2.87.2
-  last_publish: '2026-08-05T16:28:27Z'
+  context: null
+  group: null
 git:
   branch: main
