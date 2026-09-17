@@ -135,6 +135,62 @@ fn write_under_agent_rejects_a_specs_adr_target_and_leaves_bytes_unchanged() {
     );
 }
 
+#[cfg(unix)]
+#[test]
+fn write_under_agent_rejects_a_symlinked_directory_escape() {
+    // #186: a symlinked directory inside `.agent/` that points outside must not let a
+    // lexically-valid target escape on the write. The lexical guard passes `link/leak.yml`
+    // (no `..`, not absolute), so the symlink resolution is what rejects it.
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    let outside = TempDir::new().expect("outside dir");
+    let agent = repo.path().join(AGENT_DIR);
+    fs::create_dir_all(&agent).expect("create .agent");
+    // `.agent/link` -> the outside directory.
+    symlink(outside.path(), agent.join("link")).expect("create symlink");
+
+    let rel = Path::new("link/leak.yml");
+    let error = write_under_agent(repo.path(), rel, "leak\n").expect_err("must reject");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+
+    // Nothing was written through the symlink into the outside directory.
+    assert!(!outside.path().join("leak.yml").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn write_repo_seed_rejects_a_symlinked_directory_escape() {
+    // #186: the audited seed path applies the same symlink check against the repo root.
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    let outside = TempDir::new().expect("outside dir");
+    // `<repo>/link` -> the outside directory.
+    symlink(outside.path(), repo.path().join("link")).expect("create symlink");
+
+    let rel = Path::new("link/leak.txt");
+    let error = write_repo_seed(repo.path(), rel, "leak\n", true).expect_err("must reject");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+    assert!(!outside.path().join("leak.txt").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn write_under_agent_allows_a_normal_write_after_the_symlink_check() {
+    // The symlink check must not break an ordinary write into a fresh `.agent/` tree,
+    // including a not-yet-created nested target.
+    let repo = TempDir::new().expect("temp repo");
+    write_under_agent(repo.path(), Path::new("tasks/nested/x.yml"), "x: 1\n")
+        .expect("normal nested write");
+    assert!(
+        repo.path()
+            .join(AGENT_DIR)
+            .join("tasks/nested/x.yml")
+            .is_file()
+    );
+}
+
 #[test]
 fn is_excluded_read_is_true_only_for_telemetry() {
     // Repo-relative and agent-relative telemetry paths are excluded.
