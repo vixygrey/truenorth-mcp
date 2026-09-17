@@ -25,6 +25,11 @@ desktop.ini
 *.pem
 *.key
 
+# npm auth. Ignore every .npmrc so a token-bearing file cannot be committed by
+# accident, then re-include the one safe, secret-free publish config in npm/.
+.npmrc
+!npm/.npmrc
+
 # Logs
 *.log
 
