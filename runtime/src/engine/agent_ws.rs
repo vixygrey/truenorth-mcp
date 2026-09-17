@@ -2,12 +2,13 @@
 //! read exclusion, and the layout-contract read.
 //!
 //! The runtime writes only under `.agent/`. Every runtime write funnels through
-//! [`write_under_agent`], which normalizes the target and rejects any path that escapes
-//! `.agent/`, then delegates the byte write to the atomic `write_atomic` helper in
-//! [`crate::engine::cockpit`]. This is the load-bearing invariant of the feature
-//! (design ADR-6, Property 6). The scaffold is the one authorized exception: it seeds
-//! files outside `.agent/` through the audited [`write_repo_seed`] path, which the
-//! runtime tools never call.
+//! [`write_under_agent`], which normalizes the target, rejects any path that escapes
+//! `.agent/` (lexically and after symlink resolution), then delegates to the module's
+//! private atomic write. This is the load-bearing invariant of the feature (design ADR-6,
+//! Property 6). The atomic write is private to this module, so the guard is the only door
+//! to a byte write and cannot be bypassed by a direct call (#187). The scaffold is the one
+//! authorized exception: it seeds files outside `.agent/` through the audited
+//! [`write_repo_seed`] path, which the runtime tools never call.
 //!
 //! [`is_excluded_read`] reports the telemetry read exclusion. [`read_layout`] parses
 //! `.agent/layout.yml` and confirms every required area and file is present, retaining
@@ -21,8 +22,6 @@ use std::path::{Component, Path, PathBuf};
 use std::sync::{Mutex, PoisonError};
 
 use thiserror::Error;
-
-use crate::engine::cockpit::write_atomic;
 
 /// The agent workspace directory name (Requirement 1.1).
 pub const AGENT_DIR: &str = ".agent";
@@ -398,6 +397,46 @@ fn resolve_under(base: &Path, rel_path: &Path) -> Option<PathBuf> {
     }
 
     Some(resolved)
+}
+
+/// Write `contents` to `path` atomically.
+///
+/// The write goes to a temp file in the same directory, then renames over the target. A
+/// same-directory rename is atomic on the same filesystem, so a reader sees either the old
+/// or the new file, never a partial one. On any failure the target is unchanged.
+///
+/// This is private to the write guard. Every runtime write reaches it only through
+/// [`write_under_agent`] or [`write_repo_seed`], so the guard is the only door to the byte
+/// write and cannot be bypassed by a direct call (ADR-6, #187).
+fn write_atomic(path: &Path, contents: &str) -> std::io::Result<()> {
+    let parent = path.parent().unwrap_or_else(|| Path::new("."));
+    std::fs::create_dir_all(parent)?;
+
+    let temp = temp_sibling(path);
+    std::fs::write(&temp, contents)?;
+    match std::fs::rename(&temp, path) {
+        Ok(()) => Ok(()),
+        Err(error) => {
+            // Clean up the temp file so a failed write leaves no residue.
+            let _ = std::fs::remove_file(&temp);
+            Err(error)
+        }
+    }
+}
+
+/// A temp sibling path for the atomic write, unique to the process and target.
+fn temp_sibling(path: &Path) -> PathBuf {
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let pid = std::process::id();
+    let unique = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    let parent = path.parent().unwrap_or_else(|| Path::new("."));
+    parent.join(format!(".{name}.{pid}.{unique}.tmp"))
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

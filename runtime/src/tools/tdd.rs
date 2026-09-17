@@ -145,7 +145,9 @@ fn check_files_to_modify(files: &[String]) -> Result<(), ErrorData> {
 fn cockpit_error(error: CockpitError) -> ErrorData {
     match error {
         CockpitError::Validation(_) => ErrorData::invalid_params(error.to_string(), None),
-        CockpitError::Io { .. } => ErrorData::internal_error(error.to_string(), None),
+        CockpitError::Write(_) | CockpitError::Io { .. } => {
+            ErrorData::internal_error(error.to_string(), None)
+        }
     }
 }
 
