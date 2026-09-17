@@ -134,6 +134,15 @@ pub fn write_under_agent(
             target: rel_path.display().to_string(),
         })?;
 
+    // The lexical check above blocks `..` and absolute paths. Confirm the resolved target
+    // also stays under `.agent/` after symlink resolution, so a symlinked directory inside
+    // `.agent/` cannot redirect the write outside it (Requirement 1.3, #186).
+    if !contained_under(&agent_root, &target) {
+        return Err(WriteGuardError::OutsideAgent {
+            target: rel_path.display().to_string(),
+        });
+    }
+
     write_atomic(&target, contents).map_err(|source| WriteGuardError::Io {
         target: target.display().to_string(),
         source,
@@ -172,6 +181,15 @@ pub fn write_repo_seed(
         resolve_under(repo_root, rel_path).ok_or_else(|| WriteGuardError::OutsideAgent {
             target: rel_path.display().to_string(),
         })?;
+
+    // Confirm the resolved seed target stays under the repository root after symlink
+    // resolution, so a symlinked directory inside the repo cannot redirect the seed write
+    // outside it (Requirement 1.3, #186).
+    if !contained_under(repo_root, &target) {
+        return Err(WriteGuardError::OutsideAgent {
+            target: rel_path.display().to_string(),
+        });
+    }
 
     write_atomic(&target, contents).map_err(|source| WriteGuardError::Io {
         target: target.display().to_string(),
@@ -293,6 +311,55 @@ pub fn read_layout(repo_root: &Path) -> Result<Layout, LayoutError> {
     }
 
     Ok(Layout { agent_root })
+}
+
+/// Confirm that `target` stays under `base` after resolving symlinks (Requirement 1.3).
+///
+/// The lexical [`resolve_under`] blocks `..` and absolute paths, but it does not follow a
+/// symlink. A symlinked directory inside `base` that points outside would let a
+/// lexically-valid target escape on the real write. This check closes that gap.
+///
+/// The target is usually a file that does not exist yet, so it cannot be canonicalized
+/// directly. Instead this canonicalizes `base` and the deepest existing ancestor of
+/// `target`, then confirms the ancestor stays under the canonical base. A symlinked
+/// intermediate directory exists, so it canonicalizes to its real location and is caught.
+/// A not-yet-created final component is safe, because creating it later routes through
+/// this same guard.
+///
+/// The lexical [`resolve_under`] already proves `target` is under `base` by path
+/// components. This adds the symlink check: the deepest existing ancestor of `target` must
+/// canonicalize under the deepest existing ancestor of `base`. Canonicalizing the existing
+/// portion of `base` handles the first write, when `.agent/` does not exist yet, and it
+/// normalizes a symlinked temp root (for example `/var` to `/private/var` on macOS) on
+/// both sides. A symlinked intermediate directory under `base` exists, so it canonicalizes
+/// to its real location and fails the containment check.
+///
+/// Returns `true` when the resolved `target` stays under `base`, and `false` when it
+/// escapes or when no existing anchor can be found (fail closed).
+fn contained_under(base: &Path, target: &Path) -> bool {
+    let (Some(base_anchor), Some(target_anchor)) = (
+        canonical_existing_ancestor(base),
+        canonical_existing_ancestor(target),
+    ) else {
+        // Without a real on-disk anchor on both sides, containment cannot be confirmed.
+        return false;
+    };
+    target_anchor.starts_with(&base_anchor)
+}
+
+/// Canonicalize the deepest ancestor of `path` that exists on disk.
+///
+/// The path being written usually does not exist yet, so walk up until a component that
+/// does, then canonicalize it. The not-yet-created tail carries no symlink, so only the
+/// existing portion needs resolution. Returns `None` when no ancestor exists.
+fn canonical_existing_ancestor(path: &Path) -> Option<PathBuf> {
+    let mut existing = path;
+    loop {
+        if let Ok(canonical) = existing.canonicalize() {
+            return Some(canonical);
+        }
+        existing = existing.parent()?;
+    }
 }
 
 /// Resolve `rel_path` under `base`, returning `None` when it escapes `base`.
