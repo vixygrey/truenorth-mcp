@@ -191,8 +191,20 @@ impl ResourceDoc {
         // path today, so this is defense in depth against a future backing-path change.
         reject_excluded_or_secret(repo_root, &path)?;
 
-        let text = std::fs::read_to_string(&path)
-            .map_err(|_| ResourceReadError::NotFound(display_backing(self)))?;
+        let text = std::fs::read_to_string(&path).map_err(|error| {
+            let backing = display_backing(self);
+            // The path resolved to an existing file just above, so a NotFound here is a
+            // race (the file was removed mid-read). Any other kind is a real I/O failure
+            // (permissions, not a regular file). Preserve the cause rather than reporting a
+            // bare "not found", so the message is actionable (#189).
+            match error.kind() {
+                std::io::ErrorKind::NotFound => ResourceReadError::NotFound(backing),
+                _ => ResourceReadError::Invalid(format!(
+                    "could not read {backing}: {error}. Check the file permissions and \
+                     that it is a regular file."
+                )),
+            }
+        })?;
 
         match self {
             ResourceDoc::State => {

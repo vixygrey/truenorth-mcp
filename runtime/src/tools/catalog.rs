@@ -30,7 +30,7 @@ fn json_result<T: Serialize>(value: &T) -> Result<CallToolResult, ErrorData> {
 /// Map a skill resolution error to an MCP error, preserving the legacy message.
 fn skill_error(error: SkillError) -> ErrorData {
     match error {
-        SkillError::InvalidName(_) | SkillError::NotFound(_) => {
+        SkillError::InvalidName(_) | SkillError::PathEscape(_) | SkillError::NotFound(_) => {
             ErrorData::invalid_params(error.to_string(), None)
         }
         SkillError::Read { .. } => ErrorData::internal_error(error.to_string(), None),

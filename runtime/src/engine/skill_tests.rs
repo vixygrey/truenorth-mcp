@@ -39,18 +39,27 @@ fn discovers_nothing_when_skills_dir_absent() {
 }
 
 #[test]
-fn resolve_rejects_traversal_names() {
+fn resolve_rejects_traversal_names_as_path_escape() {
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    for bad in ["../etc", "a/b", "a\\b", "..", ""] {
+    // A name with a separator or `..` is a traversal attempt, reported as PathEscape.
+    for bad in ["../etc", "a/b", "a\\b", ".."] {
         assert!(
             matches!(
                 resolve_skill_path(root, bad),
-                Err(SkillError::InvalidName(_))
+                Err(SkillError::PathEscape(_))
             ),
-            "name `{bad}` must be rejected"
+            "traversal name `{bad}` must be a PathEscape"
         );
     }
+}
+
+#[test]
+fn resolve_rejects_an_empty_name_as_invalid() {
+    let dir = tempdir().expect("temp dir");
+    // An empty name is a plain validation failure, not a traversal attempt.
+    let error = resolve_skill_path(dir.path(), "").expect_err("empty name");
+    assert!(matches!(error, SkillError::InvalidName(_)));
 }
 
 #[test]
@@ -77,14 +86,28 @@ fn read_raw_errors_on_missing_skill() {
     let dir = tempdir().expect("temp dir");
     let error = read_skill_raw(dir.path(), "absent").expect_err("missing skill");
     assert!(matches!(error, SkillError::NotFound(_)));
-    assert_eq!(error.to_string(), "Skill not found: absent");
+    let message = error.to_string();
+    // The message names the offending skill, the expected path shape, and the remediation.
+    assert!(message.contains("absent"), "names the skill: {message}");
+    assert!(
+        message.contains("skills/absent/SKILL.md"),
+        "names the expected path: {message}"
+    );
+    assert!(
+        message.contains("index_skills"),
+        "gives a remediation hint: {message}"
+    );
 }
 
 #[test]
-fn read_raw_errors_on_invalid_name() {
+fn read_raw_errors_on_a_traversal_name() {
     let dir = tempdir().expect("temp dir");
-    let error = read_skill_raw(dir.path(), "../secret").expect_err("invalid name");
-    assert!(matches!(error, SkillError::InvalidName(_)));
+    let error = read_skill_raw(dir.path(), "../secret").expect_err("traversal name");
+    assert!(matches!(error, SkillError::PathEscape(_)));
+    // The message names the offending value and the boundary it protects.
+    let message = error.to_string();
+    assert!(message.contains("../secret"), "names the value: {message}");
+    assert!(message.contains("skills/"), "names the boundary: {message}");
 }
 
 #[test]

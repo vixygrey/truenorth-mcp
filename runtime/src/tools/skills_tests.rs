@@ -76,5 +76,6 @@ fn resolve_errors_on_unresolved_name() {
     let dir = tempdir().expect("temp dir");
     let error = resolve_for_test(dir.path(), "absent").expect_err("missing skill");
     let mcp = skill_error(error);
-    assert!(mcp.message.contains("Skill not found"));
+    assert!(mcp.message.contains("not found"), "{}", mcp.message);
+    assert!(mcp.message.contains("absent"), "{}", mcp.message);
 }
