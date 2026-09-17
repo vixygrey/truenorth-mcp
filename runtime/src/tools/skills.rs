@@ -103,7 +103,7 @@ fn parse_tier(value: &str) -> Result<Tier, ErrorData> {
 /// Map a skill resolution error to an MCP error (Requirement 6.3).
 fn skill_error(error: SkillError) -> ErrorData {
     match error {
-        SkillError::InvalidName(_) | SkillError::NotFound(_) => {
+        SkillError::InvalidName(_) | SkillError::PathEscape(_) | SkillError::NotFound(_) => {
             ErrorData::invalid_params(error.to_string(), None)
         }
         SkillError::Read { .. } => ErrorData::internal_error(error.to_string(), None),

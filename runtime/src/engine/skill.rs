@@ -41,12 +41,28 @@ pub struct RawSkill {
 /// An error resolving or reading a skill.
 #[derive(Debug, Error)]
 pub enum SkillError {
-    /// The skill name is invalid or the path escapes the skills directory.
-    #[error("Skill not found or invalid: {0}")]
+    /// The skill name is not a valid single directory segment (a validation failure,
+    /// distinct from a path-traversal attempt).
+    #[error(
+        "invalid skill name `{0}`: a skill name is a single directory segment in \
+         verb-noun kebab-case, for example `develop-tdd`. Run index_skills to list the \
+         available skills."
+    )]
     InvalidName(String),
 
+    /// The skill name tries to escape the `skills/` directory (a path-traversal attempt,
+    /// distinct from a plain invalid name).
+    #[error(
+        "refused skill name `{0}`: a skill name must not contain `/`, `\\`, or `..`, so it \
+         cannot escape the `skills/` directory. Use a single directory segment."
+    )]
+    PathEscape(String),
+
     /// The skill name resolves to a path with no `SKILL.md`.
-    #[error("Skill not found: {0}")]
+    #[error(
+        "skill `{0}` not found: no `skills/{0}/SKILL.md` exists. Run index_skills to list \
+         the available skills."
+    )]
     NotFound(String),
 
     /// The skill file could not be read.
@@ -93,20 +109,22 @@ pub fn discover_skills(repo_root: &Path) -> Vec<SkillIndexEntry> {
 /// Resolve a skill name to its `SKILL.md` path under a path guard (ports
 /// `resolveSkillPath`).
 ///
-/// The name must be a single directory segment. A name with `/`, `\`, or `..`, or an
-/// empty name, is rejected, so a caller cannot traverse outside `skills/`.
+/// The name must be a single directory segment. An empty name is a plain validation
+/// failure. A name with `/`, `\`, or `..` is a path-traversal attempt, so a caller cannot
+/// reach outside `skills/`. The two cases return distinct errors, so a validation failure
+/// is not conflated with a security boundary.
 ///
 /// # Errors
 ///
-/// Returns [`SkillError::InvalidName`] for a name that fails the guard.
+/// Returns [`SkillError::InvalidName`] for an empty name, and [`SkillError::PathEscape`]
+/// for a name that contains a path separator or `..`.
 pub fn resolve_skill_path(repo_root: &Path, name: &str) -> Result<PathBuf, SkillError> {
     let trimmed = name.trim();
-    if trimmed.is_empty()
-        || trimmed.contains('/')
-        || trimmed.contains('\\')
-        || trimmed.contains("..")
-    {
+    if trimmed.is_empty() {
         return Err(SkillError::InvalidName(name.to_string()));
+    }
+    if trimmed.contains('/') || trimmed.contains('\\') || trimmed.contains("..") {
+        return Err(SkillError::PathEscape(name.to_string()));
     }
     Ok(repo_root.join("skills").join(trimmed).join("SKILL.md"))
 }
@@ -119,8 +137,9 @@ pub fn resolve_skill_path(repo_root: &Path, name: &str) -> Result<PathBuf, Skill
 ///
 /// # Errors
 ///
-/// Returns [`SkillError::InvalidName`] for a guarded name, [`SkillError::NotFound`] when
-/// no `SKILL.md` exists, or [`SkillError::Read`] on an I/O failure.
+/// Returns [`SkillError::InvalidName`] or [`SkillError::PathEscape`] for a guarded name,
+/// [`SkillError::NotFound`] when no `SKILL.md` exists, or [`SkillError::Read`] on an I/O
+/// failure.
 pub fn read_skill_raw(repo_root: &Path, name: &str) -> Result<RawSkill, SkillError> {
     let path = resolve_skill_path(repo_root, name)?;
     if !path.is_file() {

@@ -48,7 +48,8 @@ fn parse_named_skill_errors_on_missing() {
     let error = server
         .parse_named_skill("absent")
         .expect_err("missing skill");
-    assert!(error.message.contains("Skill not found"));
+    assert!(error.message.contains("not found"), "{}", error.message);
+    assert!(error.message.contains("absent"), "{}", error.message);
 }
 
 #[test]
