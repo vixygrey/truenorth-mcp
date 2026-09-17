@@ -1,310 +1,166 @@
 version: "1"
 terms:
-  - term: BCP
-    full: Business Complexity Points
+  - term: active tool
     definition: >
-      A pre-build story size metric assigned via a 6-step sizing method
-      (flow-ciandt/bcp-agent). BCP measures relative implementation
-      complexity, not time. Used in release planning (WSJF = BV+TC+RR-OE
-      over JS where JS is BCP proxy) and velocity tracking (BCP/hr).
-      Canonical method documented in docs/references/bcp.md.
-    source: flow-ciandt/bcp-agent (BMAD ecosystem)
-    related_terms: [WSJF, story, velocity, sizing]
+      An MCP tool that performs work rather than returning markdown for the model
+      to interpret. It advances a phase, records a task, runs a gate, or rejects an
+      ontology violation. Contrasts with the passive catalog tools that only read
+      and return content.
+    related_terms: [verify gate, resource, catalog tool]
 
-  - term: WSJF
-    full: Weighted Shortest Job First
+  - term: resource
     definition: >
-      Prioritization formula from SAFe: (Business Value + Time Criticality +
-      Risk Reduction/Opportunity Enablement) / Job Size. In bigpowers, Job
-      Size is proxied by BCP. Epics in specs/release-plan.yaml carry WSJF
-      scores; higher scores ship first. Release trains group epics by value
-      and dependency, not raw WSJF rank.
-    source: SAFe (Scaled Agile Framework)
-    related_terms: [BCP, release train, epic, prioritization]
+      A live MCP resource served under the truenorth:// scheme (state, cockpit,
+      conventions, ontology, adr). A resources/read reflects current on-disk content.
+      The watcher emits notifications/resources/updated when a backing file changes.
+    related_terms: [watcher, cockpit, write guard]
 
-  - term: OKF
-    full: Open Knowledge Format
+  - term: verify gate
     definition: >
-      A structured markdown format for inter-agent knowledge transfer.
-      OKF bundles are concept documents with typed frontmatter (type,
-      authority, status, depth) and provenance metadata. The bigpowers
-      implementation (e39 Semantic Context Bridge) renders OKF bundles
-      from SKILL.md sources via sync-skills.sh and validates them with
-      validate-okf.sh. Authority doc: docs/references/okf.md.
-    source: OKF v0.1 (bigpowers e39)
-    related_terms: [sync pipeline, skill, knowledge graph, MCP]
+      The truenorth_verify_gate tool. In execute mode it runs the project verify or
+      test command in a sandbox and returns passed only on a real exit-0 the server
+      observed. In evidence mode it accepts caller-supplied evidence for environments
+      where in-server execution is undesirable. Correctness Property 2.
+    related_terms: [sandbox, active tool, TDD cycle]
 
-  - term: golden story
+  - term: sandbox
     definition: >
-      An end-to-end agent-executed story that doubles as a CI gate.
-      Each golden story (G-01 through G-NN) is a deterministic workflow
-      run against a known fixture with a pass@k flake policy (currently
-      2-of-3). Defined in specs/benchmarks/ and exercised by the golden
-      suite runner (scripts/run-golden-suite.sh). G-01 runs via DeepSeek
-      v4 through the Anthropic protocol.
-    source: bigpowers e31/e37 (Golden Story Suite)
-    related_terms: [benchmark, golden suite, pass@k, CI gate]
+      The bounded environment for gate execution: a wall-clock timeout with a hard
+      kill, a working directory pinned under the repo root, a command allowlist on the
+      first token, and an environment sanitized against the secret denylist.
+    related_terms: [verify gate, secret denylist]
 
-  - term: HARD GATE
+  - term: ontology
     definition: >
-      A non-negotiable checkpoint in a skill or workflow. HARD GATEs block
-      all progress until the condition is met — the agent MUST NOT proceed
-      past the gate. Contrasts with soft gates (warnings) and informational
-      checkpoints. Every HARD GATE in a SKILL.md must be signaled with a
-      bold callout block ("> **HARD GATE** —").
-    source: bigpowers methodology (superpowers compliance)
-    related_terms: [soft gate, skill, compliance, superpowers]
+      The domain model at .agent/ontology.yml: entities, invariants, states,
+      transitions, prohibited aliases, and global constraints. The ontology gate scans
+      target code against the prohibited aliases and cites the owning constraint id.
+      The feature is per-project and default enabled.
+    related_terms: [ontology gate, prohibited alias, feature flag]
 
-  - term: soft gate
+  - term: ontology gate
     definition: >
-      A conditional checkpoint that warns but does not block. Soft gates
-      allow the agent to proceed with documented rationale (override
-      recorded in specs/state.yaml). Contrasts with HARD GATEs which
-      block unconditionally.
-    source: bigpowers methodology
-    related_terms: [HARD GATE, compliance, override]
+      The truenorth_verify_ontology tool. It scans code for prohibited aliases and
+      constraint violations against .agent/ontology.yml. The baseline is a
+      language-agnostic regex scan, with an optional tree-sitter AST plug-in.
+      Correctness Property 1.
+    related_terms: [ontology, prohibited alias, analyzer]
 
-  - term: handoff
+  - term: prohibited alias
     definition: >
-      The mechanism by which one skill signals the next skill to invoke,
-      carried in specs/state.yaml under handoff.next_skill and
-      handoff.context. Every critical-path skill writes a handoff as
-      its last action. Agents read state.yaml and follow handoff.next_skill
-      rather than guessing what comes next. The next_skill signaling
-      mandate (v2.0.0) ensures deterministic workflow progression.
-    source: bigpowers v2.0.0 (handoff mandate)
-    related_terms: [state.yaml, critical-path, workflow, session state]
+      A forbidden synonym for an entity that signals lexical drift, for example
+      is_deleted for a soft-delete concept. The ontology gate reports each occurrence
+      with the offending value, the expected shape, and the constraint id.
+    related_terms: [ontology, ontology gate]
 
-  - term: capsule
-    full: epic capsule
+  - term: write guard
     definition: >
-      A directory under specs/epics/eNN-slug/ containing all artifacts
-      for a single epic: epic.yaml (metadata), story files (eNNsNN.md),
-      task files (eNNsNN-tasks.yaml), and related resources. Capsules
-      are the unit of epic storage; completed capsules are archived to
-      specs/epics/archive/. The capsule structure replaced flat YAML
-      epics in v4.0.0.
-    source: bigpowers v4.0.0 (capsule directory convention)
-    related_terms: [epic, story, archive, release train]
+      The single guarded write path, write_under_agent. It canonicalizes the target,
+      rejects any path that escapes .agent/, and writes nothing on rejection. It is the
+      only write path in runtime library code. Correctness Property 6.
+    related_terms: [.agent workspace, cockpit, resource]
 
-  - term: train
-    full: release train
+  - term: .agent workspace
     definition: >
-      A sequenced group of epics in specs/release-plan.yaml under
-      release_trains, organized by value delivery and dependency rather
-      than raw WSJF order. Each train has a codename, total BCP,
-      rationale, and a list of epic IDs. Trains supersede linear epic
-      ordering — pull-forward and deferral decisions are documented
-      in the train rationale.
-    source: bigpowers v2.5x (release train sequencing)
-    related_terms: [WSJF, epic, capsule, release plan, BCP]
+      The machine-facing directory the runtime reads, watches, and writes. It holds the
+      layout contract, the profile, config, spec narrative, the tasks cockpit, the
+      ontology, product docs, memories, and telemetry. The runtime never mutates a path
+      under specs/.
+    related_terms: [write guard, cockpit, specs layer]
 
-  - term: BCP sizing scale
+  - term: cockpit
     definition: >
-      The 6-step method for assigning BCP to a story: (1) read the story
-      spec, (2) identify complexity drivers, (3) estimate relative to a
-      known baseline, (4) assign a Fibonacci-scale value, (5) document
-      rationale, (6) peer-review or self-calibrate. The scale is
-      anchored on a reference story of known complexity. Documented in
-      docs/references/bcp.md.
-    source: flow-ciandt/bcp-agent
-    related_terms: [BCP, story, velocity, sizing]
+      The runtime-written state under .agent/tasks/: state.yml carries the phase and the
+      TDD loop, release-plan.yml carries the recorded tasks, and bugs.yml carries the
+      external-tracker bug references.
+    related_terms: [.agent workspace, resource, tier]
 
-  - term: deepening
+  - term: methodology profile
     definition: >
-      A design philosophy from "A Philosophy of Software Design"
-      (Ousterhout): modules should have small interfaces and deep
-      implementations. A deep module hides complexity behind a simple
-      API. The opposite is a shallow module (large interface, thin
-      implementation). bigpowers applies deepening to both code
-      (deepen-architecture skill) and skills (design-interface skill's
-      "Design It Twice" pattern). The v2.45.0 release codename
-      "Deepening" reflects this philosophy.
-    source: John Ousterhout, "A Philosophy of Software Design"
-    related_terms: [deep module, architecture, refactor, design]
+      One of five built-in workflow shapes as data: epic-based, issue-per-task (the
+      default), kanban, milestone-based, and generic. A profile sets the grouping
+      vocabulary, whether grouping is required, the branch pattern, and whether a commit
+      needs an id reference. Custom profiles are out of scope.
+    related_terms: [grouping key, scaffold, commit-msg hook]
 
-  - term: traceability gate
+  - term: grouping key
     definition: >
-      A deterministic CI gate (e38) that links story IDs to implementing
-      code and tests. Three tiers: matrix builder (trace-stories.sh),
-      blind-spot heuristic detector, and quality gate decision (PASS/
-      CONCERNS/FAIL/WAIVED). TEA-inspired oracle confidence downgrade:
-      tagged→high, heuristic→medium, inferred→low. Machine-readable
-      output at specs/traceability-matrix.json.
-    source: bigpowers e38 (Spec-to-Code Traceability Gate), BMAD TEA
-    related_terms: [story tag, blind spot, oracle confidence, CI gate]
+      The neutral task grouping that replaces the mandatory epic_id. A task carries an
+      optional group_id and group_kind (epic, sprint, milestone, ticket). A legacy
+      epic_id maps to group_kind epic. Its presence rule depends on the active profile.
+    related_terms: [methodology profile, cockpit]
 
-  - term: story tag
+  - term: tier
     definition: >
-      A code-level provenance marker of the form `story: eNNsNN` placed
-      in implementing files and tests. Every story MUST have at least one
-      story tag. trace-stories.sh --strict scans for untagged stories
-      and fails the CI traceability gate. Story tags are woven into git
-      history, cycle-times.yaml, and the traceability matrix — they are
-      immutable identifiers.
-    source: bigpowers methodology (traceability mandate)
-    related_terms: [traceability gate, story, epic, CI gate]
+      A skill rendering level computed per call: full is verbatim, reasoning strips
+      meta scaffolding for native reasoning models, and lean compresses to imperative
+      directives for tight local-context budgets. Tier transforms never alter directive
+      content that encodes invariants. Correctness Property 4.
+    related_terms: [skill, get_skill]
 
-  - term: compliance
+  - term: skill
     definition: >
-      The automated quality assurance pipeline: audit-compliance.sh
-      (Gherkin step scripts), validate-doctrine.sh (documentation
-      integrity), and the golden suite (deterministic self-tests).
-      Runs as `npm run compliance` and in CI. Score threshold: 94%.
-      Waiver subsystem (P0 #1, 2026-07-03) excludes documented
-      intentional failures from the denominator.
-    source: bigpowers methodology (compliance gate)
-    related_terms: [audit, golden suite, waiver, step script, CI gate]
+      A canonical SKILL.md source served through tiered rendering. One source directory,
+      rendered per call, replaces the per-harness static mirrors of the upstream design.
+    related_terms: [tier, catalog tool]
 
-  - term: pass@k
+  - term: catalog tool
     definition: >
-      A benchmark metric measuring the probability that at least one
-      of k agent runs produces a correct result. In bigpowers,
-      golden stories use pass@k with a 2-of-3 flake policy — a story
-      passes if 2 of 3 independent agent runs succeed. Runs are
-      deterministic and use pinned model versions (e.g., G-01 uses
-      DeepSeek v4 via Anthropic protocol).
-    source: bigpowers e37 (Golden Story Suite), ML benchmark literature
-    related_terms: [golden story, benchmark, golden suite, CI gate]
+      A legacy read-only tool ported from the upstream server (index_skills, read_skill,
+      search_skills, build_skill_graph, and related). Kept alongside the active tools so
+      existing agent flows keep working during migration.
+    related_terms: [active tool, skill]
 
-  - term: sync pipeline
+  - term: TDD cycle
     definition: >
-      The scripts/sync-skills.sh pipeline that reads all SKILL.md source
-      files and renders them into IDE-specific artifacts: .cursor/rules/
-      (.mdc), .gemini/extensions/bigpowers/ (Gemini CLI), .pi/skills/
-      (pi agent). Each render target is a function; adding a new IDE
-      target means adding a function, not editing a loop. OKF bundles
-      are the fourth render target (e39+e33).
-    source: bigpowers e33 (Sync Pipeline Refactor)
-    related_terms: [OKF, skill, artifact, render target, IDE]
+      The truenorth_tdd_cycle tool. It enforces the Red-Green-Refactor step order and
+      checks the red-stage test. The runtime observes the failing test rather than
+      trusting the model.
+    related_terms: [verify gate, active tool]
 
-  - term: blind spot
+  - term: watcher
     definition: >
-      A heuristic-identified gap in spec-to-code coverage: a story that
-      exists in the release plan but has no detectable implementation
-      in the codebase. Blind spots are surfaced by scripts/check-blind-spots.sh
-      and carry lower oracle confidence (heuristic→medium) than tagged
-      stories (tagged→high). The traceability gate downgrades confidence
-      for blind-spot matches.
-    source: bigpowers e38 (Traceability Gate), BMAD TEA
-    related_terms: [traceability gate, oracle confidence, story tag, heuristic]
+      The file watcher that maps a debounced disk change to a resource URI and emits
+      notifications/resources/updated. A change to a cockpit file notifies within about
+      one second.
+    related_terms: [resource, cockpit]
 
-  - term: oracle confidence
+  - term: write-through-notify
     definition: >
-      A 3-tier confidence grading for traceability matches:
-      tagged → high (story tag found in code),
-      heuristic → medium (blind-spot heuristic matched),
-      inferred → low (no direct evidence, dependency-chain guess).
-      The e38 traceability gate downgrades its verdict when oracle
-      confidence is medium or low, flagging stories for manual review.
-      TEA-inspired (BMAD Test Architecture Enterprise).
-    source: bigpowers e38, BMAD TEA
-    related_terms: [traceability gate, blind spot, story tag, heuristic]
+      The runtime pattern: read live from disk, write through to disk, then emit a
+      resource update. Disk is the source of truth and the runtime is a syncing peer,
+      not the sole writer. ADR-4.
+    related_terms: [watcher, resource, write guard]
 
-  - term: cycle time
+  - term: feature flag
     definition: >
-      The delivery metric for a story. Two separated fields in
-      specs/metrics/cycle-times.yaml: effort_hours (git-derived,
-      additive, idle-stripped via git-hours model) and lead_time_minutes
-      (calendar latency from first commit to merge, median-aggregated,
-      never summed). Replaced the deprecated hand-arithmetic approach
-      (story_start minus story_end) in bigpowers v2.0.0 / e40.
-    source: bigpowers e40 (Metrics Integrity)
-    related_terms: [BCP, velocity, metrics, release]
+      The per-project features.ontology boolean in .agent/config/rules.yml. The default
+      is enabled. When disabled, the ontology tools and the ontology resource are absent
+      and no ontology file is seeded.
+    related_terms: [ontology, ontology gate]
 
-  - term: integration target
-    full: Integration Target
+  - term: secret denylist
     definition: >
-      An agent runtime or IDE that bigpowers generates integration artifacts for.
-      Each target has exactly one row in the Integration Registry
-      (scripts/targets.yaml) with a unique kebab-case id, tier
-      (default_on | opt_in | optional), and optional skill/context blocks.
-      Examples: cursor, gemini, pi, cline, aider, goose, zed, hermes.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [targets.yaml, adapter, context derivative, skill adapter]
+      The set of patterns the runtime never reads, echoes, or writes (.env, *.pem,
+      secret, credentials). The environment is sanitized against it before a gate
+      subprocess runs.
+    related_terms: [sandbox, verify gate]
 
-  - term: skill adapter
-    full: Skill Adapter
+  - term: correctness property
     definition: >
-      A bash script at scripts/adapters/<id>.sh that implements one or both
-      hooks for an integration target: render_skill (renders skill artifacts
-      for sync-skills.sh dispatch) and wire_context (writes context derivatives
-      for generate-context-bundle.sh). Must be idempotent. Shared wiring
-      helpers live in scripts/lib/context-wire.sh.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [integration target, render_skill, wire_context, adapters/]
+      A universally-quantified claim about runtime behavior that must hold across all
+      valid executions, and the target of a property-based or golden test. The properties
+      P1 to P21 span the three specs and pin the load-bearing invariants.
+    related_terms: [verify gate, ontology gate, write guard]
 
-  - term: context derivative
-    full: Context Derivative
+  - term: specs layer
     definition: >
-      A tool-specific file generated from the canonical AGENTS.md spine.
-      Derivatives are symlinks by default (AGENTS.md -> CLAUDE.md) with a
-      copy fallback for Windows. Four modes: native (no derivative),
-      symlink, copy, config-bridge. Managed by generate-context-bundle.sh
-      and verified by verify-install.sh --matrix via hash comparison.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [AGENTS.md, context.mode, context spine, context bundle]
-
-  - term: context spine
-    full: Context Spine (Reach)
-    definition: >
-      The required shape of AGENTS.md: multi-agent preamble naming >=1 OSS
-      target, ## Preflight (non-empty), ## Test / ## Lint / ## Build (present;
-      may be N/A), neutral title (not Codex-only). Validated by
-      verify-install.sh --matrix and bp-read-agents.sh. The spine ensures
-      every integration target receives a consistent instruction surface.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [AGENTS.md, context derivative, preflight, reach template]
-
-  - term: context.mode
-    full: context.mode enum
-    definition: >
-      A field in each integration target's context block in targets.yaml.
-      Four values: native (no derivative — tool reads AGENTS.md directly),
-      symlink (AGENTS.md -> derivative file), copy (content-identical copy),
-      config-bridge (write config file with read: AGENTS.md entry).
-      The symlink/copy fallback handles Windows without Developer Mode.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [context derivative, targets.yaml, context bundle]
-
-  - term: context bundle
-    full: Context Bundle
-    definition: >
-      The full set of generated context derivatives for all integration
-      targets in the registry. Generated by a single command:
-      bash scripts/generate-context-bundle.sh. Includes CLAUDE.md (symlink),
-      GEMINI.md (symlink), .aider.conf.yml (config-bridge), and any other
-      derivatives declared in targets.yaml context blocks.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [context derivative, context spine, targets.yaml, generate-context-bundle.sh]
-
-  - term: integration registry
-    full: Integration Registry
-    definition: >
-      The declarative YAML file scripts/targets.yaml listing all Integration
-      Targets. Single source of truth for skill adapters, context wiring modes,
-      tiers, and contract names. Validated by validate-targets-yaml.sh (yq + bash).
-      Schema reference: docs/references/targets-registry.md.
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [integration target, targets.yaml, skill adapter, context derivative]
-
-  - term: reach template
-    full: Reach Template
-    definition: >
-      The canonical AGENTS.md template at docs/templates/AGENTS.md used by
-      seed-conventions to seed new projects. Contains the Context Spine
-      shape (multi-agent preamble, Preflight, Test/Lint/Build rows).
-      Not to be confused with tool-specific derivative templates
-      (e.g., templates/codex/AGENTS.md for Codex CLI).
-    source: bigpowers e37 (Reach — Universal Agent Portability)
-    related_terms: [AGENTS.md, context spine, seed-conventions, context derivative]
+      The human-facing specs/ directory of authored narrative. The runtime can read a
+      file under specs/ (for example the ADR resource over specs/adr/) but never mutates
+      a path there.
+    related_terms: [.agent workspace, write guard, resource]
 
 note: >
-  Populated 2026-07-03 as part of BUG-2026-07-03-glossary-sparse (P2 #9);
-  expanded 2026-07-06 with Reach domain terms (e37 — Universal Agent Portability).
-  26 core domain terms covering BCP, WSJF, OKF, golden story, HARD GATE,
-  handoff, capsule, train, traceability gate, compliance, integration target,
-  integration registry, skill adapter, context derivative, context spine, and more.
-  Linked to authority sources (docs/references/, release-plan.yaml,
-  CONVENTIONS.md, specs/tech-architecture/tech-stack.md). Maintain via
-  define-language skill for additions.
+  TrueNorth-MCP domain vocabulary. TrueNorth-MCP is a fork of danielvm-git/bigpowers,
+  re-architected into an active, protocol-first Rust MCP runtime. Terms trace to the
+  design docs under .kiro/specs/ and the correctness properties P1 to P21.

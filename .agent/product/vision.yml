@@ -1,9 +1,11 @@
 version: "1"
-north_star: "Maintain senior-grade quality while scaling agentic autonomy"
+north_star: "Spec-driven engineering discipline for AI agents: protocol-first, token-lean, and model-agnostic."
 success_criteria:
-  - "Compliance suite >= 94% (87/87 PASS at release)"
-  - "61 skills synced and documented"
-  - "YAML cockpit: state, release-plan, execution-status, epics, requirements"
+  - "Behavior ships through typed MCP tools and live resources, not markdown dumped into a context window."
+  - "The verify gate passes only on a real exit-0 the server observed, never on model-supplied evidence alone."
+  - "Load-bearing behavior is pinned by the design correctness properties and covered by tests."
+  - "The same discipline drops into any model and any harness without vendor-specific scaffolding."
 out_of_scope:
-  - "Domain-specific scaffold skills"
-  - "SaaS tracker integrations"
+  - "Vendor-specific prompt scaffolding or meta-instructions."
+  - "Workflow and cycle-time metrics."
+  - "SaaS tracker integrations. The external tracker owns bug detail."

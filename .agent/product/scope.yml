@@ -1,168 +1,59 @@
 version: "1"
-core_value: "Maintain senior-grade quality (audit score) while scaling agentic autonomy."
+core_value: "Turn spec-driven engineering discipline into active MCP tools and live resources that any agent, on any harness, can drive."
 
 summary: |
-  Agent skills for solo developers (Claude Code, Cursor, Gemini CLI).
-  Prescriptive lifecycle, architectural depth, surgical changes, empirical verification.
+  TrueNorth-MCP is an active, protocol-first MCP execution runtime. The runtime
+  crate is Rust. A thin Node.js wrapper distributes the platform binary. The runtime
+  advances lifecycle state, runs quality gates in a sandbox, enforces a shared domain
+  ontology, and drives a Red-Green-Refactor loop. The governed project can be any
+  language.
 
 in_scope:
   - id: fr-01
-    title: Skill lifecycle with SKILL.md sources
+    title: Active lifecycle tools (advance phase, record task, TDD cycle) that write cockpit state
   - id: fr-02
-    title: Gherkin audit harness via audit-compliance.sh
+    title: Verify gate that runs the project verify command in a sandbox, or accepts evidence
   - id: fr-03
-    title: Orchestration meta-skills
+    title: Live MCP resources (state, cockpit, conventions, ontology, adr) with resources/updated notifications
   - id: fr-04
-    title: Context isolation per skill spawn
+    title: Tiered skill rendering (full, reasoning, lean) computed per call
   - id: fr-05
-    title: Supply-chain security in plan-work and audit-code
+    title: Language-agnostic ontology scan with a regex baseline and an optional AST plug-in
   - id: fr-06
-    title: Verify phase (verify-work, run-evals)
+    title: The .agent/ machine-facing workspace behind a single guarded write path
   - id: fr-07
-    title: YAML specs cockpit (state, release-plan, epics, execution-status)
+    title: Five methodology profiles as data, with a neutral grouping key
   - id: fr-08
-    title: Wave-based execution where independent
+    title: Greenfield scaffold tool that seeds the .agent/ tree, root docs, git hooks, and .github/ templates
   - id: fr-09
-    title: Local-first specs in specs/
+    title: External-tracker bug references stored in the cockpit
   - id: fr-10
-    title: Discoverable repository layout — skill sources grouped under skills/, README visible on GitHub landing page
-    epic: e29
-
-  # ── v2.45.0 "Deepening" track — internal-tooling debt ─────────────────
-  # These epics improve the skill system's architecture and quality infrastructure.
-  # They are not user-facing features; scope is internal-tooling debt reduction.
-  # Source docs: DEEPEN-ARCHITECTURE-REVIEW.md, MISSING-REFERENCES-AND-DELIVERY-PLAN.md,
-  # QUALITY-GUARANTEE-STRATEGY.md. Build order in specs/release-plan.yaml.
+    title: Backward-compatible read of a legacy specs/ cockpit, preserving unknown fields
   - id: fr-11
-    title: Quality guarantee infrastructure — golden story suite, compliance gate, token budget (e31)
-    epic: e31
+    title: Per-project optional ontology flag, default enabled
   - id: fr-12
-    title: Architecture quick fixes — fix concrete bugs from architecture review (e30)
-    epic: e30
-  - id: fr-13
-    title: Historical reference docs — 9 missing provenance pointers (e35)
-    epic: e35
-  - id: fr-14
-    title: Sync pipeline refactor — parse→IR→render (e33)
-    epic: e33
-  - id: fr-15
-    title: Context engineering layer — named strategies + effort frontmatter (e34)
-    epic: e34
-  - id: fr-16
-    title: DORA metrics extension — beyond BCP/hr to four DORA keys (e35)
-    epic: e35
-    superseded_by: fr-20 (e40 — Metrics Integrity absorbs DORA four keys with git-derived effort + lead time)
-  - id: fr-17
-    title: Documentation deduplication — provenance pointers, not restatements (e36)
-    epic: e36
-
-  # ── Post-Deepening track — trust, evidence, and public launch ─────────
-  # Added 2026-07-03 per PLAN-AUDIT (gap: epics existed only as capsules +
-  # release-plan rows, no scope anchor). Sequencing in release-plan.yaml
-  # release_trains. e35 (fr-16) is superseded by e40 — kept for history.
-  - id: fr-18
-    title: Spec-to-code traceability gate — matrix builder, blind-spot detector, quality gate (e38)
-    epic: e38
-  - id: fr-19
-    title: Semantic context bridge — skill graph, agent locks, spec drift, OKF wikis (e39)
-    epic: e39
-  - id: fr-20
-    title: Metrics integrity — git-/telemetry-derived additive effort + lead time, provenance gate; supersedes fr-16 (e40)
-    epic: e40
-  - id: fr-21
-    title: Public receipts — live evidence page rendering compliance/golden/metrics/traceability on the docs site (e41)
-    epic: e41
-  - id: fr-22
-    title: Showcase repo — worked example built end-to-end with bigpowers in a separate public repo (e42)
-    epic: e42
-  - id: fr-23
-    title: MCP semantic context server — TypeScript MCP server with index/read/search/graph tools for agent skill discovery (e43)
-    epic: e43
-  - id: fr-24
-    title: Spec version migration — migrate-version skill auto-detects spec format gaps and applies OKF migration bundles to upgrade downstream projects (e44)
-    epic: e44
-  - id: fr-25
-    title: OKF completion — epics-wiki, adr-wiki, verification reports as OKF bundles, bug-registry OKF-ification, viz.html graph companion, and tier field for conditional loading (e48)
-    epic: e48
-  - id: fr-26
-    title: Risk-based verification — risk-scaled verify-work depth (P0–P3), NFR evidence gate (performance/reliability/operability), and tea.md reference doc crediting TEA (e46)
-    epic: e46
-  - id: fr-27
-    title: BCP Plus counting — evolve from 3D to 13D story sizing via big-counter integration, NFR gate, and 13-dimension templates (e48)
-    epic: e48
-
-  # ── Epic redesign track — Reach → Quality → Foundation (2026-07-06) ─────
-  # Merges former e50+e52 (e37), e48 prior-art (e45), e45+e49+e37 (e48).
-  - id: fr-28
-    title: Unified AGENTS.md template with e51 Preflight row; CLAUDE.md symlink; multi-agent preamble (e37s01)
-    epic: e37
-  - id: fr-29
-    title: Cline native AGENTS.md verification — verify-install + using-bigpowers docs (e37s02)
-    epic: e37
-  - id: fr-30
-    title: Aider seed bridge — .aider.conf.yml with read:AGENTS.md when opted in (e37s03)
-    epic: e37
-  - id: fr-31
-    title: Agent Target Registry — declarative targets.yaml for all integration targets (e37s05)
-    epic: e37
-  - id: fr-32
-    title: ContextBundle generator — AGENTS.md once, all derived files (e37s06)
-    epic: e37
-  - id: fr-33
-    title: Adapter dispatch engine — sync-skills.sh routes via targets.yaml (e37s07)
-    epic: e37
-  - id: fr-34
-    title: Verification matrix — verify-install.sh --matrix per target (e37s08)
-    epic: e37
-  - id: fr-35
-    title: OSS reach waves — Goose/Agy, zed/omp/hermes, qwen/kilocode, continue, iflow/vibe/shai (e37s09–s13)
-    epic: e37
-  - id: fr-38
-    title: verify-install AGENTS.md spine assertions — Preflight, Cline/Aider wiring, optional Codex gating (e37s04)
-    epic: e37
-  - id: fr-39
-    title: Optional Codex seed wiring — .codex/config.toml + AGENTS.md header when opted in (e37s14)
-    epic: e37
-  - id: fr-40
-    title: Global Codex install — ~/.codex/ AGENTS.md starter symlink via install.sh (e37s15)
-    epic: e37
-  - id: fr-41
-    title: Codex CLI onboarding section in using-bigpowers (e37s16)
-    epic: e37
-  - id: fr-36
-    title: Skill hardening patterns — benchmark delta, PreToolUse hooks, review gates, orchestration resilience (e45)
-    epic: e45
-  - id: fr-37
-    title: OKF completion, GitHub Wiki rendering, BCP Plus 13D sizing (e48)
-    epic: e48
+    title: npm/pnpm distribution with per-platform binary packages
 
 out_of_scope:
-  - Per-skill symlinks for instruction-file-only tools (Codex, Cline, Aider) — these tools use AGENTS.md, not a skill catalog
-  - "'@bigpowers/mcp-server' npm package — not scoped until MCP server is built (separate initiative)"
-  - Marketplace or plugin store model — deferred; dual-channel publishing depends on MCP server
-  - Domain-specific scaffold skills
-  - SaaS tracker integrations (Jira, Linear)
-  - Renaming any skill during layout moves (governed by ADR-0001, orthogonal to portability)
-  - Relocating generated artifact targets .cursor/, .gemini/, .pi/ (consumer tools read these paths)
-  - Relocating tool-read root files CLAUDE.md, GEMINI.md, opencode.json, index.js (breaks consumers)
-  - Paperclip — orchestration layer, not a seed target; different problem space
-  - Wave B+ targets (roo, kiro-cli, tabnine, devin, windsurf, copilot) — deferred until registry is stable
+  - Vendor-specific prompt scaffolding, XML, or meta-instructions
+  - Workflow and cycle-time metrics
+  - SaaS tracker integrations (Jira, Linear). The external tracker owns bug detail.
+  - Windows binaries for the initial release (darwin and linux only)
+  - User-defined custom methodology profiles
 
 constraints:
-  - Max 300 lines per file
-  - Grep uniqueness under 5 hits per symbol
-  - Single canonical location per fact
-  - npm postinstall runs sync-skills.sh + install.sh — skill relocation and script updates must ship atomically in one release (fr-10)
+  - Files under about 300 lines, split by responsibility
+  - unwrap/expect/panic banned in library code; return typed errors
+  - Every runtime write funnels through the .agent/ write guard
+  - Every tool input is a schemars-derived struct with bounded constraints
+  - All prose follows the house writing rules (ASD-STE100-based Simplified Technical English)
 
 success_criteria:
-  - Compliance suite at or above 94%
-  - Skills synced via sync-skills.sh
-  - YAML layout validates via validate-specs-yaml.sh
-  - Repo root has ~20 entries so README renders above the fold on GitHub (fr-10)
-  - Skill count and all consumer artifacts unchanged after the skills/ move (fr-10)
-  - Golden story suite baseline established (fr-11, e31)
-  - Tautological verify commands eliminated from all skills (fr-12, e30)
+  - cargo fmt, cargo clippy (deny warnings), and cargo test all pass
+  - The binary completes an MCP handshake over stdio and lists its tools and resources
+  - The npm wrapper resolves the platform binary and propagates the exit code
+  - Correctness properties P1 to P21 are covered by tests
 
 references:
-  plans: specs/tech-architecture/TECH_STACK_LATEST.md
+  design: .kiro/specs/truenorth-mcp-refactor/design.md
   adr: specs/adr/
