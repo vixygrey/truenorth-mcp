@@ -40,7 +40,10 @@ The engineering conventions for this project. The MCP server serves this file as
   actionable remediation hint.
 - One responsibility per function. Early returns over nesting. No magic literal, no
   dead code.
-- Files under about 300 lines, split by concern.
+- Files under about 300 lines, split by concern, not arbitrarily. A single cohesive
+  concern may sit modestly over the guideline rather than be fragmented across files.
+  A few modules do (for example `tools/catalog.rs`, `engine/ontology_scan.rs`,
+  `engine/graph.rs`): each is one concern whose logic reads better whole.
 
 ## MCP tools and resources
 
