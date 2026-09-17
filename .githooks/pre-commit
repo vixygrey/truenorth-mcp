@@ -1,21 +1,35 @@
 #!/bin/sh
-# pre-commit hook: check formatting on staged files with Prettier.
+# pre-commit hook: fast local formatting checks. CI runs the same checks as the real gate.
 #
 # Enable the repo hooks once with:
 #   git config core.hooksPath .githooks
 #
-# This hook is the fast local signal. CI runs the same check as the real gate.
+# This hook runs the fast formatters only. Clippy compiles the crate, so it stays in CI
+# rather than on every commit.
 
 # Collect staged files that are added, copied, or modified.
 staged=$(git diff --cached --name-only --diff-filter=ACM)
 [ -z "$staged" ] && exit 0
 
-# Let Prettier decide which of the staged files it owns (it honors .prettierignore).
-# `--check` exits non-zero when any file is not formatted.
-if ! printf '%s\n' "$staged" | xargs npx --no-install prettier --check 2>/dev/null; then
+# Prettier owns the JS, JSON, and Markdown. Let it decide which staged files it owns (it
+# honors .prettierignore). `--ignore-unknown` skips a staged file with no Prettier parser
+# (a shell hook, a dotfile) instead of erroring on it. `--check` exits non-zero when any
+# owned file is not formatted.
+if ! printf '%s\n' "$staged" | xargs npx --no-install prettier --check --ignore-unknown 2>/dev/null; then
   echo "pre-commit: some staged files are not formatted." >&2
   echo "  fix them with: npm run format" >&2
   echo "  then re-stage and commit." >&2
   exit 1
+fi
+
+# cargo fmt owns the Rust crate. Run it only when a staged file is under runtime/, so a
+# commit that does not touch the crate stays fast and needs no Rust toolchain.
+if printf '%s\n' "$staged" | grep -q '^runtime/.*\.rs$'; then
+  if ! cargo fmt --check --manifest-path runtime/Cargo.toml >/dev/null 2>&1; then
+    echo "pre-commit: the Rust crate is not formatted." >&2
+    echo "  fix it with: cargo fmt --manifest-path runtime/Cargo.toml" >&2
+    echo "  then re-stage and commit." >&2
+    exit 1
+  fi
 fi
 exit 0
