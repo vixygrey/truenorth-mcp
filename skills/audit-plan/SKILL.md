@@ -27,7 +27,7 @@ Assess an incoming project plan for alignment with the project principles, ident
 - Are commit conventions documented (Conventional Commits)?
 - Is the git workflow mode identified (`solo-git` | `team-pr`)?
 
-### 3. Bigpowers pre-flight (must all be answered before build)
+### 3. Pre-flight (must all be answered before build)
 
 | Question                             | Why                                                                  |
 | ------------------------------------ | -------------------------------------------------------------------- |

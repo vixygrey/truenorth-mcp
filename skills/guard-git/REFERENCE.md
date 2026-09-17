@@ -144,10 +144,10 @@ echo '{"tool_input":{"command":"git push origin main"}}' | ./pre-tool-use.sh
 # Expected: exit 2, protected branch message
 ```
 
-**2. Allow push to main with GIT_BIGPOWERS_LAND=1:**
+**2. Allow push to main with GIT_GUARDRAILS_LAND=1:**
 
 ```bash
-GIT_BIGPOWERS_LAND=1 echo '{"tool_input":{"command":"git push origin main"}}' | ./pre-tool-use.sh
+GIT_GUARDRAILS_LAND=1 echo '{"tool_input":{"command":"git push origin main"}}' | ./pre-tool-use.sh
 # Expected: exit 0 (when on main)
 ```
 
