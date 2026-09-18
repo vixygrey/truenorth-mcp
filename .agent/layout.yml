@@ -1,0 +1,7 @@
+version: "1"
+areas:
+  config: [rules.yml]
+  spec: [requirements.md]
+  tasks: [state.yml]
+  memories: [lessons.md, glossary.md]
+  telemetry: [runs.yml]
