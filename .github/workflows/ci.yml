@@ -98,9 +98,9 @@ jobs:
 
       - name: Set up Node.js
         if: steps.wrapper.outputs.present == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Run the wrapper tests
         if: steps.wrapper.outputs.present == 'true'
@@ -126,9 +126,9 @@ jobs:
 
       - name: Set up Node.js
         if: steps.tooling.outputs.present == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dev tooling
         if: steps.tooling.outputs.present == 'true'
