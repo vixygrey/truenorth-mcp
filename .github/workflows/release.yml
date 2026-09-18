@@ -4,7 +4,11 @@ name: Release
 # the root wrapper. The root wrapper publishes only after every per-platform package
 # publishes, so a single per-platform failure aborts the release (Requirements 8.7, 8.11).
 #
-# The workflow runs on a release tag. The npm publishes need the TRUENORTH_MCP_NPM secret.
+# The workflow runs on a release tag. The npm publishes use trusted publishing (OIDC),
+# so no npm token is stored. GitHub mints a short-lived id-token, and npm verifies the
+# workflow against the trusted publisher configured on each package. Trusted publishing
+# needs npm CLI 11.5.1 or later and Node 22.14.0 or later, so each publish job updates
+# npm and runs on Node 22.
 on:
   push:
     tags:
@@ -22,6 +26,10 @@ jobs:
   build-and-publish-platform:
     name: build and publish ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      # Mint the OIDC token that npm trusted publishing verifies.
+      id-token: write
     strategy:
       # Do not cancel the other legs when one fails, so the failure is visible per
       # platform. Any failed leg still fails the job, which gates the root wrapper below.
@@ -94,18 +102,27 @@ jobs:
       - name: Set up Node.js for publishing
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm for trusted publishing
+        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be
+        # older, so pin a version that supports OIDC publishing.
+        run: npm install -g npm@latest
 
       - name: Publish the platform package
         working-directory: npm/packages/${{ matrix.platform }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.TRUENORTH_MCP_NPM }}
-        run: npm publish --access public
+        # No token. npm exchanges the OIDC id-token for publish access against the trusted
+        # publisher configured on the package. `--provenance` records the build attestation.
+        run: npm publish --access public --provenance
 
   publish-root:
     name: publish the root wrapper
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Mint the OIDC token that npm trusted publishing verifies.
+      id-token: write
     # The root wrapper publishes only after every per-platform package publishes. A single
     # failed leg fails `build-and-publish-platform`, which skips this job and aborts the
     # release (Requirement 8.11).
@@ -146,11 +163,16 @@ jobs:
       - name: Set up Node.js for publishing
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm for trusted publishing
+        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be
+        # older, so pin a version that supports OIDC publishing.
+        run: npm install -g npm@latest
 
       - name: Publish the root wrapper
         working-directory: npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.TRUENORTH_MCP_NPM }}
-        run: npm publish --access public
+        # No token. npm exchanges the OIDC id-token for publish access against the trusted
+        # publisher configured on the package. `--provenance` records the build attestation.
+        run: npm publish --access public --provenance
