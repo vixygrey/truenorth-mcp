@@ -99,7 +99,7 @@ SERVER_PID=$!
 disown "$SERVER_PID" 2>/dev/null
 echo "$SERVER_PID" > "$PID_FILE"
 
-for i in {1..50}; do
+for _ in {1..50}; do
   if grep -q "server-started" "$LOG_FILE" 2>/dev/null; then
     alive="true"
     for _ in {1..20}; do
