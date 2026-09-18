@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "TrueNorth-MCP native binary for Linux on arm64.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vixygrey/truenorth-mcp.git",
+    "directory": "npm/packages/linux-arm64"
+  },
   "os": [
     "linux"
   ],
