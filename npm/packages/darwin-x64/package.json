@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "TrueNorth-MCP native binary for macOS on x64.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vixygrey/truenorth-mcp.git",
+    "directory": "npm/packages/darwin-x64"
+  },
   "os": [
     "darwin"
   ],
