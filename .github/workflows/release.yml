@@ -1,8 +1,9 @@
 name: Release
 
-# Cross-compile the native binaries, publish the per-platform npm packages, then publish
-# the root wrapper. The root wrapper publishes only after every per-platform package
-# publishes, so a single per-platform failure aborts the release (Requirements 8.7, 8.11).
+# Cross-compile the native binaries, stage the per-platform npm packages, then stage the
+# root wrapper. The root wrapper stages only after every per-platform package stages, so a
+# single per-platform failure aborts the release (Requirements 8.7, 8.11). Staged versions
+# go live only after a maintainer approves each one with 2FA on npm.
 #
 # The workflow runs on a release tag. The npm publishes use trusted publishing (OIDC),
 # so no npm token is stored. GitHub mints a short-lived id-token, and npm verifies the
@@ -110,11 +111,13 @@ jobs:
         # older, so pin a version that supports OIDC publishing.
         run: npm install -g npm@latest
 
-      - name: Publish the platform package
+      - name: Stage the platform package
         working-directory: npm/packages/${{ matrix.platform }}
-        # No token. npm exchanges the OIDC id-token for publish access against the trusted
-        # publisher configured on the package. `--provenance` records the build attestation.
-        run: npm publish --access public --provenance
+        # No token. npm exchanges the OIDC id-token for staging access against the trusted
+        # publisher on the package. `stage publish` submits the version to a staging area.
+        # A maintainer approves it with 2FA before it goes live. Provenance is generated
+        # automatically under trusted publishing, so no flag is needed.
+        run: npm stage publish --access public
 
   publish-root:
     name: publish the root wrapper
@@ -171,8 +174,10 @@ jobs:
         # older, so pin a version that supports OIDC publishing.
         run: npm install -g npm@latest
 
-      - name: Publish the root wrapper
+      - name: Stage the root wrapper
         working-directory: npm
-        # No token. npm exchanges the OIDC id-token for publish access against the trusted
-        # publisher configured on the package. `--provenance` records the build attestation.
-        run: npm publish --access public --provenance
+        # No token. npm exchanges the OIDC id-token for staging access against the trusted
+        # publisher on the package. `stage publish` submits the version to a staging area.
+        # A maintainer approves it with 2FA before it goes live. Provenance is generated
+        # automatically under trusted publishing, so no flag is needed.
+        run: npm stage publish --access public
