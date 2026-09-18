@@ -138,27 +138,64 @@ jobs:
         if: steps.tooling.outputs.present == 'true'
         run: npm run format:check
 
+  shell:
+    name: shell lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Detect the shell scripts
+        id: shell
+        run: |
+          # Use git ls-files so detection matches the lint step and needs no shell glob
+          # option. A pathspec with `**` is a git glob, not a shell glob.
+          if [ -n "$(git ls-files 'skills/**/*.sh')" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "No shell scripts under skills/ on this branch. Skipping the shell checks."
+          fi
+
+      - name: Install shellcheck
+        if: steps.shell.outputs.present == 'true'
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        if: steps.shell.outputs.present == 'true'
+        run: |
+          # Lint every tracked shell script under skills/. Deny warnings, matching the
+          # deny-warnings bar the Rust crate meets.
+          shellcheck --severity=warning $(git ls-files 'skills/**/*.sh')
+
+      - name: Run the guard-git test harness
+        if: steps.shell.outputs.present == 'true'
+        run: bash skills/guard-git/scripts/tests/run.sh
+
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only
-  # when the Rust check job, the npm wrapper job, and the format job passed.
+  # when the Rust check job, the npm wrapper job, the format job, and the shell job passed.
   gate:
     name: CI Gate
     runs-on: ubuntu-latest
-    needs: [check, wrapper, format]
+    needs: [check, wrapper, format, shell]
     if: always()
     steps:
-      - name: Confirm the check, wrapper, and format jobs passed
+      - name: Confirm the check, wrapper, format, and shell jobs passed
         run: |
           check_result="${{ needs.check.result }}"
           wrapper_result="${{ needs.wrapper.result }}"
           format_result="${{ needs.format.result }}"
+          shell_result="${{ needs.shell.result }}"
           echo "check job result: ${check_result}"
           echo "wrapper job result: ${wrapper_result}"
           echo "format job result: ${format_result}"
+          echo "shell job result: ${shell_result}"
           if [ "${check_result}" != "success" ] \
             || [ "${wrapper_result}" != "success" ] \
-            || [ "${format_result}" != "success" ]; then
+            || [ "${format_result}" != "success" ] \
+            || [ "${shell_result}" != "success" ]; then
             echo "A required job did not pass. Failing the gate."
             exit 1
           fi
-          echo "The check, wrapper, and format jobs passed. The gate is green."
+          echo "The check, wrapper, format, and shell jobs passed. The gate is green."

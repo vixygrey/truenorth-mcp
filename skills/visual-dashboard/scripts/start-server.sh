@@ -79,7 +79,9 @@ if [[ -f "$PID_FILE" ]]; then
   rm -f "$PID_FILE"
 fi
 
-cd "$SCRIPT_DIR"
+# Fail hard when the change directory fails, so the server never starts from the wrong
+# directory and never loads a stale server.cjs.
+cd "$SCRIPT_DIR" || exit 1
 
 OWNER_PID="$(ps -o ppid= -p "$PPID" 2>/dev/null | tr -d ' ')"
 if [[ -z "$OWNER_PID" || "$OWNER_PID" == "1" ]]; then
@@ -97,7 +99,7 @@ SERVER_PID=$!
 disown "$SERVER_PID" 2>/dev/null
 echo "$SERVER_PID" > "$PID_FILE"
 
-for i in {1..50}; do
+for _ in {1..50}; do
   if grep -q "server-started" "$LOG_FILE" 2>/dev/null; then
     alive="true"
     for _ in {1..20}; do

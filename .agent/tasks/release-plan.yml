@@ -1,3 +1,5 @@
 tasks:
 - task_name: 'guard-git: enforce branch protection and Conventional Commits in the pre-command hook, add pre-commit secret scanning (#210)'
   verify_command: bash skills/guard-git/scripts/tests/run.sh
+- task_name: 'Dogfood guard-git: wire the secret scanner into .githooks/pre-commit and add a CI shell job (#225)'
+  verify_command: shellcheck --severity=warning $(git ls-files 'skills/**/*.sh') && bash skills/guard-git/scripts/tests/run.sh
