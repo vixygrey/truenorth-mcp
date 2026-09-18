@@ -1,1 +1,3 @@
-tasks: []
+tasks:
+- task_name: 'guard-git: enforce branch protection and Conventional Commits in the pre-command hook, add pre-commit secret scanning (#210)'
+  verify_command: bash skills/guard-git/scripts/tests/run.sh
