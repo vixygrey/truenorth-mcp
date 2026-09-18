@@ -4,7 +4,7 @@ name: Release
 # the root wrapper. The root wrapper publishes only after every per-platform package
 # publishes, so a single per-platform failure aborts the release (Requirements 8.7, 8.11).
 #
-# The workflow runs on a release tag. The npm publishes need the NPM_TOKEN secret.
+# The workflow runs on a release tag. The npm publishes need the TRUENORTH_MCP_NPM secret.
 on:
   push:
     tags:
@@ -100,7 +100,7 @@ jobs:
       - name: Publish the platform package
         working-directory: npm/packages/${{ matrix.platform }}
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.TRUENORTH_MCP_NPM }}
         run: npm publish --access public
 
   publish-root:
@@ -152,5 +152,5 @@ jobs:
       - name: Publish the root wrapper
         working-directory: npm
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.TRUENORTH_MCP_NPM }}
         run: npm publish --access public
