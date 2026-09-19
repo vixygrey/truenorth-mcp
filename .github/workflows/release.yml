@@ -51,7 +51,7 @@ jobs:
             platform: linux-arm64
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Resolve the release version
         id: version
@@ -101,7 +101,7 @@ jobs:
         run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
 
       - name: Set up Node.js for publishing
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
@@ -132,7 +132,7 @@ jobs:
     needs: build-and-publish-platform
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Resolve the release version
         id: version
@@ -164,7 +164,7 @@ jobs:
           ' "${version}"
 
       - name: Set up Node.js for publishing
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"

@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Detect the crate
         id: crate
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Detect the wrapper
         id: wrapper
@@ -103,7 +103,7 @@ jobs:
 
       - name: Set up Node.js
         if: steps.wrapper.outputs.present == 'true'
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
 
@@ -117,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Detect the tooling
         id: tooling
@@ -131,7 +131,7 @@ jobs:
 
       - name: Set up Node.js
         if: steps.tooling.outputs.present == 'true'
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
 
@@ -148,7 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Detect the shell scripts
         id: shell
