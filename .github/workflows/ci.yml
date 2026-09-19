@@ -195,9 +195,13 @@ jobs:
           # names no retired cockpit path, per ADR-0011 and ADR-0008 (issue #250).
           bash scripts/lint-skill-paths.sh
 
-      - name: Run the guard-git test harness
+      - name: Verify the script-bearing skills
         if: steps.shell.outputs.present == 'true'
-        run: bash skills/guard-git/scripts/tests/run.sh
+        run: |
+          # Run each script skill's documented verify command (guard-git, extract-design,
+          # align-grid, visual-dashboard). A browser- or server-bound verify is skipped in
+          # a headless CI. This subsumes the guard-git harness run (issue #250).
+          bash scripts/verify-skills.sh
 
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only

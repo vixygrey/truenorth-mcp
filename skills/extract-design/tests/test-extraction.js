@@ -867,6 +867,63 @@ for (const n of [
 }
 
 // ================================================================
+// Handoff tests (#250): the documented handoff writes next_skill
+// ================================================================
+console.log('\nHandoff tests\n');
+
+const { writeGrillMeHandoff } = await import('../scripts/lib/state.js');
+const nodeOs = await import('node:os');
+const nodePath = await import('node:path');
+
+// writeGrillMeHandoff writes to a cwd-relative `.agent/tasks/state.yml`, so run it inside
+// a fresh temp repo and restore the cwd afterward.
+function inTempRepo(fn) {
+  const prev = process.cwd();
+  const dir = nodeFs.mkdtempSync(nodePath.join(nodeOs.tmpdir(), 'ed-handoff-'));
+  try {
+    process.chdir(dir);
+    fn(dir);
+  } finally {
+    process.chdir(prev);
+    nodeFs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+t('writeGrillMeHandoff writes handoff.next_skill: grill-me to .agent/tasks/state.yml', () => {
+  inTempRepo(() => {
+    writeGrillMeHandoff({ tokenCount: 100, componentCount: 3, uncertainCount: 0 });
+    const statePath = '.agent/tasks/state.yml';
+    assert(nodeFs.existsSync(statePath), 'the handoff created .agent/tasks/state.yml');
+    const c = nodeFs.readFileSync(statePath, 'utf8');
+    includes(c, 'next_skill: grill-me', 'the handoff names grill-me as the next skill');
+    includes(c, 'handoff:', 'the handoff block is present');
+  });
+});
+
+t('writeGrillMeHandoff does not write a second handoff when one is present', () => {
+  inTempRepo(() => {
+    const statePath = '.agent/tasks/state.yml';
+    writeGrillMeHandoff({ tokenCount: 1 });
+    writeGrillMeHandoff({ tokenCount: 2 });
+    const c = nodeFs.readFileSync(statePath, 'utf8');
+    const count = (c.match(/next_skill:/g) || []).length;
+    assert(count === 1, `expected one handoff, found ${count}`);
+  });
+});
+
+t('writeGrillMeHandoff appends the handoff, preserving existing state content', () => {
+  inTempRepo(() => {
+    const statePath = '.agent/tasks/state.yml';
+    nodeFs.mkdirSync('.agent/tasks', { recursive: true });
+    nodeFs.writeFileSync(statePath, 'active_group_id: e01\nphase: execute\n', 'utf8');
+    writeGrillMeHandoff({ tokenCount: 1 });
+    const c = nodeFs.readFileSync(statePath, 'utf8');
+    includes(c, 'active_group_id: e01', 'the existing state content is preserved');
+    includes(c, 'next_skill: grill-me', 'the handoff was appended');
+  });
+});
+
+// ================================================================
 // Summary
 // ================================================================
 console.log(`\n${'='.repeat(40)}`);
