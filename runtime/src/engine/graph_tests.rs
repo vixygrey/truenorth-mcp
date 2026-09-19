@@ -165,3 +165,122 @@ fn forward_and_reverse_deps() {
     assert_eq!(forward_deps(&graph, "planner"), vec!["builder".to_string()]);
     assert_eq!(reverse_deps(&graph, "builder"), vec!["planner".to_string()]);
 }
+
+#[test]
+fn mines_depends_on_from_after_phrasing() {
+    // The real skill phrasing is "use it after <skill>", not the literal "run X after Y".
+    // The target must be a known skill, so both skills are in the build.
+    let research = parsed(
+        "research-first",
+        "---\ndescription: Look before you build. Use it after survey-context and before elaborate-spec.\n---\n\n# Research First\n",
+    );
+    let survey = parsed("survey-context", "# Survey Context\n");
+    let elaborate = parsed("elaborate-spec", "# Elaborate Spec\n");
+    let graph = build_graph(&[research, survey, elaborate]);
+
+    let deps = forward_deps(&graph, "research-first");
+    assert!(
+        deps.contains(&"survey-context".to_string()),
+        "expected a depends_on edge to survey-context, got {deps:?}"
+    );
+    assert!(
+        deps.contains(&"elaborate-spec".to_string()),
+        "expected a depends_on edge to elaborate-spec, got {deps:?}"
+    );
+}
+
+#[test]
+fn mines_handoff_to_from_next_skill_directive() {
+    // A "Next: <skill>" directive becomes a handoff_to edge when the target is known.
+    let survey = parsed(
+        "survey-context",
+        "# Survey Context\n\n## Handoff\n\nGate: READY. Next: plan-work.\n",
+    );
+    let plan = parsed("plan-work", "# Plan Work\n");
+    let graph = build_graph(&[survey, plan]);
+
+    let chain = handoff_chain(&graph, "survey-context");
+    assert_eq!(
+        chain,
+        vec!["survey-context".to_string(), "plan-work".to_string()]
+    );
+}
+
+#[test]
+fn does_not_mine_a_relation_to_an_unknown_target() {
+    // "after lunch" must not become a depends_on edge, because `lunch` is not a skill.
+    // This is the #239 regression guard: a target that is not a known skill is dropped.
+    let skill = parsed(
+        "develop-tdd",
+        "---\ndescription: Write the code after lunch and before dinner.\n---\n\n# TDD\n",
+    );
+    let graph = build_graph(&[skill]);
+    assert!(
+        graph.relations.is_empty(),
+        "no relation should point at a non-skill word, got {:?}",
+        graph.relations
+    );
+}
+
+#[test]
+fn hard_gate_text_is_not_mined_into_a_relation() {
+    // The old miner grabbed the first word after "HARD GATE:" as a `gates` target, which
+    // produced garbage like `gates -> Do`. A gate is a property of the skill, not an edge.
+    let skill = parsed(
+        "develop-tdd",
+        "# TDD\n\n> **HARD GATE**: Do NOT proceed on main. Run kickoff-branch first.\n",
+    );
+    let graph = build_graph(&[skill]);
+    assert!(
+        !graph.relations.iter().any(|r| r.relation_type == "gates"),
+        "the HARD GATE text must not produce a gates relation, got {:?}",
+        graph.relations
+    );
+    // And the stray words from the gate sentence must not appear as any target.
+    for r in &graph.relations {
+        assert!(
+            !["Do", "this", "read", "NOT", "Run"].contains(&r.to.as_str()),
+            "a stray English word leaked as a relation target: {r:?}"
+        );
+    }
+}
+
+#[test]
+fn every_skill_relation_target_resolves_to_a_known_entity() {
+    // The load-bearing #239 property: over a representative multi-skill graph, every
+    // skill-to-skill relation target is a known entity. Only the CONVENTIONS.md enforces
+    // target is exempt, because it is not a skill.
+    let skills = vec![
+        parsed(
+            "research-first",
+            "---\ndescription: Use it after survey-context and before elaborate-spec.\n---\n\n# Research First\n\nObey CONVENTIONS.md here.\n",
+        ),
+        parsed(
+            "survey-context",
+            "# Survey Context\n\nSee skills/plan-work/SKILL.md.\n\n## Handoff\n\nNext: plan-work.\n",
+        ),
+        parsed("elaborate-spec", "# Elaborate Spec\n"),
+        parsed("plan-work", "# Plan Work\n"),
+    ];
+    let known: std::collections::BTreeSet<String> = skills.iter().map(|s| s.name.clone()).collect();
+    let graph = build_graph(&skills);
+
+    for r in &graph.relations {
+        if r.to.starts_with("CONVENTIONS.md") {
+            continue;
+        }
+        assert!(
+            known.contains(&r.to),
+            "relation target `{}` is not a known skill (relation {r:?})",
+            r.to
+        );
+    }
+    // Sanity: the graph is not empty, so the assertion above is meaningful.
+    assert!(
+        graph
+            .relations
+            .iter()
+            .any(|r| r.relation_type == "depends_on"),
+        "expected at least one depends_on edge in the representative graph"
+    );
+}

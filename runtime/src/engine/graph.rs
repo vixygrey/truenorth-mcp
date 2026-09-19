@@ -7,7 +7,7 @@
 //!
 //! Requirements: 7.8, 7.9. Design: Part II §1.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use regex::Regex;
@@ -84,11 +84,16 @@ impl GraphRelation {
 
 /// Build the graph from parsed skills (ports `buildGraphFromSkills`).
 ///
-/// Each skill becomes an entity with a `description` observation. Relations are mined
-/// from the joined prose with the legacy regexes: `depends_on`, `gates`, `references`,
-/// `enforces`, and `handoff_to`.
+/// Each skill becomes an entity with a `description` observation. Relations are mined from
+/// the prose and the description, and every skill-to-skill target is validated against the
+/// set of known skill names, so a relation never points at a stray English word (#239).
 pub fn build_graph(skills: &[ParsedSkill]) -> SkillGraph {
     let mut graph = SkillGraph::default();
+
+    // Collect the known skill names first, so relation mining can reject a target that is
+    // not a skill. This is the fix for the garbage targets the token-grabbing regexes
+    // produced (for example `gates -> "Do"`), see #239.
+    let known: BTreeSet<String> = skills.iter().map(|s| s.name.clone()).collect();
 
     for skill in skills {
         let observations = observations_from(skill);
@@ -97,7 +102,7 @@ pub fn build_graph(skills: &[ParsedSkill]) -> SkillGraph {
             GraphEntity::skill(&skill.name, observations),
         );
 
-        mine_relations(&mut graph, skill, &skill.raw_prose);
+        mine_relations(&mut graph, skill, &known);
     }
 
     graph
@@ -116,50 +121,82 @@ fn observations_from(skill: &ParsedSkill) -> Vec<String> {
     observations
 }
 
-/// Mine the five relation kinds from a skill's prose (ports the builder regexes).
+/// Mine relations from a skill, validating every skill target against `known` (#239).
 ///
-/// The prose is the joined paragraph text (`raw_prose`), which already covers every
-/// paragraph once. The legacy builder also appended each section's prose, which
-/// double-counted every paragraph and produced duplicate relations. This mines each
-/// paragraph once, so a single reference yields a single relation.
-fn mine_relations(graph: &mut SkillGraph, skill: &ParsedSkill, prose: &str) {
-    for caps in handoff_after_re().captures_iter(prose) {
-        graph
-            .relations
-            .push(GraphRelation::new(&caps[1], &caps[2], "depends_on"));
-    }
+/// Four relation kinds are mined:
+///
+/// - `references`: an explicit `skills/<name>/SKILL.md` link. The captured name is a skill
+///   by construction, so it is recorded without a graph-membership check.
+/// - `depends_on`: a handoff phrasing the skills actually use, `after <skill>` or
+///   `before <skill>`, where `<skill>` is a known skill name.
+/// - `handoff_to`: an explicit next-skill directive, `handoff.next_skill = <skill>` or
+///   `Next: <skill>`, where `<skill>` is a known skill name.
+/// - `enforces`: a `CONVENTIONS.md` reference, with an optional section.
+///
+/// The `HARD GATE` text is no longer mined into a relation. A gate is a property of the
+/// skill, not an edge to another node, and the old first-token grab produced garbage
+/// targets like `Do` and `this`.
+fn mine_relations(graph: &mut SkillGraph, skill: &ParsedSkill, known: &BTreeSet<String>) {
+    let prose = &skill.raw_prose;
+    let description = skill
+        .frontmatter
+        .get("description")
+        .and_then(scalar_string)
+        .unwrap_or_default();
 
-    if let Some(caps) = hard_gate_re().captures(prose)
-        && let Some(target) = first_token_re().find(caps[1].trim())
-    {
-        let cleaned = target.as_str().replace(['`', '\'', '"'], "");
-        graph
-            .relations
-            .push(GraphRelation::new(&skill.name, &cleaned, "gates"));
-    }
+    // The description and the prose together, so a handoff stated in either is seen. The
+    // description carries the "Use it after X, before Y" triggers; the prose carries the
+    // "Next:" and "handoff.next_skill" directives.
+    let combined = format!("{description}\n{prose}");
 
+    // references: an explicit skills/<name>/SKILL.md link. The path form guarantees a
+    // skill name, so it is not filtered against `known` (a referenced skill can live
+    // outside a single-skill build).
     for caps in skill_ref_re().captures_iter(prose) {
-        graph
-            .relations
-            .push(GraphRelation::new(&skill.name, &caps[1], "references"));
+        push_unique(
+            graph,
+            GraphRelation::new(&skill.name, &caps[1], "references"),
+        );
     }
 
+    // depends_on: "after <skill>" or "before <skill>", validated against known names.
+    for caps in handoff_edge_re().captures_iter(&combined) {
+        let target = caps[2].to_string();
+        if target != skill.name && known.contains(&target) {
+            push_unique(
+                graph,
+                GraphRelation::new(&skill.name, &target, "depends_on"),
+            );
+        }
+    }
+
+    // handoff_to: an explicit next-skill directive, validated against known names.
+    for caps in next_skill_re().captures_iter(&combined) {
+        let target = caps[1].to_string();
+        if target != skill.name && known.contains(&target) {
+            push_unique(
+                graph,
+                GraphRelation::new(&skill.name, &target, "handoff_to"),
+            );
+        }
+    }
+
+    // enforces: a CONVENTIONS.md reference, with an optional section.
     for caps in conventions_re().captures_iter(prose) {
         let target = match caps.get(1) {
             Some(section) => format!("CONVENTIONS.md §{}", section.as_str()),
             None => "CONVENTIONS.md".to_string(),
         };
-        graph
-            .relations
-            .push(GraphRelation::new(&skill.name, &target, "enforces"));
+        push_unique(graph, GraphRelation::new(&skill.name, &target, "enforces"));
     }
+}
 
-    if let Some(description) = skill.frontmatter.get("description").and_then(scalar_string)
-        && let Some(caps) = handoff_desc_re().captures(&description)
-    {
-        graph
-            .relations
-            .push(GraphRelation::new(&skill.name, &caps[1], "handoff_to"));
+/// Push a relation only when an identical one is not already present, so a phrasing that
+/// matches twice (for example "after X" in both the description and the prose) yields one
+/// edge.
+fn push_unique(graph: &mut SkillGraph, relation: GraphRelation) {
+    if !graph.relations.contains(&relation) {
+        graph.relations.push(relation);
     }
 }
 
@@ -309,30 +346,35 @@ fn scalar_string(value: &serde_yaml::Value) -> Option<String> {
     }
 }
 
-// The legacy relation-mining regexes, compiled once from build-constant patterns.
-fn handoff_after_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)run\s+(\S+)\s+after\s+(\S+)"))
-}
-fn hard_gate_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)HARD GATE:\s*(.+)"))
-}
-fn first_token_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"\S+-?\S+"))
-}
+// The relation-mining regexes, compiled once from build-constant patterns. A skill name
+// is kebab-case (a lowercase letter, then lowercase letters, digits, and hyphens), so the
+// capture groups below match a skill name shape and the caller validates it against the
+// known set.
+
+/// An explicit `skills/<name>/SKILL.md` reference.
 fn skill_ref_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)see\s+skills/(\S+)/SKILL\.md"))
+    RE.get_or_init(|| compile_static(r"(?i)see\s+skills/([a-z][a-z0-9-]+)/SKILL\.md"))
 }
+
+/// A handoff phrasing: `after <skill>` or `before <skill>`. The skill name may be wrapped
+/// in backticks. Group 2 is the skill name.
+fn handoff_edge_re() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| compile_static(r"(?i)\b(after|before)\s+`?([a-z][a-z0-9-]+)`?"))
+}
+
+/// An explicit next-skill directive: `Next: <skill>`, `next_skill = <skill>`, or
+/// `next_skill: <skill>`. Group 1 is the skill name.
+fn next_skill_re() -> &'static Regex {
+    static RE: OnceLock<Regex> = OnceLock::new();
+    RE.get_or_init(|| compile_static(r"(?i)(?:next_skill\s*[:=]|next:)\s*`?([a-z][a-z0-9-]+)`?"))
+}
+
+/// A `CONVENTIONS.md` reference, with an optional section after `§` or `#`.
 fn conventions_re() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| compile_static(r"(?i)CONVENTIONS\.md(?:\s*[§#]\s*(\S+))?"))
-}
-fn handoff_desc_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)handoff.*?(\S+-?\S+)"))
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The
