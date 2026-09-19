@@ -181,6 +181,13 @@ jobs:
           # matching the deny-warnings bar the Rust crate meets.
           shellcheck --severity=warning $(git ls-files 'skills/**/*.sh' 'scripts/**/*.sh')
 
+      - name: Lint skill artifact-write paths
+        if: steps.shell.outputs.present == 'true'
+        run: |
+          # Check that skill scripts write machine artifacts under `.agent/` and transient
+          # render output to /tmp or a gitignored session dir, per ADR-0014 (issue #138).
+          bash scripts/lint-skill-artifacts.sh
+
       - name: Run the guard-git test harness
         if: steps.shell.outputs.present == 'true'
         run: bash skills/guard-git/scripts/tests/run.sh
