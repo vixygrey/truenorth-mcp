@@ -12,7 +12,7 @@ recommendation. This is the "where am I?" skill. Run it at the start of every ta
 
 > **HARD GATE**: read the cockpit and narrative files before you suggest a next step. When the state is stale or contradicts the codebase, request clarification rather than assuming intent.
 
-The six phases: discover, elaborate, plan, build, verify, release.
+The six phases: discover, design, plan, execute, review, integrate.
 
 ## Process
 
