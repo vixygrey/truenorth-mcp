@@ -195,6 +195,13 @@ jobs:
           # names no retired cockpit path, per ADR-0011 and ADR-0008 (issue #250).
           bash scripts/lint-skill-paths.sh
 
+      - name: Lint skill handoff targets
+        if: steps.shell.outputs.present == 'true'
+        run: |
+          # Check that every concrete handoff target names a real skill, so a rename or a
+          # delete cannot leave a dangling next_skill pointer (issue #253).
+          bash scripts/lint-skill-handoffs.sh
+
       - name: Verify the script-bearing skills
         if: steps.shell.outputs.present == 'true'
         run: |
