@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cm-val-01",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: added a `--dry-run` flag to the deploy command that prints the plan without applying it.",
+    "expected_type": "feat",
+    "breaking": false
+  },
+  {
+    "id": "cm-val-02",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: fixed a null dereference when the config file is absent.",
+    "expected_type": "fix",
+    "breaking": false
+  },
+  {
+    "id": "cm-val-03",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: renamed the `Client` type to `HttpClient` across the public API. Callers must update the type name.",
+    "expected_type": "refactor",
+    "breaking": true
+  }
+]

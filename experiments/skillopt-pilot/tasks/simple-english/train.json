@@ -1,0 +1,32 @@
+[
+  {
+    "id": "se-train-01",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The migration has completed and the table is being rebuilt, so it's basically going to seamlessly leverage the robust new schema."
+  },
+  {
+    "id": "se-train-02",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: Prior to running the deploy, you should ensure that the config file exists, and note that data loss can occur if the destructive flag is enabled."
+  },
+  {
+    "id": "se-train-03",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The cache, which is utilized in order to speed things up, might occasionally cause stale reads; e.g. after a write."
+  },
+  {
+    "id": "se-train-04",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: To set up the environment, you'll want to simply install the deps and then you can easily run the tests, which will validate everything."
+  },
+  {
+    "id": "se-train-05",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The service has been experiencing timeouts because the connection pool timeout configuration value was being set too low."
+  },
+  {
+    "id": "se-train-06",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: Grab the API key from the dashboard before configuring the client, which you can do under Settings, and it shouldn't take long."
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "se-test-01",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The runtime has been designed so that it doesn't ever write outside `.agent/`, and any write that's being attempted elsewhere is rejected."
+  },
+  {
+    "id": "se-test-02",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: In order to scaffold a project, you'll simply call the tool, and note that an existing file won't be overwritten."
+  },
+  {
+    "id": "se-test-03",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The gate is trustworthy because the server, and not the model, has observed the exit code; it's basically impossible to fake."
+  },
+  {
+    "id": "se-test-04",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: Prior to enabling the ontology feature, you should ensure the config exists, and it'll then seamlessly gate the two tools."
+  },
+  {
+    "id": "se-test-05",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The skills are being rendered at three tiers, which is basically how the same discipline can be leveraged across a hosted model or a local weight."
+  },
+  {
+    "id": "se-test-06",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: To connect the server, you'll want to simply add it to your client config, and then you can easily call a tool over stdio."
+  }
+]

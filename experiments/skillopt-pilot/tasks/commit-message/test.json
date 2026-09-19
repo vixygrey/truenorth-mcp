@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cm-test-01",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: added a health-check endpoint at GET /healthz that returns 200 when the database is reachable.",
+    "expected_type": "feat",
+    "breaking": false
+  },
+  {
+    "id": "cm-test-02",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: fixed a race in the cache warmup that dropped the first request under load.",
+    "expected_type": "fix",
+    "breaking": false
+  },
+  {
+    "id": "cm-test-03",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: updated the contributing guide with the new branch naming rule. No code change.",
+    "expected_type": "docs",
+    "breaking": false
+  },
+  {
+    "id": "cm-test-04",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: changed the default page size from 20 to 50 and removed the old `pageSize` alias. Callers using `pageSize` must switch to `limit`.",
+    "expected_type": "feat",
+    "breaking": true
+  },
+  {
+    "id": "cm-test-05",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: pinned the CI shellcheck version in the workflow. Tooling only.",
+    "expected_type": "ci",
+    "breaking": false
+  },
+  {
+    "id": "cm-test-06",
+    "prompt": "Write a Conventional Commits message for this change and state the SemVer bump.\n\nDiff summary: split the 400-line handler module into a router and three focused handlers, no behavior change.",
+    "expected_type": "refactor",
+    "breaking": false
+  }
+]
