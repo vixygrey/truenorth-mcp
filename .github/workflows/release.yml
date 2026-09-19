@@ -51,7 +51,7 @@ jobs:
             platform: linux-arm64
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Resolve the release version
         id: version
@@ -132,7 +132,7 @@ jobs:
     needs: build-and-publish-platform
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Resolve the release version
         id: version
