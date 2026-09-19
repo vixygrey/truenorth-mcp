@@ -4,6 +4,9 @@ The runtime serves a skill library. A skill is a canonical `SKILL.md` source, re
 call at one of three tiers. One source directory, rendered per call, replaces the
 per-harness static mirrors of the upstream design.
 
+This page explains the tier mechanism and the catalog tools. For the full per-skill
+reference, see the [Skill index](Skill-index) and [The skill workflow](The-skill-workflow).
+
 ## Read a skill
 
 `get_skill` reads a skill at a tier. It takes the skill `name` and an optional `tier`.
