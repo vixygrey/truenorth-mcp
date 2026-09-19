@@ -19,7 +19,7 @@ use rmcp::model::{
 use rmcp::service::RequestContext;
 use rmcp::{
     ErrorData, RoleServer, ServerHandler,
-    model::{Implementation, ProtocolVersion, ServerCapabilities, ServerInfo},
+    model::{Implementation, ProtocolVersion, ServerCapabilities, ServerConfig},
 };
 
 use crate::engine::agent_ws::{LayoutCache, LayoutError};
@@ -179,13 +179,13 @@ impl TrueNorthServer {
         }
     }
 
-    /// The server info reported at the MCP `initialize` handshake.
-    pub fn server_info() -> ServerInfo {
+    /// The server config reported at the MCP `initialize` handshake.
+    pub fn server_info() -> ServerConfig {
         let mut implementation = Implementation::from_build_env();
         implementation.name = env!("CARGO_PKG_NAME").to_string();
         implementation.version = env!("CARGO_PKG_VERSION").to_string();
 
-        ServerInfo::new(
+        ServerConfig::new(
             ServerCapabilities::builder()
                 .enable_tools()
                 .enable_resources()
@@ -215,7 +215,7 @@ impl TrueNorthServer {
 
 #[rmcp::tool_handler(router = self.tool_router)]
 impl ServerHandler for TrueNorthServer {
-    fn get_info(&self) -> ServerInfo {
+    fn get_info(&self) -> ServerConfig {
         Self::server_info()
     }
 
