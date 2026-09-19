@@ -3,18 +3,6 @@ name: migrate-spec
 description: "Detect a foreign spec artifact (GSD, spec-kit, or BMAD) and transform it into the project YAML layout (the state, the release plan, the task groups, the requirements, the plans, and the ADRs). Use it when migrating foreign spec docs."
 ---
 
-# story: e25s01
-
-# story: e25s02
-
-# story: e25s03
-
-# story: e25s04
-
-# story: e25s05
-
-# story: e25s06
-
 # Migrate Spec
 
 Transform existing GSD, spec-kit, or BMAD planning artifacts into the project layout. Runtime state goes under `.agent/`. Human-authored narrative goes under `specs/`. No code is written. The output is a set of project-format files the user can use immediately.

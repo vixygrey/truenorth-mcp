@@ -3,10 +3,6 @@ name: change-request
 description: "Add a new requirement or reorder task groups by WSJF against the release plan and the task groups. Modes: add and reorder. Use it when a new requirement arrives mid-release or the plan needs re-prioritization."
 ---
 
-# story: e45s29
-
-# story: e20s01
-
 # Change Request
 
 > **HARD GATE** — `.agent/tasks/release-plan.yml` must exist before running either mode. If it doesn't, run `plan-release` first.
