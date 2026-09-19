@@ -1,6 +1,6 @@
 ---
 name: orchestrate-project
-description: "A meta-skill that enforces the six-phase core loop (discover, elaborate, plan, build, verify, release) with hard gates. Use it to coordinate a multi-phase project with quality checkpoints across the lifecycle."
+description: "A meta-skill that enforces the six-phase core loop (discover, design, plan, execute, review, integrate) with hard gates. Use it to coordinate a multi-phase project with quality checkpoints across the lifecycle."
 ---
 
 # Orchestrate
@@ -20,11 +20,11 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
 ## The 6-Phase Core Loop
 
 1. **DISCOVER** (3-6 hours): Understand problem. Deliverables: `.agent/product/vision.yml`, `.agent/product/scope.yml`, the project tech-stack note.
-2. **ELABORATE** (3-6 hours): Research solutions. Deliverables: Prior art in scope YAML, ADRs in `specs/adr/`.
+2. **DESIGN** (3-6 hours): Research solutions. Deliverables: Prior art in scope YAML, ADRs in `specs/adr/`.
 3. **PLAN** (2-4 hours): Write verifiable plan. Deliverables: `release-plan.yaml`, `epics/eNN-*.yaml` with `verify:` per task.
-4. **BUILD** (1-8 hours): Execute plan. Runs build-epic once per story in WSJF order. Deliverables: Code; update `execution-status.yaml`.
-5. **VERIFY** (1-3 hours): Validate success criteria. Deliverables: UAT evidence, the review report if used.
-6. **RELEASE** (30 min - 2 hours): Ship to production. Deliverables: Release tag (vX.Y.Z), `state.yaml` `release.last_tag`.
+4. **EXECUTE** (1-8 hours): Execute plan. Runs build-epic once per story in WSJF order. Deliverables: Code; update `execution-status.yaml`.
+5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables: UAT evidence, the review report if used.
+6. **INTEGRATE** (30 min - 2 hours): Ship to production. Deliverables: Release tag (vX.Y.Z), `state.yaml` `release.last_tag`.
 
 ### Checkpoint / resume
 

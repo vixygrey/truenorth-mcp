@@ -126,9 +126,11 @@ and `release-branch` (the merge gate).
 
 ## A note on phase names
 
-The lifecycle is stable, but two vocabularies exist in the codebase. The runtime uses
-discover, design, plan, execute, review, and integrate. Several skills, including
-`orchestrate-project` and `survey-context`, use an older set (discover, elaborate, plan,
-build, verify, release). The two describe the same arc. The alignment is tracked as an open
-issue. This manual uses the runtime vocabulary for the phase names and preserves each
-skill's own wording when quoting it.
+The lifecycle uses one vocabulary: discover, design, plan, execute, review, and integrate.
+This is the runtime's phase enum, the typed contract the tools enforce. The six-phase lists
+in `orchestrate-project` and `survey-context` use these names. This manual uses the same
+vocabulary throughout.
+
+A few skills name a finer-grained activity within a phase, for example `kickoff-branch` as
+an "initiate" step inside execute, or `verify-work` as a "verify" step inside review. Those
+are activities, not separate phases.
