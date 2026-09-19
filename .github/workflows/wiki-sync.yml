@@ -1,0 +1,74 @@
+name: Wiki sync
+
+# Sync the in-repo wiki/ manual to the GitHub Wiki repo. The wiki/ pages are the source of
+# truth: they are versioned and reviewed through pull requests. This workflow mirrors them
+# to <repo>.wiki.git after a change lands on main (issue #222).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wiki/**"
+      - ".github/workflows/wiki-sync.yml"
+  workflow_dispatch:
+
+# The default GITHUB_TOKEN can push to the wiki repo of the same repository.
+permissions:
+  contents: write
+
+# One sync at a time, so two runs cannot race on the wiki repo.
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: mirror wiki/ to the wiki repo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Mirror wiki/ into the wiki repo and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Fail early when there is nothing to sync.
+          if [ ! -d wiki ] || [ -z "$(ls -A wiki 2>/dev/null)" ]; then
+            echo "wiki/ is empty. Nothing to sync."
+            exit 0
+          fi
+
+          wiki_url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+          work="$(mktemp -d)"
+
+          # The wiki repo has no first commit until a page exists. Clone when it does, else
+          # start a fresh repo and set the remote, so the first sync creates the wiki.
+          if git clone "$wiki_url" "$work" 2>/dev/null; then
+            echo "Cloned the existing wiki repo."
+          else
+            echo "The wiki repo is empty. Initializing a fresh one."
+            git init -q -b master "$work"
+            git -C "$work" remote add origin "$wiki_url"
+          fi
+
+          # Replace the tracked page set with the current wiki/ content. Remove the old
+          # tracked files first, so a page deleted in wiki/ is deleted in the wiki too. The
+          # .git directory is preserved.
+          find "$work" -maxdepth 1 -type f -name '*.md' -delete
+          cp wiki/*.md "$work"/
+
+          git -C "$work" config user.name "github-actions[bot]"
+          git -C "$work" config user.email "github-actions[bot]@users.noreply.github.com"
+          git -C "$work" add -A
+
+          # Skip the push when the content is unchanged, so a no-op run makes no commit.
+          if git -C "$work" diff --cached --quiet; then
+            echo "The wiki is already up to date."
+            exit 0
+          fi
+
+          git -C "$work" commit -q -m "docs(wiki): sync from ${GITHUB_SHA}"
+          git -C "$work" push origin HEAD
+          echo "Wiki synced."
