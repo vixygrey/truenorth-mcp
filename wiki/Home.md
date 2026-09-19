@@ -38,6 +38,16 @@ Read the pages in this order for a first run.
 7. [Skills and tiers](Skills-and-tiers): the skill library and tiered rendering.
 8. [Troubleshooting](Troubleshooting): repo-root resolution and a broken layout contract.
 
+## The skill reference
+
+The runtime serves 80 skills across the lifecycle. For the full reference:
+
+- [The skill workflow](The-skill-workflow): how the skills chain from one to the next.
+- [Skill index](Skill-index): every skill, alphabetical, with its phase page.
+- Phase pages: [Discover](Skills-Discover), [Design](Skills-Design), [Plan](Skills-Plan),
+  [Build](Skills-Build), [Verify](Skills-Verify), [Release](Skills-Release),
+  [Sustain](Skills-Sustain), and [Utility](Skills-Utility).
+
 ## Design references
 
 The design lives in the repository, not this Wiki. The Architecture Decision Records under
