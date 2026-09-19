@@ -18,6 +18,31 @@ into a context window. An agent connects over stdio, calls a tool to advance a
 lifecycle phase, verify a gate, or check an ontology, and reads the project cockpit
 through a resource.
 
+## Why
+
+An agent left to its own devices drifts. It skips the plan, writes code before a test,
+declares a green build it never ran, and renames a concept halfway through. A large
+markdown instruction file does not stop this, because the model can read past it, and
+it burns context.
+
+truenorth-mcp moves the discipline into the protocol. A gate passes only when the
+server ran the command and saw exit 0, so the model cannot fake it. A phase advances
+only through a tool that records the work. The cockpit is live state the agent reads,
+not prose it interprets. The result is a workflow the runtime enforces, not one the
+agent is asked to remember.
+
+## The lifecycle
+
+The runtime drives a six-phase lifecycle. An agent advances one phase at a time through
+`truenorth_advance_phase`, recording the artifacts each phase produced.
+
+1. **Discover**: understand the problem and the current state.
+2. **Design**: model the domain and design the solution.
+3. **Plan**: break the work into tasks, each with a verify command.
+4. **Execute**: build the change under a Red-Green-Refactor loop.
+5. **Review**: review and harden the change against the quality bar.
+6. **Integrate**: integrate the change and advance the release.
+
 ## Architecture
 
 - **The runtime**: a Rust crate at `runtime/`. It serves the MCP tools and the
@@ -45,9 +70,40 @@ the memories. The `truenorth://adr` resource serves `specs/adr/` read-only.
 
 ## Install
 
-Install the npm wrapper. It resolves the platform binary and runs the server. Scaffold
-a new project by calling the `truenorth_scaffold_project` tool from your MCP client,
-which seeds the `.agent/` tree for a methodology profile.
+Install the npm wrapper. It resolves the platform binary and runs the server over stdio.
+
+```bash
+npm install truenorth-mcp
+```
+
+Then register it as an MCP server in your client. The command is the wrapper binary.
+
+```json
+{
+  "mcpServers": {
+    "truenorth": {
+      "command": "truenorth-mcp"
+    }
+  }
+}
+```
+
+Scaffold a new project by calling the `truenorth_scaffold_project` tool from your MCP
+client, which seeds the `.agent/` tree for a methodology profile. The
+[install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
+has the per-client steps.
+
+## Methodology profiles
+
+A project declares one methodology profile in `.agent/profile.yml`. The profile sets the
+grouping vocabulary, whether grouping is required, and the branch pattern. There are five
+built-in profiles:
+
+- **issue-per-task** (the default): optional ticket grouping.
+- **epic-based**: required epic grouping.
+- **milestone-based**: required milestone grouping.
+- **kanban**: no grouping, continuous flow.
+- **generic**: no grouping, minimal structure.
 
 ## Build from source
 
@@ -94,6 +150,13 @@ A resource reflects the current on-disk content. A disk edit emits a
 The ontology surface is a per-project choice. Set `features.ontology` in
 `.agent/config/rules.yml`. The default is enabled. When it is disabled, the two ontology
 tools and the `truenorth://ontology` resource are absent.
+
+## Documentation
+
+- The [landing page](https://vixygrey.github.io/truenorth-mcp/) presents the project.
+- The [Wiki](https://github.com/vixygrey/truenorth-mcp/wiki/Home) is the full usage
+  manual: install and connect, the `.agent/` workspace, the lifecycle, the resources,
+  the ontology feature, and troubleshooting.
 
 ## Contributing
 
