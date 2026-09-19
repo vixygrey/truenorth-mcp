@@ -8,6 +8,12 @@ gate, or read the project cockpit, and reads state through a resource.
 This Wiki is the usage manual. The landing page presents the project. This manual explains
 how to run it.
 
+> **Credit.** TrueNorth-MCP is a fork of
+> [bigpowers](https://github.com/danielvm-git/bigpowers) by danielvm-git, under the MIT
+> license. The skill set is the foundation this project builds on. TrueNorth-MCP
+> re-architects the runtime, and the engineering discipline in the skills is the upstream
+> work. Thank you to the bigpowers author.
+
 ## What it is
 
 The runtime delivers engineering discipline through typed MCP tools and resources, not

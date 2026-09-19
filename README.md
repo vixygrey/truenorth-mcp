@@ -4,6 +4,12 @@ An active, protocol-first MCP execution runtime for spec-driven engineering
 discipline. Written in Rust, distributed as a thin Node.js wrapper. Token-lean and
 model and harness agnostic.
 
+> **Credit.** TrueNorth-MCP is a fork of
+> [bigpowers](https://github.com/danielvm-git/bigpowers) by danielvm-git, under the MIT
+> license. The skill set is the foundation this project builds on. TrueNorth-MCP
+> re-architects the runtime, and the engineering discipline in the skills is the
+> upstream work. Thank you to the bigpowers author.
+
 ## What it is
 
 truenorth-mcp is a Model Context Protocol server. It delivers engineering discipline
