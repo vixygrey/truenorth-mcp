@@ -158,6 +158,17 @@ section:last-of-type {
   max-width: 46rem;
 }
 
+.credit {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--lilac);
+  background-color: var(--surface);
+  color: var(--text);
+  font-size: 0.98rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+  max-width: 46rem;
+}
+
 .cta-row {
   display: flex;
   gap: 1rem;
