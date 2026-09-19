@@ -1,0 +1,282 @@
+/*
+ * TrueNorth-MCP landing page. Dracula Sakura leaning: a dark plum foundation with rose and
+ * lilac accents and a cyan for links. Colors are chosen for WCAG 2.1 AA contrast against the
+ * page background. Full conformance needs a manual assistive-technology pass, stated in the
+ * pull request, not claimed here.
+ */
+
+:root {
+  --bg: #1b1420;
+  --surface: #241a2c;
+  --surface-raised: #2d2136;
+  --border: #3d2f47;
+  --text: #f2e9f2;
+  --text-muted: #c6bcd0;
+  --rose: #ff8fc7;
+  --lilac: #c9a6ff;
+  --cyan: #8be9fd;
+  --link: #a5d8ff;
+  --link-hover: #cbeafe;
+  --focus: #ffb3d9;
+  --code-bg: #150f19;
+  --maxw: 60rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  line-height: 1.6;
+}
+
+/* A keyboard user reaches the skip link first, then main content. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  padding: 0.5rem 1rem;
+  background-color: var(--rose);
+  color: #1b1420;
+  font-weight: 600;
+  border-radius: 0 0 0.375rem 0;
+}
+
+.skip-link:focus {
+  left: 0;
+  z-index: 10;
+}
+
+a {
+  color: var(--link);
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+/* A visible focus ring on every interactive element, for keyboard operability. */
+a:focus-visible,
+.button:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  color: var(--text);
+}
+
+code {
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', Menlo, Consolas, monospace;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background-color: var(--surface);
+}
+
+.site-nav {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--rose);
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+section {
+  padding: 3rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-of-type {
+  border-bottom: none;
+}
+
+.hero h1 {
+  font-size: 2.25rem;
+  margin: 0 0 1rem;
+  background: linear-gradient(100deg, var(--rose), var(--lilac));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The gradient text is decorative. Keep a solid fallback color for a reader that does not
+   render background-clip, so the heading is never invisible. */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero h1 {
+    color: var(--rose);
+  }
+}
+
+.lede {
+  font-size: 1.15rem;
+  color: var(--text);
+  max-width: 46rem;
+}
+
+.cta-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.75rem;
+}
+
+.button {
+  display: inline-block;
+  padding: 0.7rem 1.4rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+}
+
+.button-primary {
+  background-color: var(--rose);
+  color: #1b1420;
+}
+
+.button-primary:hover {
+  background-color: #ffa8d3;
+  color: #1b1420;
+}
+
+.button-secondary {
+  border-color: var(--lilac);
+  color: var(--lilac);
+}
+
+.button-secondary:hover {
+  background-color: var(--surface-raised);
+  color: var(--link-hover);
+}
+
+.code-card {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+}
+
+.code-card pre {
+  margin: 0;
+}
+
+.code-card code {
+  color: var(--cyan);
+  font-size: 0.95rem;
+}
+
+.install-note {
+  color: var(--text-muted);
+}
+
+.feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.25rem;
+}
+
+.feature-list li {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  padding: 1.25rem 1.4rem;
+}
+
+.feature-list h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--rose);
+}
+
+.feature-list p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.taste code {
+  color: var(--cyan);
+  line-height: 1.5;
+}
+
+.site-footer {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.site-footer a {
+  color: var(--link);
+}
+
+.site-footer p {
+  margin: 0.35rem 0;
+}
+
+@media (max-width: 40rem) {
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  section {
+    padding: 2rem 0;
+  }
+}
+
+/* Respect a reduced-motion preference: no smooth-scroll or transition motion. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}

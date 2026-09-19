@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrueNorth-MCP: spec-driven engineering discipline for AI agents</title>
+    <meta
+      name="description"
+      content="TrueNorth-MCP is a protocol-first MCP execution runtime for spec-driven engineering discipline. Token-lean, model-agnostic, written in Rust."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Primary">
+        <span class="wordmark">TrueNorth-MCP</span>
+        <ul class="nav-links">
+          <li><a href="https://github.com/vixygrey/truenorth-mcp">Source on GitHub</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Home">Manual</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-heading">
+        <h1 id="hero-heading">Spec-driven engineering discipline for AI agents.</h1>
+        <p class="lede">
+          TrueNorth-MCP is a protocol-first Model Context Protocol runtime. It delivers
+          engineering discipline through typed tools and live resources, not a large instruction
+          file dumped into a context window. Protocol-first, token-lean, and model-agnostic.
+        </p>
+        <div class="cta-row">
+          <a class="button button-primary" href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect">
+            Install and connect
+          </a>
+          <a class="button button-secondary" href="https://github.com/vixygrey/truenorth-mcp/wiki/Home">
+            Read the manual
+          </a>
+        </div>
+      </section>
+
+      <section class="install" aria-labelledby="install-heading">
+        <h2 id="install-heading">Install</h2>
+        <p>Install the npm wrapper. It resolves the platform binary and runs the server over stdio.</p>
+        <div class="code-card">
+          <pre><code>npm install truenorth-mcp</code></pre>
+        </div>
+        <p class="install-note">
+          Then connect it as an MCP server in your client. The
+          <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect">install and connect guide</a>
+          has the per-client steps.
+        </p>
+      </section>
+
+      <section class="features" aria-labelledby="features-heading">
+        <h2 id="features-heading">What it does</h2>
+        <ul class="feature-list">
+          <li>
+            <h3>Active tools, not markdown blobs</h3>
+            <p>
+              Tools advance a lifecycle phase, record a task, and run a quality gate in a sandbox.
+              The server observes the exit code, so a gate cannot be faked.
+            </p>
+          </li>
+          <li>
+            <h3>Live resources</h3>
+            <p>
+              The project cockpit is served as <code>truenorth://</code> resources that reflect the
+              current on-disk state, with an update notification when a file changes.
+            </p>
+          </li>
+          <li>
+            <h3>Model and harness agnostic</h3>
+            <p>
+              Skills render at a full, reasoning, or lean tier, so the same discipline drops into a
+              hosted model or a local weight, across Kiro, Cursor, Claude Code, Zed, and Neovim.
+            </p>
+          </li>
+          <li>
+            <h3>Two-layer workspace</h3>
+            <p>
+              The runtime writes only under <code>.agent/</code>, behind a single write guard. The
+              human-authored <code>specs/</code> layer stays read-only to the runtime.
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="taste" aria-labelledby="taste-heading">
+        <h2 id="taste-heading">A taste of the loop</h2>
+        <p>
+          An agent connects over stdio, reads the cockpit, and drives the lifecycle from Discover to
+          Integrate. A gate passes only on a real exit 0.
+        </p>
+        <div class="code-card">
+          <pre><code>read  truenorth://state          # the active phase and handoff
+call  truenorth_record_task      # register a task with a verify command
+call  truenorth_verify_gate      # run the verify command in a sandbox
+call  truenorth_advance_phase    # move the lifecycle forward</code></pre>
+        </div>
+        <p>
+          The <a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-lifecycle">lifecycle guide</a>
+          walks a full run, and
+          <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Troubleshooting">troubleshooting</a>
+          covers repo-root resolution and a broken layout.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        TrueNorth-MCP is open source under the MIT license. A fork of
+        <a href="https://github.com/danielvm-git/bigpowers">bigpowers</a>.
+      </p>
+      <p>
+        <a href="https://github.com/vixygrey/truenorth-mcp">Repository</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Home">Manual</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://www.npmjs.com/package/truenorth-mcp">npm package</a>
+      </p>
+    </footer>
+  </body>
+</html>
