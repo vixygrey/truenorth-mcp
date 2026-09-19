@@ -1,0 +1,52 @@
+name: Docs site
+
+# Build and deploy the hand-authored landing page under site/ to GitHub Pages. This is a
+# static page, so the build job only uploads the directory as a Pages artifact and the
+# deploy job publishes it. This workflow is separate from ci.yml and release.yml, and it
+# runs on a push to main that touches site/ or this workflow (issue #223).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+# The deploy job needs these to publish to Pages. The build job reads only.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. Do not cancel an in-progress deploy, so a running publish finishes.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: package the site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload the site as a Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
