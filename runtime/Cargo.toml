@@ -18,7 +18,7 @@ default = []
 tree-sitter = ["dep:tree-sitter", "dep:tree-sitter-rust"]
 
 [dependencies]
-rmcp = { version = "3.3", features = ["server", "macros", "schemars", "transport-io"] }
+rmcp = { version = "3.4", features = ["server", "macros", "schemars", "transport-io"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "signal"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
@@ -53,5 +53,5 @@ proptest = "1"
 # The `client` feature powers the in-process client in the integration test. Cargo unifies
 # it with the runtime `rmcp` features for test builds only, so the shipped binary stays
 # server-only.
-rmcp = { version = "3.3", features = ["client"] }
+rmcp = { version = "3.4", features = ["client"] }
 tokio = { version = "1", features = ["io-util"] }
