@@ -3,8 +3,6 @@ name: run-planning
 description: "The discover-phase advancer. Drives the discover-phase checklist through survey-context, scope-work, research-first, elaborate-spec, plan-release, and slice-tasks. Not a duplicate of plan-work or the planning spine. It orchestrates the pre-coding discover phase only."
 ---
 
-# story: e24s03
-
 # Run Planning
 
 > **HARD GATE** — Before running planning skills, confirm the task group exists and the active story is clear. Planning without a target is noise.

@@ -9,7 +9,7 @@ Three-layer production hardening for a self-hosted app on any VPS. Each layer in
 
 ## Quick start
 
-SSH as root into the VPS. Find credentials in the your VPS provider Customer Control Panel.
+SSH as root into the VPS. Find credentials in your VPS provider's Customer Control Panel.
 
 > **HARD GATE** — Run `ufw status` first. No firewall = layer 1 takes priority over everything.
 

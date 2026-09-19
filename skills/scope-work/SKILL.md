@@ -3,10 +3,6 @@ name: scope-work
 description: "Planning spine step 1 of 3. Scope the work: define what is in and out of scope, and save the product scope. Use it before slice-tasks or plan-release on a new initiative. Not a substitute for slice-tasks or plan-work."
 ---
 
-# story: e03s01
-
-# story: e24s02
-
 # Scope Work
 
 > **Spine position:** Step 1 — scope-work → slice-tasks → plan-work.
@@ -48,7 +44,7 @@ Turn the current conversation into a bounded PRD at `.agent/product/scope.yml`. 
 
 > **HARD GATE** — Every `in_scope` item must map to a future group or story ID or explicit deferred note in `out_of_scope`. If an item can't be mapped, the scope is too vague — refine before proceeding.
 
-> **HARD GATE** — Do NOT include implementation details in SCOPE*LATEST.yaml. Scope is \_what* and _why_, not _how_. Implementation detail belongs in task groups and slice-tasks.
+> **HARD GATE** — Do NOT include implementation details in `.agent/product/scope.yml`. Scope is the what and the why, not the how. Implementation detail belongs in task groups and slice-tasks.
 
 ## Common Anti-Patterns
 

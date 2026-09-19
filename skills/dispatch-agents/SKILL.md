@@ -3,13 +3,7 @@ name: dispatch-agents
 description: "Dispatch multiple subagents in parallel on independent tasks. No waiting between them, all run concurrently. Use it when the tasks are truly decoupled and speed matters. Distinct from delegate-task, which has no inter-task review gate here."
 ---
 
-# story: e09s04
-
-# story: e45s38
-
 <!-- story: e45s11 -->
-
-# story: e45s30
 
 # Dispatch Agents
 

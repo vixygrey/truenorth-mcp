@@ -3,8 +3,6 @@ name: delegate-task
 description: "Delegate one complex task to a single subagent, and review its work in two stages before merging back. Sequential, one agent at a time, with oversight. Use it when a task is complex and needs careful review before the result is accepted. Distinct from dispatch-agents, which has no parallelism here and the reviewer sees the full diff before proceeding."
 ---
 
-# story: e45s30
-
 # Delegate Task
 
 > **HARD GATE** — Delegated work must have clear success criteria and verification commands. The delegate must be able to verify completion independently.
