@@ -29,6 +29,18 @@ cargo test
 
 For a wrapper change, also run `node --test` in `npm/`.
 
+For a change to a shell script under `skills/`, lint it with the pinned
+shellcheck the CI gate uses:
+
+```bash
+bash scripts/lint-shell.sh
+```
+
+The script reads the pinned version from `.github/workflows/ci.yml`
+(`SHELLCHECK_VERSION`), so a local run matches CI. It uses a matching local
+shellcheck when present, and the `koalaman/shellcheck` container otherwise. A
+version bump is one line in the workflow.
+
 ## Commits
 
 - Use atomic, Conventional Commits: `type(scope): description`.

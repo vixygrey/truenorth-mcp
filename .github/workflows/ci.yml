@@ -17,6 +17,11 @@ concurrency:
 permissions:
   contents: read
 
+# The single source of truth for the shellcheck version. The `shell` job and the local
+# helper `scripts/lint-shell.sh` both read this pin, so a bump is one line. See issue #227.
+env:
+  SHELLCHECK_VERSION: v0.11.0
+
 jobs:
   check:
     name: fmt, clippy, build, test
@@ -149,24 +154,32 @@ jobs:
         id: shell
         run: |
           # Use git ls-files so detection matches the lint step and needs no shell glob
-          # option. A pathspec with `**` is a git glob, not a shell glob.
-          if [ -n "$(git ls-files 'skills/**/*.sh')" ]; then
+          # option. A pathspec with `**` is a git glob, not a shell glob. Cover the shell
+          # scripts under skills/ and the repo tooling under scripts/.
+          if [ -n "$(git ls-files 'skills/**/*.sh' 'scripts/**/*.sh')" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
             echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "No shell scripts under skills/ on this branch. Skipping the shell checks."
+            echo "No shell scripts on this branch. Skipping the shell checks."
           fi
 
-      - name: Install shellcheck
+      - name: Install the pinned shellcheck
         if: steps.shell.outputs.present == 'true'
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+        run: |
+          # Install the pinned official release binary, not the runner image default, so
+          # the linter version is deterministic and matches scripts/lint-shell.sh (#227).
+          version="${SHELLCHECK_VERSION}"
+          url="https://github.com/koalaman/shellcheck/releases/download/${version}/shellcheck-${version}.linux.x86_64.tar.xz"
+          curl -fsSL "$url" | tar -xJ
+          sudo install "shellcheck-${version}/shellcheck" /usr/local/bin/shellcheck
+          shellcheck --version
 
       - name: Run shellcheck
         if: steps.shell.outputs.present == 'true'
         run: |
-          # Lint every tracked shell script under skills/. Deny warnings, matching the
-          # deny-warnings bar the Rust crate meets.
-          shellcheck --severity=warning $(git ls-files 'skills/**/*.sh')
+          # Lint every tracked shell script under skills/ and scripts/. Deny warnings,
+          # matching the deny-warnings bar the Rust crate meets.
+          shellcheck --severity=warning $(git ls-files 'skills/**/*.sh' 'scripts/**/*.sh')
 
       - name: Run the guard-git test harness
         if: steps.shell.outputs.present == 'true'
