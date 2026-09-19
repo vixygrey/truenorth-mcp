@@ -1,0 +1,55 @@
+# Dependabot version updates. Covers every dependency ecosystem in the repo: the Rust
+# crate (cargo), the JavaScript packages (npm), and the GitHub Actions workflows.
+#
+# CodeQL is not configured here. It runs as GitHub default setup, which needs no committed
+# workflow. Do not add a codeql.yml, because it would conflict with default setup.
+version: 2
+updates:
+  # The runtime crate.
+  - package-ecosystem: cargo
+    directory: /runtime
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+
+  # The root dev tooling (Prettier).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+
+  # The distributed npm wrapper.
+  - package-ecosystem: npm
+    directory: /npm
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+
+  # The four per-platform binary packages.
+  - package-ecosystem: npm
+    directories:
+      - /npm/packages/darwin-arm64
+      - /npm/packages/darwin-x64
+      - /npm/packages/linux-arm64
+      - /npm/packages/linux-x64
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+
+  # The GitHub Actions used by the CI and release workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci(deps)
