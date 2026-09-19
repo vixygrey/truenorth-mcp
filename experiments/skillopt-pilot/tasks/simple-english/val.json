@@ -1,0 +1,17 @@
+[
+  {
+    "id": "se-val-01",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The build has been failing intermittently; it's likely that the flaky test is being triggered by a race that we haven't yet root-caused."
+  },
+  {
+    "id": "se-val-02",
+    "text_type": "procedural",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: Prior to merging, you should ensure the CI is green, and note that force-pushing could easily clobber a teammate's work."
+  },
+  {
+    "id": "se-val-03",
+    "text_type": "descriptive",
+    "prompt": "Rewrite the following in ASD-STE100 Simplified Technical English. Keep the technical facts. Do not change code, identifiers, or file paths.\n\nText: The dashboard, which is basically just a thin wrapper, leverages the existing API in order to render the cockpit seamlessly."
+  }
+]

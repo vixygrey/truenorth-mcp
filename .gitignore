@@ -44,3 +44,7 @@ node_modules/
 # The skill graph is a regenerable cache, rebuilt on demand by build_skill_graph.
 # The rest of `.agent/` is tracked; only this cache file is ignored.
 .agent/tasks/skill-graph.jsonl
+
+# Python bytecode cache, from the experiment graders.
+__pycache__/
+*.pyc
