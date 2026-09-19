@@ -13,7 +13,7 @@ Delegate a single complex task to a subagent with a two-stage review gate before
 
 ## Subagent depth tiers (e45s30)
 
-Select brief depth from task `risk:` and skill `effort:` before spawning:
+Select brief depth from the task `risk:` before spawning:
 
 | Tier               | When                                            | Brief includes                                                   |
 | ------------------ | ----------------------------------------------- | ---------------------------------------------------------------- |

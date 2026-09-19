@@ -19,12 +19,12 @@ Finalize a completed feature branch: verify the coverage gates, integrate onto
 
 Read the `workflow_mode` key from `.agent/tasks/state.yml` (`team-pr` or `solo-git`).
 
-| Mode           | When                               | Ship path                                   |
-| -------------- | ---------------------------------- | ------------------------------------------- |
-| **solo-local** | `workflow_mode: solo-git`          | Fast-forward the default branch locally     |
-| **team-pr**    | `workflow_mode: team-pr` (default) | `gh pr create`, then `gh pr merge --squash` |
+| Mode         | When                               | Ship path                                   |
+| ------------ | ---------------------------------- | ------------------------------------------- |
+| **solo-git** | `workflow_mode: solo-git`          | Fast-forward the default branch locally     |
+| **team-pr**  | `workflow_mode: team-pr` (default) | `gh pr create`, then `gh pr merge --squash` |
 
-When unsure, prefer solo-local. Also read the `vcs.kind` value. Git follows the
+When unsure, prefer solo-git. Also read the `vcs.kind` value. Git follows the
 procedures below. Jujutsu uses workspaces and bookmarks, and must not call a
 Git-only landing step.
 
@@ -73,11 +73,11 @@ available.
 
 ### 4. Decision
 
-Options: release (solo-local), open PR, keep the branch, or discard.
+Options: release (solo-git), open PR, keep the branch, or discard.
 
 ### 5. Integrate
 
-Run `commit-message` first. Git solo-local fast-forwards the default branch.
+Run `commit-message` first. Git solo-git fast-forwards the default branch.
 Jujutsu team mode advances and pushes a bookmark. The `-m` flag is mandatory for a
 commit or describe operation.
 

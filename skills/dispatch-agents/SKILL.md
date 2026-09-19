@@ -39,13 +39,13 @@ If any two tasks conflict, sequence them with `delegate-task` or `execute-plan` 
 
 ## Subagent depth tiers (e45s30)
 
-Map `effort:` frontmatter and story `risk:` to prompt depth — do not send `minimal_decisive` agents a `full_maturity` brief.
+Map the story `risk:` to prompt depth — do not send `minimal_decisive` agents a `full_maturity` brief.
 
-| Tier               | When                                                  | Brief shape                                                        | Token budget  |
-| ------------------ | ----------------------------------------------------- | ------------------------------------------------------------------ | ------------- |
-| `full_maturity`    | `effort: heavy`, `risk: P0`, security-sensitive diffs | Full `task_brief` + CONVENTIONS excerpts + threat model if present | Full envelope |
-| `standard`         | `effort: standard`, `risk: P1`–`P2`                   | Standard `task_brief` fields below                                 | Default       |
-| `minimal_decisive` | `effort: light`, `risk: P3`, read-only exploration    | `goal` + `verify` + `in_scope` only                                | ≤15 lines     |
+| Tier               | When                                 | Brief shape                                                        | Token budget  |
+| ------------------ | ------------------------------------ | ------------------------------------------------------------------ | ------------- |
+| `full_maturity`    | `risk: P0`, security-sensitive diffs | Full `task_brief` + CONVENTIONS excerpts + threat model if present | Full envelope |
+| `standard`         | `risk: P1`–`P2`                      | Standard `task_brief` fields below                                 | Default       |
+| `minimal_decisive` | `risk: P3`, read-only exploration    | `goal` + `verify` + `in_scope` only                                | ≤15 lines     |
 
 Record `depth: <tier>` in the Agent tool description when dispatching.
 

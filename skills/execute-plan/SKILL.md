@@ -47,7 +47,7 @@ Report blocker; ask skip/adapt/stop; update the task group if plan changes.
 
 ### 4. Final report
 
-Suggest: `verify-work` → `run-evals` → `audit-code` → `simulate-agents` → `commit-message` → `release-branch`
+Suggest the verify arc, then the ship steps: `verify-work` → `validate-contracts` → `smoke-test` → `run-evals` → `audit-code` → `simulate-agents` → `commit-message` → `release-branch`
 
 ## Rules
 
