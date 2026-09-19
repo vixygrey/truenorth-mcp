@@ -31,7 +31,7 @@ pulldown-cmark = { version = "0.13", default-features = false }
 # The AST ontology analyzer is optional (ADR-2, task 6.3). It adds identifier-precise
 # scanning for languages with a grammar. It is gated behind the `tree-sitter` feature, so
 # the default build and the shipped binary stay regex-only and language-agnostic.
-tree-sitter = { version = "0.25", optional = true }
+tree-sitter = { version = "0.26", optional = true }
 tree-sitter-rust = { version = "0.24", optional = true }
 anyhow = "1"
 thiserror = "2"
