@@ -188,6 +188,13 @@ jobs:
           # render output to /tmp or a gitignored session dir, per ADR-0014 (issue #138).
           bash scripts/lint-skill-artifacts.sh
 
+      - name: Lint skill cockpit paths
+        if: steps.shell.outputs.present == 'true'
+        run: |
+          # Check that a skill names `.agent/` cockpit paths under a known layout area and
+          # names no retired cockpit path, per ADR-0011 and ADR-0008 (issue #250).
+          bash scripts/lint-skill-paths.sh
+
       - name: Run the guard-git test harness
         if: steps.shell.outputs.present == 'true'
         run: bash skills/guard-git/scripts/tests/run.sh
