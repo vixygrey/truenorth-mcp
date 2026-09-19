@@ -19,13 +19,13 @@ Read `.agent/tasks/release-plan.yml` and the task group directories fully before
 
 ### 1. Extract story IDs
 
-From release-plan.yaml, collect all story IDs (e.g. `1.1`, `1.2`, `2.1`).
+From release-plan.yaml, collect all story IDs (for example `e01s01`, `e01s02`, `e02s01`).
 
 → verify: `grep -rho 'e[0-9]\+s[0-9]\+' .agent/tasks/release-plan.yml 2>/dev/null | sort -u | head -1 | grep -q .`
 
 ### 2. Search for story tags in code
 
-Look for `// story: X.Y` or `# story: X.Y` comments in source files and tests:
+Look for `// story: eNNsYY` or `# story: eNNsYY` comments in source files and tests:
 
 ```
 grep -rn "story: " . --include="*.ts" --include="*.js" --include="*.py" --include="*.sh" | grep -v node_modules
@@ -37,8 +37,8 @@ grep -rn "story: " . --include="*.ts" --include="*.js" --include="*.py" --includ
 
 For each story ID:
 
-- **Implemented**: list files that contain `// story: X.Y`
-- **Tested**: list test files that contain `// story: X.Y`
+- **Implemented**: list files that contain `// story: eNNsYY`
+- **Tested**: list test files that contain `// story: eNNsYY`
 - **Dark**: story has no tag in any file — flag as unimplemented
 
 For each tagged file with no matching story ID in release-plan.yaml:
@@ -50,16 +50,16 @@ For each tagged file with no matching story ID in release-plan.yaml:
 ```
 ## Story Coverage
 
-| Story | Title              | Files | Tests | Status    |
-|-------|--------------------|-------|-------|-----------|
-| 1.1   | [title]            | 2     | 1     | Covered   |
-| 1.2   | [title]            | 0     | 0     | Dark      |
+| Story  | Title              | Files | Tests | Status    |
+|--------|--------------------|-------|-------|-----------|
+| e01s01 | [title]            | 2     | 1     | Covered   |
+| e01s02 | [title]            | 0     | 0     | Dark      |
 
 ## Orphan Code (no story tag)
 - [file]: contains untagged implementation
 
 ## Gaps (dark stories)
-- Story 1.2: no implementation found → run plan-work
+- Story e01s02: no implementation found → run plan-work
 
 ## Coverage summary
 Stories: [X] covered / [Y] dark / [Z] total

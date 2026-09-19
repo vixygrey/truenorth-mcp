@@ -21,32 +21,33 @@ Valid entry **without a user-reported bug** when:
 
 Record the gate failure via `investigate-bug` (or inline in fix-bug step 1) in the external tracker, then run the standard fix_bug chain.
 
-## Five steps (`bug_cycle` in state.yaml)
+## Four steps (`bug_cycle` in state.yaml)
 
-| Step | Skill / action                                          |
-| ---- | ------------------------------------------------------- |
-| 1    | `investigate-bug` — create BUG-\*.md with RCA           |
-| 2    | `diagnose-root` — 4-phase root cause analysis           |
-| 3    | `develop-tdd` — red-green against bug file verify steps |
-| 4    | `validate-fix` — re-run failing test, full suite, lint  |
-| 5    | `release-branch` — PR or solo land the fix              |
+| Step | Skill / action                                                     |
+| ---- | ------------------------------------------------------------------ |
+| 1    | `investigate-bug` — create BUG-\*.md with RCA (runs diagnose-root) |
+| 2    | `develop-tdd` — red-green against bug file verify steps            |
+| 3    | `validate-fix` — re-run failing test, full suite, lint             |
+| 4    | `release-branch` — PR or solo land the fix                         |
+
+The 4-phase root-cause analysis is not a separate step. `investigate-bug` runs
+`diagnose-root` internally, so the chain does not invoke it twice.
 
 ### Checkpoint / resume
 
 Track progress via `.agent/tasks/state.yml` `bug_cycle`:
 
-- `bug_cycle.current_step`: current step (1–5)
+- `bug_cycle.current_step`: current step (1–4)
 - `bug_cycle.completed_steps`: completed step numbers
 - `handoff.next_skill`: skill for the current step
 - On resume, read `bug_cycle.current_step` and continue from there
 
 ## Process
 
-1. **Step 1 — investigate-bug:** If no bug record exists, run `investigate-bug` first. It handles history check, RCA (via `diagnose-root`), fix approach, and records the bug in the external tracker. Increment `bug_cycle.current_step` to 2 on completion.
-2. **Step 2 — diagnose-root:** Run 4-phase RCA (reproduce → isolate → hypothesize → verify). Record findings in the bug file. Increment to step 3.
-3. **Step 3 — develop-tdd:** `develop-tdd` against the bug file's verify steps. Increment to step 4 on all-green.
-4. **Step 4 — validate-fix:** `validate-fix` — re-run failing test, full suite, typecheck, lint. Increment to step 5.
-5. **Step 5 — release-branch:** Land the fix via `release-branch`. Clear `bug_cycle` and `active_flow` when done.
+1. **Step 1 — investigate-bug:** If no bug record exists, run `investigate-bug` first. It handles the history check, the 4-phase RCA (via `diagnose-root`), the fix approach, and records the bug in the external tracker. Increment `bug_cycle.current_step` to 2 on completion.
+2. **Step 2 — develop-tdd:** `develop-tdd` against the bug file's verify steps. Increment to step 3 on all-green.
+3. **Step 3 — validate-fix:** `validate-fix` — re-run failing test, full suite, typecheck, lint. Increment to step 4.
+4. **Step 4 — release-branch:** Land the fix via `release-branch`. Clear `bug_cycle` and `active_flow` when done.
 
 ## Bug file SoT
 

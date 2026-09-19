@@ -7,11 +7,13 @@ description: "Interactive assumption-surfacing Q&A that stress-tests a plan thro
 
 > **Use this vs grill-with-docs:** `grill-me` surfaces assumptions from the conversation and context alone — no documentation fetching. Use `grill-with-docs` (the doc-grounded variant) when the plan relies on a specific library or external API and every challenge must cite a real doc URL.
 
-Two modes. Default is **Design**. Switch to **Docs** by saying "grill me with docs" or when the plan relies on a specific library or external API.
+This skill surfaces assumptions from the conversation and the codebase, with no
+documentation fetching. When the plan relies on a specific library or external API, use
+`grill-with-docs` instead, so every challenge cites a real documentation URL.
 
 > **HARD GATE** — Do NOT accept a design until every hard decision has been stress-tested. "Seems right" is not a decision. Grilling must identify and resolve tensions before build begins.
 
-## Design mode (default)
+## Design
 
 Interview relentlessly about every aspect of this plan until reaching shared understanding. Walk each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer. Ask one question at a time.
 
@@ -26,17 +28,11 @@ Distinguish between **facts** and **decisions**:
 
 Never "grill yourself" — if the answer is in the code, go find it. Only ask questions where the user's judgment is needed.
 
-## Docs mode
+## The doc-grounded variant
 
-Ground every challenge in real documentation — no assumption about a library's behavior goes unchecked. See [REFERENCE.md](REFERENCE.md) for the full process.
-
-Short form:
-
-1. List every external library, third-party API, and framework behavior relied upon.
-2. Fetch the actual docs for each (`WebFetch` the official API reference).
-3. Challenge each plan assumption against the real docs: correct method signature? right version? deprecated?
-4. Report confirmed ✓, corrected ✗ (with the real behavior), and uncertain → `spike-prototype`.
-5. Update the plan for each confirmed discrepancy.
+When the plan depends on a specific library or external API, run `grill-with-docs`. It
+grounds every challenge in a fetched, cited documentation URL. Do not duplicate that
+process here.
 
 ## Confirmation Gate
 
