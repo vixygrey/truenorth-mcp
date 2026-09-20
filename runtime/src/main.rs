@@ -3,31 +3,22 @@
 //! This entrypoint resolves the governed repository root and the per-project feature
 //! flags, builds the [`TrueNorthServer`], and serves it over the rmcp stdio transport. It
 //! spawns the file watcher, which emits `resources/updated` on a cockpit change. The
-//! tools, resources, and engine live in the `tools`, `resources`, and `engine` modules;
-//! the server assembles the tool router and resource handlers in `server.rs`.
+//! tools, resources, and engine live in the `truenorth_mcp` library crate; the server
+//! assembles the tool router and resource handlers in `server.rs`.
 //!
 //! A missing repository root or an unreadable feature config terminates with a non-zero
 //! exit and a named cause.
 
-// Dead code is a defect, not a warning (styleguide "No dead code"). A genuinely
-// test-facing public helper carries a narrow `#[cfg_attr(not(test), allow(dead_code))]`
-// with a reason; a blanket module-scoped allow is not permitted.
+// Dead code is a defect, not a warning (styleguide "No dead code"). This bin is a thin
+// entrypoint over the `truenorth_mcp` library, so every item here has a caller.
 #![deny(dead_code)]
-
-mod config;
-mod engine;
-mod resources;
-mod server;
-mod tools;
-
-#[cfg(test)]
-mod integration_tests;
 
 use rmcp::model::ResourceUpdatedNotificationParam;
 use rmcp::{ServiceExt, transport::stdio};
 
-use crate::engine::watcher::{ResourceUri, spawn_watcher};
-use crate::server::TrueNorthServer;
+use truenorth_mcp::config;
+use truenorth_mcp::engine::watcher::{ResourceUri, spawn_watcher};
+use truenorth_mcp::server::TrueNorthServer;
 
 #[tokio::main]
 async fn main() -> std::process::ExitCode {

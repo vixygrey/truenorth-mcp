@@ -243,8 +243,8 @@ or `expect`. Each file stays under about 300 lines.
     - Drive with a named fake transport, so the test makes no real network call
     - _Requirements: 2.6, 10.1, 10.2, 10.3, 10.5_
 
-- [ ] 12. Benchmark runner and bin
-  - [ ] 12.1 Implement the benchmark types and runner in `jev/bench.rs`
+- [x] 12. Benchmark runner and bin
+  - [x] 12.1 Implement the benchmark types and runner in `jev/bench.rs`
     - Define `AspectMetrics`, `CostEstimate`, `Fixture`, and `ExpectedAnswers`
     - Load a labeled fixture set that pairs each real repository case with an expected answer per aspect; return `InvalidFixtureSet` before any aspect runs and retain any prior report on a missing or unparsable set (R11.8, R11.9)
     - Exercise the five aspects against the fixtures and select the fake or the real client by config (R11.1, R11.2)
@@ -254,13 +254,13 @@ or `expect`. Each file stays under about 300 lines.
     - Hardcode no per-token price; read the price only from config (R12.8)
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.8, 11.9, 12.1, 12.2, 12.6, 12.7, 12.8_
 
-  - [ ] 12.2 Implement the benchmark bin at `runtime/src/bin/jev_bench.rs`
+  - [x] 12.2 Implement the benchmark bin at `runtime/src/bin/jev_bench.rs`
     - Gate the bin behind the `jev-http` feature and call `engine::jev::bench`
     - Carry no `#[test]`, so `cargo test` does not run the bin (R11.10)
     - Select the fake or the real client by config; make no network call under the fake (R11.2, R11.7)
     - _Requirements: 11.2, 11.7, 11.10_
 
-  - [ ] 12.3 Write unit tests for the benchmark accounting
+  - [x] 12.3 Write unit tests for the benchmark accounting
     - Test the agreement fraction over a labeled fixture set and the missing-fixture `InvalidFixtureSet` that runs no aspect and retains any prior report
     - Test that input and output tokens track separately, a zero output rate yields a zero output cost, and an absent price reports counts and no cost
     - Test that the report under `.agent/telemetry/` carries no denylist content and no key
