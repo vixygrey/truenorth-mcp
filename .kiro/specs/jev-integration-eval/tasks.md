@@ -71,8 +71,8 @@ or `expect`. Each file stays under about 300 lines.
     - Test that a Score legend and probability map survive the round-trip
     - _Requirements: 2.1, 2.10_
 
-- [ ] 3. Config, confidence, and secret filter
-  - [ ] 3.1 Implement the config reader and validation in `jev/config.rs`
+- [x] 3. Config, confidence, and secret filter
+  - [x] 3.1 Implement the config reader and validation in `jev/config.rs`
     - Define `JevConfig` (thresholds, boundaries, `retry_limit`, `max_backoff`, `timeout`, optional `price`) and `JevPrice`, read from a dedicated `jev` block of `.agent/config/rules.yml`
     - Resolve an absent block to the default, a present-but-unreadable file to the `Config` I/O error, and a present-but-unparsable file to the `Config` parse error, with no partial config
     - Validate the threshold pair: `confidence_low <= confidence_high`, both in 0 to 1; return `InvalidThresholds` on failure (R8.7)
@@ -80,35 +80,35 @@ or `expect`. Each file stays under about 300 lines.
     - Validate a price rate is finite and `>= 0`; return `InvalidPrice` naming the value on failure (R12.5)
     - _Requirements: 1.1, 8.6, 8.7, 8.8, 12.3, 12.5_
 
-  - [ ]* 3.2 Write unit tests for config parse and validation
+  - [x]* 3.2 Write unit tests for config parse and validation
     - Test the absent-block default, the unreadable-file error, and the unparsable-file error naming the path
     - Test the invalid threshold pair, the destructive-threshold rule, and the negative and non-numeric price rejections
     - Test the boundary values at 0.0, at 1.0, and at `low == high`
     - _Requirements: 1.6, 1.7, 8.7, 8.8, 12.5_
 
-  - [ ] 3.3 Implement confidence banding in `jev/confidence.rs`
+  - [x] 3.3 Implement confidence banding in `jev/confidence.rs`
     - Define the `ConfidenceBand` enum (High, Medium, Low)
     - Implement `confidence_band(confidence, low, high) -> Result<ConfidenceBand, JevError>` returning exactly one band for a valid pair and `InvalidThresholds` for an invalid pair (R8.1 to R8.4, R8.7)
     - Read no state, so the same inputs return the same band (R8.9)
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.7, 8.9_
 
-  - [ ]* 3.4 Write property test for confidence-band totality
+  - [x]* 3.4 Write property test for confidence-band totality
     - **Property 23: Confidence-band totality**
     - Drive with generated confidence values and valid and invalid threshold pairs; assert exactly one band for a valid pair and the `InvalidThresholds` error for an invalid pair; minimum 100 iterations
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.7**
 
-  - [ ]* 3.5 Write property test for confidence-band determinism
+  - [x]* 3.5 Write property test for confidence-band determinism
     - **Property 24: Confidence-band determinism**
     - Drive with generated confidence values and threshold pairs; assert two resolutions of the same input return the same band; minimum 100 iterations
     - **Validates: Requirements 8.9**
 
-  - [ ] 3.6 Implement the secret filter in `jev/secret_filter.rs`
+  - [x] 3.6 Implement the secret filter in `jev/secret_filter.rs`
     - Implement `build_state_with_secret_filter(repo_root, paths)` that excludes a denylisted file by path through `config::is_secret_path`, redacts denylisted content through `config::secret_denylist()`, and re-checks the assembled serialized state
     - Return `SecretResidual` and make no call when the assembled state still matches the denylist (fail-closed)
     - Reuse the crate's already-compiled `secret_denylist()` regexes, so no regex compiles at call time
     - _Requirements: 9.1, 9.2, 9.7_
 
-  - [ ]* 3.7 Write property test for secret exclusion
+  - [x]* 3.7 Write property test for secret exclusion
     - **Property 31: Secret exclusion**
     - Drive with generated repository states that inject denylist content by path and by content; assert no assembled state matches the denylist, a residual match returns `SecretResidual` with no call, and no output carries the API key; minimum 100 iterations
     - **Validates: Requirements 9.1, 9.2, 9.6, 9.7**

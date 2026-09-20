@@ -31,6 +31,10 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod confidence;
+pub mod config;
+pub mod secret_filter;
+
 // The trait layer below has no non-test consumer until the client and aspect modules land
 // (issues #266 onward). Each public item carries a narrow non-test `allow` with this
 // reason, per the repo dead-code policy (main.rs). The task that adds each item's first
