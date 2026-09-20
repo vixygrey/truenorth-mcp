@@ -38,11 +38,17 @@ mod imp {
     use std::path::PathBuf;
     use std::process::ExitCode;
 
+    use std::io::Read;
+
     use truenorth_mcp::config::get_repo_root;
     use truenorth_mcp::engine::jev::bench;
     use truenorth_mcp::engine::jev::client_fake::FakeClient;
     use truenorth_mcp::engine::jev::client_http::HttpClient;
-    use truenorth_mcp::engine::jev::config::resolve;
+    use truenorth_mcp::engine::jev::client_http::JEV_API_KEY_VAR;
+    use truenorth_mcp::engine::jev::config::{resolve, resolve_protected_paths};
+    use truenorth_mcp::engine::jev::guard::ProposedChange;
+    use truenorth_mcp::engine::jev::guard::evaluate::evaluate_guard;
+    use truenorth_mcp::engine::jev::guard_cli::{block_message, exit_code_for};
 
     /// The environment variable that selects the client: `fake` or `http`.
     const CLIENT_VAR: &str = "JEV_BENCH_CLIENT";
@@ -53,12 +59,27 @@ mod imp {
     /// The default fixture path under the repository root, when `JEV_BENCH_FIXTURES` is unset.
     const DEFAULT_FIXTURES: &str = ".agent/telemetry/jev-fixtures.yml";
 
+    /// The environment variable that holds the Jev endpoint URL for the guard subcommand.
+    const GUARD_ENDPOINT_VAR: &str = "TRUENORTH_JEV_ENDPOINT";
+
+    /// Dispatch on the first argument: `guard` runs the guardrail on stdin, else the benchmark.
+    ///
+    /// The `guard` subcommand reads a proposed change on standard input and runs the guardrail,
+    /// exiting non-zero on a block and zero on an allow (ADR-G4, R7.2, R7.3). Any other first
+    /// argument, or none, runs the benchmark.
+    pub fn run() -> ExitCode {
+        match std::env::args().nth(1).as_deref() {
+            Some("guard") => run_guard(),
+            _ => run_bench(),
+        }
+    }
+
     /// Run the benchmark and write the report, returning the process exit code.
     ///
     /// The steps run in order: resolve the repository root, resolve the config, load the
     /// fixtures, run the chosen client over the fixtures, write the report, and print the
     /// report path. Any step failure prints the named cause to stderr and exits non-zero.
-    pub fn run() -> ExitCode {
+    fn run_bench() -> ExitCode {
         let repo_root = match get_repo_root() {
             Ok(root) => root,
             Err(error) => return fail(&format!("could not resolve the repository root: {error}")),
@@ -88,6 +109,91 @@ mod imp {
             }
             Err(error) => fail(&error.to_string()),
         }
+    }
+
+    /// Run the guardrail over a proposed change on standard input, returning the exit code.
+    ///
+    /// The steps run in order: read the proposed change JSON on standard input, resolve the
+    /// repository root, the config, and the protected paths, build the client only when the
+    /// jev feature flag and the API key are both present, run the guardrail, print the block
+    /// reason to standard error on a block, and exit non-zero on a block and zero on an allow
+    /// (R7.2, R7.3). The deterministic layer runs regardless of the client, so a protected-path
+    /// or a secret block holds even with no client (R7.5).
+    ///
+    /// The guardrail flag is on for this subcommand, because a caller who invokes `guard` opts
+    /// in. The probabilistic layer still fails open when the key is absent, so a keyless call
+    /// runs the deterministic layer and allows otherwise.
+    fn run_guard() -> ExitCode {
+        let mut input = String::new();
+        if let Err(error) = std::io::stdin().read_to_string(&mut input) {
+            return fail(&format!(
+                "could not read the proposed change on standard input: {error}"
+            ));
+        }
+
+        let change: ProposedChange = match serde_json::from_str(&input) {
+            Ok(change) => change,
+            Err(error) => {
+                return fail(&format!(
+                    "could not parse the proposed change JSON: {error}. Expected an object with \
+                     `paths` and `content`."
+                ));
+            }
+        };
+
+        let repo_root = match get_repo_root() {
+            Ok(root) => root,
+            Err(error) => return fail(&format!("could not resolve the repository root: {error}")),
+        };
+        let config = match resolve(&repo_root) {
+            Ok(config) => config,
+            Err(error) => return fail(&format!("could not resolve the Jev config: {error}")),
+        };
+        let protected = match resolve_protected_paths(&repo_root) {
+            Ok(paths) => paths,
+            Err(error) => return fail(&format!("could not resolve the protected paths: {error}")),
+        };
+
+        let api_key_present = std::env::var(JEV_API_KEY_VAR)
+            .map(|v| !v.is_empty())
+            .unwrap_or(false);
+
+        let runtime = match tokio::runtime::Runtime::new() {
+            Ok(runtime) => runtime,
+            Err(error) => return fail(&format!("could not start the async runtime: {error}")),
+        };
+
+        // The guard subcommand opts into the flag. Build the client only when the key is
+        // present, so a keyless call runs the deterministic layer and fails open otherwise.
+        let decision = if api_key_present {
+            let endpoint = std::env::var(GUARD_ENDPOINT_VAR).unwrap_or_default();
+            let client = HttpClient::new(endpoint, &config);
+            runtime.block_on(evaluate_guard(
+                &change,
+                &protected,
+                &config,
+                true,
+                api_key_present,
+                Some(&client),
+                &repo_root,
+            ))
+        } else {
+            runtime.block_on(evaluate_guard::<FakeClient>(
+                &change,
+                &protected,
+                &config,
+                true,
+                api_key_present,
+                None,
+                &repo_root,
+            ))
+        };
+
+        // Print the block reason to standard error on a block; print nothing on a pass (R7.2).
+        if let Some(message) = block_message(&decision) {
+            eprintln!("jev-guard: {message}");
+        }
+        ExitCode::from(exit_code_for(&decision))
     }
 
     /// The fixture path from `JEV_BENCH_FIXTURES`, or the default under the repository root.
