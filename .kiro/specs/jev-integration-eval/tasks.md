@@ -52,21 +52,21 @@ or `expect`. Each file stays under about 300 lines.
     - Test that a present-but-unreadable file returns the typed `Io` error and a present-but-unparsable file returns the typed `Parse` error, with no partial value
     - _Requirements: 1.2, 1.3, 1.6, 1.7_
 
-- [ ] 2. Trait layer: the Jev_Client trait, wire types, and JevError
-  - [ ] 2.1 Define the trait, the wire types, and the constants in `jev/mod.rs`
+- [x] 2. Trait layer: the Jev_Client trait, wire types, and JevError
+  - [x] 2.1 Define the trait, the wire types, and the constants in `jev/mod.rs`
     - Define the `Jev_Client` trait with one async method `evaluate(&self, request: JevRequest) -> Result<JevResponse, JevError>` (ADR-J2)
     - Define `JevRequest`, the `Question` enum (Noul, Choice, Score), `JevResponse`, the `Answer` enum (Noul, Choice, Score), and `Usage`, with serde internal `type` tags per the confirmed wire contract
     - Define the `JEV_MODEL = "jev-latest"`, `TOKEN_BUDGET = 32_000`, and `BYTES_PER_TOKEN` named constants
     - Register the child modules and compile the whole trait layer with no networking feature
     - _Requirements: 2.1, 2.10, 4.10, 6.5_
 
-  - [ ] 2.2 Define the JevError enum in `jev/mod.rs`
+  - [x] 2.2 Define the JevError enum in `jev/mod.rs`
     - Define `JevError` with `thiserror`, one variant per failure the design names: `MissingApiKey`, `SecretResidual`, `Unauthorized`, `Validation`, `RateLimitedOrOverloaded`, `UnexpectedStatus`, `Network`, `Timeout`, `BudgetExceeded`, `MissingAnswer`, `DuplicateAnswer`, `UnexpectedOption`, `InvalidThresholds`, `InvalidPrice`, `InvalidFixtureSet`, `Config`
     - Write each message to name the offending value, the expected shape, and a remediation hint where one applies
     - Name nothing sensitive in `SecretResidual` and in every key-related variant (R9.6)
     - _Requirements: 2.6, 2.8, 9.4, 9.6, 10.1, 10.2, 10.5_
 
-  - [ ]* 2.3 Write unit tests for the wire-type serde round-trip
+  - [x]* 2.3 Write unit tests for the wire-type serde round-trip
     - Test that each `Question` and `Answer` variant serializes and deserializes through its `type` tag
     - Test that a Score legend and probability map survive the round-trip
     - _Requirements: 2.1, 2.10_
