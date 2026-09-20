@@ -154,15 +154,15 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Drive the CLI guard entry point with a deterministic block and an allow; assert a non-zero exit on the block and a zero exit on the allow; minimum 100 iterations
     - **Validates: Requirements 7.2, 7.3**
 
-- [ ] 7. The emitted PreToolUse hook from the scaffold
-  - [ ] 7.1 Add the PreToolUse hook template and emit path
+- [x] 7. The emitted PreToolUse hook from the scaffold
+  - [x] 7.1 Add the PreToolUse hook template and emit path
     - Add the `PreToolUse` hook template to `runtime/src/tools/scaffold/templates.rs`, matching a write tool and running the guard CLI on standard input (R7.1)
     - Add the emit call to `runtime/src/tools/scaffold/mod.rs` through the audited `write_repo_seed` path
     - Make no network call when the flag is off (R7.5)
     - State in the emitted hook documentation that automatic interception depends on the client honoring the `PreToolUse` hook, and that the guard tool is the fallback (R7.4, R9.4)
     - _Requirements: 7.1, 7.4, 7.5, 9.4_
 
-  - [ ] 7.2 Write unit tests for the emitted hook
+  - [x] 7.2 Write unit tests for the emitted hook
     - Test that the scaffold emits the hook file with the write-tool matcher and the guard CLI command
     - Test that the emitted hook documentation states the client-honor boundary and the fallback
     - _Requirements: 7.1, 7.4, 9.4_

@@ -27,8 +27,8 @@ use crate::tools::hooks::{commit_msg_hook, post_merge_hook};
 mod templates;
 
 use templates::{
-    COMMIT_TEMPLATE, ISSUE_TEMPLATE_CONFIG, PULL_REQUEST_TEMPLATE, agents_md, bug_form,
-    conventions_md, feature_form, layout_contract, starter_seed,
+    COMMIT_TEMPLATE, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK, PULL_REQUEST_TEMPLATE, agents_md,
+    bug_form, conventions_md, feature_form, layout_contract, starter_seed,
 };
 
 /// The command the scaffold prints for the human to run. The scaffold never runs it
@@ -187,6 +187,11 @@ fn emit_hooks(
         &post_merge_hook(profile),
         out,
     )?;
+
+    // The emitted PreToolUse hook that calls the guardrail on a write tool (R7.1). It is
+    // profile-independent, so it is the same for every profile. The automatic interception
+    // holds only where the client honors the hook; the guard tool is the fallback (R7.4).
+    seed_repo_root(repo_root, ".kiro/hooks/jev-guard.json", JEV_GUARD_HOOK, out)?;
     Ok(())
 }
 
