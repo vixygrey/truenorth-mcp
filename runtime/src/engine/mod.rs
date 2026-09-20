@@ -11,6 +11,7 @@ pub mod features;
 pub mod gate_runner;
 pub mod git;
 pub mod graph;
+pub mod jev;
 pub mod ontology_scan;
 pub mod phase;
 pub mod profile;

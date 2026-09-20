@@ -16,6 +16,12 @@ path = "src/main.rs"
 # `tree-sitter` to add the AST analyzer for languages with a bundled grammar (Rust today).
 default = []
 tree-sitter = ["dep:tree-sitter", "dep:tree-sitter-rust"]
+# Off by default. The Jev evaluation harness (`engine::jev`) is optional infrastructure,
+# not on the request path. Its trait, wire types, aspect modules, and the named fake all
+# compile without this feature, so the shipped binary and `cargo test` pull in no HTTP
+# client and make no network call. Enable `jev-http` only to compile the real HTTP client
+# and the benchmark bin (jev-integration-eval design ADR-J1).
+jev-http = ["dep:reqwest"]
 
 [dependencies]
 rmcp = { version = "3.4", features = ["server", "macros", "schemars", "transport-io"] }
@@ -33,6 +39,13 @@ pulldown-cmark = { version = "0.13", default-features = false }
 # the default build and the shipped binary stay regex-only and language-agnostic.
 tree-sitter = { version = "0.26", optional = true }
 tree-sitter-rust = { version = "0.24", optional = true }
+# The Jev HTTP client. Optional and gated behind the `jev-http` feature (ADR-J1), so the
+# default build and the offline test suite compile no networking. `rustls-tls` avoids a
+# system OpenSSL dependency; `json` gives a typed request and response body.
+reqwest = { version = "0.12.9", default-features = false, features = [
+  "rustls-tls",
+  "json",
+], optional = true }
 anyhow = "1"
 thiserror = "2"
 tracing = "0.1"

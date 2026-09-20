@@ -33,21 +33,21 @@ or `expect`. Each file stays under about 300 lines.
 
 ## Tasks
 
-- [ ] 1. Cargo configuration and module registration
-  - [ ] 1.1 Add the `jev-http` feature and the optional reqwest dependency
+- [x] 1. Cargo configuration and module registration
+  - [x] 1.1 Add the `jev-http` feature and the optional reqwest dependency
     - Add a `jev-http` feature to `runtime/Cargo.toml` that maps to `["dep:reqwest"]`
     - Add `reqwest` as an optional dependency pinned to an exact version, `default-features = false`, features `["rustls-tls", "json"]`
     - Keep `default = []` so the default build and `cargo test` compile no networking
     - _Requirements: 2.4, 11.7, 2.7_
 
-  - [ ] 1.2 Register the harness module and the feature flag
+  - [x] 1.2 Register the harness module and the feature flag
     - Add `pub mod jev;` to `runtime/src/engine/mod.rs`
     - Add a `jev: bool` field to `Features` in `runtime/src/engine/features.rs`, resolved by the same reader as `ontology`
     - Use `#[serde(default)]` on the `jev` key so an absent key resolves to `false`, and set the `Features::default` `jev` value to `false` (R1.2, R1.3)
     - Extend the `features` block view so the same read path resolves both flags
     - _Requirements: 1.1, 1.2, 1.3, 1.8_
 
-  - [ ]* 1.3 Write unit tests for the flag resolution
+  - [x]* 1.3 Write unit tests for the flag resolution
     - Test that an absent `jev` key resolves to `false` and an absent `rules.yml` resolves to `false`
     - Test that a present-but-unreadable file returns the typed `Io` error and a present-but-unparsable file returns the typed `Parse` error, with no partial value
     - _Requirements: 1.2, 1.3, 1.6, 1.7_

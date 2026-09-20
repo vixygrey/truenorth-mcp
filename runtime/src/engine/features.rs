@@ -37,12 +37,20 @@ use crate::engine::agent_ws::AGENT_DIR;
 pub struct Features {
     /// Whether the ontology feature is enabled (Requirement 1).
     pub ontology: bool,
+    /// Whether the Jev evaluation harness is enabled (jev-integration-eval Requirement
+    /// 1). Unlike `ontology`, the default is off: Jev is an optional network dependency on
+    /// an external service, so a project must opt in (jev-integration-eval ADR-J1).
+    pub jev: bool,
 }
 
 impl Default for Features {
-    /// The default resolution: the ontology feature is enabled (Requirement 1.3, 1.4).
+    /// The default resolution: the ontology feature is enabled (Requirement 1.3, 1.4) and
+    /// the Jev feature is off (jev-integration-eval Requirement 1.2, 1.3).
     fn default() -> Self {
-        Self { ontology: true }
+        Self {
+            ontology: true,
+            jev: false,
+        }
     }
 }
 
@@ -85,12 +93,20 @@ struct FeaturesBlock {
     /// The ontology feature. An absent key resolves to enabled (Requirement 1.4).
     #[serde(default = "default_true")]
     ontology: bool,
+    /// The Jev feature. An absent key resolves to off, so a `bool` default of `false`
+    /// applies (jev-integration-eval Requirement 1.2).
+    #[serde(default)]
+    jev: bool,
 }
 
 impl Default for FeaturesBlock {
-    /// An absent `features` block resolves the ontology feature to enabled (Requirement 1.4).
+    /// An absent `features` block resolves the ontology feature to enabled (Requirement
+    /// 1.4) and the Jev feature to off (jev-integration-eval Requirement 1.3).
     fn default() -> Self {
-        Self { ontology: true }
+        Self {
+            ontology: true,
+            jev: false,
+        }
     }
 }
 
@@ -137,6 +153,7 @@ pub fn resolve(repo_root: &Path) -> Result<Features, FeaturesError> {
 
     Ok(Features {
         ontology: view.features.ontology,
+        jev: view.features.jev,
     })
 }
 

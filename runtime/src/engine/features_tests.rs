@@ -34,7 +34,13 @@ fn absent_agent_dir_resolves_enabled() {
     // An existing project with no TrueNorth scaffolding: no `.agent/` at all.
     let repo = TempDir::new().expect("temp repo");
     let resolved = resolve(repo.path()).expect("absent .agent resolves");
-    assert_eq!(resolved, Features { ontology: true });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
 }
 
 #[test]
@@ -43,7 +49,13 @@ fn absent_config_dir_resolves_enabled() {
     let repo = TempDir::new().expect("temp repo");
     fs::create_dir_all(repo.path().join(AGENT_DIR).join("tasks")).expect("create .agent/tasks");
     let resolved = resolve(repo.path()).expect("absent config resolves");
-    assert_eq!(resolved, Features { ontology: true });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
 }
 
 #[test]
@@ -52,7 +64,13 @@ fn absent_rules_file_resolves_enabled() {
     let repo = TempDir::new().expect("temp repo");
     fs::create_dir_all(repo.path().join(AGENT_DIR).join("config")).expect("create .agent/config");
     let resolved = resolve(repo.path()).expect("absent rules.yml resolves");
-    assert_eq!(resolved, Features { ontology: true });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
 }
 
 // ── Present-file cases ───────────────────────────────────────────────────────────────
@@ -61,28 +79,52 @@ fn absent_rules_file_resolves_enabled() {
 fn no_features_block_resolves_enabled() {
     let repo = seed_rules("token_caps:\n  max: 1000\n");
     let resolved = resolve(repo.path()).expect("no features block resolves");
-    assert_eq!(resolved, Features { ontology: true });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
 }
 
 #[test]
 fn features_block_without_ontology_key_resolves_enabled() {
     let repo = seed_rules("features:\n  other: true\n");
     let resolved = resolve(repo.path()).expect("no ontology key resolves");
-    assert_eq!(resolved, Features { ontology: true });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
 }
 
 #[test]
 fn ontology_true_resolves_enabled() {
     let repo = seed_rules("features:\n  ontology: true\n");
     let resolved = resolve(repo.path()).expect("ontology true resolves");
-    assert_eq!(resolved, Features { ontology: true });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
 }
 
 #[test]
 fn ontology_false_resolves_disabled() {
     let repo = seed_rules("features:\n  ontology: false\n");
     let resolved = resolve(repo.path()).expect("ontology false resolves");
-    assert_eq!(resolved, Features { ontology: false });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: false,
+            jev: false
+        }
+    );
 }
 
 // ── Tolerance and errors ───────────────────────────────────────────────────────────────
@@ -92,7 +134,13 @@ fn unrelated_key_alongside_ontology_still_resolves_and_is_left_on_disk() {
     let body = "token_caps:\n  max: 1000\nfeatures:\n  ontology: false\n";
     let repo = seed_rules(body);
     let resolved = resolve(repo.path()).expect("unrelated key tolerated");
-    assert_eq!(resolved, Features { ontology: false });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: false,
+            jev: false
+        }
+    );
     // The reader never writes, so the file is byte-for-byte unchanged (Requirement 1.9).
     let on_disk = fs::read_to_string(rules_path(&repo)).expect("read back");
     assert_eq!(on_disk, body);
@@ -133,10 +181,77 @@ fn resolve_needs_no_layout_contract() {
     // No layout.yml, no profile.yml: the reader still resolves (Requirement 1.10).
     let repo = seed_rules("features:\n  ontology: false\n");
     let resolved = resolve(repo.path()).expect("resolves without a layout contract");
-    assert_eq!(resolved, Features { ontology: false });
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: false,
+            jev: false
+        }
+    );
 }
 
 #[test]
 fn default_features_are_enabled() {
-    assert_eq!(Features::default(), Features { ontology: true });
+    assert_eq!(
+        Features::default(),
+        Features {
+            ontology: true,
+            jev: false
+        }
+    );
+}
+
+// ── The Jev feature flag: default off (jev-integration-eval Requirement 1.2, 1.3) ──────
+
+#[test]
+fn jev_defaults_off_when_agent_dir_absent() {
+    // An existing project with no scaffolding resolves the Jev feature to off.
+    let repo = TempDir::new().expect("temp repo");
+    let resolved = resolve(repo.path()).expect("absent .agent resolves");
+    assert!(
+        !resolved.jev,
+        "an absent .agent/ resolves the Jev feature to off"
+    );
+}
+
+#[test]
+fn jev_defaults_off_when_features_block_omits_the_key() {
+    // A present features block with no `jev` key resolves the Jev feature to off.
+    let repo = seed_rules("features:\n  ontology: true\n");
+    let resolved = resolve(repo.path()).expect("no jev key resolves");
+    assert!(
+        !resolved.jev,
+        "an absent `jev` key resolves the Jev feature to off"
+    );
+}
+
+#[test]
+fn jev_true_resolves_on() {
+    let repo = seed_rules("features:\n  jev: true\n");
+    let resolved = resolve(repo.path()).expect("jev true resolves");
+    assert!(resolved.jev, "`jev: true` resolves the Jev feature to on");
+}
+
+#[test]
+fn jev_false_resolves_off() {
+    let repo = seed_rules("features:\n  jev: false\n");
+    let resolved = resolve(repo.path()).expect("jev false resolves");
+    assert!(
+        !resolved.jev,
+        "`jev: false` resolves the Jev feature to off"
+    );
+}
+
+#[test]
+fn ontology_and_jev_resolve_independently() {
+    // The two flags read from the same block without cross-talk: ontology off, jev on.
+    let repo = seed_rules("features:\n  ontology: false\n  jev: true\n");
+    let resolved = resolve(repo.path()).expect("both keys resolve");
+    assert_eq!(
+        resolved,
+        Features {
+            ontology: false,
+            jev: true
+        }
+    );
 }
