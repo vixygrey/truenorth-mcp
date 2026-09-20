@@ -38,8 +38,8 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
 
 ## Tasks
 
-- [ ] 1. Guard types and the deterministic layer
-  - [ ] 1.1 Define the guard types in `engine/jev/guard.rs`
+- [x] 1. Guard types and the deterministic layer
+  - [x] 1.1 Define the guard types in `engine/jev/guard.rs`
     - Register `pub mod guard;` in `runtime/src/engine/jev/mod.rs`
     - Define `ProposedChange { paths: Vec<String>, content: String }` with `serde::Deserialize` and `schemars::JsonSchema` (R1.2)
     - Define `GuardDecision` with `Allow { notes: Vec<String> }`, `Block(NeutralizationPacket)`, and `Annotate { notes: Vec<String> }` (R1.4)
@@ -47,25 +47,25 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Carry `#[cfg_attr(not(test), allow(dead_code))]` with a reason on each staged public item
     - _Requirements: 1.2, 1.4, 6.1, 6.4_
 
-  - [ ] 1.2 Implement the deterministic layer in `engine/jev/guard.rs`
+  - [x] 1.2 Implement the deterministic layer in `engine/jev/guard.rs`
     - Match a written path against the protected paths through `jev::drift::path_is_protected`; return `Block` with a `protected-path` packet naming the path and no Jev call (R2.1, R2.6, R6.4)
     - Scan the content against the secret denylist through `config::secret_denylist`; return `Block` with a `secret` packet naming the matched pattern name and no Jev call (R2.2, R6.4)
     - Name never the secret value, only the pattern name (R6.3)
     - Run the deterministic layer regardless of the flag and return the same result on the same input (R2.3, R2.5)
     - _Requirements: 2.1, 2.2, 2.3, 2.5, 2.6, 6.3, 6.4_
 
-  - [ ] 1.3 Write property test for deterministic protected-path block
+  - [x] 1.3 Write property test for deterministic protected-path block
     - **Property 34: Deterministic protected-path block**
     - Drive with generated changes that write a protected path, the flag on and off, and the named fake; assert `Block` with zero fake calls, regardless of the flag; minimum 100 iterations
     - **Validates: Requirements 2.1, 2.3, 2.4**
 
-  - [ ] 1.4 Write property test for deterministic secret block
+  - [x] 1.4 Write property test for deterministic secret block
     - **Property 35: Deterministic secret block**
     - Drive with generated content that injects denylist hits and the named fake; assert `Block` and zero fake calls; minimum 100 iterations
     - **Validates: Requirements 2.2, 3.3**
 
-- [ ] 2. The pure combine step and the confidence gate
-  - [ ] 2.1 Implement the combine step in `engine/jev/guard.rs`
+- [x] 2. The pure combine step and the confidence gate
+  - [x] 2.1 Implement the combine step in `engine/jev/guard.rs`
     - Implement a pure `combine(rigor, drift, config) -> GuardDecision` over its inputs, with no async and no state read (P39)
     - Return a `drift` `Block` when the drift Noul is out of scope and confident at the configured boundary (R3.4, R5.1)
     - Return a `rigor` `Block` with a suggested fix when a rigor failure is confident enough to block; return `Annotate` with the summary and the suggested fix otherwise (R6.2, R5.1, R5.2)
@@ -73,12 +73,12 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Return `Allow` with empty notes when no candidate blocks (R1.4)
     - _Requirements: 3.4, 5.1, 5.2, 5.3, 5.4, 6.2_
 
-  - [ ] 2.2 Write property test for the confidence-gated block
+  - [x] 2.2 Write property test for the confidence-gated block
     - **Property 38: Confidence-gated block**
     - Drive `combine` with generated candidate signals and valid thresholds; assert `Block` exactly when the confidence is at or above the threshold; minimum 100 iterations
     - **Validates: Requirements 5.1, 5.2**
 
-  - [ ] 2.3 Write property test for decision determinism
+  - [x] 2.3 Write property test for decision determinism
     - **Property 39: Decision determinism**
     - Drive `combine` with generated signals and thresholds; assert two evaluations of the same input return the same decision; minimum 100 iterations
     - **Validates: Requirements 5.5**
