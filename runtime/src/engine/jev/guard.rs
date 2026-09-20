@@ -255,3 +255,9 @@ mod tests;
 #[cfg(test)]
 #[path = "guard_prop_tests.rs"]
 mod prop_tests;
+
+// Structural and scope smoke checks (task 8): the guardrail holds no hardcoded threshold,
+// references no reqwest, performs no write, and spawns no secondary agent.
+#[cfg(test)]
+#[path = "guard_structural_tests.rs"]
+mod structural_tests;
