@@ -35,6 +35,7 @@ pub mod client_fake;
 pub mod confidence;
 pub mod config;
 pub mod drift;
+pub mod rigor;
 pub mod routing;
 pub mod secret_filter;
 

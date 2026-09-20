@@ -162,8 +162,8 @@ or `expect`. Each file stays under about 300 lines.
     - Drive the fake with Choice answers inside and outside the target set; assert an inside option maps to a member and an outside option returns `UnexpectedOption` with no route; minimum 100 iterations
     - **Validates: Requirements 3.2, 3.3, 3.4**
 
-- [ ] 7. Aspect module: parallel rigor scoring
-  - [ ] 7.1 Implement rigor evaluation in `jev/rigor.rs`
+- [x] 7. Aspect module: parallel rigor scoring
+  - [x] 7.1 Implement rigor evaluation in `jev/rigor.rs`
     - Define `RigorReport` (the four signals plus `latency_ms`)
     - Build one request with exactly four questions: three Nouls (hallucinated import, violates conventions, contains secrets) and one complexity Score (R4.1 to R4.5)
     - Guard the token budget before the call and reject an over-budget request (R4.10)
@@ -171,7 +171,7 @@ or `expect`. Each file stays under about 300 lines.
     - Record the four values and one latency for the single request (R4.9)
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10_
 
-  - [ ] 7.2 Write unit tests for the rigor response validation
+  - [x] 7.2 Write unit tests for the rigor response validation
     - Test the missing-id `MissingAnswer` error and the duplicate-id `DuplicateAnswer` error, each retaining no partial answer
     - Test a request at exactly four questions and the over-budget rejection
     - _Requirements: 4.7, 4.8, 4.1, 4.10_
