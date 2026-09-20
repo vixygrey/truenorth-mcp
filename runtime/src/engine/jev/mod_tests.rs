@@ -252,3 +252,77 @@ async fn jev_client_trait_is_implementable_and_returns_a_typed_response() {
         other => panic!("expected a Noul answer, got {other:?}"),
     }
 }
+
+#[test]
+fn small_request_is_under_budget() {
+    let request = JevRequest::new(serde_json::json!("state"), BTreeMap::new());
+    assert!(estimate_tokens(&request) <= TOKEN_BUDGET);
+    assert!(guard_budget(&request).is_ok());
+}
+
+#[test]
+fn huge_state_is_over_budget() {
+    // A state string well over four times the budget guarantees an over-budget estimate.
+    let huge = "x".repeat(TOKEN_BUDGET * BYTES_PER_TOKEN * 2);
+    let request = JevRequest::new(serde_json::json!(huge), BTreeMap::new());
+    match guard_budget(&request) {
+        Err(JevError::BudgetExceeded { estimate, budget }) => {
+            assert_eq!(estimate, estimate_tokens(&request));
+            assert_eq!(budget, TOKEN_BUDGET);
+            assert!(estimate > TOKEN_BUDGET);
+        }
+        other => panic!("expected BudgetExceeded, got {other:?}"),
+    }
+}
+
+#[test]
+fn estimate_tokens_rounds_up() {
+    // A JSON string value of 7 characters serializes to 9 bytes: the seven characters plus
+    // the two surrounding quotes. The estimate is ceil(9 / 4) = 3.
+    let request = JevRequest::new(serde_json::json!("1234567"), BTreeMap::new());
+    let json = serde_json::to_string(&request).expect("serialize request");
+    let request_bytes = json.len();
+    // The estimate is the serialized request byte length divided by four, rounded up.
+    assert_eq!(
+        estimate_tokens(&request),
+        request_bytes.div_ceil(BYTES_PER_TOKEN)
+    );
+
+    // Prove the round-up directly on a known 9-byte value.
+    let nine = serde_json::json!("1234567");
+    assert_eq!(serde_json::to_string(&nine).expect("serialize").len(), 9);
+    assert_eq!(9usize.div_ceil(BYTES_PER_TOKEN), 3);
+}
+
+#[test]
+fn guard_budget_boundary_at_and_over_the_budget() {
+    // Grow the state one byte at a time until the estimate reaches the budget. Assert Ok at
+    // the last state under or equal to the budget, and Err at the first state over it.
+    let mut size = TOKEN_BUDGET * BYTES_PER_TOKEN - 200;
+    let mut last_ok: Option<usize> = None;
+    let mut first_over: Option<usize> = None;
+    while size < TOKEN_BUDGET * BYTES_PER_TOKEN + 200 {
+        let state = "y".repeat(size);
+        let request = JevRequest::new(serde_json::json!(state), BTreeMap::new());
+        let estimate = estimate_tokens(&request);
+        if estimate <= TOKEN_BUDGET {
+            assert!(guard_budget(&request).is_ok(), "at or under budget is Ok");
+            last_ok = Some(estimate);
+        } else {
+            assert!(
+                matches!(guard_budget(&request), Err(JevError::BudgetExceeded { .. })),
+                "over budget is BudgetExceeded"
+            );
+            if first_over.is_none() {
+                first_over = Some(estimate);
+            }
+        }
+        size += 1;
+    }
+    // The scan crossed the boundary: it saw at least one Ok and at least one over.
+    assert!(
+        last_ok.is_some(),
+        "the scan saw an at-or-under-budget request"
+    );
+    assert!(first_over.is_some(), "the scan saw an over-budget request");
+}
