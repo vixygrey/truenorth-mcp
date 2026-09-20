@@ -266,8 +266,8 @@ or `expect`. Each file stays under about 300 lines.
     - Test that the report under `.agent/telemetry/` carries no denylist content and no key
     - _Requirements: 11.5, 11.9, 12.1, 12.2, 12.6, 11.6_
 
-- [ ] 13. Structural and smoke checks
-  - [ ] 13.1 Write structural smoke checks
+- [x] 13. Structural and smoke checks
+  - [x] 13.1 Write structural smoke checks
     - Assert the benchmark bin carries no `#[test]`, so `cargo test` does not run it (R11.10)
     - Assert no per-token price literal appears in an acceptance-tested code path; the price comes only from config (R12.8)
     - Assert both `Fake_Client` and `Http_Client` satisfy `Jev_Client` (compilation)
