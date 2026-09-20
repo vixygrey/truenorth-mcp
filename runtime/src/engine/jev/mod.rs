@@ -37,6 +37,7 @@ pub mod client_http;
 pub mod confidence;
 pub mod config;
 pub mod drift;
+pub mod guard;
 pub mod pruning;
 pub mod rigor;
 pub mod routing;
