@@ -83,8 +83,8 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Drive `combine` with generated signals and thresholds; assert two evaluations of the same input return the same decision; minimum 100 iterations
     - **Validates: Requirements 5.5**
 
-- [ ] 3. The evaluate_guard probabilistic layer and fail-open
-  - [ ] 3.1 Implement `evaluate_guard` in `engine/jev/guard.rs`
+- [x] 3. The evaluate_guard probabilistic layer and fail-open
+  - [x] 3.1 Implement `evaluate_guard` in `engine/jev/guard.rs`
     - Implement `evaluate_guard<C: JevClient>(change, protected_paths, config, jev_enabled, client: Option<&C>) -> GuardDecision`
     - Run the deterministic layer first, then the probabilistic layer (R1.3)
     - Return `Allow` with a note when the flag is off or the client is absent, with no Jev call (R4.1)
@@ -95,22 +95,22 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Return the combine result when both aspects succeed (R1.4)
     - _Requirements: 1.3, 1.4, 3.1, 3.2, 3.3, 3.5, 4.1, 4.2, 4.3, 4.5_
 
-  - [ ] 3.2 Write property test for flag-off silence
+  - [x] 3.2 Write property test for flag-off silence
     - **Property 36: Flag-off silence**
     - Drive with generated changes, the flag off, and the named fake; assert no Jev call and `Allow` with a note; assert the fake records zero calls; minimum 100 iterations
     - **Validates: Requirements 4.1, 8.2**
 
-  - [ ] 3.3 Write property test for probabilistic fail-open
+  - [x] 3.3 Write property test for probabilistic fail-open
     - **Property 37: Probabilistic fail-open**
     - Drive the named fake with timeout, network error, non-success status, and absent key; assert `Allow`, never `Block`; minimum 100 iterations
     - **Validates: Requirements 4.2, 4.3, 4.5**
 
-  - [ ] 3.4 Write property test for no secret to Jev
+  - [x] 3.4 Write property test for no secret to Jev
     - **Property 40: No secret to Jev**
     - Drive with generated changes that inject denylist content; assert no Jev request state and no `NeutralizationPacket` carries denylist content, and no output carries the API key; minimum 100 iterations
     - **Validates: Requirements 3.2, 6.3**
 
-  - [ ] 3.5 Write example tests for the decision boundaries
+  - [x] 3.5 Write example tests for the decision boundaries
     - Test the deterministic block on a `specs/` write, a `LICENSE` write, and content hits on `.env`, `secret`, and `credentials` patterns
     - Test the confidence gate at exactly the threshold, just below, and with the destructive threshold for a destructive candidate
     - Test the flag-off note and the absent-key note
