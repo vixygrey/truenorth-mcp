@@ -11,6 +11,14 @@ rust-version = "1.88"
 name = "truenorth-mcp"
 path = "src/main.rs"
 
+# The Jev benchmark bin. It builds only under the `jev-http` feature, so `cargo test` on the
+# default build neither compiles nor runs it (jev-integration-eval R11.10). The bin reuses the
+# `truenorth_mcp` library crate to reach `engine::jev::bench`.
+[[bin]]
+name = "jev-bench"
+path = "src/bin/jev_bench.rs"
+required-features = ["jev-http"]
+
 [features]
 # Off by default. The regex baseline is the shipped, language-agnostic analyzer. Enable
 # `tree-sitter` to add the AST analyzer for languages with a bundled grammar (Rust today).
