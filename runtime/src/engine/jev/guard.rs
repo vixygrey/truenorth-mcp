@@ -244,6 +244,12 @@ fn shared_marker_for_index(index: usize) -> &'static str {
 #[path = "guard_combine.rs"]
 pub mod combine;
 
+// The `evaluate_guard` entry point and the probabilistic fail-open layer live in a sibling
+// file, split by concern: this file holds the deterministic layer, `guard_evaluate.rs` ties it
+// to the combine step and the harness aspects (task 3, #295).
+#[path = "guard_evaluate.rs"]
+pub mod evaluate;
+
 // Example and property tests live in sibling files to hold this module under the size
 // guidance. The `#[path]` include keeps them child modules of `guard`.
 #[cfg(test)]
