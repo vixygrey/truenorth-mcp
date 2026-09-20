@@ -3,9 +3,9 @@
 //!
 //! The state and release-plan models preserve the document verbatim (Requirement 9.3).
 //! Both hold the whole document in an ordered map, so a read then a write reproduces
-//! every key and value, including `null`-valued fields and `bigpowers_version`
-//! (Requirement 9.4). A named-field model with `skip_serializing_if` would drop a
-//! present `null` field, so the map-backed model is the design that meets Property 3.
+//! every key and value, including `null`-valued fields and any unknown field a legacy
+//! file carries (Requirement 9.4). A named-field model with `skip_serializing_if` would
+//! drop a present `null` field, so the map-backed model is the design that meets Property 3.
 //! Typed access to the observed fields (design §3.1) comes through accessor methods.
 //!
 //! The ontology model carries `schemars` derives, because the ontology tool surfaces it
@@ -62,16 +62,6 @@ impl StateFile {
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn git_branch(&self) -> Option<&str> {
         self.root.get("git")?.get("branch")?.as_str()
-    }
-
-    /// The `bigpowers_version` value, when present (Requirement 9.4).
-    ///
-    /// A typed accessor over the preserved document, exercised by the backward-compat
-    /// tests (Property 3, Requirement 9.4). No tool reads it today, so it carries a
-    /// non-test allow rather than being deleted.
-    #[cfg_attr(not(test), allow(dead_code))]
-    pub fn bigpowers_version(&self) -> Option<&Value> {
-        self.root.get("bigpowers_version")
     }
 
     /// Set a top-level field, inserting or replacing it in place.

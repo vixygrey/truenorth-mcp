@@ -164,9 +164,10 @@ not ship a workaround as if it were the solution.
   current on-disk content.
 - **Parse/validation failure is not a crash.** Return a resource read error,
   retain the last good content, keep serving other resources.
-- **Backward compatibility is mandatory:** preserve unknown fields
-  (`#[serde(flatten)]` catch-all) and `bigpowers_version` on read/write; map
-  legacy phase names (Build→Execute, Verify→Review, Release/Sustain→Integrate).
+- **Backward compatibility is mandatory:** preserve every unknown field on
+  read/write (`#[serde(flatten)]` catch-all), so a legacy version marker or any
+  other legacy key round-trips as data with no field named for it; map legacy
+  phase names (Build→Execute, Verify→Review, Release/Sustain→Integrate).
 
 ## Tests (F.I.R.S.T.)
 
