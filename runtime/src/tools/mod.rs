@@ -6,6 +6,7 @@
 pub mod bugref;
 pub mod catalog;
 pub mod gates;
+pub mod guard;
 pub mod hooks;
 pub mod lifecycle;
 pub mod ontology;

@@ -173,6 +173,12 @@ impl TrueNorthServer {
             tool_router += Self::ontology_router();
         }
 
+        // The guardrail tool is advertised only when the jev feature is on, matching the
+        // ontology gate (jev-active-guardrail R1.6, R8.2). Every other router is unchanged.
+        if ctx.features.jev {
+            tool_router += Self::guard_router();
+        }
+
         Self {
             ctx: Arc::new(ctx),
             tool_router,

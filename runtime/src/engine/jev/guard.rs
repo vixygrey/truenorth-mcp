@@ -53,7 +53,6 @@ const REMEDIATION_SECRET: &str = "Remove the secret before the write. Move the v
 ///
 /// The change names the target paths it writes and the new content it writes. The guard
 /// reads it and decides; it performs no write itself.
-#[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, serde::Deserialize, schemars::JsonSchema)]
 pub struct ProposedChange {
     /// The target paths the change writes.
@@ -67,7 +66,6 @@ pub struct ProposedChange {
 /// One evaluation returns exactly one decision. An `Allow` and an `Annotate` both let the
 /// change proceed and carry advisory notes; a `Block` stops the change and carries the
 /// structured [`NeutralizationPacket`].
-#[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, PartialEq)]
 pub enum GuardDecision {
     /// The change may proceed. Carries advisory notes.
@@ -90,7 +88,6 @@ pub enum GuardDecision {
 /// deterministic block, a remediation hint the agent can act on, and an optional suggested
 /// self-heal instruction. It carries no secret content and no API key: a secret block names
 /// the matched pattern name, never the secret value (R6.3, P40).
-#[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct NeutralizationPacket {
     /// The violated check, for example `protected-path` or `secret` or `drift`.
@@ -134,7 +131,6 @@ impl NeutralizationPacket {
 ///
 /// When neither check hits, the layer returns `None`, so the caller runs the probabilistic
 /// layer next (issue #294). The layer returns the same result on the same input (R2.5).
-#[cfg_attr(not(test), allow(dead_code))]
 pub fn deterministic_layer(
     change: &ProposedChange,
     protected_paths: &[String],

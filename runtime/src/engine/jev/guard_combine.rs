@@ -54,7 +54,6 @@ const REMEDIATION_RIGOR: &str =
 /// caller (`evaluate_guard`, issue #295) supplies the confidence from the model answer that
 /// produced the value, so the confidence stays a real model signal, not a value invented in
 /// the combine step. The combine step gates on that confidence.
-#[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CandidateSignal {
     /// The model confidence in the signal, from 0 to 1.
@@ -73,7 +72,6 @@ pub struct CandidateSignal {
 ///
 /// The gate is pure over the candidate and the config, so two evaluations of the same input
 /// return the same result (P39), and the property test drives it with no async runtime.
-#[cfg_attr(not(test), allow(dead_code))]
 pub fn confidence_gate(candidate: CandidateSignal, config: &JevConfig) -> bool {
     let threshold = if candidate.destructive {
         config.destructive_threshold
@@ -105,7 +103,6 @@ pub fn confidence_gate(candidate: CandidateSignal, config: &JevConfig) -> bool {
 /// The `suggested_fix` is the decided self-heal instruction the caller passes in. The combine
 /// step attaches it; it never applies it and triggers no secondary agent (R9.2, R9.3, ADR-G5).
 /// The caller decides the self-heal through the harness `self_heal` aspect (issue #295).
-#[cfg_attr(not(test), allow(dead_code))]
 pub fn combine(
     rigor: &RigorReport,
     rigor_signal: CandidateSignal,

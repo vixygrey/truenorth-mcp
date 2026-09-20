@@ -116,8 +116,8 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Test the flag-off note and the absent-key note
     - _Requirements: 2.1, 2.2, 5.1, 5.2, 5.3, 4.1, 4.2_
 
-- [ ] 4. The truenorth_guard_change tool
-  - [ ] 4.1 Implement the guard tool in `tools/guard.rs`
+- [x] 4. The truenorth_guard_change tool
+  - [x] 4.1 Implement the guard tool in `tools/guard.rs`
     - Register `pub mod guard;` in `runtime/src/tools/mod.rs`
     - Define `GuardChangeArgs { paths: Vec<String>, content: String }` with a strict `schemars` input schema (R1.1, R1.2)
     - Validate the input; return a typed invalid-params error naming the offending field and run no check on a malformed input (R1.5)
@@ -125,12 +125,12 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Map an `Allow` or an `Annotate` to a success result carrying the notes; map a `Block` to an MCP error carrying the `NeutralizationPacket` (R1.4)
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-  - [ ] 4.2 Register the guard tool in the router
+  - [x] 4.2 Register the guard tool in the router
     - Add the guard router to the tool-router assembly in `runtime/src/server.rs` alongside the existing tools
     - Leave every other tool unchanged (R1.6)
     - _Requirements: 1.6_
 
-  - [ ] 4.3 Write unit tests for the tool mapping
+  - [x] 4.3 Write unit tests for the tool mapping
     - Test that an `Allow` maps to a success result carrying the notes and a `Block` maps to an MCP error carrying the packet
     - Test that a malformed input returns a typed error naming the field with no check run
     - Drive with the named fake, so the test makes no network call
