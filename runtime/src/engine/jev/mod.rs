@@ -31,6 +31,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub mod client_fake;
 pub mod confidence;
 pub mod config;
 pub mod secret_filter;
