@@ -194,8 +194,8 @@ or `expect`. Each file stays under about 300 lines.
     - Drive the fake with generated logs and keep thresholds; assert the kept list is an in-order subsequence of the input; minimum 100 iterations
     - **Validates: Requirements 6.4**
 
-- [ ] 9. Aspect module: self-healing decisions
-  - [ ] 9.1 Implement self-healing evaluation in `jev/self_heal.rs`
+- [x] 9. Aspect module: self-healing decisions
+  - [x] 9.1 Implement self-healing evaluation in `jev/self_heal.rs`
     - Define `SelfHealDecision` (`instruction`, `confidence`) and the `SelfHeal` enum (Revert, RefactorImports, SimplifyLogic, AskHuman)
     - Trigger on a rigor failure: any Noul at or over the rigor-failure boundary, or a complexity Score at or over the complexity boundary (R7.1)
     - Build one Choice over `REVERT`, `REFACTOR_IMPORTS`, `SIMPLIFY_LOGIC`, `ASK_HUMAN`; map an inside option to a typed instruction (R7.2); return `UnexpectedOption` for an outside option (R7.3)
@@ -203,12 +203,12 @@ or `expect`. Each file stays under about 300 lines.
     - Record the chosen instruction and the confidence (R7.6)
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-  - [ ] 9.2 Write property test for self-healing option closure
+  - [x] 9.2 Write property test for self-healing option closure
     - **Property 29: Self-healing option closure**
     - Drive the fake with Choice answers inside and outside the fixed set; assert an inside option maps to a typed instruction and an outside option returns a typed error; minimum 100 iterations
     - **Validates: Requirements 7.2, 7.3**
 
-  - [ ] 9.3 Write property test for low-confidence self-healing safety
+  - [x] 9.3 Write property test for low-confidence self-healing safety
     - **Property 30: Low-confidence self-healing safety**
     - Drive the fake with `REVERT` answers at a confidence under the destructive threshold; assert the harness returns `ASK_HUMAN` and no `REVERT` instruction; minimum 100 iterations
     - **Validates: Requirements 7.5**
