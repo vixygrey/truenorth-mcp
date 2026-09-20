@@ -139,8 +139,8 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
 - [x] 5. Checkpoint - Make sure that the core and the tool tests pass
   - Make sure that all tests pass offline against the fake with no `jev-http` feature. Ask the user if questions arise.
 
-- [ ] 6. The guard CLI subcommand behind jev-http
-  - [ ] 6.1 Implement the guard subcommand on the jev-bench bin
+- [x] 6. The guard CLI subcommand behind jev-http
+  - [x] 6.1 Implement the guard subcommand on the jev-bench bin
     - Add a `guard` subcommand to the existing `jev-bench` bin, gated behind the `jev-http` feature (ADR-G4)
     - Read the proposed change on standard input and call `evaluate_guard` (R7.1)
     - Print the block reason to standard error and exit non-zero on a `Block`; exit zero on an `Allow` (R7.2, R7.3)
@@ -149,7 +149,7 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Carry no `#[test]`, so `cargo test` does not run the bin (R8.2)
     - _Requirements: 7.1, 7.2, 7.3, 7.5, 7.6, 8.4_
 
-  - [ ] 6.2 Write property test for the hook exit code
+  - [x] 6.2 Write property test for the hook exit code
     - **Property 41: Hook exit code**
     - Drive the CLI guard entry point with a deterministic block and an allow; assert a non-zero exit on the block and a zero exit on the allow; minimum 100 iterations
     - **Validates: Requirements 7.2, 7.3**

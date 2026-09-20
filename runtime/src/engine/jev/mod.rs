@@ -38,6 +38,7 @@ pub mod confidence;
 pub mod config;
 pub mod drift;
 pub mod guard;
+pub mod guard_cli;
 pub mod pruning;
 pub mod rigor;
 pub mod routing;
