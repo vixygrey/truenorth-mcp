@@ -47,7 +47,7 @@ or `expect`. Each file stays under about 300 lines.
     - Extend the `features` block view so the same read path resolves both flags
     - _Requirements: 1.1, 1.2, 1.3, 1.8_
 
-  - [x]* 1.3 Write unit tests for the flag resolution
+  - [x] 1.3 Write unit tests for the flag resolution
     - Test that an absent `jev` key resolves to `false` and an absent `rules.yml` resolves to `false`
     - Test that a present-but-unreadable file returns the typed `Io` error and a present-but-unparsable file returns the typed `Parse` error, with no partial value
     - _Requirements: 1.2, 1.3, 1.6, 1.7_
@@ -66,7 +66,7 @@ or `expect`. Each file stays under about 300 lines.
     - Name nothing sensitive in `SecretResidual` and in every key-related variant (R9.6)
     - _Requirements: 2.6, 2.8, 9.4, 9.6, 10.1, 10.2, 10.5_
 
-  - [x]* 2.3 Write unit tests for the wire-type serde round-trip
+  - [x] 2.3 Write unit tests for the wire-type serde round-trip
     - Test that each `Question` and `Answer` variant serializes and deserializes through its `type` tag
     - Test that a Score legend and probability map survive the round-trip
     - _Requirements: 2.1, 2.10_
@@ -80,7 +80,7 @@ or `expect`. Each file stays under about 300 lines.
     - Validate a price rate is finite and `>= 0`; return `InvalidPrice` naming the value on failure (R12.5)
     - _Requirements: 1.1, 8.6, 8.7, 8.8, 12.3, 12.5_
 
-  - [x]* 3.2 Write unit tests for config parse and validation
+  - [x] 3.2 Write unit tests for config parse and validation
     - Test the absent-block default, the unreadable-file error, and the unparsable-file error naming the path
     - Test the invalid threshold pair, the destructive-threshold rule, and the negative and non-numeric price rejections
     - Test the boundary values at 0.0, at 1.0, and at `low == high`
@@ -92,12 +92,12 @@ or `expect`. Each file stays under about 300 lines.
     - Read no state, so the same inputs return the same band (R8.9)
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.7, 8.9_
 
-  - [x]* 3.4 Write property test for confidence-band totality
+  - [x] 3.4 Write property test for confidence-band totality
     - **Property 23: Confidence-band totality**
     - Drive with generated confidence values and valid and invalid threshold pairs; assert exactly one band for a valid pair and the `InvalidThresholds` error for an invalid pair; minimum 100 iterations
     - **Validates: Requirements 8.1, 8.2, 8.3, 8.4, 8.7**
 
-  - [x]* 3.5 Write property test for confidence-band determinism
+  - [x] 3.5 Write property test for confidence-band determinism
     - **Property 24: Confidence-band determinism**
     - Drive with generated confidence values and threshold pairs; assert two resolutions of the same input return the same band; minimum 100 iterations
     - **Validates: Requirements 8.9**
@@ -108,19 +108,19 @@ or `expect`. Each file stays under about 300 lines.
     - Reuse the crate's already-compiled `secret_denylist()` regexes, so no regex compiles at call time
     - _Requirements: 9.1, 9.2, 9.7_
 
-  - [x]* 3.7 Write property test for secret exclusion
+  - [x] 3.7 Write property test for secret exclusion
     - **Property 31: Secret exclusion**
     - Drive with generated repository states that inject denylist content by path and by content; assert no assembled state matches the denylist, a residual match returns `SecretResidual` with no call, and no output carries the API key; minimum 100 iterations
     - **Validates: Requirements 9.1, 9.2, 9.6, 9.7**
 
-- [ ] 4. Named Fake_Client
-  - [ ] 4.1 Implement the Fake_Client in `jev/client_fake.rs`
+- [x] 4. Named Fake_Client
+  - [x] 4.1 Implement the Fake_Client in `jev/client_fake.rs`
     - Define `Fake_Client` as a named type that satisfies `Jev_Client` and returns configured responses with a ready future and no network call
     - Record each call so a test can assert the call count, for the flag-off silence property
     - Let a test set the queued `Answer` values per question id, so the fake drives every aspect and error path offline
     - _Requirements: 2.2, 2.4_
 
-  - [ ]* 4.2 Write property test for flag-off silence
+  - [x] 4.2 Write property test for flag-off silence
     - **Property 22: Flag-off silence**
     - Drive with generated repository states and the flag off; assert the harness builds no state, makes no call, and constructs no `Http_Client` path; assert the fake records zero calls; minimum 100 iterations
     - **Validates: Requirements 1.4, 1.5, 2.4**
@@ -132,7 +132,7 @@ or `expect`. Each file stays under about 300 lines.
     - Send no request on an over-budget estimate (R4.10)
     - _Requirements: 4.10, 6.5_
 
-  - [ ]* 5.2 Write property test for the token-budget bound
+  - [ ] 5.2 Write property test for the token-budget bound
     - **Property 33: Token-budget bound**
     - Drive with generated states and question sets, some over budget; assert every built request stays at or under the budget, or the harness returns `BudgetExceeded` before the call; minimum 100 iterations
     - **Validates: Requirements 4.10**
@@ -144,7 +144,7 @@ or `expect`. Each file stays under about 300 lines.
     - Record the `noul` value and the pass-or-fail result (R5.9)
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.8, 5.9_
 
-  - [ ]* 5.4 Write property test for drift boundary determinism
+  - [ ] 5.4 Write property test for drift boundary determinism
     - **Property 25: Drift boundary determinism**
     - Drive with generated `noul` values, boundaries, and plans with protected paths; assert two evaluations of the same input return the same result, and a protected-path plan is out-of-scope through the model-free layer with no call; minimum 100 iterations
     - **Validates: Requirements 5.7, 5.8**
@@ -157,7 +157,7 @@ or `expect`. Each file stays under about 300 lines.
     - Band the confidence through `confidence_band` and record the target, the confidence, and the band (R3.5 to R3.8)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
 
-  - [ ]* 6.2 Write property test for routing option closure
+  - [ ] 6.2 Write property test for routing option closure
     - **Property 28: Routing option closure**
     - Drive the fake with Choice answers inside and outside the target set; assert an inside option maps to a member and an outside option returns `UnexpectedOption` with no route; minimum 100 iterations
     - **Validates: Requirements 3.2, 3.3, 3.4**
@@ -171,7 +171,7 @@ or `expect`. Each file stays under about 300 lines.
     - Record the four values and one latency for the single request (R4.9)
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 4.10_
 
-  - [ ]* 7.2 Write unit tests for the rigor response validation
+  - [ ] 7.2 Write unit tests for the rigor response validation
     - Test the missing-id `MissingAnswer` error and the duplicate-id `DuplicateAnswer` error, each retaining no partial answer
     - Test a request at exactly four questions and the over-budget rejection
     - _Requirements: 4.7, 4.8, 4.1, 4.10_
@@ -184,12 +184,12 @@ or `expect`. Each file stays under about 300 lines.
     - Record the three counts, which sum to the input count (R6.6, R6.7)
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7_
 
-  - [ ]* 8.2 Write property test for pruning line conservation
+  - [ ] 8.2 Write property test for pruning line conservation
     - **Property 26: Pruning line conservation**
     - Drive the fake with generated logs and keep thresholds; assert `kept_count + dropped_count == input_count` for every case; minimum 100 iterations
     - **Validates: Requirements 6.7**
 
-  - [ ]* 8.3 Write property test for pruning order preservation
+  - [ ] 8.3 Write property test for pruning order preservation
     - **Property 27: Pruning order preservation**
     - Drive the fake with generated logs and keep thresholds; assert the kept list is an in-order subsequence of the input; minimum 100 iterations
     - **Validates: Requirements 6.4**
@@ -203,12 +203,12 @@ or `expect`. Each file stays under about 300 lines.
     - Record the chosen instruction and the confidence (R7.6)
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-  - [ ]* 9.2 Write property test for self-healing option closure
+  - [ ] 9.2 Write property test for self-healing option closure
     - **Property 29: Self-healing option closure**
     - Drive the fake with Choice answers inside and outside the fixed set; assert an inside option maps to a typed instruction and an outside option returns a typed error; minimum 100 iterations
     - **Validates: Requirements 7.2, 7.3**
 
-  - [ ]* 9.3 Write property test for low-confidence self-healing safety
+  - [ ] 9.3 Write property test for low-confidence self-healing safety
     - **Property 30: Low-confidence self-healing safety**
     - Drive the fake with `REVERT` answers at a confidence under the destructive threshold; assert the harness returns `ASK_HUMAN` and no `REVERT` instruction; minimum 100 iterations
     - **Validates: Requirements 7.5**
@@ -223,7 +223,7 @@ or `expect`. Each file stays under about 300 lines.
     - Raise no panic and call no `unwrap` or `expect` on any branch
     - _Requirements: 10.1, 10.2, 10.6, 10.7_
 
-  - [ ]* 11.2 Write property test for error non-panic
+  - [ ] 11.2 Write property test for error non-panic
     - **Property 32: Error non-panic**
     - Drive the pure mapper with statuses 401, 422, 429, 529, and an unmapped status; assert each returns a typed error and raises no panic; run offline with no `jev-http` feature; minimum 100 iterations
     - **Validates: Requirements 10.6, 10.7**
@@ -238,7 +238,7 @@ or `expect`. Each file stays under about 300 lines.
     - Never write, echo, or log the API key (R9.5, R9.6)
     - _Requirements: 2.3, 2.5, 2.6, 2.8, 2.9, 2.10, 9.4, 9.5, 9.6, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-  - [ ]* 11.4 Write feature-gated example tests for the transport
+  - [ ] 11.4 Write feature-gated example tests for the transport
     - Gate behind `jev-http`; test the missing-key `MissingApiKey` naming `TRUENORTH_JEV_API_KEY`, the 401 `Unauthorized`, the 422 `Validation` naming the field, and a 429 sequence that retries to the limit then returns `RateLimitedOrOverloaded`
     - Drive with a named fake transport, so the test makes no real network call
     - _Requirements: 2.6, 10.1, 10.2, 10.3, 10.5_
@@ -260,14 +260,14 @@ or `expect`. Each file stays under about 300 lines.
     - Select the fake or the real client by config; make no network call under the fake (R11.2, R11.7)
     - _Requirements: 11.2, 11.7, 11.10_
 
-  - [ ]* 12.3 Write unit tests for the benchmark accounting
+  - [ ] 12.3 Write unit tests for the benchmark accounting
     - Test the agreement fraction over a labeled fixture set and the missing-fixture `InvalidFixtureSet` that runs no aspect and retains any prior report
     - Test that input and output tokens track separately, a zero output rate yields a zero output cost, and an absent price reports counts and no cost
     - Test that the report under `.agent/telemetry/` carries no denylist content and no key
     - _Requirements: 11.5, 11.9, 12.1, 12.2, 12.6, 11.6_
 
 - [ ] 13. Structural and smoke checks
-  - [ ]* 13.1 Write structural smoke checks
+  - [ ] 13.1 Write structural smoke checks
     - Assert the benchmark bin carries no `#[test]`, so `cargo test` does not run it (R11.10)
     - Assert no per-token price literal appears in an acceptance-tested code path; the price comes only from config (R12.8)
     - Assert both `Fake_Client` and `Http_Client` satisfy `Jev_Client` (compilation)
