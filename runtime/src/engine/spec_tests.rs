@@ -2,7 +2,8 @@
 //!
 //! Included from `spec.rs` via `#[path]`, so `super` is the spec module. The state
 //! preservation test (Property 3) round-trips and mutates fixtures, then asserts every
-//! field, including `null`-valued fields and `bigpowers_version`, survives verbatim.
+//! field, including `null`-valued fields and any unknown field a legacy file carries,
+//! survives verbatim.
 //!
 //! Requirements: 9.3, 9.4, 4.3.
 
@@ -61,10 +62,18 @@ fn parse_state(yaml: &str) -> StateFile {
 fn state_exposes_typed_accessors() {
     let state = parse_state(STATE_FIXTURE);
     assert_eq!(state.git_branch(), Some("main"));
-    // `2.88.2` parses as a string, since it has two dots.
+}
+
+#[test]
+fn state_preserves_an_arbitrary_unknown_field() {
+    // The map-backed model preserves any unknown field a legacy file carries, read through
+    // the generic `get`. The fixture's `bigpowers_version` is one such legacy field; the
+    // model preserves it as data, with no field named for it in the model (Requirement 9.4).
+    let state = parse_state(STATE_FIXTURE);
     assert_eq!(
-        state.bigpowers_version(),
-        Some(&serde_yaml::Value::String("2.88.2".to_string()))
+        state.get("bigpowers_version"),
+        Some(&serde_yaml::Value::String("2.88.2".to_string())),
+        "an unknown legacy field is preserved as data"
     );
 }
 

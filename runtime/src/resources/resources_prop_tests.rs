@@ -3,11 +3,12 @@
 //! Included from `resources/mod.rs` via `#[path]`, so `super` is the resources module.
 //!
 //! Feature: agent-workspace-profiles, Property 7: cockpit relocation preserves unknown
-//! fields and version. For every legacy cockpit read under `specs/` with an arbitrary set
-//! of unknown fields and a `bigpowers_version` value, mapping that content onto the
-//! `.agent/` model preserves every unknown field with its original key and value, and
-//! preserves the `bigpowers_version` value. A malformed legacy file yields a read error
-//! naming the file, leaves `.agent/` unchanged, and retains the last good content.
+//! fields. For every legacy cockpit read under `specs/` with an arbitrary set of unknown
+//! fields, mapping that content onto the `.agent/` model preserves every unknown field with
+//! its original key and value. A legacy version marker, such as an old-tool version key, is
+//! just one more unknown field the model preserves; the model names no field for it. A
+//! malformed legacy file yields a read error naming the file, leaves `.agent/` unchanged, and
+//! retains the last good content.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -18,21 +19,20 @@ use tempfile::TempDir;
 use super::*;
 
 /// Generate a set of unknown scalar fields with distinct keys and string values.
+///
+/// The generated keys cover any unknown field a legacy file can carry, including a version
+/// marker such as an old-tool version key. The model names no field for any of them; they are
+/// all preserved through the same catch-all.
 fn unknown_fields() -> impl Strategy<Value = BTreeMap<String, String>> {
     prop::collection::btree_map("[a-z][a-z0-9_]{0,11}", "[a-zA-Z0-9 ._-]{0,23}", 0..8)
-}
-
-/// A `bigpowers_version` value, drawn from a small set of realistic version strings.
-fn version() -> impl Strategy<Value = String> {
-    "[0-9]{1,2}\\.[0-9]{1,2}\\.[0-9]{1,2}".prop_map(String::from)
 }
 
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(200))]
 
-    /// A legacy specs/state.yaml read preserves every unknown field and bigpowers_version.
+    /// A legacy specs/state.yaml read preserves every unknown field, whatever its key.
     #[test]
-    fn legacy_state_read_preserves_fields(fields in unknown_fields(), ver in version()) {
+    fn legacy_state_read_preserves_fields(fields in unknown_fields()) {
         let repo = TempDir::new().expect("temp repo");
         let specs = repo.path().join("specs");
         fs::create_dir_all(&specs).expect("specs dir");
@@ -40,9 +40,8 @@ proptest! {
         // Build a legacy document as a mapping, so serialization is always valid YAML.
         // Keys the state schema validates as mappings. A string value under these would
         // be a genuinely invalid legacy file, not a preservation case, so exclude them.
-        let reserved = ["bigpowers_version", "git", "handoff", "metrics"];
+        let reserved = ["git", "handoff", "metrics"];
         let mut map = serde_yaml::Mapping::new();
-        map.insert("bigpowers_version".into(), ver.clone().into());
         for (key, value) in &fields {
             if reserved.contains(&key.as_str()) {
                 continue;
@@ -57,12 +56,6 @@ proptest! {
             .read_current(repo.path())
             .expect("legacy read");
         let parsed: serde_yaml::Value = serde_yaml::from_str(&content).expect("parse read");
-
-        // The version value survives.
-        prop_assert_eq!(
-            parsed.get("bigpowers_version").and_then(|v| v.as_str()),
-            Some(ver.as_str())
-        );
 
         // Every unknown field survives with its original key and value.
         for (key, value) in &fields {

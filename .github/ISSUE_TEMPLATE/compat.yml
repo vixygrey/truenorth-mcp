@@ -21,7 +21,6 @@ body:
       label: Kind of break
       options:
         - "Unknown field dropped on write"
-        - "bigpowers_version not preserved"
         - "Legacy phase name not mapped"
         - "Cockpit file fails to parse"
         - "Resource read returns stale or wrong content"
