@@ -136,7 +136,7 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Drive with the named fake, so the test makes no network call
     - _Requirements: 1.4, 1.5, 8.2_
 
-- [ ] 5. Checkpoint - Make sure that the core and the tool tests pass
+- [x] 5. Checkpoint - Make sure that the core and the tool tests pass
   - Make sure that all tests pass offline against the fake with no `jev-http` feature. Ask the user if questions arise.
 
 - [ ] 6. The guard CLI subcommand behind jev-http
