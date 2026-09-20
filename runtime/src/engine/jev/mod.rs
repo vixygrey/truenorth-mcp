@@ -428,3 +428,9 @@ mod tests;
 #[cfg(test)]
 #[path = "budget_prop_tests.rs"]
 mod budget_prop_tests;
+
+// Structural and smoke checks (task 13): the benchmark bin carries no test, the harness
+// hardcodes no price, and both clients satisfy the trait.
+#[cfg(test)]
+#[path = "structural_tests.rs"]
+mod structural_tests;
