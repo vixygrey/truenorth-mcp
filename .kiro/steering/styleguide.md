@@ -5,11 +5,14 @@ inclusion: always
 # TrueNorth-MCP Coding Styleguide
 
 This is the **authoritative** engineering guide for this repository. When any
-guidance here conflicts with the inherited upstream files (`CONVENTIONS.md`,
-`constitution.md`, `CLAUDE.md`, `GEMINI.md`, `docs/PRINCIPLES.md`), **this
-document wins.** Those files describe the forked `bigpowers` process. This
-project is deliberately removing much of it (see the spec
-`truenorth-mcp-refactor`). Do not adopt bigpowers-specific process from them.
+guidance here conflicts with another document, this document wins. The remaining
+project docs (`CONVENTIONS.md`, `AGENTS.md`) are project-owned and align with this
+guide.
+
+TrueNorth-MCP is a hard fork of `bigpowers`. Upstream is a historical ancestor, not
+a live dependency: the project does not track or merge upstream commits (see the
+"Relationship to upstream" section in `README.md`). The old `bigpowers` process is
+removed; do not reintroduce it.
 
 TrueNorth-MCP is an active, protocol-first MCP execution runtime written in
 Rust, with a thin Node.js npm distribution wrapper. It is token-lean and

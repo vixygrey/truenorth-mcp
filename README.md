@@ -4,11 +4,31 @@ An active, protocol-first MCP execution runtime for spec-driven engineering
 discipline. Written in Rust, distributed as a thin Node.js wrapper. Token-lean and
 model and harness agnostic.
 
-> **Credit.** TrueNorth-MCP is a fork of
+> **Credit.** TrueNorth-MCP began as a fork of
 > [bigpowers](https://github.com/danielvm-git/bigpowers) by danielvm-git, under the MIT
-> license. The skill set is the foundation this project builds on. TrueNorth-MCP
-> re-architects the runtime, and the engineering discipline in the skills is the
-> upstream work. Thank you to the bigpowers author.
+> license. The inherited work is the skill set: the engineering discipline in the
+> `skills/` directory is the upstream contribution this project builds on. The Rust
+> runtime is a clean-room reimplementation and shares no code with the upstream
+> TypeScript server. Thank you to the bigpowers author.
+
+## Relationship to upstream
+
+TrueNorth-MCP is a hard fork. Upstream is a historical ancestor, not a live
+dependency. The project does not track or merge upstream commits.
+
+- The runtime shares no code with upstream, so there is no cherry-pick surface. A
+  new upstream commit is, at most, an idea. The project reimplements a good idea in
+  its own architecture and style, through its normal issue-first, spec, and pull-request
+  flow. It never merges an upstream diff.
+- The `skills/` directory is the one inherited surface. The runtime reads it by
+  format, not by content, so a skill is data the runtime parses, not code it depends on.
+- The MIT license and this credit are permanent obligations the project keeps. The
+  git ancestry is honest history and stays. Tightening the fork framing corrects the
+  forward expectation (no merges), not the backward fact (it started here).
+
+Do not run `git merge upstream/main`. With the divergence between the projects, a
+blind merge would reintroduce the removed `bigpowers` process and conflict across
+rewritten files.
 
 ## What it is
 
