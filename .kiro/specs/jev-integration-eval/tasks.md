@@ -273,7 +273,7 @@ or `expect`. Each file stays under about 300 lines.
     - Assert both `Fake_Client` and `Http_Client` satisfy `Jev_Client` (compilation)
     - _Requirements: 11.10, 12.8, 2.1, 2.2, 2.3_
 
-- [ ] 14. Final checkpoint - Full verification across both builds
+- [x] 14. Final checkpoint - Full verification across both builds
   - Run `cargo fmt` and `cargo clippy` with warnings denied on the default build and on `--features jev-http`
   - Run `cargo test` offline and confirm the default build compiles no reqwest
   - Make sure that all tests pass across both builds. Ask the user if questions arise.
