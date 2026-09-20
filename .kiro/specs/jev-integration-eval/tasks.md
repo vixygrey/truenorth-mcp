@@ -149,15 +149,15 @@ or `expect`. Each file stays under about 300 lines.
     - Drive with generated `noul` values, boundaries, and plans with protected paths; assert two evaluations of the same input return the same result, and a protected-path plan is out-of-scope through the model-free layer with no call; minimum 100 iterations
     - **Validates: Requirements 5.7, 5.8**
 
-- [ ] 6. Aspect module: routing
-  - [ ] 6.1 Implement routing evaluation in `jev/routing.rs`
+- [x] 6. Aspect module: routing
+  - [x] 6.1 Implement routing evaluation in `jev/routing.rs`
     - Define `RoutingOutcome` (`target`, `confidence`, `band`)
     - Build one Choice over the Routing_Target set plus `NONE` (R3.1, R3.2)
     - Map a chosen option inside the set to exactly one member (R3.3); return `UnexpectedOption` naming the option and the expected set and record no route for an outside option (R3.4)
     - Band the confidence through `confidence_band` and record the target, the confidence, and the band (R3.5 to R3.8)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
 
-  - [ ] 6.2 Write property test for routing option closure
+  - [x] 6.2 Write property test for routing option closure
     - **Property 28: Routing option closure**
     - Drive the fake with Choice answers inside and outside the target set; assert an inside option maps to a member and an outside option returns `UnexpectedOption` with no route; minimum 100 iterations
     - **Validates: Requirements 3.2, 3.3, 3.4**
