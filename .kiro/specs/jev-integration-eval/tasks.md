@@ -213,7 +213,7 @@ or `expect`. Each file stays under about 300 lines.
     - Drive the fake with `REVERT` answers at a confidence under the destructive threshold; assert the harness returns `ASK_HUMAN` and no `REVERT` instruction; minimum 100 iterations
     - **Validates: Requirements 7.5**
 
-- [ ] 10. Checkpoint - Make sure that the trait, config, and aspect tests pass
+- [x] 10. Checkpoint - Make sure that the trait, config, and aspect tests pass
   - Make sure that all tests pass offline against the fake with no `jev-http` feature. Ask the user if questions arise.
 
 - [ ] 11. HTTP client behind the jev-http feature
