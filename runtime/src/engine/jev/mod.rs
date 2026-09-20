@@ -35,6 +35,7 @@ pub mod client_fake;
 pub mod confidence;
 pub mod config;
 pub mod drift;
+pub mod routing;
 pub mod secret_filter;
 
 // The trait layer below has no non-test consumer until the client and aspect modules land
