@@ -57,7 +57,13 @@ fn with_features_default_is_enabled() {
 #[test]
 fn with_features_disabled_carries_the_flag() {
     let repo = TempDir::new().expect("temp repo");
-    let ctx = ServerContext::with_features(repo.path().to_path_buf(), Features { ontology: false });
+    let ctx = ServerContext::with_features(
+        repo.path().to_path_buf(),
+        Features {
+            ontology: false,
+            ..Features::default()
+        },
+    );
     assert!(!ctx.features.ontology);
 }
 
@@ -168,7 +174,10 @@ fn server_with_ontology(enabled: bool) -> TrueNorthServer {
     let repo = TempDir::new().expect("temp repo");
     TrueNorthServer::from_context(ServerContext::with_features(
         repo.path().to_path_buf(),
-        Features { ontology: enabled },
+        Features {
+            ontology: enabled,
+            ..Features::default()
+        },
     ))
 }
 

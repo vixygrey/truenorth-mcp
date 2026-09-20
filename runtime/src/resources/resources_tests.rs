@@ -241,8 +241,14 @@ fn one_broken_resource_does_not_block_others() {
 // ── Ontology feature gate (issue #142, Property 17, Property 18) ──────────────────────
 
 /// The enabled and disabled flags, for readable test setup.
-const ENABLED: Features = Features { ontology: true };
-const DISABLED: Features = Features { ontology: false };
+const ENABLED: Features = Features {
+    ontology: true,
+    jev: false,
+};
+const DISABLED: Features = Features {
+    ontology: false,
+    jev: false,
+};
 
 #[test]
 fn served_resources_includes_ontology_when_enabled() {

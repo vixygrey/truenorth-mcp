@@ -338,7 +338,10 @@ async fn disabled_ontology_is_absent_over_the_client() -> anyhow::Result<()> {
 
     let (client, handle) = connect_with(
         root.clone(),
-        crate::engine::features::Features { ontology: false },
+        crate::engine::features::Features {
+            ontology: false,
+            ..Default::default()
+        },
     )
     .await?;
 
@@ -381,7 +384,10 @@ async fn enabled_ontology_is_listed_and_seeds_on_read() -> anyhow::Result<()> {
 
     let (client, handle) = connect_with(
         root.clone(),
-        crate::engine::features::Features { ontology: true },
+        crate::engine::features::Features {
+            ontology: true,
+            ..Default::default()
+        },
     )
     .await?;
 
