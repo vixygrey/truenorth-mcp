@@ -199,3 +199,52 @@ async fn scaffold_unknown_profile_makes_no_file_change() {
     assert!(!repo.path().join(".agent").exists());
     assert!(!repo.path().join("AGENTS.md").exists());
 }
+
+#[tokio::test]
+async fn scaffold_emits_the_jev_guard_pretooluse_hook() {
+    let repo = TempDir::new().expect("temp repo");
+    let srv = server(&repo);
+    scaffold(&srv, None).await.expect("scaffold");
+
+    let hook_path = repo.path().join(".kiro/hooks/jev-guard.json");
+    assert!(hook_path.is_file(), "the guard hook file is emitted");
+
+    let body = fs::read_to_string(&hook_path).expect("read the hook file");
+    // The hook is valid JSON and parses.
+    let json: serde_json::Value = serde_json::from_str(&body).expect("the hook is valid JSON");
+
+    // It is a PreToolUse hook matching the common write tools and running the guard CLI.
+    let hook = &json["hooks"][0];
+    assert_eq!(hook["trigger"], "PreToolUse");
+    assert_eq!(hook["matcher"], "write_to_file|fs_write|str_replace");
+    assert_eq!(hook["action"]["type"], "command");
+    assert_eq!(hook["action"]["command"], "truenorth-mcp guard");
+}
+
+#[tokio::test]
+async fn the_emitted_hook_documents_the_client_honor_boundary_and_the_fallback() {
+    let repo = TempDir::new().expect("temp repo");
+    let srv = server(&repo);
+    scaffold(&srv, None).await.expect("scaffold");
+
+    let body =
+        fs::read_to_string(repo.path().join(".kiro/hooks/jev-guard.json")).expect("read the hook");
+    let json: serde_json::Value = serde_json::from_str(&body).expect("valid JSON");
+    let description = json["hooks"][0]["description"]
+        .as_str()
+        .expect("the hook carries a description");
+
+    // The documentation states the client-honor boundary and the tool fallback (R7.4, R9.4).
+    assert!(
+        description.contains("honoring the PreToolUse hook"),
+        "states the client-honor boundary: {description}"
+    );
+    assert!(
+        description.contains("truenorth_guard_change"),
+        "names the tool fallback: {description}"
+    );
+    assert!(
+        description.contains("cannot force-intercept"),
+        "states the honest boundary: {description}"
+    );
+}
