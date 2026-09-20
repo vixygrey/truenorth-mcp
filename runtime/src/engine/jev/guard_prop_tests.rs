@@ -83,12 +83,14 @@ proptest! {
     }
 
     /// Property 35: content that carries a secret marker always blocks, and the layer sends
-    /// nothing to Jev. The generated content embeds a denylist marker, so the scan matches.
+    /// nothing to Jev. The generated content embeds a marker mid-prose, so the scan matches
+    /// the marker anywhere, including the `.env` and `.pem` references the guard content
+    /// patterns catch. The prefix and suffix surround the marker with plain words.
     #[test]
     fn p35_secret_content_always_blocks(
         prefix in "[a-zA-Z0-9 ]{0,30}",
         suffix in "[a-zA-Z0-9 ]{0,30}",
-        marker in prop::sample::select(vec!["secret", "credentials"]),
+        marker in prop::sample::select(vec!["secret", "credentials", ".env", ".env.local", ".pem"]),
     ) {
         let fake = FakeClient::new();
         // The written path is not protected, so the secret scan, not the path match, blocks.
@@ -107,7 +109,10 @@ proptest! {
         if let Some(GuardDecision::Block(packet)) = &decision {
             let offending = packet.offending_value.clone().unwrap_or_default();
             prop_assert!(
-                offending == "secret-marker" || offending == "credentials-marker",
+                matches!(
+                    offending.as_str(),
+                    "secret-marker" | "credentials-marker" | "env-file" | "pem-file"
+                ),
                 "the offending value names a marker: {offending}"
             );
         }

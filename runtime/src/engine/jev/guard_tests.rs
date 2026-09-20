@@ -122,9 +122,25 @@ fn credentials_content_blocks_with_the_credentials_marker() {
 
 #[test]
 fn env_file_content_blocks_with_the_env_marker() {
-    // The env-file denylist pattern is path-anchored to the end of the string, so it matches
-    // a `.env` path form that ends the content, such as a bare path on its own line.
-    let decision = deterministic_layer(&change("notes.txt", "config/.env"), &protected());
+    // The guard content patterns catch a `.env` reference anywhere in the content, not only
+    // a path form at the string end. Here the reference sits mid-sentence.
+    let decision = deterministic_layer(
+        &change("notes.txt", "see config/.env for the value"),
+        &protected(),
+    );
+    let packet = expect_block(decision);
+
+    assert_eq!(packet.violated_check, "secret");
+    assert_eq!(packet.offending_value.as_deref(), Some("env-file"));
+}
+
+#[test]
+fn a_dotted_env_reference_in_prose_blocks() {
+    // A dotted variant such as `.env.local`, embedded in prose, still blocks.
+    let decision = deterministic_layer(
+        &change("README.md", "copy .env.local before the run"),
+        &protected(),
+    );
     let packet = expect_block(decision);
 
     assert_eq!(packet.violated_check, "secret");
@@ -133,9 +149,12 @@ fn env_file_content_blocks_with_the_env_marker() {
 
 #[test]
 fn pem_file_content_blocks_with_the_pem_marker() {
-    // The pem-file denylist pattern is anchored to a `.pem` extension at the end of the
-    // string, so the content ends with the path form.
-    let decision = deterministic_layer(&change("notes.txt", "server.pem"), &protected());
+    // The guard content patterns catch a `.pem` reference anywhere, so the reference can sit
+    // mid-sentence rather than at the string end.
+    let decision = deterministic_layer(
+        &change("notes.txt", "the key lives in server.pem on disk"),
+        &protected(),
+    );
     let packet = expect_block(decision);
 
     assert_eq!(packet.violated_check, "secret");

@@ -26,7 +26,12 @@
 //! Requirements: 1.2, 1.4, 2.1, 2.2, 2.3, 2.5, 2.6, 6.1, 6.3, 6.4.
 //! Design: jev-active-guardrail, ADR-G1, ADR-G3, the deterministic layer, P34, P35.
 
+use std::sync::OnceLock;
+
+use regex::Regex;
+
 use crate::config::secret_denylist;
+use crate::engine::regex_util::compile_static;
 
 use super::drift::path_is_protected;
 
@@ -160,32 +165,69 @@ pub fn deterministic_layer(
     None
 }
 
-/// Report the marker name of the first secret-denylist pattern the content matches (R6.3).
+/// Report the marker name of the first secret pattern the content matches (R6.3).
 ///
-/// The scan runs the content against every compiled denylist regex from
-/// [`secret_denylist`]. On a match, it returns a short, fixed marker name for the matched
-/// pattern, never a slice of the content, so no secret value leaves the guard (R6.3, P40).
-/// The markers are stable identifiers, so a caller and a test can name the matched pattern
-/// without echoing the offending text.
+/// On a match, the scan returns a short, fixed marker name for the matched pattern, never a
+/// slice of the content, so no secret value leaves the guard (R6.3, P40). The markers are
+/// stable identifiers, so a caller and a test can name the matched pattern without echoing
+/// the offending text.
 ///
-/// The `secret` and `credentials` patterns match anywhere in the content. The env-file and
-/// pem-file patterns are path-anchored (they end in `$`), so they match a `.env` or `.pem`
-/// path form that ends the content, not the marker embedded mid-sentence. This reuses the
-/// crate denylist whole rather than a second content-only pattern set (ADR-G1).
+/// The scan runs two pattern sets. First, the guard content patterns
+/// ([`env_pem_content_patterns`]) catch a `.env` or `.pem` reference anywhere in the
+/// content, not only a path form at the string end. Then, the shared crate denylist from
+/// [`secret_denylist`] catches the `secret` and `credentials` markers, which already match
+/// anywhere.
+///
+/// The guard runs the content patterns first, because the shared env-file and pem-file
+/// denylist patterns are path-anchored (they end in `$`), so they miss a `.env` reference
+/// embedded mid-sentence. The guard needs the anywhere match on content, and the shared
+/// denylist stays path-anchored for its path-scan callers (`is_secret_path`, gate
+/// sanitization), so the guard owns its content patterns rather than loosen the shared set.
 fn secret_marker(content: &str) -> Option<&'static str> {
+    // The guard content patterns: a `.env` or `.pem` reference anywhere in the content.
+    if let Some(marker) = env_pem_content_patterns()
+        .iter()
+        .find(|(pattern, _)| pattern.is_match(content))
+        .map(|(_, marker)| *marker)
+    {
+        return Some(marker);
+    }
+
+    // The shared denylist: the `secret` and `credentials` markers, which match anywhere.
     secret_denylist()
         .iter()
         .position(|pattern| pattern.is_match(content))
-        .map(marker_for_index)
+        .map(shared_marker_for_index)
 }
 
-/// Map a denylist pattern index to its stable marker name (R6.3).
+/// The guard content patterns for a `.env` or `.pem` reference anywhere in the content.
+///
+/// The shared crate denylist anchors these two markers to a path form at the string end,
+/// which is correct for a path scan but misses a reference in prose. The guard needs the
+/// anywhere match, so it compiles its own two patterns once and pairs each with a stable
+/// marker name. The `secret` and `credentials` markers stay on the shared denylist, so this
+/// set carries only the two anchored cases the guard must loosen.
+fn env_pem_content_patterns() -> &'static [(Regex, &'static str)] {
+    static PATTERNS: OnceLock<Vec<(Regex, &'static str)>> = OnceLock::new();
+    PATTERNS.get_or_init(|| {
+        vec![
+            // A `.env` reference such as `.env` or `.env.local`, on a word boundary.
+            (compile_static(r"(?i)\.env(\.[a-z0-9_-]+)?\b"), "env-file"),
+            // A `.pem` reference on a word boundary.
+            (compile_static(r"(?i)\.pem\b"), "pem-file"),
+        ]
+    })
+}
+
+/// Map a shared-denylist pattern index to its stable marker name (R6.3).
 ///
 /// The order matches [`secret_denylist`]: an environment file, a PEM file, a `secret`
-/// marker, and a `credentials` marker. An out-of-range index maps to a generic marker, so
-/// the function is total and names no secret value. The generic arm also keeps the function
-/// correct when the denylist grows.
-fn marker_for_index(index: usize) -> &'static str {
+/// marker, and a `credentials` marker. The guard content patterns catch the env-file and
+/// pem-file cases first, so the shared env-file and pem-file indices are reached only by a
+/// path form at the string end and map to the same markers. An out-of-range index maps to a
+/// generic marker, so the function is total, names no secret value, and stays correct when
+/// the denylist grows.
+fn shared_marker_for_index(index: usize) -> &'static str {
     match index {
         0 => "env-file",
         1 => "pem-file",
