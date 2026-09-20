@@ -175,7 +175,7 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Assert the guard performs no write and triggers no secondary agent, and returns a suggested self-heal instruction only (R9.2, R9.3)
     - _Requirements: 5.4, 8.2, 8.5, 9.2, 9.3_
 
-- [ ] 9. Final checkpoint - Full verification across both builds
+- [x] 9. Final checkpoint - Full verification across both builds
   - Run `cargo fmt` and `cargo clippy` with warnings denied on the default build and on `--features jev-http`
   - Run `cargo test` offline and confirm the default build compiles no reqwest
   - Make sure that all tests pass across both builds. Ask the user if questions arise.
