@@ -185,6 +185,13 @@ fn config_range_error(field: &str, range: &str) -> super::JevError {
     }
 }
 
+/// The default protected paths, matching the documented set in `.agent/config/rules.yml`.
+///
+/// The guard blocks a write to any of these when `rules.yml` names no `protected_paths` block
+/// (jev-active-guardrail glossary, Protected_Path).
+const DEFAULT_PROTECTED_PATHS: [&str; 4] =
+    ["specs/", "specs/adr/", "LICENSE", ".github/workflows/"];
+
 /// The subset of `.agent/config/rules.yml` this reader needs.
 ///
 /// Only the `jev` block is deserialized. Every other key is ignored on read, so an
@@ -194,6 +201,16 @@ fn config_range_error(field: &str, range: &str) -> super::JevError {
 struct RulesJevView {
     #[serde(default)]
     jev: JevBlock,
+}
+
+/// The subset of `.agent/config/rules.yml` the protected-paths reader needs.
+///
+/// Only the `protected_paths` list is deserialized. An absent block resolves to the default
+/// set through [`resolve_protected_paths`], so the guard always has a protected list.
+#[derive(Debug, Default, Deserialize)]
+struct RulesProtectedView {
+    #[serde(default)]
+    protected_paths: Option<Vec<String>>,
 }
 
 /// The `jev` block, as read from disk. The two durations arrive as millisecond counts,
@@ -275,7 +292,6 @@ impl JevBlock {
 /// typed validation error ([`super::JevError::InvalidThresholds`],
 /// [`super::JevError::InvalidPrice`], or [`super::JevError::Config`]) when the values are
 /// out of range.
-#[cfg_attr(not(test), allow(dead_code))]
 pub fn resolve(repo_root: &Path) -> Result<JevConfig, super::JevError> {
     let config_path = repo_root.join(AGENT_DIR).join("config").join("rules.yml");
 
@@ -303,6 +319,57 @@ pub fn resolve(repo_root: &Path) -> Result<JevConfig, super::JevError> {
     let config = view.jev.into_config();
     config.validate()?;
     Ok(config)
+}
+
+/// Resolve the protected paths from `.agent/config/rules.yml` (jev-active-guardrail R2.1).
+///
+/// The reader reads the `protected_paths` list. An absent `.agent/`, `config/`, or `rules.yml`,
+/// a present file with no `protected_paths` block, or an empty list all resolve to the default
+/// set [`DEFAULT_PROTECTED_PATHS`], so the guard always has a protected list. A present file
+/// that cannot be read or parsed returns [`super::JevError::Config`] with no partial value.
+///
+/// The default set matches the documented list in `.agent/config/rules.yml`. This keeps the
+/// guard safe when a project has not customized the block, rather than protecting nothing.
+///
+/// # Errors
+///
+/// Returns [`super::JevError::Config`] when a present config cannot be read or parsed.
+pub fn resolve_protected_paths(repo_root: &Path) -> Result<Vec<String>, super::JevError> {
+    let config_path = repo_root.join(AGENT_DIR).join("config").join("rules.yml");
+
+    let text = match std::fs::read_to_string(&config_path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return Ok(default_protected_paths());
+        }
+        Err(source) => {
+            return Err(super::JevError::Config {
+                path: config_path.display().to_string(),
+                detail: source.to_string(),
+            });
+        }
+    };
+
+    let view: RulesProtectedView =
+        serde_yaml::from_str(&text).map_err(|source| super::JevError::Config {
+            path: config_path.display().to_string(),
+            detail: source.to_string(),
+        })?;
+
+    match view.protected_paths {
+        // A named non-empty list wins. An empty list falls back to the default, so a project
+        // does not accidentally protect nothing.
+        Some(list) if !list.is_empty() => Ok(list),
+        _ => Ok(default_protected_paths()),
+    }
+}
+
+/// The default protected-path set as owned strings.
+fn default_protected_paths() -> Vec<String> {
+    DEFAULT_PROTECTED_PATHS
+        .iter()
+        .map(|s| s.to_string())
+        .collect()
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The `#[path]`

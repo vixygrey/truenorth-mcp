@@ -66,7 +66,6 @@ const NOTE_NO_KEY: &str = "probabilistic layer did not run: no jev API key is se
 /// variable once. Passing it keeps this function free of a process-global environment read, so
 /// the tests are deterministic and parallel-safe. The caller (the tool, issue #296) reads
 /// `JEV_API_KEY_VAR` and passes the result.
-#[cfg_attr(not(test), allow(dead_code))]
 pub async fn evaluate_guard<C: JevClient>(
     change: &ProposedChange,
     protected_paths: &[String],
