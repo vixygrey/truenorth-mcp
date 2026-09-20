@@ -125,26 +125,26 @@ or `expect`. Each file stays under about 300 lines.
     - Drive with generated repository states and the flag off; assert the harness builds no state, makes no call, and constructs no `Http_Client` path; assert the fake records zero calls; minimum 100 iterations
     - **Validates: Requirements 1.4, 1.5, 2.4**
 
-- [ ] 5. Aspect module: token budget guard and drift
-  - [ ] 5.1 Implement the token-budget estimator and guard in `jev/mod.rs`
+- [x] 5. Aspect module: token budget guard and drift
+  - [x] 5.1 Implement the token-budget estimator and guard in `jev/mod.rs`
     - Implement `estimate_tokens(request)` that counts the serialized request bytes and divides by `BYTES_PER_TOKEN`, rounding up (conservative)
     - Implement `guard_budget(request)` that returns `BudgetExceeded` naming the estimate and the budget when the estimate is more than `TOKEN_BUDGET`, and `Ok(())` otherwise
     - Send no request on an over-budget estimate (R4.10)
     - _Requirements: 4.10, 6.5_
 
-  - [ ] 5.2 Write property test for the token-budget bound
+  - [x] 5.2 Write property test for the token-budget bound
     - **Property 33: Token-budget bound**
     - Drive with generated states and question sets, some over budget; assert every built request stays at or under the budget, or the harness returns `BudgetExceeded` before the call; minimum 100 iterations
     - **Validates: Requirements 4.10**
 
-  - [ ] 5.3 Implement drift evaluation in `jev/drift.rs`
+  - [x] 5.3 Implement drift evaluation in `jev/drift.rs`
     - Define `DriftOutcome` (`noul`, `out_of_scope`, `forced_by_path_match`)
     - Run the model-free literal path match first: when a written path matches a `protected_paths` entry, return `out_of_scope = true` and `forced_by_path_match = true` with no Jev call (R5.8)
     - Otherwise build one Noul, read the `noul` value, and apply the configured drift boundary inside the harness; the threshold step carries the determinism (R5.4 to R5.6)
     - Record the `noul` value and the pass-or-fail result (R5.9)
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.8, 5.9_
 
-  - [ ] 5.4 Write property test for drift boundary determinism
+  - [x] 5.4 Write property test for drift boundary determinism
     - **Property 25: Drift boundary determinism**
     - Drive with generated `noul` values, boundaries, and plans with protected paths; assert two evaluations of the same input return the same result, and a protected-path plan is out-of-scope through the model-free layer with no call; minimum 100 iterations
     - **Validates: Requirements 5.7, 5.8**

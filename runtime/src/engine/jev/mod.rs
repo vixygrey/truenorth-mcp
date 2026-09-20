@@ -34,6 +34,7 @@ use thiserror::Error;
 pub mod client_fake;
 pub mod confidence;
 pub mod config;
+pub mod drift;
 pub mod secret_filter;
 
 // The trait layer below has no non-test consumer until the client and aspect modules land
@@ -59,6 +60,52 @@ pub const TOKEN_BUDGET: usize = 32_000;
 /// so a borderline request is rejected rather than sent over budget (task 5).
 #[cfg_attr(not(test), allow(dead_code))]
 pub const BYTES_PER_TOKEN: usize = 4;
+
+/// Estimate the token count of a request from its serialized byte length (Requirement 4.10).
+///
+/// The exact Jev tokenizer is closed, so the estimate divides the serialized JSON byte
+/// length by [`BYTES_PER_TOKEN`] and rounds up. The round-up is conservative: a borderline
+/// request estimates high, so [`guard_budget`] rejects it rather than send it over budget.
+///
+/// Serialization of a [`JevRequest`] cannot fail in practice, because the type holds only
+/// serializable data. A serialize error maps to [`usize::MAX`], so [`guard_budget`] rejects
+/// the request rather than panic.
+///
+/// The first callers are the request builders and the rigor aspect (task 7). Until one
+/// lands, the function carries a narrow non-test `allow` with this reason, per the repo
+/// dead-code policy (main.rs). The test build exercises it through `mod_tests.rs`.
+#[cfg_attr(not(test), allow(dead_code))]
+pub fn estimate_tokens(request: &JevRequest) -> usize {
+    match serde_json::to_string(request) {
+        Ok(json) => json.len().div_ceil(BYTES_PER_TOKEN),
+        Err(_) => usize::MAX,
+    }
+}
+
+/// Reject a request that estimates over the token budget, before any call (Requirement 4.10).
+///
+/// This is a pre-call guard. It sends nothing. A request whose [`estimate_tokens`] exceeds
+/// [`TOKEN_BUDGET`] returns [`JevError::BudgetExceeded`] naming the estimate and the budget.
+/// A request at or under the budget returns `Ok`.
+///
+/// The first callers are the request builders and the rigor aspect (task 7). Until one
+/// lands, the function carries a narrow non-test `allow` with this reason, per the repo
+/// dead-code policy (main.rs). The test build exercises it through `mod_tests.rs`.
+///
+/// # Errors
+///
+/// Returns [`JevError::BudgetExceeded`] when the estimate is more than [`TOKEN_BUDGET`].
+#[cfg_attr(not(test), allow(dead_code))]
+pub fn guard_budget(request: &JevRequest) -> Result<(), JevError> {
+    let estimate = estimate_tokens(request);
+    if estimate > TOKEN_BUDGET {
+        return Err(JevError::BudgetExceeded {
+            estimate,
+            budget: TOKEN_BUDGET,
+        });
+    }
+    Ok(())
+}
 
 /// The single narrow interface for one Jev evaluation (Requirement 2.1, ADR-J2).
 ///
@@ -368,3 +415,7 @@ pub enum JevError {
 #[cfg(test)]
 #[path = "mod_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "budget_prop_tests.rs"]
+mod budget_prop_tests;
