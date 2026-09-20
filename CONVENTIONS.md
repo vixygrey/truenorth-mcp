@@ -3,6 +3,9 @@
 The engineering conventions for this project. The MCP server serves this file as the
 `truenorth://conventions` resource, so an agent working in the repo can read it live.
 
+This project is a hard fork of `bigpowers`. It does not track or merge upstream commits.
+See the "Relationship to upstream" section in `README.md`.
+
 ## First principles
 
 1. **Do it right the first time.** Follow the best practice for the language, the

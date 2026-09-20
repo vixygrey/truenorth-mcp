@@ -8,11 +8,12 @@ gate, or read the project cockpit, and reads state through a resource.
 This Wiki is the usage manual. The landing page presents the project. This manual explains
 how to run it.
 
-> **Credit.** TrueNorth-MCP is a fork of
+> **Credit.** TrueNorth-MCP began as a fork of
 > [bigpowers](https://github.com/danielvm-git/bigpowers) by danielvm-git, under the MIT
-> license. The skill set is the foundation this project builds on. TrueNorth-MCP
-> re-architects the runtime, and the engineering discipline in the skills is the upstream
-> work. Thank you to the bigpowers author.
+> license. The inherited work is the skill set in `skills/`. The Rust runtime is a
+> clean-room reimplementation and shares no code with the upstream server. TrueNorth-MCP
+> is a hard fork and does not track or merge upstream commits; see the project README for
+> the relationship to upstream. Thank you to the bigpowers author.
 
 ## What it is
 
