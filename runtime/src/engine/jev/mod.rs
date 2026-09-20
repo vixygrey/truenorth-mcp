@@ -39,6 +39,7 @@ pub mod pruning;
 pub mod rigor;
 pub mod routing;
 pub mod secret_filter;
+pub mod self_heal;
 
 // The trait layer below has no non-test consumer until the client and aspect modules land
 // (issues #266 onward). Each public item carries a narrow non-test `allow` with this
