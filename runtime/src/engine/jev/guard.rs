@@ -237,6 +237,13 @@ fn shared_marker_for_index(index: usize) -> &'static str {
     }
 }
 
+// The pure combine step and the confidence gate live in a sibling file to hold this module
+// under the size guidance, split by concern: this file holds the types and the deterministic
+// layer, `guard_combine.rs` holds the probabilistic combine and the confidence gate (task 2).
+// The `#[path]` include keeps the flat file layout and makes it a child module of `guard`.
+#[path = "guard_combine.rs"]
+pub mod combine;
+
 // Example and property tests live in sibling files to hold this module under the size
 // guidance. The `#[path]` include keeps them child modules of `guard`.
 #[cfg(test)]
