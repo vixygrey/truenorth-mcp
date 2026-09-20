@@ -167,8 +167,8 @@ panic, and calls no `unwrap` or `expect`. Each file stays under about 300 lines.
     - Test that the emitted hook documentation states the client-honor boundary and the fallback
     - _Requirements: 7.1, 7.4, 9.4_
 
-- [ ] 8. Structural and scope checks
-  - [ ] 8.1 Write structural and scope smoke checks
+- [x] 8. Structural and scope checks
+  - [x] 8.1 Write structural and scope smoke checks
     - Assert the guard CLI subcommand carries no `#[test]`, so `cargo test` does not run it (R8.2)
     - Assert `evaluate_guard` and the combine step hold no hardcoded threshold; the values come from `JevConfig` (R5.4)
     - Assert the default build compiles no reqwest for the guardrail (R8.5)
