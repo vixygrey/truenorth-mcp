@@ -32,6 +32,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub mod client_fake;
+pub mod client_http;
 pub mod confidence;
 pub mod config;
 pub mod drift;
@@ -269,8 +270,11 @@ pub struct Usage {
 /// [`JevError::SecretResidual`] and the key-related variants name nothing sensitive
 /// (Requirement 9.6). Library code returns one of these rather than a panic, an `unwrap`,
 /// or an `expect` (Requirement 10.6, 10.7).
+// `Clone` and `PartialEq` let the status mapper carry a `JevError` in `StatusAction`
+// (client_http.rs) and let a test compare a mapped decision by value. Every variant holds
+// only plain data (strings, numbers, and a `&'static str`), so both derive cleanly.
 #[cfg_attr(not(test), allow(dead_code))]
-#[derive(Debug, Error)]
+#[derive(Debug, Clone, PartialEq, Error)]
 pub enum JevError {
     /// The API-key environment variable is absent (Requirement 2.6, 9.4).
     #[error(

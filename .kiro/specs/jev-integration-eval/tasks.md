@@ -216,19 +216,19 @@ or `expect`. Each file stays under about 300 lines.
 - [x] 10. Checkpoint - Make sure that the trait, config, and aspect tests pass
   - Make sure that all tests pass offline against the fake with no `jev-http` feature. Ask the user if questions arise.
 
-- [ ] 11. HTTP client behind the jev-http feature
-  - [ ] 11.1 Implement the pure status mapper in `jev/client_http.rs`
+- [x] 11. HTTP client behind the jev-http feature
+  - [x] 11.1 Implement the pure status mapper in `jev/client_http.rs`
     - Implement a pure function over a status code and a body that maps 200 to a parse, 401 to `Unauthorized`, 422 to `Validation` naming the field, 429 and 529 to a retry signal, and any other status to `UnexpectedStatus`
     - Compile the pure mapper always (not behind `jev-http`), so its property test runs offline (design note on P32)
     - Raise no panic and call no `unwrap` or `expect` on any branch
     - _Requirements: 10.1, 10.2, 10.6, 10.7_
 
-  - [ ] 11.2 Write property test for error non-panic
+  - [x] 11.2 Write property test for error non-panic
     - **Property 32: Error non-panic**
     - Drive the pure mapper with statuses 401, 422, 429, 529, and an unmapped status; assert each returns a typed error and raises no panic; run offline with no `jev-http` feature; minimum 100 iterations
     - **Validates: Requirements 10.6, 10.7**
 
-  - [ ] 11.3 Implement the Http_Client transport behind `jev-http`
+  - [x] 11.3 Implement the Http_Client transport behind `jev-http`
     - Define `Http_Client` as a named type that satisfies `Jev_Client`, gated behind the `jev-http` feature
     - Read the API key from `TRUENORTH_JEV_API_KEY` at call time; return `MissingApiKey` naming the variable and the remediation and make no call when absent (R2.6, R9.4)
     - Send the `Authorization` bearer header and the `Content-Type: application/json` header, and set `model` to `jev-latest` (R2.9, R2.10)
@@ -238,7 +238,7 @@ or `expect`. Each file stays under about 300 lines.
     - Never write, echo, or log the API key (R9.5, R9.6)
     - _Requirements: 2.3, 2.5, 2.6, 2.8, 2.9, 2.10, 9.4, 9.5, 9.6, 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-  - [ ] 11.4 Write feature-gated example tests for the transport
+  - [x] 11.4 Write feature-gated example tests for the transport
     - Gate behind `jev-http`; test the missing-key `MissingApiKey` naming `TRUENORTH_JEV_API_KEY`, the 401 `Unauthorized`, the 422 `Validation` naming the field, and a 429 sequence that retries to the limit then returns `RateLimitedOrOverloaded`
     - Drive with a named fake transport, so the test makes no real network call
     - _Requirements: 2.6, 10.1, 10.2, 10.3, 10.5_
