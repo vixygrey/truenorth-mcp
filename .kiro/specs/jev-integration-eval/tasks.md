@@ -176,20 +176,20 @@ or `expect`. Each file stays under about 300 lines.
     - Test a request at exactly four questions and the over-budget rejection
     - _Requirements: 4.7, 4.8, 4.1, 4.10_
 
-- [ ] 8. Aspect module: context pruning
-  - [ ] 8.1 Implement pruning evaluation in `jev/pruning.rs`
+- [x] 8. Aspect module: context pruning
+  - [x] 8.1 Implement pruning evaluation in `jev/pruning.rs`
     - Define `PruningOutcome` (`kept`, `kept_count`, `dropped_count`, `input_count`)
     - Build one Score that rates each line's relevance; split the log into ordered chunks, each at or under `TOKEN_BUDGET`, when the log exceeds the budget (R6.5)
     - Keep every line at or over the keep threshold in original order, drop the rest (R6.2 to R6.4)
     - Record the three counts, which sum to the input count (R6.6, R6.7)
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7_
 
-  - [ ] 8.2 Write property test for pruning line conservation
+  - [x] 8.2 Write property test for pruning line conservation
     - **Property 26: Pruning line conservation**
     - Drive the fake with generated logs and keep thresholds; assert `kept_count + dropped_count == input_count` for every case; minimum 100 iterations
     - **Validates: Requirements 6.7**
 
-  - [ ] 8.3 Write property test for pruning order preservation
+  - [x] 8.3 Write property test for pruning order preservation
     - **Property 27: Pruning order preservation**
     - Drive the fake with generated logs and keep thresholds; assert the kept list is an in-order subsequence of the input; minimum 100 iterations
     - **Validates: Requirements 6.4**
