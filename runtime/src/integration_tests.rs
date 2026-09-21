@@ -113,6 +113,45 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
+async fn legacy_evidence_gate_requests_error_over_the_client() -> anyhow::Result<()> {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+    let (client, handle) = connect(root).await?;
+
+    for args in [
+        serde_json::json!({
+            "phase": "review",
+            "mode": "evidence",
+            "test_evidence": "tests passed",
+        }),
+        serde_json::json!({
+            "phase": "review",
+            "test_evidence": "tests passed",
+        }),
+    ] {
+        let arguments = args.as_object().cloned().unwrap_or_default();
+        let result = client
+            .call_tool(
+                CallToolRequestParams::new("truenorth_verify_gate").with_arguments(arguments),
+            )
+            .await?;
+        assert!(
+            result.is_error.unwrap_or(false),
+            "legacy evidence request unexpectedly passed: {result:?}"
+        );
+        assert!(
+            format!("{result:?}").contains("unknown field"),
+            "legacy evidence request must identify its rejected field: {result:?}"
+        );
+    }
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
 async fn build_skill_graph_writes_the_cache_under_agent() -> anyhow::Result<()> {
     // #162: the persisted skill graph is a regenerable cache under .agent/, written
     // through the write guard (ADR-0008). It must not land in the crate source tree.

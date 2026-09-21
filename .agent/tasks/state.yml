@@ -3,7 +3,7 @@ active_group: null
 active_task: null
 phase: null
 tdd:
-  step: null
+  step: refactor
 handoff:
   next_skill: null
   context: null

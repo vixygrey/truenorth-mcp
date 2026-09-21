@@ -50,18 +50,14 @@ so a green result at the red step is itself a failure. Then run `green`, then `r
 
 ## Review
 
-Run the quality gate with `truenorth_verify_gate`. It takes the `phase` and a `mode`.
-
-- In `execute` mode (the default), the runtime runs the phase verify command in a sandbox
-  and passes only on a real exit code of `0` that the server observed. A timeout, a
-  non-zero exit, or an allowlist rejection returns an error with a remediation hint.
-- In `evidence` mode, the runtime accepts caller-supplied `test_evidence` for an
-  environment where in-server execution is undesirable.
+Run the quality gate with `truenorth_verify_gate`. It takes the `phase` and runs the
+configured phase verify command in a sandbox. It passes only on a real exit code of `0`
+that the server observed. A timeout, a non-zero exit, or an allowlist rejection returns
+an error with a remediation hint.
 
 ```json
 {
-  "phase": "review",
-  "mode": "execute"
+  "phase": "review"
 }
 ```
 

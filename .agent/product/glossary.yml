@@ -17,10 +17,8 @@ terms:
 
   - term: verify gate
     definition: >
-      The truenorth_verify_gate tool. In execute mode it runs the project verify or
-      test command in a sandbox and returns passed only on a real exit-0 the server
-      observed. In evidence mode it accepts caller-supplied evidence for environments
-      where in-server execution is undesirable. Correctness Property 2.
+      The truenorth_verify_gate tool runs the project verify or test command in a sandbox
+      and returns passed only on a real exit-0 the server observed. Correctness Property 2.
     related_terms: [sandbox, active tool, TDD cycle]
 
   - term: sandbox

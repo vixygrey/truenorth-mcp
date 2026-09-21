@@ -9,21 +9,14 @@
 use super::*;
 
 #[test]
-fn parse_mode_defaults_to_execute() {
-    // Requirement 3.1: no mode means execute.
-    assert_eq!(parse_mode(None).unwrap(), GateMode::Execute);
-    assert_eq!(parse_mode(Some("execute")).unwrap(), GateMode::Execute);
-}
-
-#[test]
-fn parse_mode_accepts_evidence() {
-    assert_eq!(parse_mode(Some("evidence")).unwrap(), GateMode::Evidence);
-}
-
-#[test]
-fn parse_mode_rejects_unknown() {
-    let error = parse_mode(Some("trust-me")).expect_err("unknown mode");
-    assert!(error.message.contains("unrecognized gate mode"));
+fn legacy_evidence_fields_are_rejected() {
+    for request in [
+        r#"{"phase":"review","mode":"evidence","test_evidence":"tests passed"}"#,
+        r#"{"phase":"review","test_evidence":"tests passed"}"#,
+    ] {
+        serde_json::from_str::<VerifyGateArgs>(request)
+            .expect_err("legacy evidence fields must be rejected");
+    }
 }
 
 #[test]

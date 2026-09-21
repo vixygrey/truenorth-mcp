@@ -212,9 +212,8 @@ pub fn is_secret_path(path: &Path) -> bool {
 /// Sandbox configuration for gate execution (ADR-1, §5).
 ///
 /// The gate runner reads this contract to bound a subprocess: a wall-clock timeout with
-/// a hard kill, a working directory pinned under the repository root, an allowlist that
-/// gates the command's first token, and a flag that disables execution for evidence-only
-/// deployments.
+/// a hard kill, a working directory pinned under the repository root, and an allowlist that
+/// gates the command's first token.
 #[derive(Debug, Clone)]
 pub struct SandboxConfig {
     /// Wall-clock timeout. The runner hard-kills a command that exceeds it.
@@ -228,13 +227,10 @@ pub struct SandboxConfig {
     /// a hostile one. The command is trusted operator configuration, never caller input.
     /// See the trust-model note on `engine::gate_runner`.
     pub allowlist: Vec<String>,
-    /// When `false`, the runner skips execution and requires caller-supplied evidence.
-    pub execution_enabled: bool,
 }
 
 impl SandboxConfig {
-    /// Build a sandbox config rooted at `working_dir` with the default gate timeout and
-    /// execution enabled.
+    /// Build a sandbox config rooted at `working_dir` with the default gate timeout.
     ///
     /// The caller supplies the allowlist. An empty allowlist rejects every command.
     /// The gate runner surfaces this with a remediation hint (§5, task 5).
@@ -243,7 +239,6 @@ impl SandboxConfig {
             timeout: DEFAULT_GATE_TIMEOUT,
             working_dir,
             allowlist,
-            execution_enabled: true,
         }
     }
 }

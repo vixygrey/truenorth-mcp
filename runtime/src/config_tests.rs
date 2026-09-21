@@ -195,5 +195,4 @@ fn sandbox_config_defaults() {
     assert_eq!(cfg.timeout, DEFAULT_GATE_TIMEOUT);
     assert_eq!(cfg.working_dir, PathBuf::from("/repo"));
     assert_eq!(cfg.allowlist, vec!["cargo".to_string()]);
-    assert!(cfg.execution_enabled);
 }
