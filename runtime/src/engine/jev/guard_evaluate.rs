@@ -53,11 +53,13 @@ const NOTE_NO_KEY: &str = "probabilistic layer did not run: no jev API key is se
 /// - the client is absent (R4.1),
 /// - the API key is absent (R4.2).
 ///
-/// Otherwise it builds the Jev state through the secret filter. A residual secret surfaces the
-/// harness `SecretResidual` as an `Allow` with a note, because the probabilistic layer never
-/// hard-blocks the developer; the deterministic secret scan already caught a plain secret
-/// (R3.2, R3.3). It then scores rigor and drift. A timeout, a network error, or a non-success
-/// status returns `Allow` with a note naming the cause, never a block (R4.3, R4.5, P37).
+/// Otherwise it builds a Jev state per aspect through the secret filter, so each question
+/// receives its own curated state rather than one shared blob (issue #304). A residual secret
+/// surfaces the harness `SecretResidual` as an `Allow` with a note, because the probabilistic
+/// layer never hard-blocks the developer; the deterministic secret scan already caught a plain
+/// secret (R3.2, R3.3). It then scores rigor and drift. A timeout, a network error, or a
+/// non-success status returns `Allow` with a note naming the cause, never a block (R4.3, R4.5,
+/// P37).
 ///
 /// When both aspects succeed, the function gates the signals through the pure combine step and
 /// returns its decision (R1.4).
@@ -91,25 +93,37 @@ pub async fn evaluate_guard<C: JevClient>(
         return allow_with_note(NOTE_NO_KEY);
     }
 
-    // Build the Jev state through the secret filter, so no secret reaches Jev (R3.2, P40).
+    // Build a Jev state per aspect through the secret filter, so no secret reaches Jev (R3.2,
+    // P40) and each question receives its own curated state rather than one shared blob
+    // (issue #304). Each builder runs the secret filter independently, so the security
+    // boundary holds on every state. Both builders currently assemble the same content view,
+    // so the wire content is unchanged. Trimming the drift state to a lighter view is the
+    // measured follow-up in issue #328, which needs a live benchmark to confirm calibration.
     let paths: Vec<PathBuf> = change.paths.iter().map(PathBuf::from).collect();
-    let state = match build_state_with_secret_filter(repo_root, &paths) {
+
+    // Score rigor over its own state. Rigor judges the code content (imports, conventions,
+    // complexity, secrets), so its state carries the file content. A Jev unavailability fails
+    // open with a note naming the cause (R4.3, P37).
+    let rigor_state = match build_state_with_secret_filter(repo_root, &paths) {
         Ok(state) => state,
         // A residual secret makes no call. The probabilistic layer fails open with a note; the
         // deterministic secret scan already blocks a plain secret (R3.3).
         Err(cause) => return allow_with_note(&format!("probabilistic layer did not run: {cause}")),
     };
-
-    // Score rigor. A Jev unavailability fails open with a note naming the cause (R4.3, P37).
-    let rigor = match evaluate_rigor(client, state.clone()).await {
+    let rigor = match evaluate_rigor(client, rigor_state).await {
         Ok(report) => report,
         Err(cause) => return allow_with_note(&format!("rigor scoring did not complete: {cause}")),
     };
 
-    // Score drift. The written paths and the protected set drive the model-free path layer.
+    // Score drift over its own state. The written paths and the protected set drive the
+    // model-free path layer; the Noul question judges semantic scope.
+    let drift_state = match build_state_with_secret_filter(repo_root, &paths) {
+        Ok(state) => state,
+        Err(cause) => return allow_with_note(&format!("probabilistic layer did not run: {cause}")),
+    };
     let drift = match evaluate_drift(
         client,
-        state,
+        drift_state,
         &change.paths,
         protected_paths,
         config.drift_boundary,
