@@ -17,8 +17,8 @@ use crate::engine::agent_ws::write_under_agent;
 use crate::engine::spec::{Phase, ReleasePlanFile, StateFile};
 use crate::engine::tdd::TddStep;
 use crate::engine::validate::{
-    ValidationError, validate_release_plan, validate_release_plan_for_write, validate_state,
-    validate_state_for_write,
+    ValidationError, map_legacy_phase, validate_release_plan, validate_release_plan_for_write,
+    validate_state, validate_state_for_write,
 };
 
 /// An error advancing a phase or recording a task.
@@ -27,6 +27,32 @@ pub enum CockpitError {
     /// The existing file failed validation on read (Requirement 9.2).
     #[error(transparent)]
     Validation(#[from] ValidationError),
+
+    /// The requested transition disagrees with the recorded lifecycle state.
+    #[error(
+        "cannot advance lifecycle from `{from}` to `{to}`: state records `{current}` and \
+         the next phase must be `{expected}`. The state file was left unchanged."
+    )]
+    Transition {
+        /// The recorded current phase.
+        current: &'static str,
+        /// The phase claimed by the caller.
+        from: &'static str,
+        /// The requested target phase.
+        to: &'static str,
+        /// The only valid successor of the recorded phase.
+        expected: &'static str,
+    },
+
+    /// The recorded phase has no supported lifecycle representation.
+    #[error(
+        "cannot advance lifecycle: `phase` must be a string or null, but was `{actual}`. \
+         The state file was left unchanged."
+    )]
+    InvalidPhase {
+        /// The unsupported YAML value.
+        actual: String,
+    },
 
     /// A write through the single guard failed. The target is unchanged (ADR-6, #187).
     #[error(transparent)]
@@ -87,19 +113,32 @@ fn read_source(agent_path: &Path, legacy_path: &Path) -> Option<PathBuf> {
 /// Advance the lifecycle phase in `state.yaml` and record the git context
 /// (Requirement 2.3).
 ///
-/// The write records the target phase, the artifacts summary, and the git-scoped context
-/// string, and preserves every other field. On any failure the file is left unchanged.
+/// The requested source must match the recorded phase, and the target must be its immediate
+/// successor. An absent or null recorded phase bootstraps as Discover for legacy compatibility.
+/// The write records the target phase, the artifacts summary, and the git-scoped context while
+/// preserving every other field. On any failure the file is left unchanged.
 ///
 /// # Errors
 ///
-/// Returns [`CockpitError`] on a read, validation, or write failure.
+/// Returns [`CockpitError`] on a read, transition, validation, or write failure.
 pub fn advance_phase(
     repo_root: &Path,
+    from_phase: Phase,
     to_phase: Phase,
     artifacts_summary: &str,
     git_context: &str,
 ) -> Result<(), CockpitError> {
     let mut state = read_state(repo_root)?;
+    let current = current_phase(&state)?;
+    let expected = current.successor();
+    if current != from_phase || expected != to_phase {
+        return Err(CockpitError::Transition {
+            current: current.as_str(),
+            from: from_phase.as_str(),
+            to: to_phase.as_str(),
+            expected: expected.as_str(),
+        });
+    }
 
     apply_phase(&mut state, to_phase, artifacts_summary, git_context);
 
@@ -216,6 +255,24 @@ fn read_state(repo_root: &Path) -> Result<StateFile, CockpitError> {
     }
 }
 
+/// Resolve the recorded phase, treating an absent or null value as Discover.
+fn current_phase(state: &StateFile) -> Result<Phase, CockpitError> {
+    match state.get("phase") {
+        None | Some(Value::Null) => Ok(Phase::Discover),
+        Some(value) => {
+            let Some(phase) = value.as_str() else {
+                return Err(CockpitError::InvalidPhase {
+                    actual: serde_yaml::to_string(value)
+                        .unwrap_or_else(|_| "<unserializable YAML value>".to_string())
+                        .trim()
+                        .to_string(),
+                });
+            };
+            map_legacy_phase(phase).map_err(CockpitError::Validation)
+        }
+    }
+}
+
 /// Read and validate the release plan, or start from an empty plan when it is absent.
 ///
 /// The read prefers `.agent/tasks/release-plan.yml` and falls back to a legacy
@@ -305,11 +362,7 @@ fn apply_task(
 
 /// The kebab-case string value for a phase.
 fn phase_value(phase: Phase) -> Value {
-    let text = serde_yaml::to_value(phase)
-        .ok()
-        .and_then(|v| v.as_str().map(str::to_string))
-        .unwrap_or_default();
-    Value::String(text)
+    Value::String(phase.as_str().to_string())
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

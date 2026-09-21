@@ -7,3 +7,7 @@ tasks:
   group_kind: ticket
   task_name: Reject unverified verify-gate evidence passes
   verify_command: cargo test gates
+- group_id: '338'
+  group_kind: ticket
+  task_name: Enforce adjacent lifecycle phase transitions
+  verify_command: cargo test lifecycle

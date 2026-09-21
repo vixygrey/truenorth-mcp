@@ -41,6 +41,32 @@ pub enum Phase {
     Integrate,
 }
 
+impl Phase {
+    /// Return the immediate successor in the recurring six-phase lifecycle.
+    pub const fn successor(self) -> Self {
+        match self {
+            Self::Discover => Self::Design,
+            Self::Design => Self::Plan,
+            Self::Plan => Self::Execute,
+            Self::Execute => Self::Review,
+            Self::Review => Self::Integrate,
+            Self::Integrate => Self::Discover,
+        }
+    }
+
+    /// Return the canonical kebab-case phase name.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Discover => "discover",
+            Self::Design => "design",
+            Self::Plan => "plan",
+            Self::Execute => "execute",
+            Self::Review => "review",
+            Self::Integrate => "integrate",
+        }
+    }
+}
+
 /// The `state.yaml` cockpit file (Requirement 9.1).
 ///
 /// The document is held verbatim in `root`, so a read then a write preserves every key

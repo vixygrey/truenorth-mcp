@@ -53,8 +53,9 @@ agent is asked to remember.
 
 ## The lifecycle
 
-The runtime drives a six-phase lifecycle. An agent advances one phase at a time through
-`truenorth_advance_phase`, recording the artifacts each phase produced.
+The runtime drives a six-phase lifecycle. `truenorth_advance_phase` accepts only the
+recorded current phase and its immediate successor, then records the artifacts each phase
+produced. Integrate advances to Discover, starting the next lifecycle loop.
 
 1. **Discover**: understand the problem and the current state.
 2. **Design**: model the domain and design the solution.

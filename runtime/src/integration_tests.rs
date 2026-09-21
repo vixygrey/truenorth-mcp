@@ -152,6 +152,45 @@ async fn legacy_evidence_gate_requests_error_over_the_client() -> anyhow::Result
 }
 
 #[tokio::test]
+async fn advance_phase_rejects_invalid_transition_over_the_client() -> anyhow::Result<()> {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+    let original = "active_epic: e01\nphase: design\n";
+    fs::write(root.join(".agent/tasks/state.yml"), original)?;
+    let (client, handle) = connect(root.clone()).await?;
+
+    let error = client
+        .call_tool(
+            CallToolRequestParams::new("truenorth_advance_phase").with_arguments(
+                serde_json::json!({
+                    "from_phase": "design",
+                    "to_phase": "execute",
+                    "artifacts_summary": "Skipped plan."
+                })
+                .as_object()
+                .cloned()
+                .expect("object"),
+            ),
+        )
+        .await
+        .expect_err("invalid transition must fail");
+    assert!(
+        format!("{error:?}").contains("next phase must be `plan`"),
+        "transition error identifies the expected phase: {error:?}"
+    );
+    assert_eq!(
+        fs::read_to_string(root.join(".agent/tasks/state.yml"))?,
+        original,
+        "rejected request leaves the state file unchanged"
+    );
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
 async fn build_skill_graph_writes_the_cache_under_agent() -> anyhow::Result<()> {
     // #162: the persisted skill graph is a regenerable cache under .agent/, written
     // through the write guard (ADR-0008). It must not land in the crate source tree.

@@ -91,7 +91,7 @@ impl TrueNorthServer {
         let args = params.0;
 
         // Validate every field before any mutation (Requirement 2.11).
-        let _from = parse_phase(&args.from_phase, "from_phase")?;
+        let from = parse_phase(&args.from_phase, "from_phase")?;
         let to = parse_phase(&args.to_phase, "to_phase")?;
         check_len(
             &args.artifacts_summary,
@@ -106,6 +106,7 @@ impl TrueNorthServer {
 
         cockpit::advance_phase(
             &self.ctx.repo_root,
+            from,
             to,
             &args.artifacts_summary,
             &git_context,
@@ -293,10 +294,12 @@ fn epic_id_re() -> &'static regex::Regex {
     RE.get_or_init(|| crate::engine::regex_util::compile_static(r"^e[0-9]+([a-z0-9-]*)?$"))
 }
 
-/// Map a cockpit write error to an MCP error (Requirements 2.11, 2.12).
 fn cockpit_error(error: CockpitError) -> ErrorData {
     match error {
         CockpitError::Validation(_) => ErrorData::invalid_params(error.to_string(), None),
+        CockpitError::Transition { .. } | CockpitError::InvalidPhase { .. } => {
+            ErrorData::invalid_request(error.to_string(), None)
+        }
         CockpitError::Write(_) | CockpitError::Io { .. } => {
             ErrorData::internal_error(error.to_string(), None)
         }
