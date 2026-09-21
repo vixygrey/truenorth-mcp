@@ -53,6 +53,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec![format!("specs/{suffix}")],
             content: clean_content,
+            task: None,
         };
 
         let decision = deterministic_layer(&change, &protected_set());
@@ -74,6 +75,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec!["LICENSE".to_string()],
             content: clean_content,
+            task: None,
         };
 
         let decision = deterministic_layer(&change, &protected_set());
@@ -97,6 +99,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec!["src/plain.rs".to_string()],
             content: format!("{prefix} {marker} {suffix}"),
+            task: None,
         };
 
         let decision = deterministic_layer(&change, &protected_set());
@@ -128,6 +131,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec![format!("src/{name}.rs")],
             content: format!("fn {name}() {{}}"),
+            task: None,
         };
 
         let decision = deterministic_layer(&change, &protected_set());

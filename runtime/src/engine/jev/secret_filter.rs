@@ -86,16 +86,22 @@ pub fn build_state_with_secret_filter(
 
 /// Build a lightweight drift-scope state from the changed paths and the protected set (#328).
 ///
-/// The drift Noul question judges whether a change is out of scope, which the paths and the
-/// protected-path list answer, not the file content. This builder assembles only what that
-/// question needs: the changed paths, the protected-path list, and a short scope hint. It
-/// carries no file content, so it costs far fewer tokens than
-/// [`build_state_with_secret_filter`].
+/// The drift Noul question judges whether a change is out of scope, which the paths, the
+/// protected-path list, and the task answer, not the file content. This builder assembles only
+/// what that question needs: the changed paths, the protected-path list, an optional task
+/// definition, and a short scope hint. It carries no file content, so it costs far fewer tokens
+/// than [`build_state_with_secret_filter`].
+///
+/// When `task` is present, the state carries it and the scope hint tells the model to judge the
+/// change against the task, so a change that sprawls beyond the task is out of scope (#331).
+/// When `task` is absent, the state carries no task and the hint judges against the protected
+/// paths only, exactly as before.
 ///
 /// The secret boundary still holds. A changed path that matches the secret denylist is
 /// excluded, so a secret path never reaches the model (Requirement 9.1). After assembly, the
 /// builder re-checks the serialized state against the denylist and fails closed on any
-/// residual match (Requirement 9.7).
+/// residual match (Requirement 9.7). The task string is part of the assembled state, so it
+/// passes through the same residual check.
 ///
 /// # Errors
 ///
@@ -104,6 +110,7 @@ pub fn build_state_with_secret_filter(
 pub fn build_drift_scope_state(
     changed_paths: &[PathBuf],
     protected_paths: &[String],
+    task: Option<&str>,
 ) -> Result<Value, super::JevError> {
     let denylist = crate::config::secret_denylist();
 
@@ -114,16 +121,30 @@ pub fn build_drift_scope_state(
         .map(|path| path.to_string_lossy().into_owned())
         .collect();
 
-    let state = json!({
+    // The scope hint depends on whether a task is present. With a task, the model judges the
+    // change against the task; without one, it judges against the protected paths only.
+    let scope_note = if task.is_some() {
+        "A change is out of scope when it writes a protected path, or when it does work \
+         beyond the stated task. Judge the changed paths against the task and the protected \
+         paths."
+    } else {
+        "A change is out of scope when it writes a protected path or a path unrelated to the \
+         changed set. Judge the changed paths against the protected paths."
+    };
+
+    let mut state = json!({
         "changed_paths": paths,
         "protected_paths": protected_paths,
-        "scope_note": "A change is out of scope when it writes a protected path or a path \
-                       unrelated to the changed set. Judge the changed paths against the \
-                       protected paths.",
+        "scope_note": scope_note,
     });
+    // Add the task only when present, so an absent task leaves the state shape unchanged from
+    // before this field existed.
+    if let Some(task) = task {
+        state["task"] = Value::String(task.to_string());
+    }
 
     // Post-exclusion re-check: fail closed on any residual secret (Requirement 9.7). A
-    // protected entry or a path could still carry a denylisted marker.
+    // protected entry, a path, or the task could still carry a denylisted marker.
     let serialized = state.to_string();
     if denylist.iter().any(|pattern| pattern.is_match(&serialized)) {
         return Err(super::JevError::SecretResidual);

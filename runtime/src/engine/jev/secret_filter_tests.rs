@@ -94,7 +94,7 @@ fn drift_scope_state_carries_paths_and_protected_no_content() {
     let changed = vec![PathBuf::from("src/main.rs"), PathBuf::from("src/lib.rs")];
     let protected = vec!["specs/".to_string(), "LICENSE".to_string()];
 
-    let state = build_drift_scope_state(&changed, &protected).expect("builds");
+    let state = build_drift_scope_state(&changed, &protected, None).expect("builds");
 
     // The changed paths are present.
     let paths = state["changed_paths"]
@@ -110,7 +110,34 @@ fn drift_scope_state_carries_paths_and_protected_no_content() {
     assert_eq!(prot[1], "LICENSE");
     // A scope hint is present.
     assert!(state["scope_note"].is_string(), "the scope note is present");
+    // With no task, the state carries no `task` key.
+    assert!(
+        state.get("task").is_none(),
+        "no task key when task is absent"
+    );
     // There is no `content` key anywhere: the state carries no file content.
+    assert!(
+        !state.to_string().contains("\"content\""),
+        "the drift scope state carries no file content"
+    );
+}
+
+#[test]
+fn drift_scope_state_carries_the_task_when_present() {
+    // With a task, the state carries it and the scope hint references the task (#331).
+    let changed = vec![PathBuf::from("src/parser.rs")];
+    let protected = vec!["specs/".to_string()];
+
+    let state = build_drift_scope_state(&changed, &protected, Some("fix the tokenizer off-by-one"))
+        .expect("builds");
+
+    assert_eq!(state["task"], "fix the tokenizer off-by-one");
+    // The scope hint tells the model to judge against the task.
+    let note = state["scope_note"]
+        .as_str()
+        .expect("scope note is a string");
+    assert!(note.contains("task"), "the scope note references the task");
+    // Still no file content.
     assert!(
         !state.to_string().contains("\"content\""),
         "the drift scope state carries no file content"
@@ -124,7 +151,7 @@ fn drift_scope_state_excludes_a_secret_path() {
     let changed = vec![PathBuf::from("src/main.rs"), PathBuf::from("config/.env")];
     let protected = vec!["specs/".to_string()];
 
-    let state = build_drift_scope_state(&changed, &protected).expect("builds");
+    let state = build_drift_scope_state(&changed, &protected, None).expect("builds");
 
     let paths = state["changed_paths"]
         .as_array()
