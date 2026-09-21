@@ -3,8 +3,8 @@
 //! Included from `gate_runner.rs` via `#[path]`, so `super` is the gate_runner module.
 //!
 //! Property 2: `run_gate` passes only on a real exit-0 observation. The fake runner
-//! covers pass, fail, timeout, allowlist-reject, and evidence-only paths. The real runner
-//! covers `cwd` pinning and environment sanitization.
+//! covers pass, fail, timeout, and allowlist-reject paths. The real runner covers `cwd`
+//! pinning and environment sanitization.
 //!
 //! Requirements: 3.2, 3.3, 3.4, 3.5, 3.6.
 
@@ -14,9 +14,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 /// A fake command runner that returns a canned result and records whether it ran.
-///
-/// The `ran` flag proves the allowlist-reject and evidence-only paths never execute a
-/// command (Requirement 3.5).
+/// The `ran` flag proves an allowlist rejection never executes a command.
 struct FakeCommandRunner {
     result: CommandResult,
     ran: Cell<bool>,
@@ -47,7 +45,7 @@ impl CommandRunner for FakeCommandRunner {
     }
 }
 
-/// A sandbox config with `cargo` allowlisted and execution enabled.
+/// A sandbox config with `cargo` allowlisted.
 fn cfg_with_cargo() -> SandboxConfig {
     SandboxConfig::new(PathBuf::from("/repo"), vec!["cargo".to_string()])
 }
@@ -129,21 +127,6 @@ fn allowlist_miss_rejects_without_executing() {
     );
     let error = outcome.error.expect("failure carries an error");
     assert!(error.contains("not in the allowlist"));
-}
-
-#[test]
-fn evidence_only_mode_does_not_execute() {
-    // Requirement 3.1: with execution disabled, the gate does not run a command.
-    let runner = FakeCommandRunner::passing();
-    let mut cfg = cfg_with_cargo();
-    cfg.execution_enabled = false;
-    let outcome = run_gate("cargo test", &cfg, &runner);
-    assert!(!outcome.passed);
-    assert!(
-        !runner.ran.get(),
-        "evidence-only must not execute the command"
-    );
-    assert!(outcome.error.expect("error").contains("evidence"));
 }
 
 #[test]

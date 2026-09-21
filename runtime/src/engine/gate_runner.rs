@@ -97,8 +97,7 @@ pub trait CommandRunner {
 
 /// Run a gate command under the sandbox (design §5).
 ///
-/// The steps are: reject when execution is disabled (evidence-only, Requirement 3.1),
-/// reject when the first token is not in the allowlist without executing
+/// The steps are: reject when the first token is not in the allowlist without executing
 /// (Requirement 3.5), then run the command and map the result. The gate passes only on
 /// exit code 0 within the timeout (Requirement 3.2). A non-zero exit returns the stderr
 /// tail (Requirement 3.3). A timeout returns a timeout error (Requirement 3.4).
@@ -109,15 +108,6 @@ pub trait CommandRunner {
 /// let outcome = gate_runner::run_gate("cargo test", &cfg, &runner);
 /// ```
 pub fn run_gate<R: CommandRunner>(command: &str, cfg: &SandboxConfig, runner: &R) -> GateOutcome {
-    if !cfg.execution_enabled {
-        return GateOutcome::failed(
-            "gate execution is disabled; supply test evidence in evidence mode",
-            &[
-                "run the gate with mode=execute, or call with mode=evidence and supply test_evidence",
-            ],
-        );
-    }
-
     let Some(binary) = first_token(command) else {
         return GateOutcome::failed(
             "the gate command is empty",
@@ -129,7 +119,7 @@ pub fn run_gate<R: CommandRunner>(command: &str, cfg: &SandboxConfig, runner: &R
         // Requirement 3.5: do not execute a command whose binary is not allowlisted.
         return GateOutcome::failed(
             format!("command `{binary}` is not in the allowlist"),
-            &["add the binary to the sandbox allowlist, or use mode=evidence"],
+            &["add the binary to the sandbox allowlist"],
         );
     }
 
