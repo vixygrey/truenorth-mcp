@@ -40,7 +40,14 @@ fn advance_phase_reads_legacy_state_and_writes_to_agent() {
         "active_epic: e01\nbigpowers_version: 2.88.2\n",
     );
 
-    advance_phase(root, Phase::Design, "Modeled the domain.", "").expect("advance");
+    advance_phase(
+        root,
+        Phase::Discover,
+        Phase::Design,
+        "Modeled the domain.",
+        "",
+    )
+    .expect("advance");
 
     // The write landed under .agent/, carrying the legacy fields (Requirements 2.11, 2.13).
     let written = fs::read_to_string(state_path(root)).expect("read agent state");
@@ -94,22 +101,60 @@ fn advance_phase_writes_target_phase() {
 
     advance_phase(
         root,
-        Phase::Review,
-        "Hardened the gate.",
+        Phase::Discover,
+        Phase::Design,
+        "Modeled the domain.",
         "M specs/state.yaml",
     )
     .expect("advance");
 
     let written = fs::read_to_string(state_path(root)).expect("read state");
     let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse state");
-    assert_eq!(value.get("phase").and_then(|v| v.as_str()), Some("review"));
+    assert_eq!(value.get("phase").and_then(|v| v.as_str()), Some("design"));
     assert_eq!(
         value
             .get("handoff")
             .and_then(|h| h.get("artifacts_summary"))
             .and_then(|v| v.as_str()),
-        Some("Hardened the gate.")
+        Some("Modeled the domain.")
     );
+}
+
+#[test]
+fn advance_phase_bootstraps_null_and_maps_legacy_phases() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+
+    seed_state(root, "phase: null\n");
+    advance_phase(root, Phase::Discover, Phase::Design, "modeled", "").expect("bootstrap");
+    let null_bootstrap = fs::read_to_string(state_path(root)).expect("read state");
+    assert!(null_bootstrap.contains("phase: design"));
+
+    seed_state(root, "phase: build\n");
+    advance_phase(root, Phase::Execute, Phase::Review, "built", "").expect("legacy mapping");
+    let legacy_advance = fs::read_to_string(state_path(root)).expect("read state");
+    assert!(legacy_advance.contains("phase: review"));
+}
+
+#[test]
+fn advance_phase_rejects_stale_and_nonadjacent_transitions_without_writing() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    let original = "phase: design\nactive_epic: e01\n";
+    seed_state(root, original);
+
+    for (from, to) in [
+        (Phase::Discover, Phase::Plan),
+        (Phase::Design, Phase::Execute),
+        (Phase::Design, Phase::Discover),
+    ] {
+        let error = advance_phase(root, from, to, "summary", "").expect_err("must reject");
+        assert!(matches!(error, CockpitError::Transition { .. }));
+        assert_eq!(
+            fs::read_to_string(state_path(root)).expect("read unchanged state"),
+            original
+        );
+    }
 }
 
 #[test]
@@ -122,7 +167,7 @@ fn advance_phase_preserves_other_fields() {
         "active_epic: e01\nbug_id: null\nbigpowers_version: 2.88.2\n",
     );
 
-    advance_phase(root, Phase::Execute, "Built the slice.", "").expect("advance");
+    advance_phase(root, Phase::Discover, Phase::Design, "Built the slice.", "").expect("advance");
 
     let written = fs::read_to_string(state_path(root)).expect("read state");
     let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse state");
@@ -141,7 +186,7 @@ fn advance_phase_preserves_other_fields() {
 fn advance_phase_seeds_state_when_absent() {
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    advance_phase(root, Phase::Discover, "Kicked off.", "").expect("advance");
+    advance_phase(root, Phase::Discover, Phase::Design, "Kicked off.", "").expect("advance");
     assert!(state_path(root).is_file());
 }
 
@@ -208,7 +253,7 @@ fn read_rejects_malformed_state_leaving_file_unchanged() {
     let malformed = "git: not-a-mapping\n";
     seed_state(root, malformed);
 
-    let outcome = advance_phase(root, Phase::Review, "summary", "");
+    let outcome = advance_phase(root, Phase::Review, Phase::Integrate, "summary", "");
     assert!(matches!(outcome, Err(CockpitError::Validation(_))));
 
     // The file on disk is byte-for-byte unchanged.
@@ -222,7 +267,7 @@ fn write_atomic_leaves_no_temp_residue() {
     let root = dir.path();
     seed_state(root, "active_epic: e01\n");
 
-    advance_phase(root, Phase::Plan, "planned", "").expect("advance");
+    advance_phase(root, Phase::Discover, Phase::Design, "planned", "").expect("advance");
 
     // No `.state.yml.*.tmp` residue remains in the tasks directory.
     let tasks = state_path(root)

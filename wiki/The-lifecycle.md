@@ -69,7 +69,9 @@ denylist.
 ## Integrate
 
 Advance the phase with `truenorth_advance_phase`. It takes `from_phase`, `to_phase`, and an
-`artifacts_summary`.
+`artifacts_summary`. The source must match the recorded phase, and the target must be its
+immediate successor. An absent or `null` recorded phase bootstraps as Discover. Integrate
+advances to Discover to begin the next loop.
 
 ```json
 {

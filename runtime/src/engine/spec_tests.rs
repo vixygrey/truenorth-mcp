@@ -59,6 +59,20 @@ fn parse_state(yaml: &str) -> StateFile {
 }
 
 #[test]
+fn phase_successors_form_the_lifecycle_loop() {
+    for (phase, successor) in [
+        (Phase::Discover, Phase::Design),
+        (Phase::Design, Phase::Plan),
+        (Phase::Plan, Phase::Execute),
+        (Phase::Execute, Phase::Review),
+        (Phase::Review, Phase::Integrate),
+        (Phase::Integrate, Phase::Discover),
+    ] {
+        assert_eq!(phase.successor(), successor);
+    }
+}
+
+#[test]
 fn state_exposes_typed_accessors() {
     let state = parse_state(STATE_FIXTURE);
     assert_eq!(state.git_branch(), Some("main"));
