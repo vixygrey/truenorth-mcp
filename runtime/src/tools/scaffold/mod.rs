@@ -27,8 +27,9 @@ use crate::tools::hooks::{commit_msg_hook, post_merge_hook};
 mod templates;
 
 use templates::{
-    COMMIT_TEMPLATE, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK, PULL_REQUEST_TEMPLATE, agents_md,
-    bug_form, conventions_md, feature_form, layout_contract, starter_seed,
+    COMMIT_TEMPLATE, EXECUTION_STATUS_SEED, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK,
+    PULL_REQUEST_TEMPLATE, agents_md, bug_form, conventions_md, feature_form, layout_contract,
+    starter_seed,
 };
 
 /// The command the scaffold prints for the human to run. The scaffold never runs it
@@ -128,13 +129,14 @@ fn emit_agent_tree(
     )?;
 
     // The required area files (Requirement 1.5 to 1.9).
-    let area_files: [(&str, &str); 7] = [
+    let area_files: [(&str, &str); 8] = [
         (
             "config/rules.yml",
             "# Token caps, human-approval gates, protected paths.\n",
         ),
         ("spec/requirements.md", "# Requirements\n"),
         ("tasks/state.yml", "phase: discover\n"),
+        ("tasks/execution-status.yml", EXECUTION_STATUS_SEED),
         ("memories/lessons.md", "# Lessons\n"),
         ("memories/glossary.md", "# Glossary\n"),
         ("product/scope.md", "# Product scope\n"),

@@ -24,6 +24,9 @@ areas:
     .to_string()
 }
 
+/// The empty execution-status cockpit shared by every methodology profile.
+pub(super) const EXECUTION_STATUS_SEED: &str = "stories: {}\ndevelopment_status: {}\n";
+
 /// The seed body for a profile starter file.
 pub(super) fn starter_seed(rel: &str) -> String {
     match rel {
