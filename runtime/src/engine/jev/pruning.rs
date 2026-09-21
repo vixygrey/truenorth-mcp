@@ -145,12 +145,14 @@ fn build_chunk_request(task_description: &str, lines: &[String], indices: &[usiz
     for index in indices {
         questions.insert(
             line_id(*index),
-            Question::Score {
-                instructions: "Rate how relevant this log line is to the task. Answer relevant \
-                               when the line helps solve the task and irrelevant when it does not."
-                    .to_string(),
-                criteria: RELEVANCE_LEVELS.iter().map(|s| s.to_string()).collect(),
-            },
+            Question::score(
+                "Rate how relevant this log line is to the task. Answer relevant when the line \
+                 helps solve the task and irrelevant when it does not.",
+                RELEVANCE_LEVELS
+                    .iter()
+                    .map(|s| serde_json::Value::from(*s))
+                    .collect(),
+            ),
         );
     }
 

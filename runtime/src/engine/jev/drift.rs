@@ -107,13 +107,11 @@ pub async fn evaluate_drift<C: JevClient>(
     let mut questions = BTreeMap::new();
     questions.insert(
         DRIFT_QUESTION_ID.to_string(),
-        Question::Noul {
-            instructions: "Decide whether the plan is out of scope. The plan must not touch \
-                           the protected paths. Answer 1 when the plan is out of scope and 0 \
-                           when it is in scope."
-                .to_string(),
-            criteria: None,
-        },
+        Question::noul(
+            "Decide whether the plan is out of scope. The plan must not touch the protected \
+             paths. Answer 1 when the plan is out of scope and 0 when it is in scope.",
+            None,
+        ),
     );
 
     let request = JevRequest::new(plan_state, questions);

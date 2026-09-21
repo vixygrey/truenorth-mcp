@@ -19,23 +19,26 @@ fn request_new_sets_the_model_id() {
 
 #[test]
 fn noul_question_serializes_with_the_type_tag() {
-    let question = Question::Noul {
-        instructions: "Is this out of scope?".to_string(),
-        criteria: None,
-    };
+    // The plain string form through the constructor. It must serialize byte-identically to
+    // the earlier `String` field: a bare JSON string (issue #305 backward compatibility).
+    let question = Question::noul("Is this out of scope?", None);
     let value = serde_json::to_value(&question).expect("serialize noul");
     assert_eq!(value["type"], "noul");
     assert_eq!(value["instructions"], "Is this out of scope?");
+    assert!(
+        value["instructions"].is_string(),
+        "the plain form stays a bare string"
+    );
     // An absent criteria is skipped, not serialized as null.
     assert!(value.get("criteria").is_none(), "None criteria is skipped");
 }
 
 #[test]
 fn noul_question_serializes_present_criteria() {
-    let question = Question::Noul {
-        instructions: "Is this urgent?".to_string(),
-        criteria: Some("yes means it blocks release".to_string()),
-    };
+    let question = Question::noul(
+        "Is this urgent?",
+        Some("yes means it blocks release".into()),
+    );
     let value = serde_json::to_value(&question).expect("serialize noul with criteria");
     assert_eq!(value["criteria"], "yes means it blocks release");
 }
@@ -43,12 +46,9 @@ fn noul_question_serializes_present_criteria() {
 #[test]
 fn choice_question_serializes_with_the_type_tag_and_option_map() {
     let mut criteria = BTreeMap::new();
-    criteria.insert("revert".to_string(), Some("undo the change".to_string()));
+    criteria.insert("revert".to_string(), Some("undo the change".into()));
     criteria.insert("ask_human".to_string(), None);
-    let question = Question::Choice {
-        instructions: "Pick a fix.".to_string(),
-        criteria,
-    };
+    let question = Question::choice("Pick a fix.", criteria);
     let value = serde_json::to_value(&question).expect("serialize choice");
     assert_eq!(value["type"], "choice");
     assert_eq!(value["criteria"]["revert"], "undo the change");
@@ -60,14 +60,79 @@ fn choice_question_serializes_with_the_type_tag_and_option_map() {
 
 #[test]
 fn score_question_serializes_with_ordered_levels() {
-    let question = Question::Score {
-        instructions: "Rate complexity.".to_string(),
-        criteria: vec!["low".to_string(), "medium".to_string(), "high".to_string()],
-    };
+    let question = Question::score(
+        "Rate complexity.",
+        vec!["low".into(), "medium".into(), "high".into()],
+    );
     let value = serde_json::to_value(&question).expect("serialize score");
     assert_eq!(value["type"], "score");
     assert_eq!(value["criteria"][0], "low");
     assert_eq!(value["criteria"][2], "high");
+}
+
+#[test]
+fn noul_question_serializes_a_structured_object_instruction() {
+    // The enriched form: an object instruction with caller-chosen field names. The endpoint
+    // sends the keys and values to the model as data, so the wire carries the object verbatim
+    // (issue #305, docs.typesafe.ai "Structured instructions and criteria").
+    let question = Question::noul(
+        serde_json::json!({
+            "question": "Is the change out of scope?",
+            "focus": "Judge scope, not quality.",
+        }),
+        None,
+    );
+    let value = serde_json::to_value(&question).expect("serialize noul with object instruction");
+    assert_eq!(value["type"], "noul");
+    assert!(
+        value["instructions"].is_object(),
+        "the object instruction round-trips"
+    );
+    assert_eq!(value["instructions"]["focus"], "Judge scope, not quality.");
+}
+
+#[test]
+fn choice_question_serializes_a_structured_criteria_value() {
+    // An option described by an object with `what`, `not_for`, and `examples` fields. The
+    // field names are caller-chosen and unreserved; the wire carries them verbatim.
+    let mut criteria = BTreeMap::new();
+    criteria.insert(
+        "return_status".to_string(),
+        Some(serde_json::json!({
+            "what": "Progress of a return already sent",
+            "not_for": "Whether an item can be returned",
+            "examples": ["Has my return arrived yet?"],
+        })),
+    );
+    let question = Question::choice("Which returns topic?", criteria);
+    let value = serde_json::to_value(&question).expect("serialize choice with object criteria");
+    let option = &value["criteria"]["return_status"];
+    assert!(option.is_object(), "the object criteria round-trips");
+    assert_eq!(option["what"], "Progress of a return already sent");
+    assert_eq!(option["examples"][0], "Has my return arrived yet?");
+}
+
+#[test]
+fn score_question_serializes_structured_levels() {
+    // A Score level described by an object. The ordered array of levels carries objects
+    // verbatim, alongside the plain-string level form.
+    let question = Question::score(
+        "Rate urgency.",
+        vec![
+            "can wait a week".into(),
+            serde_json::json!({ "level": "blocked", "meaning": "someone is blocked right now" }),
+        ],
+    );
+    let value = serde_json::to_value(&question).expect("serialize score with object level");
+    assert_eq!(value["criteria"][0], "can wait a week");
+    assert!(
+        value["criteria"][1].is_object(),
+        "an object level round-trips"
+    );
+    assert_eq!(
+        value["criteria"][1]["meaning"],
+        "someone is blocked right now"
+    );
 }
 
 #[test]
