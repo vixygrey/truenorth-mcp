@@ -158,3 +158,55 @@ fn classify_choice_maps_every_target_to_itself() {
         assert_eq!(outcome.band, ConfidenceBand::High);
     }
 }
+
+#[test]
+fn structured_criteria_describes_every_target_and_leaves_decline_null() {
+    // Every routing tool carries a `what`, so no tool is a bare option that a described
+    // neighbor can pull cases toward (issue #327). The decline option stays null.
+    let criteria = structured_criteria();
+
+    // Every routing target plus the decline option is present, so the option closure is
+    // unchanged by the structured descriptions.
+    assert_eq!(criteria.len(), ROUTING_TARGETS.len() + 1);
+
+    // Every target carries a `what`. This catches a new target added without a description.
+    for target in ROUTING_TARGETS {
+        let described = criteria
+            .get(target)
+            .unwrap_or_else(|| panic!("target {target} is present"))
+            .as_ref()
+            .unwrap_or_else(|| panic!("target {target} carries a description"));
+        assert!(
+            described["what"].is_string(),
+            "target {target} has a what description"
+        );
+    }
+
+    // The decline option is a fixed sentinel, not a tool, so it stays null.
+    assert!(
+        criteria.get(DECLINE).expect("present").is_none(),
+        "the decline option keeps a null description"
+    );
+}
+
+#[test]
+fn structured_criteria_serializes_the_structured_form() {
+    // The built criteria serializes so every described option is an object and the decline
+    // option is JSON null, matching the wire the endpoint accepts (issue #305, #327).
+    let criteria = structured_criteria();
+    let value = serde_json::to_value(&criteria).expect("serialize criteria");
+    assert!(
+        value["get_skill"].is_object(),
+        "a described option is an object"
+    );
+    assert_eq!(
+        value["get_skill"]["what"],
+        "Read one skill's rendered content by name."
+    );
+    // A tool with a confusable neighbor also carries a not_for.
+    assert!(
+        value["get_skill"]["not_for"].is_string(),
+        "get_skill has a not_for"
+    );
+    assert!(value["NONE"].is_null(), "the decline option is JSON null");
+}

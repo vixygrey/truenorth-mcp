@@ -121,12 +121,143 @@ pub fn classify_choice(
     })
 }
 
+/// The structured criteria map: every routing tool carries a `what` description (issue #327).
+///
+/// Each tool carries a `what` (the job it does), and a `not_for` where a neighboring tool is
+/// easy to confuse (the neighbor's job, so the model does not choose this one for that). The
+/// field names are caller-chosen and unreserved; the endpoint sends the keys and values to the
+/// model as data (docs.typesafe.ai/primitives, "Structured instructions and criteria").
+///
+/// Every tool is described, not a subset. A benchmark showed that describing only a subset
+/// created an asymmetry: a well-described option pulled an undescribed neighbor's case toward
+/// itself (issue #327, the `get_dependencies` regression). Describing every tool removes that
+/// asymmetry. The decline option stays `null`, because it is a fixed sentinel, not a tool.
+fn structured_criteria() -> BTreeMap<String, Option<serde_json::Value>> {
+    use serde_json::json;
+
+    let described: [(&str, serde_json::Value); 15] = [
+        (
+            "truenorth_scaffold_project",
+            json!({ "what": "Seed a new project's .agent tree for a methodology profile." }),
+        ),
+        (
+            "truenorth_advance_phase",
+            json!({
+                "what": "Move the project from one lifecycle phase to the next.",
+                "not_for": "Recording a task (truenorth_record_task) or enforcing the TDD loop (truenorth_tdd_cycle).",
+            }),
+        ),
+        (
+            "truenorth_record_task",
+            json!({
+                "what": "Record a task and its verify command in the release plan.",
+                "not_for": "Advancing the phase (truenorth_advance_phase) or recording a bug (truenorth_record_bug).",
+            }),
+        ),
+        (
+            "truenorth_verify_gate",
+            json!({
+                "what": "Run the project test or build command in a sandbox and pass only on exit zero.",
+                "not_for": "Checking the code against the domain ontology (truenorth_verify_ontology).",
+            }),
+        ),
+        (
+            "truenorth_tdd_cycle",
+            json!({
+                "what": "Enforce the red-green-refactor step order for a failing test.",
+                "not_for": "Running the project test command (truenorth_verify_gate).",
+            }),
+        ),
+        (
+            "truenorth_record_bug",
+            json!({
+                "what": "Record an external-tracker bug reference and link it to a task.",
+                "not_for": "Recording a task (truenorth_record_task).",
+            }),
+        ),
+        (
+            "truenorth_generate_ontology",
+            json!({
+                "what": "Seed the domain ontology for the project.",
+                "not_for": "Checking the code against the ontology (truenorth_verify_ontology).",
+            }),
+        ),
+        (
+            "truenorth_verify_ontology",
+            json!({
+                "what": "Check the code against the domain ontology and report violations.",
+                "not_for": "Running the project test command (truenorth_verify_gate) or seeding the ontology (truenorth_generate_ontology).",
+            }),
+        ),
+        (
+            "index_skills",
+            json!({
+                "what": "List every skill with its path and phase.",
+                "not_for": "Finding skills by a query or topic (search_skills).",
+            }),
+        ),
+        (
+            "get_skill",
+            json!({
+                "what": "Read one skill's rendered content by name.",
+                "not_for": "Finding a skill (search_skills) or parsing its structure (read_skill).",
+            }),
+        ),
+        (
+            "read_skill",
+            json!({
+                "what": "Parse one skill's SKILL.md into its frontmatter, headings, sections, and links.",
+                "not_for": "Reading the skill's rendered content (get_skill).",
+            }),
+        ),
+        (
+            "search_skills",
+            json!({
+                "what": "Find skills by a query, a topic, a phase, or a description.",
+                "not_for": "Listing all skills (index_skills) or reading one by name (get_skill).",
+            }),
+        ),
+        (
+            "get_dependencies",
+            json!({
+                "what": "Report a skill's forward and reverse dependencies in the skill graph.",
+                "not_for": "Reading (get_skill) or parsing (read_skill) a skill.",
+            }),
+        ),
+        (
+            "get_git_context",
+            json!({ "what": "Report git status, log, or diff scoped to the cockpit directories." }),
+        ),
+        (
+            "validate_skill",
+            json!({
+                "what": "Lint one skill against the naming and structure conventions.",
+                "not_for": "Reading (get_skill) or parsing (read_skill) a skill.",
+            }),
+        ),
+    ];
+
+    let mut criteria: BTreeMap<String, Option<serde_json::Value>> = BTreeMap::new();
+    let described_map: BTreeMap<&str, serde_json::Value> = described.into_iter().collect();
+    for target in ROUTING_TARGETS {
+        // Every target is described, so `get` always finds an entry. The map form keeps the
+        // insertion driven by ROUTING_TARGETS, so a new target without a description is caught
+        // by the test that asserts every target carries a `what`.
+        criteria.insert(target.to_string(), described_map.get(target).cloned());
+    }
+    criteria.insert(DECLINE.to_string(), None);
+    criteria
+}
+
 /// Evaluate which TrueNorth tool a command routes to, or decline (R3, ADR-J routing aspect).
 ///
 /// The aspect builds one Choice question over the [`ROUTING_TARGETS`] set plus [`DECLINE`], calls
 /// the client, and reads the Choice answer under the routing question id. It validates the chosen
 /// option against the valid set and bands the confidence in the harness. The [`DECLINE`] option is
 /// a valid member, not an error: it maps to a [`RoutingOutcome`] with target [`DECLINE`].
+///
+/// Every tool carries a structured `what` description, with a `not_for` where a neighbor is
+/// confusable (issue #327, [`structured_criteria`]).
 ///
 /// # Errors
 ///
@@ -141,13 +272,7 @@ pub async fn evaluate_routing<C: JevClient>(
     low: f64,
     high: f64,
 ) -> Result<RoutingOutcome, JevError> {
-    // The criteria map has one entry per valid option. The tool names are self-describing, so
-    // each description is `None`.
-    let mut criteria: BTreeMap<String, Option<serde_json::Value>> = BTreeMap::new();
-    for target in ROUTING_TARGETS {
-        criteria.insert(target.to_string(), None);
-    }
-    criteria.insert(DECLINE.to_string(), None);
+    let criteria = structured_criteria();
 
     let mut questions = BTreeMap::new();
     questions.insert(
