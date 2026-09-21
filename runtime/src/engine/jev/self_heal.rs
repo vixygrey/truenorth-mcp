@@ -208,30 +208,26 @@ pub async fn evaluate_self_heal<C: JevClient>(
     destructive_threshold: f64,
 ) -> Result<SelfHealDecision, JevError> {
     // The criteria map has one entry per fixed option, each with a short description.
-    let mut criteria: BTreeMap<String, Option<String>> = BTreeMap::new();
-    criteria.insert(REVERT.to_string(), Some("Revert the change.".to_string()));
+    let mut criteria: BTreeMap<String, Option<serde_json::Value>> = BTreeMap::new();
+    criteria.insert(REVERT.to_string(), Some("Revert the change.".into()));
     criteria.insert(
         REFACTOR_IMPORTS.to_string(),
-        Some("Refactor the imports.".to_string()),
+        Some("Refactor the imports.".into()),
     );
     criteria.insert(
         SIMPLIFY_LOGIC.to_string(),
-        Some("Simplify the logic.".to_string()),
+        Some("Simplify the logic.".into()),
     );
-    criteria.insert(
-        ASK_HUMAN.to_string(),
-        Some("Ask a human to decide.".to_string()),
-    );
+    criteria.insert(ASK_HUMAN.to_string(), Some("Ask a human to decide.".into()));
 
     let mut questions = BTreeMap::new();
     questions.insert(
         SELF_HEAL_QUESTION_ID.to_string(),
-        Question::Choice {
-            instructions: "Pick the one recovery action for the rigor failure. Pick ASK_HUMAN \
-                           when no automatic action is safe."
-                .to_string(),
+        Question::choice(
+            "Pick the one recovery action for the rigor failure. Pick ASK_HUMAN when no \
+             automatic action is safe.",
             criteria,
-        },
+        ),
     );
 
     let request = JevRequest::new(failure_state, questions);

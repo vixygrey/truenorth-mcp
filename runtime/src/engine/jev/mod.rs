@@ -177,32 +177,97 @@ impl JevRequest {
 /// The serde `type` tag selects the variant, matching the wire contract. A `Noul` is a
 /// yes-or-no judgment, a `Choice` picks one option from a fixed set, and a `Score` rates
 /// the state along ordered levels.
+///
+/// The `instructions` and each criteria value hold a [`serde_json::Value`], because the
+/// contract accepts a `string`, an `object`, or an `array` in each of those positions. A
+/// plain string is the common form. A structured object or array clarifies a question or an
+/// option with extra fields, for example a `what`, a `not_for`, and an `examples`. Those
+/// object field names are caller-chosen and unreserved: the endpoint sends the keys and
+/// values to the model as data, so the wire type is arbitrary JSON, not a fixed struct
+/// (docs.typesafe.ai/primitives, "Structured instructions and criteria"). A `Value::String`
+/// serializes to a bare JSON string, so the plain form stays byte-identical to the earlier
+/// `String` field (issue #305, jev-active-guardrail ADR-G6).
+///
+/// The [`Question::noul`], [`Question::choice`], and [`Question::score`] constructors keep the
+/// plain form terse: each takes an `impl Into<serde_json::Value>`, so a call site passes a
+/// string literal with no wrapping.
 #[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Question {
     /// A yes-or-no question. The answer carries a `noul` value, no confidence.
     Noul {
-        /// The yes-or-no question to evaluate.
-        instructions: String,
-        /// An optional clarification of what yes and no mean.
+        /// The yes-or-no question to evaluate. A string, object, or array.
+        instructions: serde_json::Value,
+        /// An optional clarification of what yes and no mean. A string, object, or array.
         #[serde(skip_serializing_if = "Option::is_none")]
-        criteria: Option<String>,
+        criteria: Option<serde_json::Value>,
     },
     /// A question over a fixed option set. Criteria maps each option to a description.
     Choice {
-        /// What the model should decide.
-        instructions: String,
-        /// The option set, each mapped to a description or `null` when none is needed.
-        criteria: BTreeMap<String, Option<String>>,
+        /// What the model should decide. A string, object, or array.
+        instructions: serde_json::Value,
+        /// The option set, each mapped to a description or `null` when none is needed. Each
+        /// description is a string, object, or array.
+        criteria: BTreeMap<String, Option<serde_json::Value>>,
     },
     /// A question over ordered levels. Criteria is an ordered list of two or more levels.
     Score {
-        /// What the model should rate.
-        instructions: String,
-        /// The ordered level descriptions. Two or more entries.
-        criteria: Vec<String>,
+        /// What the model should rate. A string, object, or array.
+        instructions: serde_json::Value,
+        /// The ordered level descriptions. Two or more entries. Each level is a string,
+        /// object, or array.
+        criteria: Vec<serde_json::Value>,
     },
+}
+
+impl Question {
+    /// Build a `Noul` question with the given instructions and optional criteria.
+    ///
+    /// The `instructions` takes an `impl Into<serde_json::Value>`, so a plain call site passes
+    /// a string literal (`Question::noul("Is it out of scope?", None)`) and a structured call
+    /// site passes a `serde_json::json!` object. The plain form serializes byte-identically to
+    /// the earlier `String` field (issue #305).
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub fn noul(
+        instructions: impl Into<serde_json::Value>,
+        criteria: Option<serde_json::Value>,
+    ) -> Self {
+        Self::Noul {
+            instructions: instructions.into(),
+            criteria,
+        }
+    }
+
+    /// Build a `Choice` question with the given instructions and option criteria.
+    ///
+    /// The `instructions` takes an `impl Into<serde_json::Value>`. The criteria maps each
+    /// option to a description or `None` when the option name is self-describing.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub fn choice(
+        instructions: impl Into<serde_json::Value>,
+        criteria: BTreeMap<String, Option<serde_json::Value>>,
+    ) -> Self {
+        Self::Choice {
+            instructions: instructions.into(),
+            criteria,
+        }
+    }
+
+    /// Build a `Score` question with the given instructions and ordered levels.
+    ///
+    /// The `instructions` takes an `impl Into<serde_json::Value>`. The criteria is an ordered
+    /// list of two or more level descriptions.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub fn score(
+        instructions: impl Into<serde_json::Value>,
+        criteria: Vec<serde_json::Value>,
+    ) -> Self {
+        Self::Score {
+            instructions: instructions.into(),
+            criteria,
+        }
+    }
 }
 
 /// One request response (Requirement 2).
@@ -430,6 +495,12 @@ mod tests;
 #[cfg(test)]
 #[path = "budget_prop_tests.rs"]
 mod budget_prop_tests;
+
+// Golden wire-shape tests pinned from live captures. The `#[path]` include keeps them a
+// child module of `jev`.
+#[cfg(test)]
+#[path = "golden_wire_tests.rs"]
+mod golden_wire_tests;
 
 // Structural and smoke checks (task 13): the benchmark bin carries no test, the harness
 // hardcodes no price, and both clients satisfy the trait.

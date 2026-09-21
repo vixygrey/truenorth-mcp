@@ -168,38 +168,37 @@ pub async fn evaluate_rigor<C: JevClient>(
     let mut questions = BTreeMap::new();
     questions.insert(
         HALLUCINATED_IMPORT_ID.to_string(),
-        Question::Noul {
-            instructions: "Decide whether the code imports a module that does not exist. \
-                           Answer 1 when an import is hallucinated and 0 when every import \
-                           is real."
-                .to_string(),
-            criteria: None,
-        },
+        Question::noul(
+            "Decide whether the code imports a module that does not exist. Answer 1 when an \
+             import is hallucinated and 0 when every import is real.",
+            None,
+        ),
     );
     questions.insert(
         VIOLATES_CONVENTIONS_ID.to_string(),
-        Question::Noul {
-            instructions: "Decide whether the code violates the project conventions. Answer 1 \
-                           when it violates a convention and 0 when it obeys them."
-                .to_string(),
-            criteria: None,
-        },
+        Question::noul(
+            "Decide whether the code violates the project conventions. Answer 1 when it \
+             violates a convention and 0 when it obeys them.",
+            None,
+        ),
     );
     questions.insert(
         CONTAINS_SECRETS_ID.to_string(),
-        Question::Noul {
-            instructions: "Decide whether the code contains a secret value. Answer 1 when a \
-                           secret is present and 0 when none is present."
-                .to_string(),
-            criteria: None,
-        },
+        Question::noul(
+            "Decide whether the code contains a secret value. Answer 1 when a secret is \
+             present and 0 when none is present.",
+            None,
+        ),
     );
     questions.insert(
         COMPLEXITY_ID.to_string(),
-        Question::Score {
-            instructions: "Rate the complexity of the code across the ordered levels.".to_string(),
-            criteria: COMPLEXITY_LEVELS.iter().map(|s| s.to_string()).collect(),
-        },
+        Question::score(
+            "Rate the complexity of the code across the ordered levels.",
+            COMPLEXITY_LEVELS
+                .iter()
+                .map(|s| serde_json::Value::from(*s))
+                .collect(),
+        ),
     );
 
     let request = JevRequest::new(code_state, questions);

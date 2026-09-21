@@ -143,7 +143,7 @@ pub async fn evaluate_routing<C: JevClient>(
 ) -> Result<RoutingOutcome, JevError> {
     // The criteria map has one entry per valid option. The tool names are self-describing, so
     // each description is `None`.
-    let mut criteria: BTreeMap<String, Option<String>> = BTreeMap::new();
+    let mut criteria: BTreeMap<String, Option<serde_json::Value>> = BTreeMap::new();
     for target in ROUTING_TARGETS {
         criteria.insert(target.to_string(), None);
     }
@@ -152,12 +152,10 @@ pub async fn evaluate_routing<C: JevClient>(
     let mut questions = BTreeMap::new();
     questions.insert(
         ROUTING_QUESTION_ID.to_string(),
-        Question::Choice {
-            instructions: "Pick the one TrueNorth tool that serves the command. Pick NONE when \
-                           no tool fits."
-                .to_string(),
+        Question::choice(
+            "Pick the one TrueNorth tool that serves the command. Pick NONE when no tool fits.",
             criteria,
-        },
+        ),
     );
 
     let request = JevRequest::new(command_state, questions);
