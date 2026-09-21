@@ -87,6 +87,7 @@ fn clean_change() -> ProposedChange {
     ProposedChange {
         paths: vec!["src/main.rs".to_string()],
         content: "fn main() {}".to_string(),
+        task: None,
     }
 }
 
@@ -97,6 +98,7 @@ async fn a_deterministic_block_short_circuits_before_any_jev_call() {
     let change = ProposedChange {
         paths: vec!["specs/plan.md".to_string()],
         content: "clean".to_string(),
+        task: None,
     };
 
     let decision = evaluate_guard(
@@ -327,6 +329,7 @@ async fn each_aspect_receives_its_own_secret_filtered_state() {
     let change = ProposedChange {
         paths: vec!["src/main.rs".to_string()],
         content: "fn main() {}".to_string(),
+        task: None,
     };
 
     let decision = evaluate_guard(
@@ -363,4 +366,56 @@ async fn each_aspect_receives_its_own_secret_filtered_state() {
             "each aspect state drops the secret line independently"
         );
     }
+}
+
+#[test]
+fn resolve_scope_task_prefers_the_caller_task_then_the_cockpit() {
+    // The caller task wins outright (#331).
+    let repo = TempDir::new().expect("temp repo");
+    let change = ProposedChange {
+        paths: vec!["src/main.rs".to_string()],
+        content: "fn main() {}".to_string(),
+        task: Some("add input validation".to_string()),
+    };
+    assert_eq!(
+        resolve_scope_task(&change, repo.path()).as_deref(),
+        Some("add input validation"),
+        "the caller task wins"
+    );
+}
+
+#[test]
+fn resolve_scope_task_falls_back_to_the_cockpit_active_task() {
+    // With no caller task, the cockpit active_task fills in (#331).
+    let repo = TempDir::new().expect("temp repo");
+    let state_dir = repo.path().join(".agent").join("tasks");
+    std::fs::create_dir_all(&state_dir).expect("mkdir");
+    std::fs::write(
+        state_dir.join("state.yml"),
+        "active_task: refactor the cache layer\nphase: null\n",
+    )
+    .expect("write state");
+
+    let change = ProposedChange {
+        paths: vec!["src/main.rs".to_string()],
+        content: "fn main() {}".to_string(),
+        task: None,
+    };
+    assert_eq!(
+        resolve_scope_task(&change, repo.path()).as_deref(),
+        Some("refactor the cache layer"),
+        "the cockpit active task is the fallback"
+    );
+}
+
+#[test]
+fn resolve_scope_task_is_none_when_neither_is_present() {
+    // No caller task and no cockpit file resolves to None, so drift degrades gracefully.
+    let repo = TempDir::new().expect("temp repo");
+    let change = ProposedChange {
+        paths: vec!["src/main.rs".to_string()],
+        content: "fn main() {}".to_string(),
+        task: None,
+    };
+    assert_eq!(resolve_scope_task(&change, repo.path()), None);
 }

@@ -31,6 +31,7 @@ use super::super::rigor::{RigorReport, evaluate_rigor};
 use super::super::secret_filter::{build_drift_scope_state, build_state_with_secret_filter};
 use super::combine::{CandidateSignal, combine};
 use super::{GuardDecision, ProposedChange, deterministic_layer};
+use crate::engine::cockpit::read_active_task;
 
 /// The note a flag-off evaluation returns (R4.1).
 const NOTE_FLAG_OFF: &str = "probabilistic layer did not run: the jev feature is off";
@@ -115,12 +116,18 @@ pub async fn evaluate_guard<C: JevClient>(
         Err(cause) => return allow_with_note(&format!("rigor scoring did not complete: {cause}")),
     };
 
-    // Score drift over a lightweight scope state: the changed paths and the protected set,
-    // no file content (#328). The drift Noul question judges scope, which the paths and the
-    // protected list answer; file content does not. This costs far fewer tokens than the
-    // full-content state and gives the scope question the context it needs. The written paths
-    // and the protected set also drive the model-free path layer.
-    let drift_state = match build_drift_scope_state(&paths, protected_paths) {
+    // Resolve the scope task: prefer the caller-supplied task on the change, then fall back
+    // to the cockpit active task, then to none (#331). A cockpit read error is non-fatal here;
+    // the guard degrades to a protected-path-only scope judgment rather than failing the
+    // whole evaluation over a cockpit read.
+    let task = resolve_scope_task(change, repo_root);
+
+    // Score drift over a lightweight scope state: the changed paths, the protected set, and the
+    // task, with no file content (#328, #331). The drift Noul question judges scope, which the
+    // paths, the protected list, and the task answer; file content does not. This costs far
+    // fewer tokens than the full-content state and gives the scope question the context it
+    // needs. The written paths and the protected set also drive the model-free path layer.
+    let drift_state = match build_drift_scope_state(&paths, protected_paths, task.as_deref()) {
         Ok(state) => state,
         Err(cause) => return allow_with_note(&format!("probabilistic layer did not run: {cause}")),
     };
@@ -148,6 +155,25 @@ fn allow_with_note(note: &str) -> GuardDecision {
     GuardDecision::Allow {
         notes: vec![note.to_string()],
     }
+}
+
+/// Resolve the scope task for the drift judgment (#331).
+///
+/// The order is: the caller-supplied task on the change, then the cockpit active task, then
+/// none. A non-empty caller task wins outright. When the caller omits the task, the cockpit
+/// `active_task` fills in when present. A cockpit read error or an empty value resolves to
+/// `None`, so a missing cockpit never fails the evaluation; the drift guard degrades to a
+/// protected-path-only scope judgment.
+fn resolve_scope_task(change: &ProposedChange, repo_root: &std::path::Path) -> Option<String> {
+    if let Some(task) = change
+        .task
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        return Some(task.to_string());
+    }
+    read_active_task(repo_root).ok().flatten()
 }
 
 /// Build the rigor candidate signal from a rigor report (R3.4).

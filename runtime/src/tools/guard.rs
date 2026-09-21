@@ -38,6 +38,11 @@ pub struct GuardChangeArgs {
     pub paths: Vec<String>,
     /// The new content the change writes (at most 1,000,000 bytes).
     pub content: String,
+    /// The task the change serves, as a short description (optional). When present, the drift
+    /// scope check judges whether the change stays within this task. When absent, the check
+    /// falls back to the cockpit active task, then to a protected-path-only judgment.
+    #[serde(default)]
+    pub task: Option<String>,
 }
 
 #[tool_router(router = guard_router, vis = "pub")]
@@ -84,6 +89,7 @@ impl TrueNorthServer {
         let change = ProposedChange {
             paths: args.paths,
             content: args.content,
+            task: args.task,
         };
 
         let decision = self.evaluate_change(&change).await?;

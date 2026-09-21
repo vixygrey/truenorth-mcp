@@ -60,6 +60,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec![format!("src/{name}.rs")],
             content: body,
+            task: None,
         };
 
         let decision = run_guard(&change, false, true, Some(&fake), repo.path());
@@ -94,6 +95,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec![format!("src/{name}.rs")],
             content: "clean body".to_string(),
+            task: None,
         };
 
         let decision = run_guard(&change, true, api_key_present, Some(&fake), repo.path());
@@ -116,6 +118,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec![format!("src/{name}.rs")],
             content: secret_body.clone(),
+            task: None,
         };
 
         let decision = run_guard(&change, true, true, Some(&fake), repo.path());
@@ -157,6 +160,7 @@ proptest! {
         let change = ProposedChange {
             paths: vec![rel],
             content: "let x = 1;".to_string(),
+            task: None,
         };
 
         let _ = run_guard(&change, true, true, Some(&fake), repo.path());

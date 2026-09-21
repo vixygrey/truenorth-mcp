@@ -248,3 +248,35 @@ fn phase_value_is_kebab_case() {
         serde_yaml::Value::String("integrate".to_string())
     );
 }
+
+#[test]
+fn read_active_task_returns_the_value_when_present() {
+    // A non-empty active_task is returned as the scope-fallback task (#331).
+    let dir = tempdir().expect("temp dir");
+    seed_state(
+        dir.path(),
+        "active_task: fix the parser off-by-one\nphase: null\n",
+    );
+
+    let task = read_active_task(dir.path()).expect("reads");
+    assert_eq!(task.as_deref(), Some("fix the parser off-by-one"));
+}
+
+#[test]
+fn read_active_task_returns_none_when_null_or_absent() {
+    // A null active_task, and an absent state file, both resolve to None.
+    let dir = tempdir().expect("temp dir");
+    seed_state(dir.path(), "active_task: null\nphase: null\n");
+    assert_eq!(read_active_task(dir.path()).expect("reads"), None);
+
+    let empty = tempdir().expect("temp dir");
+    assert_eq!(read_active_task(empty.path()).expect("reads"), None);
+}
+
+#[test]
+fn read_active_task_treats_an_empty_string_as_none() {
+    // A blank active_task is not a usable scope definition, so it resolves to None.
+    let dir = tempdir().expect("temp dir");
+    seed_state(dir.path(), "active_task: \"   \"\nphase: null\n");
+    assert_eq!(read_active_task(dir.path()).expect("reads"), None);
+}

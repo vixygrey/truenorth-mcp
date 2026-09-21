@@ -39,6 +39,7 @@ async fn a_protected_path_write_maps_to_a_block_error_with_the_packet() {
         .truenorth_guard_change(Parameters(GuardChangeArgs {
             paths: vec!["specs/plan.md".to_string()],
             content: "clean body".to_string(),
+            task: None,
         }))
         .await;
 
@@ -58,6 +59,7 @@ async fn a_secret_content_write_maps_to_a_block_error() {
         .truenorth_guard_change(Parameters(GuardChangeArgs {
             paths: vec!["src/config.rs".to_string()],
             content: "const TOKEN = \"my secret value\";".to_string(),
+            task: None,
         }))
         .await;
 
@@ -78,6 +80,7 @@ async fn a_clean_change_maps_to_an_allow_success() {
         .truenorth_guard_change(Parameters(GuardChangeArgs {
             paths: vec!["src/main.rs".to_string()],
             content: "fn main() {}".to_string(),
+            task: None,
         }))
         .await;
 
@@ -105,6 +108,7 @@ async fn an_empty_paths_input_returns_a_typed_error_with_no_check() {
         .truenorth_guard_change(Parameters(GuardChangeArgs {
             paths: Vec::new(),
             content: "anything".to_string(),
+            task: None,
         }))
         .await;
 
@@ -127,6 +131,7 @@ async fn an_empty_path_entry_returns_a_typed_error_naming_the_index() {
         .truenorth_guard_change(Parameters(GuardChangeArgs {
             paths: vec!["src/main.rs".to_string(), String::new()],
             content: "clean".to_string(),
+            task: None,
         }))
         .await;
 

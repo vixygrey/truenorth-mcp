@@ -21,6 +21,7 @@ fn change(path: &str, content: &str) -> ProposedChange {
     ProposedChange {
         paths: vec![path.to_string()],
         content: content.to_string(),
+        task: None,
     }
 }
 
@@ -180,6 +181,7 @@ fn a_multi_path_change_blocks_on_any_protected_path() {
     let change = ProposedChange {
         paths: vec!["src/main.rs".to_string(), "specs/plan.md".to_string()],
         content: "clean body".to_string(),
+        task: None,
     };
     let packet = expect_block(deterministic_layer(&change, &protected()));
 

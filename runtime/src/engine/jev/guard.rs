@@ -59,6 +59,11 @@ pub struct ProposedChange {
     pub paths: Vec<String>,
     /// The new content the change writes.
     pub content: String,
+    /// The task the change serves, as a short description (#331). When present, the drift
+    /// guard judges whether the change stays within this task. When absent, the guard falls
+    /// back to the cockpit active task, then to a protected-path-only scope judgment.
+    #[serde(default)]
+    pub task: Option<String>,
 }
 
 /// The guard decision (R1.4).

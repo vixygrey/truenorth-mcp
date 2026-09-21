@@ -148,6 +148,27 @@ pub fn read_tdd_step(repo_root: &Path) -> Result<Option<TddStep>, CockpitError> 
     Ok(step)
 }
 
+/// Read the active task from the state cockpit, or `None` when it is absent or empty (#331).
+///
+/// The drift guard uses this as a fallback scope definition when the caller supplies no task
+/// on the change. An absent state file, an absent `active_task` field, a null value, or an
+/// empty string all resolve to `None`, so the caller treats a missing task the same way in
+/// every case.
+///
+/// # Errors
+///
+/// Returns [`CockpitError`] when the state file exists but fails validation.
+pub fn read_active_task(repo_root: &Path) -> Result<Option<String>, CockpitError> {
+    let state = read_state(repo_root)?;
+    let task = state
+        .get("active_task")
+        .and_then(|v| v.as_str())
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::to_string);
+    Ok(task)
+}
+
 /// Write the recorded TDD step into `state.yaml`, preserving every other field
 /// (Requirements 2.8, 9.3).
 ///
