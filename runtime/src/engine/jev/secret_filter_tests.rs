@@ -86,3 +86,53 @@ fn a_residual_secret_path_fails_closed() {
     );
     assert!(!state.to_string().contains("credentials"));
 }
+
+#[test]
+fn drift_scope_state_carries_paths_and_protected_no_content() {
+    // The lightweight drift state carries the changed paths, the protected list, and a scope
+    // hint, and no file content (#328).
+    let changed = vec![PathBuf::from("src/main.rs"), PathBuf::from("src/lib.rs")];
+    let protected = vec!["specs/".to_string(), "LICENSE".to_string()];
+
+    let state = build_drift_scope_state(&changed, &protected).expect("builds");
+
+    // The changed paths are present.
+    let paths = state["changed_paths"]
+        .as_array()
+        .expect("changed_paths is an array");
+    assert_eq!(paths.len(), 2);
+    assert_eq!(paths[0], "src/main.rs");
+    // The protected list is present.
+    let prot = state["protected_paths"]
+        .as_array()
+        .expect("protected_paths is an array");
+    assert_eq!(prot.len(), 2);
+    assert_eq!(prot[1], "LICENSE");
+    // A scope hint is present.
+    assert!(state["scope_note"].is_string(), "the scope note is present");
+    // There is no `content` key anywhere: the state carries no file content.
+    assert!(
+        !state.to_string().contains("\"content\""),
+        "the drift scope state carries no file content"
+    );
+}
+
+#[test]
+fn drift_scope_state_excludes_a_secret_path() {
+    // A changed path that matches the secret denylist is excluded, so no secret path reaches
+    // the model (Requirement 9.1).
+    let changed = vec![PathBuf::from("src/main.rs"), PathBuf::from("config/.env")];
+    let protected = vec!["specs/".to_string()];
+
+    let state = build_drift_scope_state(&changed, &protected).expect("builds");
+
+    let paths = state["changed_paths"]
+        .as_array()
+        .expect("changed_paths is an array");
+    assert_eq!(paths.len(), 1, "the secret path is excluded");
+    assert_eq!(paths[0], "src/main.rs");
+    assert!(
+        !state.to_string().contains(".env"),
+        "no secret path in the state"
+    );
+}

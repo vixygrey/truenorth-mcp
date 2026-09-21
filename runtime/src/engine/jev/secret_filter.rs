@@ -84,6 +84,54 @@ pub fn build_state_with_secret_filter(
     Ok(state)
 }
 
+/// Build a lightweight drift-scope state from the changed paths and the protected set (#328).
+///
+/// The drift Noul question judges whether a change is out of scope, which the paths and the
+/// protected-path list answer, not the file content. This builder assembles only what that
+/// question needs: the changed paths, the protected-path list, and a short scope hint. It
+/// carries no file content, so it costs far fewer tokens than
+/// [`build_state_with_secret_filter`].
+///
+/// The secret boundary still holds. A changed path that matches the secret denylist is
+/// excluded, so a secret path never reaches the model (Requirement 9.1). After assembly, the
+/// builder re-checks the serialized state against the denylist and fails closed on any
+/// residual match (Requirement 9.7).
+///
+/// # Errors
+///
+/// Returns [`super::JevError::SecretResidual`] when a secret survives the exclusion step.
+#[cfg_attr(not(test), allow(dead_code))]
+pub fn build_drift_scope_state(
+    changed_paths: &[PathBuf],
+    protected_paths: &[String],
+) -> Result<Value, super::JevError> {
+    let denylist = crate::config::secret_denylist();
+
+    // Exclude a secret path outright, so no secret path reaches the model (Requirement 9.1).
+    let paths: Vec<String> = changed_paths
+        .iter()
+        .filter(|path| !crate::config::is_secret_path(path))
+        .map(|path| path.to_string_lossy().into_owned())
+        .collect();
+
+    let state = json!({
+        "changed_paths": paths,
+        "protected_paths": protected_paths,
+        "scope_note": "A change is out of scope when it writes a protected path or a path \
+                       unrelated to the changed set. Judge the changed paths against the \
+                       protected paths.",
+    });
+
+    // Post-exclusion re-check: fail closed on any residual secret (Requirement 9.7). A
+    // protected entry or a path could still carry a denylisted marker.
+    let serialized = state.to_string();
+    if denylist.iter().any(|pattern| pattern.is_match(&serialized)) {
+        return Err(super::JevError::SecretResidual);
+    }
+
+    Ok(state)
+}
+
 // Example and property tests live in sibling files to hold this module under the size
 // guidance. The `#[path]` include keeps them child modules of `secret_filter`.
 #[cfg(test)]
