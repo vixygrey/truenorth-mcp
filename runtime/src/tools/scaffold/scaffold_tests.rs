@@ -6,6 +6,7 @@
 //! Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.12.
 
 use std::fs;
+use std::path::Path;
 
 use rmcp::handler::server::wrapper::Parameters;
 use tempfile::TempDir;
@@ -57,6 +58,10 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
     assert!(root.join(".agent/telemetry/runs.yml").is_file());
     // The default profile's starter file (issue-per-task uses backlog).
     assert!(root.join(".agent/tasks/backlog.yml").is_file());
+    assert_eq!(
+        fs::read_to_string(root.join(".agent/tasks/execution-status.yml")).expect("read status"),
+        "stories: {}\ndevelopment_status: {}\n"
+    );
     // Root docs wired to .agent/.
     assert!(root.join("AGENTS.md").is_file());
     assert!(root.join("CONVENTIONS.md").is_file());
@@ -64,6 +69,27 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
         fs::read_to_string(root.join("AGENTS.md"))
             .unwrap()
             .contains(".agent/")
+    );
+}
+
+#[test]
+fn checked_in_issue_per_task_cockpit_matches_scaffold_seeds() {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("repository root");
+    let tasks = repo_root.join(".agent/tasks");
+
+    assert_eq!(
+        fs::read_to_string(repo_root.join(".agent/profile.yml")).expect("read profile"),
+        "profile: issue-per-task\n"
+    );
+    assert_eq!(
+        fs::read_to_string(tasks.join("backlog.yml")).expect("read backlog"),
+        "backlog: []\n"
+    );
+    assert_eq!(
+        fs::read_to_string(tasks.join("execution-status.yml")).expect("read execution status"),
+        "stories: {}\ndevelopment_status: {}\n"
     );
 }
 
@@ -76,6 +102,11 @@ async fn scaffold_writes_the_declared_profile_name() {
     let profile = fs::read_to_string(repo.path().join(".agent/profile.yml")).expect("read");
     assert!(profile.contains("profile: epic-based"));
     // The epic-based starter set includes the release plan.
+    assert_eq!(
+        fs::read_to_string(repo.path().join(".agent/tasks/execution-status.yml"))
+            .expect("read status"),
+        "stories: {}\ndevelopment_status: {}\n"
+    );
     assert!(repo.path().join(".agent/tasks/release-plan.yml").is_file());
 }
 

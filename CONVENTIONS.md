@@ -129,8 +129,9 @@ outside `.agent/`.
 
 The cockpit lives under `.agent/tasks/`: `state.yml` carries the phase and the TDD
 loop, `release-plan.yml` carries the recorded tasks, `execution-status.yml` carries
-the story status, and `bugs.yml` carries the external-tracker bug references. The
-domain ontology is `.agent/ontology.yml`.
+story status, and `bugs.yml` carries external-tracker bug references. The empty
+`execution-status.yml` seed has `stories` and `development_status` maps. The domain
+ontology is `.agent/ontology.yml`.
 
 ## Accessibility
 

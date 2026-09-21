@@ -18,7 +18,7 @@ Synthesize the conversation context into `.agent/tasks/release-plan.yml` (index)
 | `.agent/tasks/<capsule>/group.yml`         | Group manifest: `id`, `title`, `wsjf`, `total_bcps`, `status`, `stories[]` list                                             |
 | `.agent/tasks/<capsule>/eNNsYY-<slug>.md`  | Story spec in the countable-story-format with 20 sections and Gherkin acceptance criteria                                   |
 | `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` | Decoupled task checklist with `verify:` commands per task                                                                   |
-| `.agent/tasks/execution-status.yml`        | Flat key-value store for story status (`eNNsYY: todo`)                                                                      |
+| `.agent/tasks/execution-status.yml`        | `stories` and `development_status` maps for story and group progress                                                        |
 
 ## Task Group Structure
 
@@ -139,8 +139,8 @@ Read the bug references under `.agent/tasks/bugs.yml` and add a `bugs:` section 
 
 ### 8. Sync execution status
 
-Update `.agent/tasks/execution-status.yml` so each story key reflects its status from the
-group manifests.
+Update `.agent/tasks/execution-status.yml`. Record each story under `stories`, and update
+`development_status` for the corresponding group progress from the group manifests.
 
 ### 9. Snapshot on planning close (optional)
 
