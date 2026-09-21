@@ -36,8 +36,13 @@ use crate::engine::agent_ws::AGENT_DIR;
 const DEFAULT_CONFIDENCE_HIGH: f64 = 0.85;
 /// The default confidence low threshold.
 const DEFAULT_CONFIDENCE_LOW: f64 = 0.60;
-/// The default drift boundary.
-const DEFAULT_DRIFT_BOUNDARY: f64 = 0.70;
+/// The default drift boundary (#334).
+///
+/// A calibration run showed the drift signal, with a task in the state (#331), puts an
+/// out-of-scope change in a 0.19 to 0.76 noul band while an in-scope change stays at or below
+/// 0.19. A boundary of 0.25 catches most drift with no false positive on that set, and leaves
+/// a small margin above the in-scope ceiling. A project can override this in `rules.yml`.
+const DEFAULT_DRIFT_BOUNDARY: f64 = 0.25;
 /// The default rigor-failure boundary.
 const DEFAULT_RIGOR_FAILURE_BOUNDARY: f64 = 0.70;
 /// The default complexity boundary, on a 0 to 100 scale.
