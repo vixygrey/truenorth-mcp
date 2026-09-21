@@ -28,7 +28,7 @@ use super::super::JevClient;
 use super::super::config::JevConfig;
 use super::super::drift::{DriftOutcome, evaluate_drift};
 use super::super::rigor::{RigorReport, evaluate_rigor};
-use super::super::secret_filter::build_state_with_secret_filter;
+use super::super::secret_filter::{build_drift_scope_state, build_state_with_secret_filter};
 use super::combine::{CandidateSignal, combine};
 use super::{GuardDecision, ProposedChange, deterministic_layer};
 
@@ -115,9 +115,12 @@ pub async fn evaluate_guard<C: JevClient>(
         Err(cause) => return allow_with_note(&format!("rigor scoring did not complete: {cause}")),
     };
 
-    // Score drift over its own state. The written paths and the protected set drive the
-    // model-free path layer; the Noul question judges semantic scope.
-    let drift_state = match build_state_with_secret_filter(repo_root, &paths) {
+    // Score drift over a lightweight scope state: the changed paths and the protected set,
+    // no file content (#328). The drift Noul question judges scope, which the paths and the
+    // protected list answer; file content does not. This costs far fewer tokens than the
+    // full-content state and gives the scope question the context it needs. The written paths
+    // and the protected set also drive the model-free path layer.
+    let drift_state = match build_drift_scope_state(&paths, protected_paths) {
         Ok(state) => state,
         Err(cause) => return allow_with_note(&format!("probabilistic layer did not run: {cause}")),
     };
