@@ -306,3 +306,61 @@ async fn an_unconfident_rigor_failure_annotates() {
         other => panic!("expected an Annotate, got {other:?}"),
     }
 }
+
+#[tokio::test]
+async fn each_aspect_receives_its_own_secret_filtered_state() {
+    // The guard builds a state per aspect rather than one shared blob (issue #304). This
+    // pins that the rigor call and the drift call each carry their own state, each assembled
+    // from the change paths through the secret filter. The file on disk holds a secret line;
+    // both states must drop it, proving the filter runs on each independently.
+    let repo = TempDir::new().expect("temp repo");
+    write_file(
+        &repo,
+        "src/main.rs",
+        "fn main() {}\nAWS_SECRET_ACCESS_KEY=leak-me\n",
+    );
+    let fake = FakeClient::new();
+    // Rigor call first (all low), then drift call (in scope).
+    fake.push_response(rigor_response(0.0, 0.0, 0.0, 0.0));
+    fake.push_response(drift_response(0.1));
+
+    let change = ProposedChange {
+        paths: vec!["src/main.rs".to_string()],
+        content: "fn main() {}".to_string(),
+    };
+
+    let decision = evaluate_guard(
+        &change,
+        &protected(),
+        &JevConfig::default(),
+        true,
+        true,
+        Some(&fake),
+        repo.path(),
+    )
+    .await;
+
+    assert_eq!(decision, GuardDecision::Allow { notes: Vec::new() });
+
+    // Two separate calls, each with its own state.
+    let calls = fake.calls();
+    assert_eq!(
+        calls.len(),
+        2,
+        "one rigor call and one drift call, each with its own state"
+    );
+
+    for request in &calls {
+        // Each state is assembled from the change path.
+        let serialized = serde_json::to_string(&request.state).expect("serialize the state");
+        assert!(
+            serialized.contains("src/main.rs"),
+            "each aspect state carries the change path"
+        );
+        // Each state ran through the secret filter, so no denylisted line survives (P40).
+        assert!(
+            !serialized.contains("leak-me"),
+            "each aspect state drops the secret line independently"
+        );
+    }
+}
