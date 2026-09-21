@@ -45,6 +45,8 @@ fn absent_file_resolves_to_default() {
     let resolved = resolve(repo.path()).expect("absent file resolves");
     assert_eq!(resolved.confidence_high, 0.85);
     assert_eq!(resolved.confidence_low, 0.60);
+    // The drift boundary default is the calibrated value (#334), not the legacy 0.70.
+    assert_eq!(resolved.drift_boundary, 0.25);
     assert_eq!(resolved.retry_limit, 3);
     assert_eq!(resolved.max_backoff, Duration::from_secs(8));
     assert_eq!(resolved.timeout, Duration::from_secs(30));
