@@ -85,8 +85,7 @@ jobs:
           TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .body > release-body.md
+          gh release view "${TAG}" --json body --jq .body > release-body.md
           grep --fixed-strings "Registry status: staged_pending_approval." release-body.md
           sed -i "s/Registry status: staged_pending_approval\\./Registry status: published_verified./" release-body.md
-          jq --null-input --rawfile body release-body.md '{body: $body}' > release-update.json
-          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --input release-update.json
+          gh release edit "${TAG}" --notes-file release-body.md
