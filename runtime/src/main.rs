@@ -13,6 +13,10 @@
 // entrypoint over the `truenorth_mcp` library, so every item here has a caller.
 #![deny(dead_code)]
 
+mod cli;
+
+use std::process::ExitCode;
+
 use rmcp::model::ResourceUpdatedNotificationParam;
 use rmcp::{ServiceExt, transport::stdio};
 
@@ -20,8 +24,31 @@ use truenorth_mcp::config;
 use truenorth_mcp::engine::watcher::{ResourceUri, spawn_watcher};
 use truenorth_mcp::server::TrueNorthServer;
 
-#[tokio::main]
-async fn main() -> std::process::ExitCode {
+fn main() -> ExitCode {
+    match cli::parse_args(std::env::args().skip(1)) {
+        Ok(cli::Mode::Serve) => {
+            let runtime = match tokio::runtime::Runtime::new() {
+                Ok(runtime) => runtime,
+                Err(error) => {
+                    eprintln!("truenorth-mcp: could not start the runtime: {error}");
+                    return ExitCode::FAILURE;
+                }
+            };
+            runtime.block_on(serve())
+        }
+        Ok(cli::Mode::Version) => {
+            cli::print_version();
+            ExitCode::SUCCESS
+        }
+        Ok(cli::Mode::CheckConfig) => cli::check_config(),
+        Err(usage) => {
+            eprintln!("truenorth-mcp: {usage}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+async fn serve() -> ExitCode {
     // Diagnostics go to stderr. Stdout is the MCP channel and must carry only protocol
     // traffic.
     tracing_subscriber::fmt()

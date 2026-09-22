@@ -15,12 +15,10 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
-use crate::config::SandboxConfig;
+use crate::config::{SandboxConfig, VERIFY_CMD_ENV, verify_command};
 use crate::engine::gate_runner::{GateOutcome, SystemCommandRunner, run_gate};
 use crate::server::TrueNorthServer;
 
-/// The environment variable that holds the project verify or test command.
-const VERIFY_CMD_ENV: &str = "TRUENORTH_VERIFY_CMD";
 /// The environment variable that extends the gate command allowlist (comma-separated).
 const ALLOWLIST_ENV: &str = "TRUENORTH_GATE_ALLOWLIST";
 
@@ -56,14 +54,6 @@ impl TrueNorthServer {
         let cfg = SandboxConfig::new(self.ctx.repo_root.clone(), allowlist(&command));
         let outcome = run_gate(&command, &cfg, &SystemCommandRunner);
         gate_result(&outcome, &args.phase)
-    }
-}
-
-/// The configured verify command, when set and non-empty.
-fn verify_command() -> Option<String> {
-    match std::env::var(VERIFY_CMD_ENV) {
-        Ok(value) if !value.trim().is_empty() => Some(value),
-        _ => None,
     }
 }
 

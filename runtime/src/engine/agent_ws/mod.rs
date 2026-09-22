@@ -30,7 +30,7 @@ pub const TELEMETRY_AREA: &str = "telemetry";
 
 mod layout;
 
-pub use layout::{LayoutCache, LayoutError};
+pub use layout::{LayoutCache, LayoutError, read_layout};
 
 /// An error from the single write guard (Requirement 1.3).
 #[derive(Debug, Error)]
