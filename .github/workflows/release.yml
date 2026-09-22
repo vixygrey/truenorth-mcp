@@ -279,6 +279,8 @@ jobs:
             --output-dir release-record
 
       - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           jq --null-input \
             --arg tag "${GITHUB_REF_NAME}" \
