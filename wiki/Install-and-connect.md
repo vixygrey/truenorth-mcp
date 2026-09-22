@@ -11,6 +11,19 @@ The wrapper ships per-platform binary packages under `optionalDependencies`, so 
 package manager fetches only the binary for your platform (darwin-arm64, darwin-x64,
 linux-arm64, or linux-x64).
 
+## Verify a native release download
+
+Each GitHub Release includes platform-native archives and a `SHA256SUMS` file. Download both
+files, then verify the archive before extracting it:
+
+```bash
+shasum -a 256 -c SHA256SUMS
+tar -xzf truenorth-mcp-v<version>-<platform>.tar.gz
+```
+
+The release also links every npm package version. After installing from npm, verify registry
+signatures and provenance attestations with `npm audit signatures`.
+
 ## Connect an MCP client
 
 Point your MCP client at the wrapper as a stdio server. The client runs the wrapper

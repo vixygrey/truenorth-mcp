@@ -1,0 +1,90 @@
+name: Finalize release record
+
+# npm staged publishing requires a maintainer's later 2FA approval. This workflow records
+# public registry metadata only after that approval makes every package available.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release tag, for example v1.2.3
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: finalize-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    name: verify npm publication and finalize record
+    runs-on: ubuntu-latest
+    environment:
+      name: release-publication
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Validate the tag and GitHub Release
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          test "${TAG}" = "v${version}"
+          node scripts/check-release-version.js "${version}"
+          git rev-parse "${TAG}^{commit}" >/dev/null
+          gh release view "${TAG}" >/dev/null
+
+      - name: Read live npm registry metadata
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          mkdir registry-metadata
+          npm view "truenorth-mcp@${version}" --json > registry-metadata/truenorth-mcp.json
+          npm view "@truenorth-mcp/darwin-arm64@${version}" --json > registry-metadata/@truenorth-mcp__darwin-arm64.json
+          npm view "@truenorth-mcp/darwin-x64@${version}" --json > registry-metadata/@truenorth-mcp__darwin-x64.json
+          npm view "@truenorth-mcp/linux-arm64@${version}" --json > registry-metadata/@truenorth-mcp__linux-arm64.json
+          npm view "@truenorth-mcp/linux-x64@${version}" --json > registry-metadata/@truenorth-mcp__linux-x64.json
+
+      - name: Create registry verification record
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          node scripts/release-record.js create-registry-record \
+            --version "${TAG#v}" \
+            --tag "${TAG}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --metadata-dir registry-metadata \
+            --output NPM-VERIFICATION.json
+
+      - name: Attach the registry verification record
+        env:
+          TAG: ${{ inputs.tag }}
+        run: gh release upload "${TAG}" NPM-VERIFICATION.json --clobber
+
+      - name: Mark the GitHub Release registry record as verified
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq .body > release-body.md
+          grep --fixed-strings "Registry status: staged_pending_approval." release-body.md
+          sed -i "s/Registry status: staged_pending_approval\\./Registry status: published_verified./" release-body.md
+          jq --null-input --rawfile body release-body.md '{body: $body}' > release-update.json
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --input release-update.json

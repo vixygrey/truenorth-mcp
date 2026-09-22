@@ -2,7 +2,7 @@ name: Release
 
 # A release starts only from a protected v* tag that names the current main commit. The
 # workflow verifies and builds every artifact before one protected Environment approval
-# authorizes any npm staging or publication side effect.
+# authorizes npm staging and the public GitHub release record.
 on:
   push:
     tags:
@@ -46,6 +46,12 @@ jobs:
 
       - name: Verify committed release metadata
         run: node scripts/check-release-version.js "${{ steps.version.outputs.version }}"
+
+      - name: Validate release notes
+        run: |
+          node scripts/release-record.js validate-notes \
+            --version "${{ steps.version.outputs.version }}" \
+            --notes "release-notes/v${{ steps.version.outputs.version }}.md"
 
   build-platform:
     name: build ${{ matrix.platform }}
@@ -106,8 +112,21 @@ jobs:
             --expected-version "${{ needs.verify-release-version.outputs.version }}" \
             -- "npm/packages/${{ matrix.platform }}/truenorth-mcp"
 
+      - name: Archive the public native binary
+        run: |
+          tar -C "runtime/target/${{ matrix.target }}/release" \
+            -czf "truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz" \
+            truenorth-mcp
+
+      - name: Upload the public native binary archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-binary-${{ matrix.platform }}
+          path: truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz
+          if-no-files-found: error
+
       # GitHub Actions directory artifacts normalize file modes. The tar archive is the
-      # release handoff format so the executable mode survives the later download.
+      # private release handoff format so the executable mode survives the later download.
       - name: Archive the verified platform package
         run: |
           tar -C "npm/packages/${{ matrix.platform }}" \
@@ -148,6 +167,7 @@ jobs:
         with:
           name: release-package-${{ matrix.platform }}
           path: release-artifacts
+
       - name: Set up Node.js for publishing
         uses: actions/setup-node@v7
         with:
@@ -175,13 +195,13 @@ jobs:
             --packed-wrapper "npm/packages/${{ matrix.platform }}"
 
       - name: Update npm for trusted publishing
-        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be older.
+        # Trusted publishing needs npm 11.15.0 or later for staged publishing.
         run: npm install -g npm@latest
 
       - name: Stage the platform package
         working-directory: npm/packages/${{ matrix.platform }}
-        # No token. npm exchanges the OIDC id-token for staging access against the trusted
-        # publisher. A maintainer approves staging with 2FA before the version goes live.
+        # No token. npm exchanges the OIDC id-token for staging access. A maintainer approves
+        # staging with 2FA before the package becomes publicly available.
         run: npm stage publish --access public
 
   publish-root:
@@ -204,11 +224,58 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Update npm for trusted publishing
-        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be older.
+        # Trusted publishing needs npm 11.15.0 or later for staged publishing.
         run: npm install -g npm@latest
 
       - name: Stage the root wrapper
         working-directory: npm
-        # No token. npm exchanges the OIDC id-token for staging access against the trusted
-        # publisher. A maintainer approves staging with 2FA before the version goes live.
+        # No token. npm exchanges the OIDC id-token for staging access. A maintainer approves
+        # staging with 2FA before the package becomes publicly available.
         run: npm stage publish --access public
+
+  publish-release-record:
+    name: publish release record
+    needs: [verify-release-version, authorize-publication, publish-root]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Download public native archives
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-binary-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Build the public audit record
+        run: |
+          node scripts/release-record.js create-initial-record \
+            --version "${{ needs.verify-release-version.outputs.version }}" \
+            --tag "${GITHUB_REF_NAME}" \
+            --commit "${GITHUB_SHA}" \
+            --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --notes "release-notes/v${{ needs.verify-release-version.outputs.version }}.md" \
+            --assets-dir release-assets \
+            --output-dir release-record
+
+      - name: Create the GitHub Release
+        run: |
+          jq --null-input \
+            --arg tag "${GITHUB_REF_NAME}" \
+            --rawfile body release-record/release-preamble.md \
+            '{tag_name: $tag, name: $tag, body: $body, generate_release_notes: true}' \
+            > release-request.json
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/releases" --input release-request.json
+          gh release upload "${GITHUB_REF_NAME}" \
+            release-assets/* \
+            release-record/SHA256SUMS \
+            release-record/RELEASE-VERIFICATION.json
