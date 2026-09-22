@@ -1,0 +1,9 @@
+bugs:
+- id: '369'
+  external_link: https://github.com/vixygrey/truenorth-mcp/issues/369
+  status: open
+  linked_ref: '367'
+  tags:
+  - release
+  - workflow
+  - v1
