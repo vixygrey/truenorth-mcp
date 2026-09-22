@@ -127,6 +127,9 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Test release record generation
+        run: node --test scripts/release-record.test.js
+
       - name: Build the Linux x64 release binary
         working-directory: runtime
         run: cargo build --release

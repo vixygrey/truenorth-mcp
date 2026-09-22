@@ -75,14 +75,25 @@ A release is tag-driven. `runtime/Cargo.toml` is the release version source of t
 root npm wrapper, its optional dependencies, the four platform packages, and `Cargo.lock`
 must mirror that version in the same release-preparation commit.
 
-Before pushing `v<version>`, update those files, then run:
+Before pushing `v<version>`, update those files and add
+`release-notes/v<version>.md`. The note needs non-empty `## Highlights` and
+`## Migration` sections. A breaking release must state command-first migration and
+rollback steps.
+
+Run:
 
 ```bash
 node --test npm/test/release-version.test.js
+node --test scripts/release-record.test.js
 node scripts/check-release-version.js <version>
 ```
 
-The release workflow verifies the committed metadata, builds each native target, and smoke
-tests both the staged executable and a clean installation of the packed wrapper before a
-`release-publication` Environment approval authorizes npm staging. It does not rewrite
-package versions. A protected `v*` tag must name the current `main` commit.
+The release workflow verifies committed metadata and release notes, builds each native target,
+and smoke tests both the staged executable and a clean installation of the packed wrapper. It
+then stages the npm packages after `release-publication` Environment approval, and publishes a
+GitHub Release with native archives, `SHA256SUMS`, and `RELEASE-VERIFICATION.json`.
+
+Staged npm packages become public only after a maintainer's 2FA approval. Run the protected
+`Finalize release record` workflow after that approval. It verifies every package's registry
+integrity metadata and attaches `NPM-VERIFICATION.json` to the GitHub Release. A protected
+`v*` tag must name the current `main` commit.
