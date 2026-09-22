@@ -106,17 +106,18 @@ jobs:
             --expected-version "${{ needs.verify-release-version.outputs.version }}" \
             -- "npm/packages/${{ matrix.platform }}/truenorth-mcp"
 
-      - name: Smoke the packed wrapper artifact
+      # GitHub Actions directory artifacts normalize file modes. The tar archive is the
+      # release handoff format so the executable mode survives the later download.
+      - name: Archive the verified platform package
         run: |
-          node scripts/smoke-mcp-artifact.js \
-            --expected-version "${{ needs.verify-release-version.outputs.version }}" \
-            --packed-wrapper "npm/packages/${{ matrix.platform }}"
+          tar -C "npm/packages/${{ matrix.platform }}" \
+            -cf "release-package-${{ matrix.platform }}.tar" .
 
-      - name: Upload the verified platform package
+      - name: Upload the verified platform package archive
         uses: actions/upload-artifact@v4
         with:
           name: release-package-${{ matrix.platform }}
-          path: npm/packages/${{ matrix.platform }}/
+          path: release-package-${{ matrix.platform }}.tar
           if-no-files-found: error
 
   authorize-publication:
@@ -142,17 +143,36 @@ jobs:
       matrix:
         platform: [darwin-arm64, darwin-x64, linux-arm64, linux-x64]
     steps:
-      - name: Download the verified platform package
+      - name: Download the verified platform package archive
         uses: actions/download-artifact@v4
         with:
           name: release-package-${{ matrix.platform }}
-          path: npm/packages/${{ matrix.platform }}
-
+          path: release-artifacts
       - name: Set up Node.js for publishing
         uses: actions/setup-node@v7
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Extract and verify the publish input
+        run: |
+          package_dir="npm/packages/${{ matrix.platform }}"
+          mkdir -p "${package_dir}"
+          tar -xpf "release-artifacts/release-package-${{ matrix.platform }}.tar" \
+            -C "${package_dir}"
+          test -x "${package_dir}/truenorth-mcp"
+
+      - name: Smoke the downloaded native artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "${{ needs.verify-release-version.outputs.version }}" \
+            -- "npm/packages/${{ matrix.platform }}/truenorth-mcp"
+
+      - name: Smoke the downloaded packed wrapper artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "${{ needs.verify-release-version.outputs.version }}" \
+            --packed-wrapper "npm/packages/${{ matrix.platform }}"
 
       - name: Update npm for trusted publishing
         # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be older.

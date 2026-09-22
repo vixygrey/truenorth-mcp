@@ -51,3 +51,7 @@ tasks:
   group_kind: ticket
   task_name: Add npm registry README
   verify_command: cd npm && node --test test/package-readme.test.js && npm pack --dry-run --json
+- group_id: '362'
+  group_kind: ticket
+  task_name: Preserve executable release artifact modes
+  verify_command: actionlint .github/workflows/release.yml && npm run format:check
