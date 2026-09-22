@@ -1,7 +1,7 @@
 //! Tests for the verify-gate tool (task 10.2).
 //!
 //! Included from `gates.rs` via `#[path]`, so `super` is the gates module. The tests
-//! drive the pure mode, command, allowlist, and result helpers. The env-backed command
+//! drive the command, allowlist, and result helpers. The env-backed command
 //! test runs serially and owns its variables.
 //!
 //! Requirements: 3.1, 3.7, 3.8.

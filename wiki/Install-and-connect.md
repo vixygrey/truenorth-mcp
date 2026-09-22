@@ -51,6 +51,49 @@ repository root, or set the `TRUENORTH_ROOT` environment variable to the reposit
 A run from a subdirectory without `TRUENORTH_ROOT` fails to resolve the root. See
 [Troubleshooting](Troubleshooting) for the exact error and the fix.
 
+## Configure the verify gate
+
+`truenorth_verify_gate` accepts only a lifecycle `phase` and runs a project command that the
+MCP client operator configures. It passes only when the server observes exit code `0`.
+
+Set the configuration in the MCP client environment, then restart the client after changing
+it:
+
+```json
+{
+  "mcpServers": {
+    "truenorth": {
+      "command": "npx",
+      "args": ["truenorth-mcp"],
+      "env": {
+        "TRUENORTH_ROOT": "/absolute/path/to/repo",
+        "TRUENORTH_VERIFY_CMD": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
+        "TRUENORTH_GATE_ALLOWLIST": "cargo"
+      }
+    }
+  }
+}
+```
+
+`TRUENORTH_ROOT` is optional when the client starts in the repository root.
+`TRUENORTH_VERIFY_CMD` is required and must name the project's verify or test command.
+The command's first executable is automatically allowlisted.
+`TRUENORTH_GATE_ALLOWLIST` is an optional comma-separated extension to that allowlist.
+It checks only the first command token and is not a security boundary for shell fragments
+such as `&&`, pipes, or redirects. The command is trusted operator configuration and never
+comes from an MCP tool argument.
+
+Call the tool with only the phase:
+
+```json
+{
+  "phase": "review"
+}
+```
+
+The successful result includes `"mode": "execute"` as output. `mode` and `test_evidence`
+are not valid input fields.
+
 ## Confirm the layout contract
 
 At startup the runtime validates the `.agent/` layout contract. A complete contract logs a

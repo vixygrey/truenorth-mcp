@@ -54,9 +54,14 @@ A parse or validation failure on a backing file returns a resource read error th
 the file and the cause. The runtime retains the last good content and keeps serving the
 other resources. Fix the YAML in the named file. The watcher revalidates on the next edit.
 
-## A verify gate fails with an allowlist rejection
+## A verify gate is not configured or fails
 
-`truenorth_verify_gate` in execute mode runs the command in a sandbox with a command
-allowlist on the first token. A command whose binary is not on the allowlist is rejected
-with a hint. Add the binary to the allowlist, or run the gate in `evidence` mode. See
-[The lifecycle](The-lifecycle).
+`truenorth_verify_gate` accepts only a lifecycle phase. It runs the operator-configured
+project command and passes only when the server observes exit code `0`. Set
+`TRUENORTH_VERIFY_CMD` in the MCP client environment, then restart the client. See
+[Install and connect](Install-and-connect#configure-the-verify-gate) for the complete
+configuration.
+
+A non-zero exit or timeout returns the command error and remediation hints. Fix the command
+or its failure, then run the gate again. Do not send `mode` or `test_evidence`; both fields
+are rejected.

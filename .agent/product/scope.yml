@@ -12,7 +12,7 @@ in_scope:
   - id: fr-01
     title: Active lifecycle tools (advance phase, record task, TDD cycle) that write cockpit state
   - id: fr-02
-    title: Verify gate that runs the project verify command in a sandbox, or accepts evidence
+    title: Verify gate that runs the project verify command in a sandbox and passes only on a server-observed exit 0
   - id: fr-03
     title: Live MCP resources (state, cockpit, conventions, ontology, adr) with resources/updated notifications
   - id: fr-04
