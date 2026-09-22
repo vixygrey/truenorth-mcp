@@ -1,0 +1,147 @@
+name: Release rehearsal
+
+# Exercises cross-job package artifact handoff without invoking npm staging or publication.
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/release-rehearsal.yml"
+      - "runtime/**"
+      - "npm/**"
+      - "release-notes/**"
+      - "scripts/check-release-version.js"
+      - "scripts/smoke-mcp-artifact.js"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-rehearsal-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-version:
+    name: resolve rehearsal version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Resolve package version
+        id: version
+        run: echo "version=$(node -p "require('./npm/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release metadata
+        run: node scripts/check-release-version.js "${{ steps.version.outputs.version }}"
+
+  build-platform:
+    name: build ${{ matrix.platform }}
+    needs: resolve-version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-14
+            platform: darwin-arm64
+          - target: x86_64-apple-darwin
+            os: macos-15-intel
+            platform: darwin-x64
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            platform: linux-x64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            platform: linux-arm64
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@v7
+
+      - name: Install the Rust toolchain for the target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: runtime
+
+      - name: Build the release binary
+        working-directory: runtime
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Stage and archive the platform package
+        run: |
+          set -euo pipefail
+          package_dir="npm/packages/${{ matrix.platform }}"
+          cp "runtime/target/${{ matrix.target }}/release/truenorth-mcp" "${package_dir}/truenorth-mcp"
+          chmod +x "${package_dir}/truenorth-mcp"
+          tar -C "${package_dir}" -cf "release-package-${{ matrix.platform }}.tar" .
+
+      - name: Upload the rehearsal package archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-${{ matrix.platform }}
+          path: release-package-${{ matrix.platform }}.tar
+          if-no-files-found: error
+
+  verify-handoff:
+    name: verify ${{ matrix.platform }} handoff
+    needs: [resolve-version, build-platform]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: darwin-arm64
+            os: macos-14
+          - platform: darwin-x64
+            os: macos-15-intel
+          - platform: linux-arm64
+            os: ubuntu-24.04-arm
+          - platform: linux-x64
+            os: ubuntu-latest
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download and extract the platform package archive
+        uses: actions/download-artifact@v4
+        with:
+          name: release-package-${{ matrix.platform }}
+          path: release-artifacts
+
+      - name: Verify the downloaded package input
+        run: |
+          set -euo pipefail
+          package_dir="npm/packages/${{ matrix.platform }}"
+          mkdir -p "${package_dir}"
+          tar -xpf "release-artifacts/release-package-${{ matrix.platform }}.tar" -C "${package_dir}"
+          test -x "${package_dir}/truenorth-mcp"
+
+      - name: Smoke the downloaded native artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "${{ needs.resolve-version.outputs.version }}" \
+            -- "npm/packages/${{ matrix.platform }}/truenorth-mcp"
+
+      - name: Smoke the downloaded packed wrapper artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "${{ needs.resolve-version.outputs.version }}" \
+            --packed-wrapper "npm/packages/${{ matrix.platform }}"
