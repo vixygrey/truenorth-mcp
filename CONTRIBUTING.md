@@ -68,6 +68,17 @@ formatter.
 
 ## Releases
 
-A release is tag-driven. A `v*` tag triggers the release workflow, which
-cross-compiles the native targets, publishes the per-platform packages, then the
-root wrapper.
+A release is tag-driven. `runtime/Cargo.toml` is the release version source of truth. The
+root npm wrapper, its optional dependencies, the four platform packages, and `Cargo.lock`
+must mirror that version in the same release-preparation commit.
+
+Before pushing `v<version>`, update those files, then run:
+
+```bash
+node --test npm/test/release-version.test.js
+node scripts/check-release-version.js <version>
+```
+
+The release workflow verifies the committed metadata before cross-compiling. It does not
+rewrite package versions. A `v*` tag then builds the four native targets, publishes the
+per-platform packages, and publishes the root wrapper.
