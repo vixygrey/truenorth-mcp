@@ -16,11 +16,38 @@ body:
       placeholder: "0.1.0"
     validations:
       required: true
+
+  - type: input
+    id: tag_commit
+    attributes:
+      label: Release tag commit
+      description: Paste the immutable commit SHA named by the v<version> tag.
+      placeholder: "0123456789abcdef"
+    validations:
+      required: true
   - type: textarea
     id: highlights
     attributes:
       label: Highlights
       description: List the notable changes in this release, one per line.
+    validations:
+      required: true
+
+  - type: input
+    id: ci_gate
+    attributes:
+      label: CI Gate run
+      description: Paste the successful CI Gate run URL for the tagged main commit.
+      placeholder: "https://github.com/owner/repo/actions/runs/..."
+    validations:
+      required: true
+
+  - type: input
+    id: release_run
+    attributes:
+      label: Release workflow run
+      description: Paste the release workflow run URL.
+      placeholder: "https://github.com/owner/repo/actions/runs/..."
     validations:
       required: true
   - type: checkboxes
@@ -33,6 +60,7 @@ body:
         - label: "Cargo.toml, Cargo.lock, the wrapper, optional dependencies, and every platform package use the release version."
         - label: "`node scripts/check-release-version.js <version>` passes."
         - label: "Breaking changes are documented, command first."
+        - label: "The v<version> tag resolves to the current main commit."
   - type: checkboxes
     id: publish
     attributes:
@@ -41,3 +69,5 @@ body:
         - label: "Tag v<version> is pushed."
         - label: "All four per-platform packages published."
         - label: "The root wrapper published after the platform packages."
+        - label: "The release-publication Environment approval is recorded, or the emergency bypass reason is documented."
+        - label: "npm staging approval evidence is linked."

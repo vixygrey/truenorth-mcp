@@ -16,6 +16,9 @@ This project uses an issue-first, trunk-based workflow.
    properties.
 5. Squash-merge, so the PR becomes one commit on `main`.
 
+External pull requests must also pass the required `External contribution review` check.
+See [GOVERNANCE.md](GOVERNANCE.md) for merge, emergency, and release authority.
+
 ## Before you push
 
 Run the full local verification.
@@ -80,6 +83,6 @@ node scripts/check-release-version.js <version>
 ```
 
 The release workflow verifies the committed metadata, builds each native target, and smoke
-tests both the staged executable and a clean installation of the packed wrapper before it
-stages packages. It does not rewrite package versions. A `v*` tag then publishes the four
-per-platform packages and the root wrapper.
+tests both the staged executable and a clean installation of the packed wrapper before a
+`release-publication` Environment approval authorizes npm staging. It does not rewrite
+package versions. A protected `v*` tag must name the current `main` commit.

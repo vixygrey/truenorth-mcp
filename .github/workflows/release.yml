@@ -1,28 +1,19 @@
 name: Release
 
-# Build each native binary, stage it into its platform package, then prove both the staged
-# executable and a clean installation of the packed wrapper complete an MCP handshake before
-# publishing. The root wrapper stages only after every platform package stages, so a single
-# platform failure aborts the release (Requirements 8.7, 8.11). Staged versions go live only
-# after a maintainer approves each one with 2FA on npm.
-#
-# The workflow runs on a release tag. The npm publishes use trusted publishing (OIDC),
-# so no npm token is stored. GitHub mints a short-lived id-token, and npm verifies the
-# workflow against the trusted publisher configured on each package. Trusted publishing
-# needs npm CLI 11.5.1 or later and Node 22.14.0 or later, so each publish job updates
-# npm and runs on Node 22.
+# A release starts only from a protected v* tag that names the current main commit. The
+# workflow verifies and builds every artifact before one protected Environment approval
+# authorizes any npm staging or publication side effect.
 on:
   push:
     tags:
       - "v*"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "The version to verify and publish, without the leading v (must match source metadata)"
-        required: true
 
 permissions:
   contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   verify-release-version:
@@ -31,40 +22,37 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
-      - name: Check out the repository
+      - name: Check out the release tag
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: "22"
 
-      - name: Resolve the release version
-        id: version
-        shell: bash
+      - name: Verify the tag names the current main commit
         run: |
           set -euo pipefail
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            version="${{ github.event.inputs.version }}"
-          else
-            version="${GITHUB_REF_NAME#v}"
-          fi
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          git fetch origin main --tags --force
+          tag_commit="$(git rev-parse "${GITHUB_REF}^{commit}")"
+          main_commit="$(git rev-parse origin/main)"
+          test "${tag_commit}" = "${main_commit}"
+
+      - name: Resolve the release version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
       - name: Verify committed release metadata
         run: node scripts/check-release-version.js "${{ steps.version.outputs.version }}"
 
-  build-and-publish-platform:
-    name: build and publish ${{ matrix.platform }}
+  build-platform:
+    name: build ${{ matrix.platform }}
     needs: verify-release-version
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
-      # Mint the OIDC token that npm trusted publishing verifies.
-      id-token: write
     strategy:
-      # Do not cancel the other legs when one fails, so the failure is visible per
-      # platform. Any failed leg still fails the job, which gates the root wrapper below.
+      # Do not cancel the other legs when one fails, so every platform failure remains visible.
       fail-fast: false
       matrix:
         include:
@@ -81,7 +69,7 @@ jobs:
             os: ubuntu-24.04-arm
             platform: linux-arm64
     steps:
-      - name: Check out the repository
+      - name: Check out the release tag
         uses: actions/checkout@v7
 
       - name: Install the Rust toolchain for the target
@@ -106,16 +94,11 @@ jobs:
           cp "runtime/target/${{ matrix.target }}/release/truenorth-mcp" "${pkg_dir}/truenorth-mcp"
           chmod +x "${pkg_dir}/truenorth-mcp"
 
-      - name: Set up Node.js for publishing
+      - name: Set up Node.js for artifact verification
         uses: actions/setup-node@v7
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
-
-      - name: Update npm for trusted publishing
-        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be
-        # older, so pin a version that supports OIDC publishing.
-        run: npm install -g npm@latest
 
       - name: Smoke the staged native artifact
         run: |
@@ -129,12 +112,56 @@ jobs:
             --expected-version "${{ needs.verify-release-version.outputs.version }}" \
             --packed-wrapper "npm/packages/${{ matrix.platform }}"
 
+      - name: Upload the verified platform package
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-package-${{ matrix.platform }}
+          path: npm/packages/${{ matrix.platform }}/
+          if-no-files-found: error
+
+  authorize-publication:
+    name: authorize publication
+    needs: [verify-release-version, build-platform]
+    runs-on: ubuntu-latest
+    environment:
+      name: release-publication
+    steps:
+      - name: Record publication authorization
+        run: echo "Release ${{ needs.verify-release-version.outputs.version }} passed verification and is authorized for publication."
+
+  publish-platform:
+    name: publish ${{ matrix.platform }}
+    needs: [verify-release-version, authorize-publication]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Mint the OIDC token that npm trusted publishing verifies.
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [darwin-arm64, darwin-x64, linux-arm64, linux-x64]
+    steps:
+      - name: Download the verified platform package
+        uses: actions/download-artifact@v4
+        with:
+          name: release-package-${{ matrix.platform }}
+          path: npm/packages/${{ matrix.platform }}
+
+      - name: Set up Node.js for publishing
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Update npm for trusted publishing
+        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be older.
+        run: npm install -g npm@latest
+
       - name: Stage the platform package
         working-directory: npm/packages/${{ matrix.platform }}
         # No token. npm exchanges the OIDC id-token for staging access against the trusted
-        # publisher on the package. `stage publish` submits the version to a staging area.
-        # A maintainer approves it with 2FA before it goes live. Provenance is generated
-        # automatically under trusted publishing, so no flag is needed.
+        # publisher. A maintainer approves staging with 2FA before the version goes live.
         run: npm stage publish --access public
 
   publish-root:
@@ -144,12 +171,10 @@ jobs:
       contents: read
       # Mint the OIDC token that npm trusted publishing verifies.
       id-token: write
-    # The root wrapper publishes only after every per-platform package publishes. A single
-    # failed leg fails `build-and-publish-platform`, which skips this job and aborts the
-    # release (Requirement 8.11).
-    needs: [verify-release-version, build-and-publish-platform]
+    # The root wrapper publishes only after every platform package stages successfully.
+    needs: [verify-release-version, publish-platform]
     steps:
-      - name: Check out the repository
+      - name: Check out the release tag
         uses: actions/checkout@v7
 
       - name: Set up Node.js for publishing
@@ -159,14 +184,11 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Update npm for trusted publishing
-        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be
-        # older, so pin a version that supports OIDC publishing.
+        # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be older.
         run: npm install -g npm@latest
 
       - name: Stage the root wrapper
         working-directory: npm
         # No token. npm exchanges the OIDC id-token for staging access against the trusted
-        # publisher on the package. `stage publish` submits the version to a staging area.
-        # A maintainer approves it with 2FA before it goes live. Provenance is generated
-        # automatically under trusted publishing, so no flag is needed.
+        # publisher. A maintainer approves staging with 2FA before the version goes live.
         run: npm stage publish --access public

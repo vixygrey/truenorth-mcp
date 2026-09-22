@@ -39,3 +39,11 @@ tasks:
   group_kind: ticket
   task_name: Publish v1 cockpit and MCP compatibility policy
   verify_command: cd runtime && cargo test engine::agent_ws::layout && cargo test cockpit && cargo test resources && cargo test integration_tests && cd .. && npm run format:check
+- group_id: '352'
+  group_kind: ticket
+  task_name: Plan solo maintainer governance controls
+  verify_command: git diff --check
+- group_id: '352'
+  group_kind: ticket
+  task_name: Harden v1 merge and release controls
+  verify_command: npm run format:check && cd runtime && cargo test
