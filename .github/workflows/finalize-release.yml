@@ -25,6 +25,8 @@ jobs:
       name: release-publication
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out the release tag
         uses: actions/checkout@v7
