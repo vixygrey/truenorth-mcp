@@ -15,7 +15,7 @@
 //! The gate command is trusted operator configuration, not caller input. It comes from the
 //! `TRUENORTH_VERIFY_CMD` environment variable an operator sets per project, and the
 //! allowlist comes from `TRUENORTH_GATE_ALLOWLIST`. No MCP tool argument feeds the command
-//! string: `truenorth_verify_gate` takes only a phase and a mode.
+//! string: `truenorth_verify_gate` takes only a phase.
 //!
 //! The command runs through `/bin/sh -c`, so shell features work (pipes, `&&`, redirects,
 //! variable expansion). The allowlist gates the command's first token only. It is a

@@ -143,6 +143,9 @@ jobs:
         if: steps.tooling.outputs.present == 'true'
         run: npm run format:check
 
+      - name: Lint verify-gate documentation
+        run: npm run lint:verify-gate-docs
+
   shell:
     name: shell lint and test
     runs-on: ubuntu-latest

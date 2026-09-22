@@ -15,3 +15,7 @@ tasks:
   group_kind: ticket
   task_name: Restore issue-per-task cockpit seed files
   verify_command: cargo test --manifest-path runtime/Cargo.toml scaffold
+- group_id: '351'
+  group_kind: ticket
+  task_name: Align execute-only verify gate documentation
+  verify_command: npm run lint:verify-gate-docs && cargo test --manifest-path runtime/Cargo.toml legacy_evidence_gate_requests_error_over_the_client

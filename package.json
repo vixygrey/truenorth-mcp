@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint:verify-gate-docs": "node scripts/lint-verify-gate-docs.js"
   },
   "devDependencies": {
     "prettier": "3.9.6"
