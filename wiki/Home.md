@@ -42,8 +42,8 @@ Read the pages in this order for a first run.
 4. [The lifecycle](The-lifecycle): a worked Discover-to-Integrate run.
 5. [Resources](Resources): the live `truenorth://` resources.
 6. [The ontology feature](The-ontology-feature): the optional ontology surface.
-7. [Skills and tiers](Skills-and-tiers): the skill library and tiered rendering.
-8. [Troubleshooting](Troubleshooting): repo-root resolution and a broken layout contract.
+7. [Troubleshooting](Troubleshooting): repo-root resolution and a broken layout contract.
+8. [Compatibility](Compatibility): the v1 workspace, migration, MCP, and upgrade policy.
 
 ## The skill reference
 

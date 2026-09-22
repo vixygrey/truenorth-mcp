@@ -87,16 +87,36 @@ fn read_falls_back_to_a_legacy_specs_cockpit() {
 }
 
 #[test]
-fn agent_file_takes_precedence_over_legacy() {
+fn agent_files_take_precedence_over_legacy() {
     // When both exist, the .agent/ file wins and the legacy file is ignored.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
+
     seed(root, "specs/state.yaml", "active_epic: legacy\n");
     seed(root, ".agent/tasks/state.yml", "active_epic: current\n");
+    let state = ResourceDoc::State.read_current(root).expect("read state");
+    assert!(state.contains("current"));
+    assert!(!state.contains("legacy"));
 
-    let content = ResourceDoc::State.read_current(root).expect("read");
-    assert!(content.contains("current"));
-    assert!(!content.contains("legacy"));
+    seed(root, "specs/release-plan.yaml", "build_order:\n- legacy\n");
+    seed(
+        root,
+        ".agent/tasks/release-plan.yml",
+        "build_order:\n- current\n",
+    );
+    let cockpit = ResourceDoc::Cockpit
+        .read_current(root)
+        .expect("read cockpit");
+    assert!(cockpit.contains("current"));
+    assert!(!cockpit.contains("legacy"));
+
+    seed(root, "specs/ontology.yaml", "domain: legacy\n");
+    seed(root, ".agent/ontology.yml", "domain: current\n");
+    let ontology = ResourceDoc::Ontology
+        .read_current(root)
+        .expect("read ontology");
+    assert!(ontology.contains("current"));
+    assert!(!ontology.contains("legacy"));
 }
 
 #[test]
@@ -148,6 +168,20 @@ fn reading_absent_ontology_creates_it_under_agent() {
     // The file now exists under .agent/, not specs/.
     assert!(root.join(".agent/ontology.yml").is_file());
     assert!(!root.join("specs/ontology.yaml").exists());
+}
+
+#[test]
+fn ontology_reads_a_legacy_specs_file_when_agent_file_is_absent() {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path();
+    seed(root, "specs/ontology.yaml", "domain: legacy-orders\n");
+
+    let content = ResourceDoc::Ontology
+        .read_current(root)
+        .expect("read legacy ontology");
+
+    assert!(content.contains("domain: legacy-orders"));
+    assert!(!root.join(".agent/ontology.yml").exists());
 }
 
 #[test]

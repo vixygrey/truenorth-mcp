@@ -189,6 +189,8 @@ privately through the [security policy](SECURITY.md).
 - The [Wiki](https://github.com/vixygrey/truenorth-mcp/wiki/Home) is the full usage
   manual: install and connect, the `.agent/` workspace, the lifecycle, the resources,
   the ontology feature, and troubleshooting.
+- The [compatibility policy](https://github.com/vixygrey/truenorth-mcp/wiki/Compatibility)
+  defines the v1 workspace, MCP, migration, and upgrade contract.
 
 ## Contributing
 

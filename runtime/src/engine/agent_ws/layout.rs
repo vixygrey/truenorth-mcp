@@ -10,9 +10,23 @@
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, PoisonError};
 
+use serde::Deserialize;
 use thiserror::Error;
 
 use super::AGENT_DIR;
+
+/// The only `.agent/layout.yml` contract version supported by this runtime major version.
+const SUPPORTED_LAYOUT_VERSION: &str = "1";
+
+/// The versioned, language-agnostic layout contract.
+///
+/// The required entries remain fixed by the runtime. The document's `areas` section is
+/// intentionally not deserialized here because it communicates the layout to other tools;
+/// this runtime validates the required paths directly.
+#[derive(Debug, Deserialize)]
+struct LayoutContract {
+    version: String,
+}
 
 /// The required areas and files under `.agent/` (Requirement 1.5 through 1.9).
 ///
@@ -58,6 +72,25 @@ pub enum LayoutError {
         path: String,
         /// The underlying I/O error.
         source: std::io::Error,
+    },
+
+    /// The layout contract could not be parsed.
+    #[error("could not parse the layout contract `{path}`: {source}")]
+    Parse {
+        /// The contract path.
+        path: String,
+        /// The YAML parse failure.
+        source: serde_yaml::Error,
+    },
+
+    /// The layout contract declares a version this runtime does not support.
+    #[error(
+        "the agent workspace layout version `{actual}` is unsupported; \
+         supported version: `{SUPPORTED_LAYOUT_VERSION}`."
+    )]
+    UnsupportedVersion {
+        /// The version declared by the layout contract.
+        actual: String,
     },
 
     /// A required area or file is absent (Requirement 1.12).
@@ -150,12 +183,20 @@ pub fn read_layout(repo_root: &Path) -> Result<Layout, LayoutError> {
     let agent_root = repo_root.join(AGENT_DIR);
     let contract_path = agent_root.join("layout.yml");
 
-    // Read the contract so a reader in any language could parse the same bytes. The read
-    // also confirms the contract file itself is present.
-    std::fs::read_to_string(&contract_path).map_err(|source| LayoutError::Io {
+    let text = std::fs::read_to_string(&contract_path).map_err(|source| LayoutError::Io {
         path: contract_path.display().to_string(),
         source,
     })?;
+    let contract: LayoutContract =
+        serde_yaml::from_str(&text).map_err(|source| LayoutError::Parse {
+            path: contract_path.display().to_string(),
+            source,
+        })?;
+    if contract.version != SUPPORTED_LAYOUT_VERSION {
+        return Err(LayoutError::UnsupportedVersion {
+            actual: contract.version,
+        });
+    }
 
     for (entry, kind) in REQUIRED_ENTRIES {
         let path = agent_root.join(entry);

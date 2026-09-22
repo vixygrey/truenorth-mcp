@@ -58,7 +58,9 @@ problem is worse than a red one. -->
 
 ## Backward compatibility
 
-<!-- Backward compatibility is mandatory. State the risk, or write "none". -->
+<!-- State "none", or name every affected workspace path, tool, resource, or wire field.
+For a breaking change, include the removal version, replacement, and command-first migration
+steps. Release notes must repeat those migration steps. -->
 
 ## Accessibility
 

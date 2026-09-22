@@ -24,7 +24,12 @@ fn seed_valid_layout() -> TempDir {
                 if let Some(parent) = path.parent() {
                     fs::create_dir_all(parent).expect("create parent");
                 }
-                fs::write(&path, "seed\n").expect("write file entry");
+                let contents = match entry {
+                    "layout.yml" => "version: \"1\"\n",
+                    "profile.yml" => "profile: issue-per-task\n",
+                    _ => "seed\n",
+                };
+                fs::write(&path, contents).expect("write file entry");
             }
         }
     }
@@ -65,6 +70,35 @@ fn read_layout_errors_when_the_contract_file_is_absent() {
 }
 
 #[test]
+fn read_layout_rejects_an_unsupported_version() {
+    let repo = seed_valid_layout();
+    fs::write(
+        repo.path().join(AGENT_DIR).join("layout.yml"),
+        "version: \"2\"\n",
+    )
+    .expect("write unsupported version");
+
+    let error = read_layout(repo.path()).expect_err("must reject");
+    assert!(matches!(
+        error,
+        LayoutError::UnsupportedVersion { actual } if actual == "2"
+    ));
+}
+
+#[test]
+fn read_layout_rejects_a_malformed_version() {
+    let repo = seed_valid_layout();
+    fs::write(
+        repo.path().join(AGENT_DIR).join("layout.yml"),
+        "version: []\n",
+    )
+    .expect("write malformed version");
+
+    let error = read_layout(repo.path()).expect_err("must reject");
+    assert!(matches!(error, LayoutError::Parse { .. }));
+}
+
+#[test]
 fn layout_cache_retains_the_last_valid_contract_on_a_later_broken_read() {
     let repo = seed_valid_layout();
     let cache = LayoutCache::new();
@@ -79,5 +113,21 @@ fn layout_cache_retains_the_last_valid_contract_on_a_later_broken_read() {
     assert!(matches!(error, LayoutError::MissingEntry { .. }));
 
     // The last valid contract is retained (Requirement 1.12).
+    assert_eq!(cache.last_valid(), Some(first));
+}
+
+#[test]
+fn layout_cache_retains_the_last_valid_contract_after_an_unsupported_version() {
+    let repo = seed_valid_layout();
+    let cache = LayoutCache::new();
+    let first = cache.read(repo.path()).expect("first read valid");
+    fs::write(
+        repo.path().join(AGENT_DIR).join("layout.yml"),
+        "version: \"2\"\n",
+    )
+    .expect("write unsupported version");
+
+    let error = cache.read(repo.path()).expect_err("must reject");
+    assert!(matches!(error, LayoutError::UnsupportedVersion { .. }));
     assert_eq!(cache.last_valid(), Some(first));
 }
