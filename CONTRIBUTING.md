@@ -79,6 +79,7 @@ node --test npm/test/release-version.test.js
 node scripts/check-release-version.js <version>
 ```
 
-The release workflow verifies the committed metadata before cross-compiling. It does not
-rewrite package versions. A `v*` tag then builds the four native targets, publishes the
-per-platform packages, and publishes the root wrapper.
+The release workflow verifies the committed metadata, builds each native target, and smoke
+tests both the staged executable and a clean installation of the packed wrapper before it
+stages packages. It does not rewrite package versions. A `v*` tag then publishes the four
+per-platform packages and the root wrapper.
