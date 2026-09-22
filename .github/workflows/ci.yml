@@ -112,6 +112,42 @@ jobs:
         working-directory: npm
         run: node --test
 
+  artifact-smoke:
+    name: artifact smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Install the stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Build the Linux x64 release binary
+        working-directory: runtime
+        run: cargo build --release
+
+      - name: Stage the Linux x64 package binary
+        run: |
+          cp runtime/target/release/truenorth-mcp npm/packages/linux-x64/truenorth-mcp
+          chmod +x npm/packages/linux-x64/truenorth-mcp
+
+      - name: Smoke the staged native artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "$(node -p "require('./npm/package.json').version")" \
+            -- npm/packages/linux-x64/truenorth-mcp
+
+      - name: Smoke the packed wrapper artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "$(node -p "require('./npm/package.json').version")" \
+            --packed-wrapper npm/packages/linux-x64
+
   format:
     name: prettier check
     runs-on: ubuntu-latest
@@ -215,28 +251,31 @@ jobs:
 
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only
-  # when the Rust check job, the npm wrapper job, the format job, and the shell job passed.
+  # when the Rust check, wrapper, artifact-smoke, format, and shell jobs passed.
   gate:
     name: CI Gate
     runs-on: ubuntu-latest
-    needs: [check, wrapper, format, shell]
+    needs: [check, wrapper, artifact-smoke, format, shell]
     if: always()
     steps:
-      - name: Confirm the check, wrapper, format, and shell jobs passed
+      - name: Confirm the check, wrapper, artifact-smoke, format, and shell jobs passed
         run: |
           check_result="${{ needs.check.result }}"
           wrapper_result="${{ needs.wrapper.result }}"
+          artifact_smoke_result="${{ needs.artifact-smoke.result }}"
           format_result="${{ needs.format.result }}"
           shell_result="${{ needs.shell.result }}"
           echo "check job result: ${check_result}"
           echo "wrapper job result: ${wrapper_result}"
+          echo "artifact smoke job result: ${artifact_smoke_result}"
           echo "format job result: ${format_result}"
           echo "shell job result: ${shell_result}"
           if [ "${check_result}" != "success" ] \
             || [ "${wrapper_result}" != "success" ] \
+            || [ "${artifact_smoke_result}" != "success" ] \
             || [ "${format_result}" != "success" ] \
             || [ "${shell_result}" != "success" ]; then
             echo "A required job did not pass. Failing the gate."
             exit 1
           fi
-          echo "The check, wrapper, format, and shell jobs passed. The gate is green."
+          echo "The check, wrapper, artifact-smoke, format, and shell jobs passed. The gate is green."

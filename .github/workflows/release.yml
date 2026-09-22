@@ -1,9 +1,10 @@
 name: Release
 
-# Cross-compile the native binaries, stage the per-platform npm packages, then stage the
-# root wrapper. The root wrapper stages only after every per-platform package stages, so a
-# single per-platform failure aborts the release (Requirements 8.7, 8.11). Staged versions
-# go live only after a maintainer approves each one with 2FA on npm.
+# Build each native binary, stage it into its platform package, then prove both the staged
+# executable and a clean installation of the packed wrapper complete an MCP handshake before
+# publishing. The root wrapper stages only after every platform package stages, so a single
+# platform failure aborts the release (Requirements 8.7, 8.11). Staged versions go live only
+# after a maintainer approves each one with 2FA on npm.
 #
 # The workflow runs on a release tag. The npm publishes use trusted publishing (OIDC),
 # so no npm token is stored. GitHub mints a short-lived id-token, and npm verifies the
@@ -77,7 +78,7 @@ jobs:
             os: ubuntu-latest
             platform: linux-x64
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
             platform: linux-arm64
     steps:
       - name: Check out the repository
@@ -88,12 +89,6 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      - name: Install the aarch64 Linux cross-linker
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-
       - name: Cache cargo artifacts
         uses: Swatinem/rust-cache@v2
         with:
@@ -101,9 +96,6 @@ jobs:
 
       - name: Build the release binary
         working-directory: runtime
-        env:
-          # The aarch64 Linux target needs its cross-linker; the others use the default.
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Stage the binary into the platform package
@@ -124,6 +116,18 @@ jobs:
         # Trusted publishing needs npm 11.5.1 or later. The runner's bundled npm can be
         # older, so pin a version that supports OIDC publishing.
         run: npm install -g npm@latest
+
+      - name: Smoke the staged native artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "${{ needs.verify-release-version.outputs.version }}" \
+            -- "npm/packages/${{ matrix.platform }}/truenorth-mcp"
+
+      - name: Smoke the packed wrapper artifact
+        run: |
+          node scripts/smoke-mcp-artifact.js \
+            --expected-version "${{ needs.verify-release-version.outputs.version }}" \
+            --packed-wrapper "npm/packages/${{ matrix.platform }}"
 
       - name: Stage the platform package
         working-directory: npm/packages/${{ matrix.platform }}
