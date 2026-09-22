@@ -2,6 +2,21 @@
 
 This page covers the common startup problems and their fixes.
 
+## Collect diagnostics
+
+Run these commands before reporting a setup problem:
+
+```bash
+truenorth-mcp --version
+truenorth-mcp --check-config
+```
+
+`--check-config` returns a JSON report and exits nonzero when a required check fails. It
+reports an actionable fix for a missing repository root, invalid layout, unreadable feature
+configuration, or missing verify command. It reads configuration only. It does not start
+the MCP server, mutate the workspace, run the verify command, or print configured command
+values.
+
 ## The server cannot resolve the repository root
 
 The runtime resolves the repository root by looking for a directory that contains

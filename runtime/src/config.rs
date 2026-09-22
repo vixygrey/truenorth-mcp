@@ -17,6 +17,11 @@ use thiserror::Error;
 
 /// Environment variable that names an explicit repository root.
 const REPO_ROOT_ENV: &str = "TRUENORTH_ROOT";
+/// Environment variable that holds the project verify or test command.
+///
+/// The raw value is operator configuration and can contain private paths or shell
+/// expansions. Callers must not log or return it to a client.
+pub const VERIFY_CMD_ENV: &str = "TRUENORTH_VERIFY_CMD";
 
 /// Marker directories that identify a valid repository root. A candidate is valid only
 /// when it directly contains all three of these directories (Requirement 2.7). The
@@ -75,6 +80,17 @@ pub enum ConfigError {
 /// ```
 pub fn get_repo_root() -> Result<PathBuf, ConfigError> {
     select_repo_root(&repo_root_candidates())
+}
+
+/// Return the configured verify command when it is non-empty.
+///
+/// This reads one environment variable and performs no command execution. The returned
+/// command is private operator configuration, so callers must not expose it in output.
+pub fn verify_command() -> Option<String> {
+    match std::env::var(VERIFY_CMD_ENV) {
+        Ok(value) if !value.trim().is_empty() => Some(value),
+        _ => None,
+    }
 }
 
 /// Select the first valid repository root from an ordered candidate list.

@@ -42,6 +42,20 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 The result names `truenorth-mcp` and lists the two capabilities.
 
+## Diagnose setup
+
+Run these commands from the shell before adding the server to an MCP client:
+
+```bash
+truenorth-mcp --version
+truenorth-mcp --check-config
+```
+
+The configuration check returns a JSON report with the repository root, workspace layout,
+enabled features, verify-gate readiness, package version, and platform. It does not start
+the MCP server or run the verify command. The report does not include configured command
+values or other secret environment values.
+
 ## The repository root
 
 The runtime governs one repository. It resolves the repository root by looking for a

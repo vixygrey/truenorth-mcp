@@ -114,6 +114,19 @@ client, which seeds the `.agent/` tree for a methodology profile. The
 [install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
 has the per-client steps.
 
+## Diagnose a setup
+
+Run the native command before connecting an MCP client:
+
+```bash
+truenorth-mcp --version
+truenorth-mcp --check-config
+```
+
+`--check-config` reports the repository root, workspace layout, enabled features,
+verify-gate readiness, package version, and platform. It reads configuration only. It
+does not start the MCP server, run the verify command, or print configured command values.
+
 ## Methodology profiles
 
 A project declares one methodology profile in `.agent/profile.yml`. The profile sets the
