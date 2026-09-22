@@ -172,6 +172,17 @@ The ontology surface is a per-project choice. Set `features.ontology` in
 `.agent/config/rules.yml`. The default is enabled. When it is disabled, the two ontology
 tools and the `truenorth://ontology` resource are absent.
 
+## Support
+
+TrueNorth-MCP v1 supports the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
+Windows is unsupported. The wrapper requires Node.js 18 or newer. Source builds require
+Rust 1.88 or newer. The server supports MCP over stdio; vendor-specific MCP clients are
+not separately certified.
+
+Use [GitHub Discussions](https://github.com/vixygrey/truenorth-mcp/discussions) for
+questions and the issue forms for reproducible non-security defects. Report vulnerabilities
+privately through the [security policy](SECURITY.md).
+
 ## Documentation
 
 - The [landing page](https://vixygrey.github.io/truenorth-mcp/) presents the project.

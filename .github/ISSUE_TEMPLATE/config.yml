@@ -5,4 +5,4 @@ contact_links:
     about: Ask a question or discuss an idea before you open an issue.
   - name: Security report
     url: https://github.com/vixygrey/truenorth-mcp/security/advisories/new
-    about: Report a vulnerability in private. Do not open a public issue.
+    about: Report a vulnerability in private. Read SECURITY.md first. Do not open a public issue.

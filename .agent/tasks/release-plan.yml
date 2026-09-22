@@ -27,3 +27,7 @@ tasks:
   group_kind: ticket
   task_name: Smoke test packed MCP release artifacts
   verify_command: node scripts/smoke-mcp-artifact.js --expected-version 0.1.0 -- runtime/target/release/truenorth-mcp && npm run format:check
+- group_id: '345'
+  group_kind: ticket
+  task_name: Publish v1 security and support policy
+  verify_command: npm run format:check && truenorth_verify_gate
