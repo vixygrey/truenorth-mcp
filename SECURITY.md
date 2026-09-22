@@ -38,6 +38,8 @@ TrueNorth-MCP uses these controls:
 These controls reduce risk. They do not guarantee that every vulnerability is detected or
 that every supported configuration is secure.
 
+Merge, release, and emergency-bypass authority are defined in [GOVERNANCE.md](GOVERNANCE.md).
+
 ## Support boundaries
 
 Supported v1 distributions are the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.

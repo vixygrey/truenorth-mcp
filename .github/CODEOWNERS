@@ -1,15 +1,7 @@
 # Code owners for truenorth-mcp.
 #
-# GitHub auto-requests a review from the owner on every pull request that changes a
-# matching path. The last matching pattern wins. This single catch-all makes the owner
-# the reviewer for the whole repository.
-#
-# Scope note: this repository is a personal (user) account repository. GitHub allows
-# per-actor bypass lists only on organization repositories. So the branch protection on
-# main keeps 0 required approvals, which lets the owner self-merge. The owner's review is
-# auto-requested here but is not a hard merge requirement yet. To require the owner's
-# review for other authors while the owner keeps self-merge, move the repository to an
-# organization and add a ruleset that requires code-owner review with the owner as a
-# bypass actor.
+# This catch-all requests the maintainer review for every pull request. The required
+# `External contribution review` check enforces a current-head maintainer approval for
+# non-maintainer authors while owner-authored pull requests keep the solo workflow.
 
 * @vixygrey
