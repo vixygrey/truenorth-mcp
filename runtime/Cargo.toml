@@ -1,10 +1,10 @@
 [package]
 name = "truenorth-mcp"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 description = "Active, protocol-first MCP execution runtime for spec-driven engineering discipline"
 license = "MIT"
-repository = "https://github.com/greyvixfen/truenorth-mcp"
+repository = "https://github.com/vixygrey/truenorth-mcp"
 rust-version = "1.88"
 
 [[bin]]

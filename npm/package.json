@@ -1,6 +1,6 @@
 {
   "name": "truenorth-mcp",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Thin launcher for the TrueNorth-MCP native binary.",
   "license": "MIT",
   "repository": {
@@ -18,10 +18,10 @@
     "node": ">=18"
   },
   "optionalDependencies": {
-    "@truenorth-mcp/darwin-arm64": "0.1.0",
-    "@truenorth-mcp/darwin-x64": "0.1.0",
-    "@truenorth-mcp/linux-x64": "0.1.0",
-    "@truenorth-mcp/linux-arm64": "0.1.0"
+    "@truenorth-mcp/darwin-arm64": "1.0.0",
+    "@truenorth-mcp/darwin-x64": "1.0.0",
+    "@truenorth-mcp/linux-x64": "1.0.0",
+    "@truenorth-mcp/linux-arm64": "1.0.0"
   },
   "scripts": {
     "test": "node --test"
