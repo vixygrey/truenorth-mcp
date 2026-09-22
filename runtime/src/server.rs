@@ -84,10 +84,10 @@ impl ServerContext {
 
     /// Validate the `.agent/` layout contract and cache the last valid result.
     ///
-    /// The check is non-fatal (Requirement 1.12). An absent contract file means the repo
-    /// has no `.agent/layout.yml` yet (a legacy `specs/` cockpit or an unscaffolded repo),
-    /// so the server serves without a cached contract. A present-but-incomplete contract
-    /// is logged; the server keeps serving and retains the last valid contract.
+    /// The check is non-fatal (Requirement 1.12). An absent `.agent/layout.yml` means the
+    /// repo has no layout contract yet, so legacy and unscaffolded repositories still serve.
+    /// A present but malformed, unsupported, or incomplete contract is logged; the server
+    /// keeps serving and retains the last valid contract.
     fn validate_layout(&self) {
         match self.layout.read(&self.repo_root) {
             Ok(_) => {
@@ -103,6 +103,10 @@ impl ServerContext {
             Err(error @ LayoutError::Io { .. }) => {
                 // A present contract file that could not be read (permissions, for example).
                 tracing::warn!(%error, "the .agent/layout.yml contract could not be read");
+            }
+            Err(error @ LayoutError::Parse { .. })
+            | Err(error @ LayoutError::UnsupportedVersion { .. }) => {
+                tracing::warn!(%error, "the .agent/layout.yml contract is invalid");
             }
             Err(error @ LayoutError::MissingEntry { .. }) => {
                 tracing::warn!(%error, "the .agent/ layout contract is incomplete");

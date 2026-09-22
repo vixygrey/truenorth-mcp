@@ -115,12 +115,12 @@ fn seed_valid_layout() -> TempDir {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).expect("create parent");
         }
-        // `config/rules.yml` is parsed by the features reader, so it must be a valid YAML
-        // mapping. Every other seeded file only needs to exist for the presence check.
-        let body = if file == "config/rules.yml" {
-            "features:\n  ontology: true\n"
-        } else {
-            "seed\n"
+        // `config/rules.yml` is parsed by the features reader and `layout.yml` by the layout
+        // validator. Every other seeded file only needs to exist for the presence check.
+        let body = match file {
+            "config/rules.yml" => "features:\n  ontology: true\n",
+            "layout.yml" => "version: \"1\"\n",
+            _ => "seed\n",
         };
         fs::write(&path, body).expect("write layout file");
     }

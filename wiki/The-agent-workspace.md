@@ -11,6 +11,9 @@ language-agnostic data, so a reader in any language can parse it. The runtime va
 contract at startup. A missing required entry logs a warning that names the absent path,
 and the runtime keeps serving on the last valid state.
 
+V1 supports `version: "1"` only. See [Compatibility](Compatibility) for the complete
+workspace contract, legacy cockpit migration behavior, and upgrade steps.
+
 ## The required entries
 
 The contract requires these entries under `.agent/`. Each area is a directory with its

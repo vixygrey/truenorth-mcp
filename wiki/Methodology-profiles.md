@@ -27,6 +27,9 @@ profile: issue-per-task
 The runtime reads the name once at startup. An unknown name returns an error that names the
 value and the five valid names, and makes no partial change.
 
+The profile names are the v1 profile contract. See [Compatibility](Compatibility) before
+upgrading an existing workspace.
+
 ## The grouping key
 
 A task carries a neutral grouping key, not a mandatory epic id. `truenorth_record_task`
