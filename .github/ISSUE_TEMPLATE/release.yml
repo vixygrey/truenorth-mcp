@@ -30,7 +30,8 @@ body:
       options:
         - label: "cargo fmt --check, clippy, and the full test suite pass on main."
         - label: "The npm wrapper tests pass."
-        - label: "The version follows SemVer for the changes since the last release."
+        - label: "Cargo.toml, Cargo.lock, the wrapper, optional dependencies, and every platform package use the release version."
+        - label: "`node scripts/check-release-version.js <version>` passes."
         - label: "Breaking changes are documented, command first."
   - type: checkboxes
     id: publish

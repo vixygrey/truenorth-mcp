@@ -17,15 +17,45 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "The version to publish, without the leading v (for example 0.1.0)"
+        description: "The version to verify and publish, without the leading v (must match source metadata)"
         required: true
 
 permissions:
   contents: read
 
 jobs:
+  verify-release-version:
+    name: verify release version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Resolve the release version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            version="${{ github.event.inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify committed release metadata
+        run: node scripts/check-release-version.js "${{ steps.version.outputs.version }}"
+
   build-and-publish-platform:
     name: build and publish ${{ matrix.platform }}
+    needs: verify-release-version
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
@@ -52,18 +82,6 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7
-
-      - name: Resolve the release version
-        id: version
-        shell: bash
-        run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            version="${{ github.event.inputs.version }}"
-          else
-            version="${GITHUB_REF_NAME#v}"
-          fi
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "Publishing version ${version} for ${{ matrix.platform }}"
 
       - name: Install the Rust toolchain for the target
         uses: dtolnay/rust-toolchain@stable
@@ -96,10 +114,6 @@ jobs:
           cp "runtime/target/${{ matrix.target }}/release/truenorth-mcp" "${pkg_dir}/truenorth-mcp"
           chmod +x "${pkg_dir}/truenorth-mcp"
 
-      - name: Set the package version
-        working-directory: npm/packages/${{ matrix.platform }}
-        run: npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
-
       - name: Set up Node.js for publishing
         uses: actions/setup-node@v7
         with:
@@ -129,39 +143,10 @@ jobs:
     # The root wrapper publishes only after every per-platform package publishes. A single
     # failed leg fails `build-and-publish-platform`, which skips this job and aborts the
     # release (Requirement 8.11).
-    needs: build-and-publish-platform
+    needs: [verify-release-version, build-and-publish-platform]
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7
-
-      - name: Resolve the release version
-        id: version
-        shell: bash
-        run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            version="${{ github.event.inputs.version }}"
-          else
-            version="${GITHUB_REF_NAME#v}"
-          fi
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-
-      - name: Set the root and optionalDependencies versions
-        working-directory: npm
-        shell: bash
-        run: |
-          set -euo pipefail
-          version="${{ steps.version.outputs.version }}"
-          npm version "${version}" --no-git-tag-version --allow-same-version
-          # Pin each optionalDependency to the freshly published platform version.
-          node -e '
-            const fs = require("node:fs");
-            const v = process.argv[1];
-            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-            for (const dep of Object.keys(pkg.optionalDependencies ?? {})) {
-              pkg.optionalDependencies[dep] = v;
-            }
-            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n");
-          ' "${version}"
 
       - name: Set up Node.js for publishing
         uses: actions/setup-node@v7
