@@ -1,0 +1,20 @@
+name: Dependency security scan
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  osv:
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.6.0
+    with:
+      scan-args: |
+        -r
+        ./
+      fail-on-vuln: true
+      upload-sarif: true
