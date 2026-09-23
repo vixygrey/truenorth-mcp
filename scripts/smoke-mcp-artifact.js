@@ -48,7 +48,7 @@ async function smokePackedWrapper(expectedVersion, platformPackage) {
     const wrapper = path.join(install, 'node_modules', 'truenorth-mcp', 'bin', 'truenorth.js');
     bootstrapWorkspace(process.execPath, [wrapper, 'init', '--profile', 'generic'], project);
     checkConfiguration(process.execPath, [wrapper, '--check-config'], project);
-    await smokeCommand(expectedVersion, process.execPath, [wrapper], project);
+    await smokeCommand(expectedVersion, process.execPath, [wrapper], project, true);
   } finally {
     fs.rmSync(work, { recursive: true, force: true });
   }
@@ -64,7 +64,13 @@ function pack(packageDirectory, destination) {
   return path.join(destination, filename);
 }
 
-async function smokeCommand(expectedVersion, command, args, existingRoot) {
+async function smokeCommand(
+  expectedVersion,
+  command,
+  args,
+  existingRoot,
+  checkBundledSkill = false,
+) {
   const root = existingRoot ?? fs.mkdtempSync(path.join(os.tmpdir(), 'tn-mcp-smoke-'));
   const ownsRoot = !existingRoot;
   if (ownsRoot) {
@@ -93,11 +99,13 @@ async function smokeCommand(expectedVersion, command, args, existingRoot) {
     const resources = await session.request('resources/list', {});
     assertContains(resources.resources, 'uri', 'truenorth://state', 'resources/list');
 
-    const skill = await session.request('tools/call', {
-      name: 'truenorth_get_skill',
-      arguments: { name: 'using-truenorth', tier: 'lean' },
-    });
-    assertObject(skill, 'get_skill result');
+    if (checkBundledSkill) {
+      const skill = await session.request('tools/call', {
+        name: 'truenorth_get_skill',
+        arguments: { name: 'using-truenorth', tier: 'lean' },
+      });
+      assertObject(skill, 'get_skill result');
+    }
 
     await session.close();
     console.log(`MCP artifact smoke passed for truenorth-mcp ${expectedVersion}.`);
