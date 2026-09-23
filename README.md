@@ -91,36 +91,43 @@ the memories. The `truenorth://adr` resource serves `specs/adr/` read-only.
 
 ## Install
 
-Install the npm wrapper. It resolves the platform binary and runs the server over stdio.
+Bootstrap an empty project with the npm wrapper. It resolves the platform binary, copies its
+versioned skill bundle, and creates the language-agnostic TrueNorth workspace:
 
 ```bash
-npm install truenorth-mcp
+npx -y truenorth-mcp init --profile generic
 ```
 
-Then register it as an MCP server in your client. The command is the wrapper binary.
+`init` refuses to overwrite `.agent/`, `specs/`, `skills/`, or its workflow files. It does
+not create a language manifest, source tree, CI workflow, or verify command.
+
+Then register the wrapper as an MCP server in your client:
 
 ```json
 {
   "mcpServers": {
     "truenorth": {
-      "command": "truenorth-mcp"
+      "command": "npx",
+      "args": ["-y", "truenorth-mcp"],
+      "env": {
+        "TRUENORTH_ROOT": "/absolute/path/to/repo",
+        "TRUENORTH_VERIFY_CMD": "<your-project-verify-command>"
+      }
     }
   }
 }
 ```
 
-Scaffold a new project by calling the `truenorth_scaffold_project` tool from your MCP
-client, which seeds the `.agent/` tree for a methodology profile. The
-[install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
-has the per-client steps.
+Run the client from the repository root instead of setting `TRUENORTH_ROOT` when that is more
+convenient. Configure `TRUENORTH_VERIFY_CMD` for the project's own language and tooling.
+The [install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
+has per-client steps.
 
 ## Diagnose a setup
 
-Run the native command before connecting an MCP client:
-
 ```bash
-truenorth-mcp --version
-truenorth-mcp --check-config
+npx -y truenorth-mcp --version
+npx -y truenorth-mcp --check-config
 ```
 
 `--check-config` reports the repository root, workspace layout, enabled features,

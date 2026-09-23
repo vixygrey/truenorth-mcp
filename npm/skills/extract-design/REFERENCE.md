@@ -1,0 +1,83 @@
+# Extract Design — Reference
+
+## Extraction Algorithms
+
+### Color Classification
+
+1. Collect unique computed `background-color`, `color`, `border-color` from every DOM element.
+2. Count frequency and context (text vs. bg vs. border vs. button).
+3. Classify using Material 3 roles: surface = largest-area bg, on-surface = most-used text, tertiary = highest-saturation on CTAs, error = reddish.
+4. Surface container levels: luminance-ordered. Hard-cap at 3 unless data supports 5.
+5. Low-confidence → `<!-- AGENT NOTE -->` in Colors prose.
+
+### Typography Classification
+
+1. Collect unique (fontFamily, fontSize, fontWeight, lineHeight, letterSpacing) tuples.
+2. Cluster by fontSize (±2px) → type scale.
+3. Detect heading hierarchy from HTML tag + computed size.
+4. Name levels: display-lg, headline-lg/md/sm, title-lg, body-lg/md/sm, label-lg/md/sm.
+5. Parse `<link>` and `@font-face`; warn if computed font differs from declared.
+
+### Spacing Classification
+
+1. Collect unique padding, margin, gap values. Filter: ignore values < 3 occurrences.
+2. Compute tolerance-based GCD (0.5px tolerance).
+3. Declare base unit. Detect half-step if gcd/2 values present ≥3 times.
+4. Map: unit×1 → sm, ×2 → md, ×4 → lg, ×8 → xl.
+
+### Rounded Classification
+
+1. Collect unique border-radius values. Cluster (1px tolerance).
+2. Name: none (0), sm (smallest), md (median), lg (large), xl (largest), full (9999px).
+
+### Component Detection
+
+- Button: w<300px, h<64px, bg+radius set, short text. cursor:pointer is bonus.
+- Card: bg+radius+padding set, larger area.
+- Input: `<input>` or `<textarea>` tag.
+- Pseudo-state variants: force :hover, :active, :focus for high-confidence components.
+
+### Prose Generation
+
+Generates all 8 DESIGN.md sections. Overview and Do's/Don'ts flagged with `<!-- AGENT NOTE: Generated from visual analysis. Grill-me should validate. -->`.
+
+## Material 3 Token Conventions
+
+Colors: primary, on-primary, secondary, tertiary, error, surface, on-surface, surface-container-\*, outline, background, on-background.
+Typography: display-lg/md/sm, headline-lg/md/sm, title-lg/md/sm, body-lg/md/sm, label-lg/md/sm.
+Rounded: none, xs, sm, md, lg, xl, full.
+
+## CI Compatibility
+
+Chrome flags: `--headless=new --no-sandbox --disable-gpu --disable-dbus --use-gl=angle --use-angle=swiftshader`
+
+## Defensive Code
+
+Retry with backoff (3 attempts, 1s/2s/4s), Timeout (30s page load, 10s pseudo-state), Graceful degradation (Tier 2 on empty extraction).
+
+## Known Risks
+
+- DESIGN.md spec is alpha. Skill pins to current spec.
+- Puppeteer is heavy (~300MB Chrome). Document requirement clearly.
+- Prose quality depends on AI heuristics. grill-me is the validation gate.
+
+## Linter Dependency
+
+The design-token linter has two layers.
+
+The in-repo baseline validator (`scripts/lib/baseline-validator.js`) is the always
+available floor. It runs no subprocess and makes no network call, so the DESIGN.md HARD
+GATE holds offline and in a locked-down environment. It checks the front-matter structure,
+the required color roles (`surface`, `on-surface`), the WCAG AA contrast ratio (4.5:1) on
+the foreground and background color pairs, typography completeness (a `body-*` level for
+reading text), and unparseable color values and font sizes. Its diff reports added,
+removed, and modified color roles and typography levels. It returns the same result shape
+as the CLI.
+
+The external `@google/design.md` CLI is an optional enhancement. The validator invokes it
+through `npx` at a pinned version, `@google/design.md@0.4.0`. The pin keeps a run
+reproducible and prevents an unpinned floating release from changing lint output between
+runs. When the CLI is present, the validator uses its richer structural and reference
+checks. When the CLI is absent or an invocation fails, the validator falls back to the
+baseline rather than skipping. The terminal summary names which layer produced the result.
+Update the version in `scripts/lib/validator.js` (`DESIGN_MD_VERSION`) to move the pin.

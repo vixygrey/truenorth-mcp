@@ -15,4 +15,7 @@ test('the packed wrapper publishes its README', () => {
   const [pack] = JSON.parse(output);
 
   assert.ok(pack.files.some((file) => file.path === 'README.md'));
+  const paths = new Set(pack.files.map((file) => file.path));
+  assert.ok(paths.has('skills/using-truenorth/SKILL.md'));
+  assert.ok(paths.has('skills/guard-git/scripts/block-dangerous-git.sh'));
 });

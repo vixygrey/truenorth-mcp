@@ -1,8 +1,9 @@
-//! Read-only command-line diagnostics for the native runtime.
+//! Command-line diagnostics and bootstrap modes for the native runtime.
 //!
-//! The MCP server owns standard output when it runs normally. The explicit CLI modes in
-//! this module return before transport or watcher startup, so their JSON output is safe for
-//! shell use and cannot mutate the governed workspace.
+//! The MCP server owns standard output when it runs normally. Explicit CLI modes return before
+//! transport or watcher startup, so their output is safe for shell use. `init` is the one
+//! intentional mutating mode: it seeds a fresh language-agnostic workspace from an explicit,
+//! versioned skills bundle.
 
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -12,8 +13,9 @@ use serde::Serialize;
 use truenorth_mcp::config;
 use truenorth_mcp::engine::agent_ws::read_layout;
 use truenorth_mcp::engine::features;
+use truenorth_mcp::tools::scaffold::bootstrap_project;
 
-const USAGE: &str = "usage: truenorth-mcp [--version | --check-config]";
+const USAGE: &str = "usage: truenorth-mcp [--version | --check-config | init --skills-dir <path> [--profile <name>]]";
 
 /// The operation requested by the process arguments.
 #[derive(Debug, PartialEq, Eq)]
@@ -24,6 +26,13 @@ pub enum Mode {
     Version,
     /// Report the read-only configuration diagnostics.
     CheckConfig,
+    /// Seed a fresh project from an explicit skill bundle before MCP startup.
+    Init {
+        /// Optional methodology profile.
+        profile: Option<String>,
+        /// Directory containing the complete versioned skill bundle.
+        skills_dir: PathBuf,
+    },
 }
 
 /// Parse the supported command-line modes.
@@ -33,6 +42,7 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
         [] => Ok(Mode::Serve),
         [flag] if flag == "--version" => Ok(Mode::Version),
         [flag] if flag == "--check-config" => Ok(Mode::CheckConfig),
+        [command, rest @ ..] if command == "init" => parse_init(rest),
         _ => Err(USAGE.to_string()),
     }
 }
@@ -40,6 +50,53 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
 /// Print the package version without reading the workspace.
 pub fn print_version() {
     println!("{}", env!("CARGO_PKG_VERSION"));
+}
+
+/// Seed the current directory from a versioned skill bundle without starting MCP.
+pub fn init(profile: Option<String>, skills_dir: PathBuf) -> ExitCode {
+    let repo_root = match std::env::current_dir() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("truenorth-mcp: could not resolve the current directory: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    match bootstrap_project(&repo_root, profile.as_deref(), &skills_dir) {
+        Ok(result) => {
+            println!("{result}");
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("truenorth-mcp: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+/// Parse the bootstrap command without accepting ambiguous or repeated options.
+fn parse_init(args: &[String]) -> Result<Mode, String> {
+    let mut profile = None;
+    let mut skills_dir = None;
+    let mut index = 0;
+    while index < args.len() {
+        let Some(value) = args.get(index + 1) else {
+            return Err(USAGE.to_string());
+        };
+        match args[index].as_str() {
+            "--profile" if profile.is_none() => profile = Some(value.clone()),
+            "--skills-dir" if skills_dir.is_none() => skills_dir = Some(PathBuf::from(value)),
+            _ => return Err(USAGE.to_string()),
+        }
+        index += 2;
+    }
+    let Some(skills_dir) = skills_dir else {
+        return Err(USAGE.to_string());
+    };
+    Ok(Mode::Init {
+        profile,
+        skills_dir,
+    })
 }
 
 /// Inspect the configuration without starting the server or running a gate command.

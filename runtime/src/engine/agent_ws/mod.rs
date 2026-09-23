@@ -115,6 +115,24 @@ pub fn write_repo_seed(
     contents: &str,
     allow_repo_root_seed: bool,
 ) -> Result<(), WriteGuardError> {
+    write_repo_seed_bytes(
+        repo_root,
+        rel_path,
+        contents.as_bytes(),
+        allow_repo_root_seed,
+    )
+}
+
+/// Write bytes to `rel_path` under the repository root for an audited scaffold seed.
+///
+/// This preserves binary skill assets while keeping the same containment and atomic-write
+/// guarantees as [`write_repo_seed`].
+pub fn write_repo_seed_bytes(
+    repo_root: &Path,
+    rel_path: &Path,
+    contents: &[u8],
+    allow_repo_root_seed: bool,
+) -> Result<(), WriteGuardError> {
     if !allow_repo_root_seed {
         return Err(WriteGuardError::OutsideAgent {
             target: rel_path.display().to_string(),
@@ -250,9 +268,9 @@ fn resolve_under(base: &Path, rel_path: &Path) -> Option<PathBuf> {
 /// or the new file, never a partial one. On any failure the target is unchanged.
 ///
 /// This is private to the write guard. Every runtime write reaches it only through
-/// [`write_under_agent`] or [`write_repo_seed`], so the guard is the only door to the byte
-/// write and cannot be bypassed by a direct call (ADR-6, #187).
-fn write_atomic(path: &Path, contents: &str) -> std::io::Result<()> {
+/// [`write_under_agent`], [`write_repo_seed`], or [`write_repo_seed_bytes`], so the guard is
+/// the only door to the byte write and cannot be bypassed by a direct call (ADR-6, #187).
+fn write_atomic(path: &Path, contents: impl AsRef<[u8]>) -> std::io::Result<()> {
     let parent = path.parent().unwrap_or_else(|| Path::new("."));
     std::fs::create_dir_all(parent)?;
 

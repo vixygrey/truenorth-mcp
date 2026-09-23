@@ -3,15 +3,18 @@
 TrueNorth-MCP is an active MCP runtime for spec-driven engineering discipline. This
 package is the npm launcher for the native `truenorth-mcp` server binary.
 
-## Install
+## Bootstrap a project
+
+From an empty project directory, run:
 
 ```bash
-npm install truenorth-mcp
+npx -y truenorth-mcp init --profile generic
 ```
 
-The wrapper selects the matching native package automatically. It supports macOS
-ARM64 and x64 plus Linux ARM64 and x64. Windows is not supported. Node.js 18 or
-newer is required.
+The wrapper selects the matching native package, forwards the bundled skills to the runtime,
+and creates a language-agnostic `.agent/`, `specs/`, and `skills/` workspace. It does not
+create a language manifest, source tree, CI workflow, or verify command. `init` refuses to
+overwrite an existing TrueNorth workspace.
 
 ## Connect an MCP client
 
@@ -27,9 +30,9 @@ Register the wrapper as a stdio MCP server:
 }
 ```
 
-The server reads and writes the governed project's `.agent/` workspace. Start by
-calling `truenorth_scaffold_project` from your MCP client, then use the lifecycle,
-task, and quality-gate tools for project work.
+The server reads and writes the governed project's `.agent/` workspace. Bootstrap before
+connecting, then configure the project's own `TRUENORTH_VERIFY_CMD` in the MCP client
+environment before using lifecycle, task, and quality-gate tools.
 
 ## Documentation and support
 

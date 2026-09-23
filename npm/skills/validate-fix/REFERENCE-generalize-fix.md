@@ -1,0 +1,30 @@
+# Generalize-fix (e80s04 / GH #98)
+
+After local hardening in `validate-fix`, sweep the **defect class** across the codebase.
+
+## Steps
+
+1. **Classify** — name the pattern (e.g. `unscoped org query`, `fail-open verify`, `hardcoded package manager`).
+2. **Sweep** — grep for sibling instances; record `match_count` and `grep_pattern`.
+3. **Resolve** — patch all matches in this PR **or** file one tracking issue listing every remaining instance.
+4. **Artifact** — write a verification report before declaring done. Record the sweep evidence in this shape:
+
+```json
+{
+  "defect_class": "fail-open-verify",
+  "grep_pattern": "\\\\|\\\\| echo",
+  "match_count": 0,
+  "sweep_scope": "skills/*/SKILL.md",
+  "patched_in_pr": [],
+  "tracked_issues": []
+}
+```
+
+Verify the generalize sweep: confirm every entry in the verification report resolves and its verification passes.
+
+## Security classes
+
+When the defect class is security- or gate-relevant:
+
+- Add a row to `security-review` CWE fixture table (see `skills/security-review/SKILL.md` § CWE mapping mandate).
+- If security-impact was MEDIUM+: add regression test, false-positive exclusion rule, and threat-model update (HIGH+).

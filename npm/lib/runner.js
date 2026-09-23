@@ -6,17 +6,10 @@
 'use strict';
 
 const { spawnSync } = require('node:child_process');
+const path = require('node:path');
 
 // The platforms with a published native binary. Windows is out of scope (Requirement 8.8).
 const SUPPORTED = new Set(['darwin-arm64', 'darwin-x64', 'linux-x64', 'linux-arm64']);
-
-// The message the `init` subcommand prints. The runtime owns scaffolding through the
-// truenorth_scaffold_project MCP tool, which seeds the .agent/ tree for a methodology
-// profile. The wrapper stays thin and does not scaffold (#182).
-const INIT_MESSAGE =
-  'truenorth-mcp: `init` is retired. Scaffold a project by calling the ' +
-  '`truenorth_scaffold_project` tool from your MCP client, which seeds the .agent/ ' +
-  'tree for a methodology profile.\n';
 
 // The platform package name for a platform and arch, for example
 // `@truenorth-mcp/darwin-arm64`.
@@ -42,20 +35,14 @@ function resolveBinary(platform, arch, resolver) {
   return resolver(`${pkg}/truenorth-mcp`);
 }
 
-// Run the launcher with an injected environment, for testing.
-//
-// `deps` carries `argv`, `platform`, `arch`, `resolver`, `spawn`, `stderr`, and `exit`, so
-// the tests drive the flow without touching the real process. Returns the exit code (the
-// real entry passes it to `process.exit`).
+// `deps` carries `argv`, `platform`, `arch`, `packageDir`, `resolver`, `spawn`, `stderr`, and
+// `exit`, so the tests drive the flow without touching the real process. Returns the exit code
+// (the real entry passes it to `process.exit`).
 function run(deps) {
-  const { argv, platform, arch, resolver, spawn, stderr, exit } = deps;
+  const { argv, platform, arch, packageDir, resolver, spawn, stderr, exit } = deps;
 
-  // The `init` subcommand is retired. The runtime owns scaffolding through the
-  // truenorth_scaffold_project tool, so the wrapper prints a pointer and exits (#182).
-  if (argv[0] === 'init') {
-    stderr(INIT_MESSAGE);
-    return exit(0);
-  }
+  const binaryArgs =
+    argv[0] === 'init' ? [...argv, '--skills-dir', path.join(packageDir, 'skills')] : argv;
 
   let binary;
   try {
@@ -66,7 +53,7 @@ function run(deps) {
     return exit(1);
   }
 
-  const result = spawn(binary, argv, { stdio: 'inherit' });
+  const result = spawn(binary, binaryArgs, { stdio: 'inherit' });
   if (result.error) {
     // Requirement 8.9: the resolved binary failed to spawn.
     stderr(`truenorth-mcp: failed to start the binary: ${result.error.message}\n`);
@@ -83,6 +70,7 @@ function realDeps() {
     platform: process.platform,
     arch: process.arch,
     resolver: (request) => require.resolve(request),
+    packageDir: path.resolve(__dirname, '..'),
     spawn: spawnSync,
     stderr: (text) => process.stderr.write(text),
     exit: (code) => process.exit(code),
