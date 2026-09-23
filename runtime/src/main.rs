@@ -41,6 +41,10 @@ fn main() -> ExitCode {
             ExitCode::SUCCESS
         }
         Ok(cli::Mode::CheckConfig) => cli::check_config(),
+        Ok(cli::Mode::Init {
+            profile,
+            skills_dir,
+        }) => cli::init(profile, skills_dir),
         Err(usage) => {
             eprintln!("truenorth-mcp: {usage}");
             ExitCode::FAILURE

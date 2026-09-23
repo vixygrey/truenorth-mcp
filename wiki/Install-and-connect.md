@@ -11,6 +11,16 @@ The wrapper ships per-platform binary packages under `optionalDependencies`, so 
 package manager fetches only the binary for your platform (darwin-arm64, darwin-x64,
 linux-arm64, or linux-x64).
 
+From an empty project directory, bootstrap the language-agnostic TrueNorth workspace:
+
+```bash
+npx -y truenorth-mcp init --profile generic
+```
+
+`init` copies the versioned skills bundle and creates `.agent/`, `specs/`, and `skills/`.
+It refuses to overwrite an existing TrueNorth workspace. It does not create a language
+manifest, source tree, CI workflow, or verify command.
+
 ## Verify a native release download
 
 Each GitHub Release includes platform-native archives and a `SHA256SUMS` file. Download both
@@ -60,8 +70,8 @@ The result names `truenorth-mcp` and lists the two capabilities.
 Run these commands from the shell before adding the server to an MCP client:
 
 ```bash
-truenorth-mcp --version
-truenorth-mcp --check-config
+npx -y truenorth-mcp --version
+npx -y truenorth-mcp --check-config
 ```
 
 The configuration check returns a JSON report with the repository root, workspace layout,
@@ -91,11 +101,10 @@ it:
   "mcpServers": {
     "truenorth": {
       "command": "npx",
-      "args": ["truenorth-mcp"],
+      "args": ["-y", "truenorth-mcp"],
       "env": {
         "TRUENORTH_ROOT": "/absolute/path/to/repo",
-        "TRUENORTH_VERIFY_CMD": "cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
-        "TRUENORTH_GATE_ALLOWLIST": "cargo"
+        "TRUENORTH_VERIFY_CMD": "<your-project-verify-command>"
       }
     }
   }
@@ -128,9 +137,9 @@ debug line that the layout validated. An incomplete contract logs a warning, and
 runtime keeps serving on the last valid state. See [The .agent workspace](The-agent-workspace)
 for the required entries.
 
-## Scaffold a new project
+## Scaffold an existing project
 
-For a new project, call the `truenorth_scaffold_project` tool from your client. It seeds
-the `.agent/` tree, the root workflow docs, the git hooks, and the `.github/` templates for
-a methodology profile. It is non-destructive: it skips a path that already exists and
-reports the skip. See [Methodology profiles](Methodology-profiles) for the profile choice.
+For an existing governed repository, call the `truenorth_scaffold_project` tool from your
+client. It seeds missing `.agent/` files, root workflow docs, git hooks, and `.github/`
+templates for a methodology profile without overwriting existing paths. For a fresh project,
+use `npx -y truenorth-mcp init [--profile <name>]` before connecting an MCP client.

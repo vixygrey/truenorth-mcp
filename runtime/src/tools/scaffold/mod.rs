@@ -24,7 +24,10 @@ use crate::engine::profile::{self, Profile};
 use crate::server::TrueNorthServer;
 use crate::tools::hooks::{commit_msg_hook, post_merge_hook};
 
+mod bootstrap;
 mod templates;
+
+pub use bootstrap::bootstrap_project;
 
 use templates::{
     COMMIT_TEMPLATE, EXECUTION_STATUS_SEED, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK,
@@ -72,11 +75,7 @@ impl TrueNorthServer {
         // change and returns an error naming the value and the known names (R5.1, R5.2).
         let profile = resolve_scaffold_profile(args.profile.as_deref())?;
 
-        let mut emissions = Vec::new();
-        emit_agent_tree(&self.ctx.repo_root, profile, &mut emissions)?;
-        emit_root_docs(&self.ctx.repo_root, profile, &mut emissions)?;
-        emit_hooks(&self.ctx.repo_root, profile, &mut emissions)?;
-        emit_github(&self.ctx.repo_root, profile, &mut emissions)?;
+        let emissions = scaffold_project(&self.ctx.repo_root, profile)?;
 
         Ok(CallToolResult::success(vec![ContentBlock::text(
             result_json(profile, &emissions).to_string(),
@@ -88,7 +87,7 @@ impl TrueNorthServer {
 ///
 /// An absent name uses issue-per-task. A name longer than 64 chars or outside the five
 /// built-ins returns an error and makes no file change.
-fn resolve_scaffold_profile(name: Option<&str>) -> Result<Profile, ErrorData> {
+pub(super) fn resolve_scaffold_profile(name: Option<&str>) -> Result<Profile, ErrorData> {
     let Some(name) = name else {
         return Ok(profile::ISSUE_PER_TASK);
     };
@@ -108,6 +107,22 @@ fn resolve_scaffold_profile(name: Option<&str>) -> Result<Profile, ErrorData> {
             None,
         )
     })
+}
+
+/// Emit all existing-project scaffold targets and return their write outcomes.
+///
+/// Both the MCP tool and the command-line bootstrap use this shared core so the workspace
+/// layout, profile seeds, root docs, hooks, and GitHub templates cannot drift apart.
+pub(super) fn scaffold_project(
+    repo_root: &Path,
+    profile: Profile,
+) -> Result<Vec<Emission>, ErrorData> {
+    let mut emissions = Vec::new();
+    emit_agent_tree(repo_root, profile, &mut emissions)?;
+    emit_root_docs(repo_root, profile, &mut emissions)?;
+    emit_hooks(repo_root, profile, &mut emissions)?;
+    emit_github(repo_root, profile, &mut emissions)?;
+    Ok(emissions)
 }
 
 /// Emit the `.agent/` tree and the cockpit seed files through the write guard.
@@ -280,7 +295,7 @@ fn seed_repo_root(
 }
 
 /// Build the tool result JSON from the emission outcomes.
-fn result_json(profile: Profile, emissions: &[Emission]) -> serde_json::Value {
+pub(super) fn result_json(profile: Profile, emissions: &[Emission]) -> serde_json::Value {
     let wrote: Vec<&str> = emissions
         .iter()
         .filter_map(|e| match e {
@@ -309,6 +324,10 @@ fn result_json(profile: Profile, emissions: &[Emission]) -> serde_json::Value {
 #[cfg(test)]
 #[path = "scaffold_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "bootstrap_tests.rs"]
+mod bootstrap_tests;
 
 // Property and golden tests (Property 13) live in a separate sibling so the example-based
 // unit tests stay focused. The `#[path]` include keeps them a child module of `scaffold`.

@@ -1,0 +1,104 @@
+---
+name: migrate-spec
+description: "Detect a foreign spec artifact (GSD, spec-kit, or BMAD) and transform it into the project YAML layout (the state, the release plan, the task groups, the requirements, the plans, and the ADRs). Use it when migrating foreign spec docs."
+kind: prose
+---
+
+# Migrate Spec
+
+Transform existing GSD, spec-kit, or BMAD planning artifacts into the project layout. Runtime state goes under `.agent/`. Human-authored narrative goes under `specs/`. No code is written. The output is a set of project-format files the user can use immediately.
+
+## Quick start
+
+1. Run this skill from the root of the project being migrated (not this project's own repo).
+2. The skill auto-detects the source framework and presents its findings before transforming anything.
+3. Runtime state goes under `.agent/`. Human-authored narrative goes under `specs/`.
+
+---
+
+## Red flags — stop and ask
+
+Before proceeding, check for these rationalization traps:
+
+- **Partial artifact set** — only one fingerprint file found (e.g. just `spec.md` with no `plan.md`). Don't assume it's a complete project. Ask: "I found only X — is this the full set of your spec artifacts?"
+- **Wrong trigger** — user said "migrate my code" or "migrate the database", not "migrate my specs". Confirm before running.
+- **Stale source** — source artifacts have commit dates older than 6 months with no recent activity. Flag: "These specs appear inactive since <date>. Are they still the source of truth?"
+- **Active divergence** — source `state.yaml` or `sprint-status.yaml` shows in-progress work. Flag: "There is active work in flight. Migrating now may lose in-progress context. Proceed?"
+
+If any red flag fires: surface it, wait for explicit user confirmation before continuing.
+
+---
+
+## Process
+
+### Step 1 — Detect the source framework
+
+Scan for the fingerprints below. Stop at first match; if multiple match, list them and ask the user which is primary.
+
+| Framework    | Fingerprints (any one is sufficient)                                                                |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| **GSD**      | `.planning/` directory; `.planning/ROADMAP.md`; `.planning/REQUIREMENTS.md` with `REQ-` IDs         |
+| **spec-kit** | `.specify/` directory; `spec.md` + `plan.md` at root; `.github/skills/speckit-*/SKILL.md`           |
+| **BMAD**     | `_bmad/` directory; `_bmad-output/` directory; `prd.md` with `FR-` IDs; `epic-*.md` or `story-*.md` |
+
+If none found: ask the user which framework before proceeding.
+
+→ verify: `test -d specs && test -f .agent/tasks/state.yml`
+
+### Step 2 — Inventory the source artifacts
+
+List every artifact found matching the detected framework. Present the list to the user:
+
+See [REFERENCE.md](REFERENCE.md) — `Detected: GSD...`
+
+→ verify: `test -d specs && test -w specs`
+
+### Step 3 — Transform (one artifact at a time, show diffs)
+
+Apply the mapping from [REFERENCE.md](./REFERENCE.md) and [REFERENCE-GSD.md](./REFERENCE-GSD.md). For each target file:
+
+1. Show what will be created or appended (title + first 20 lines).
+2. Ask: "Create this? [yes / edit / skip]"
+3. On yes: write to `specs/`.
+
+#### ID Tracking (REQ-XX, FR-XX, UJ-XX)
+
+When source artifacts contain IDs (REQ-XX, FR-XX, UJ-XX), emit them as **first-class YAML fields** in `in_scope` entries, not YAML comments:
+
+See [REFERENCE.md](REFERENCE.md) — `# CORRECT — first-class id: field...`
+
+**When source has no IDs:** Prompt the user: "No IDs found. Assign auto-generated IDs? [yes / no]". If yes, emit `REQ-{NNN}` with `# auto-generated` annotation.
+
+**When source has MIXED IDs:** Items with IDs get `id:` fields; items without IDs receive auto-generated `REQ-NNN` entries. Document which were auto-generated in a comment block at the top of `in_scope`.
+
+See [REFERENCE.md — in_scope format with ID tracking](./REFERENCE.md#in_scope-format-with-id-tracking) for examples.
+
+#### Traceability Output (FR-XX, UJ-XX)
+
+When source has FR-XX or UJ-XX IDs, emit `.agent/product/REQUIREMENTS_TRACE.yaml` for end-to-end requirement traceability:
+
+See [REFERENCE.md](REFERENCE.md) — `trace:...`
+
+**Existing trace file:** If `REQUIREMENTS_TRACE.yaml` already exists, prompt: "REQUIREMENTS_TRACE.yaml exists. [overwrite / merge / skip]"
+
+**No FR-XX/UJ-XX found:** Skip trace file; add note to state.yaml handoff: "No FR-XX/UJ-XX IDs found — traceability file skipped".
+
+See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirements_traceyaml-format) for the complete schema.
+
+> **HARD GATE** — Never overwrite an existing `specs/` file without explicit user confirmation. Merge into it if it exists; don't clobber.
+>
+> → verify: `git rev-parse --git-dir >/dev/null 2>&1 && test -d specs`
+
+→ verify: `test -f .agent/tasks/state.yml`
+
+### Step 4 — Generate state.yaml
+
+Always regenerate `.agent/tasks/state.yml` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
+
+See [REFERENCE.md](REFERENCE.md) — `active_flow: null...`
+
+If no open decisions were found during migration, the `open_decisions` list may be empty with an explanatory comment:
+
+See [REFERENCE.md](REFERENCE.md) — `handoff:...`
+
+→ verify: `grep -q handoff: .agent/tasks/state.yml`

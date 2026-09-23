@@ -43,9 +43,12 @@ async function smokePackedWrapper(expectedVersion, platformPackage) {
       { cwd: install, stdio: 'inherit' },
     );
 
-    await smokeCommand(expectedVersion, process.execPath, [
-      path.join(install, 'node_modules', 'truenorth-mcp', 'bin', 'truenorth.js'),
-    ]);
+    const project = path.join(work, 'project');
+    fs.mkdirSync(project);
+    const wrapper = path.join(install, 'node_modules', 'truenorth-mcp', 'bin', 'truenorth.js');
+    bootstrapWorkspace(process.execPath, [wrapper, 'init', '--profile', 'generic'], project);
+    checkConfiguration(process.execPath, [wrapper, '--check-config'], project);
+    await smokeCommand(expectedVersion, process.execPath, [wrapper], project);
   } finally {
     fs.rmSync(work, { recursive: true, force: true });
   }
@@ -61,13 +64,16 @@ function pack(packageDirectory, destination) {
   return path.join(destination, filename);
 }
 
-async function smokeCommand(expectedVersion, command, args) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-mcp-smoke-'));
-  for (const marker of ['.agent', 'specs', 'skills']) {
-    fs.mkdirSync(path.join(root, marker));
+async function smokeCommand(expectedVersion, command, args, existingRoot) {
+  const root = existingRoot ?? fs.mkdtempSync(path.join(os.tmpdir(), 'tn-mcp-smoke-'));
+  const ownsRoot = !existingRoot;
+  if (ownsRoot) {
+    for (const marker of ['.agent', 'specs', 'skills']) {
+      fs.mkdirSync(path.join(root, marker));
+    }
   }
-
   const session = startSession(command, args, root);
+
   try {
     const initialize = await session.request('initialize', {
       protocolVersion: '2024-11-05',
@@ -87,12 +93,36 @@ async function smokeCommand(expectedVersion, command, args) {
     const resources = await session.request('resources/list', {});
     assertContains(resources.resources, 'uri', 'truenorth://state', 'resources/list');
 
+    const skill = await session.request('tools/call', {
+      name: 'truenorth_get_skill',
+      arguments: { name: 'using-truenorth', tier: 'lean' },
+    });
+    assertObject(skill, 'get_skill result');
+
     await session.close();
     console.log(`MCP artifact smoke passed for truenorth-mcp ${expectedVersion}.`);
   } finally {
     await session.terminate();
-    fs.rmSync(root, { recursive: true, force: true });
+    if (ownsRoot) {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
   }
+}
+
+function bootstrapWorkspace(command, args, root) {
+  execFileSync(command, args, {
+    cwd: root,
+    env: { ...process.env, TRUENORTH_ROOT: root, TRUENORTH_VERIFY_CMD: 'true' },
+    stdio: 'inherit',
+  });
+}
+
+function checkConfiguration(command, args, root) {
+  execFileSync(command, args, {
+    cwd: root,
+    env: { ...process.env, TRUENORTH_ROOT: root, TRUENORTH_VERIFY_CMD: 'true' },
+    stdio: 'inherit',
+  });
 }
 
 function parseArgs(argv) {

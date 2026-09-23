@@ -1,14 +1,11 @@
-// Tests for the npm launcher (task 18.3), using the built-in node:test runner so the
-// wrapper needs no test dependencies.
+// Tests for the npm launcher using the built-in node:test runner.
 //
-// Requirements: 8.3, 8.4, 8.9. The `init` scaffold is retired (#182).
+// Requirements: 8.3, 8.4, 8.9.
 
 'use strict';
 
 const { test } = require('node:test');
 const assert = require('node:assert');
-const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 
 const runner = require('../lib/runner.js');
@@ -20,7 +17,7 @@ function harness(overrides) {
     argv: [],
     platform: 'darwin',
     arch: 'arm64',
-    cwd: process.cwd(),
+    packageDir: '/fake/truenorth-mcp',
     resolver: (request) => `/fake/node_modules/${request}`,
     spawn: (binary, argv, opts) => {
       state.spawned = { binary, argv, opts };
@@ -90,16 +87,20 @@ test('run maps a null spawn status to exit code 1', () => {
   assert.strictEqual(state.exitCode, 1);
 });
 
-test('init points to the scaffold tool and creates no files', () => {
-  // #182: the wrapper no longer scaffolds. `init` prints a pointer to the
-  // truenorth_scaffold_project tool, exits 0, and writes nothing to disk.
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-init-'));
-  const { deps, state } = harness({ argv: ['init'], cwd: dir });
+test('init forwards the packaged skills bundle to the native runtime', () => {
+  const { deps, state } = harness({ argv: ['init', '--profile', 'generic'] });
   runner.run(deps);
   assert.strictEqual(state.exitCode, 0);
-  assert.match(state.stderr, /truenorth_scaffold_project/);
-  // The wrapper spawns nothing and creates no specs/ tree.
-  assert.strictEqual(state.spawned, null);
-  assert.ok(!fs.existsSync(path.join(dir, 'specs')));
-  fs.rmSync(dir, { recursive: true, force: true });
+  assert.deepStrictEqual(state.spawned, {
+    binary: '/fake/node_modules/@truenorth-mcp/darwin-arm64/truenorth-mcp',
+    argv: [
+      'init',
+      '--profile',
+      'generic',
+      '--skills-dir',
+      path.join('/fake/truenorth-mcp', 'skills'),
+    ],
+    opts: { stdio: 'inherit' },
+  });
+  assert.strictEqual(state.stderr, '');
 });

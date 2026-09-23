@@ -1,0 +1,26 @@
+---
+name: simulate-agents
+description: "Run a mock-user agent and an auditor agent against a feature in fresh contexts before human review. Use it after verify-work and before request-review, when the user wants a pre-review simulation."
+kind: prose
+---
+
+# Simulate Agents
+
+> **HARD GATE** — Simulations are hypothetical. Do NOT use sim results to make production decisions without validation on real agents. Sims help discover gaps, not replace testing.
+
+Two roles, **isolated contexts** (no shared state with BUILD agent):
+
+1. **Mock User** — follows Verification Script; reports UX gaps in plain language.
+2. **Auditor** — checks CONVENTIONS.md, security checklist, test coverage; structured pass/fail.
+
+## Process
+
+1. Read story Verification Script + changed files diff.
+2. Spawn Mock User: step through UAT script; log failures.
+3. Spawn Auditor: run `audit-code` checklist cold.
+4. Write the simulation report with both reports.
+5. Failed items → `respond-review` or `plan-work` gaps — do not skip human review.
+
+## Verify
+
+→ verify: `test -f skills/simulate-agents/SKILL.md`
