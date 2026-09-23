@@ -1,6 +1,7 @@
 ---
 name: survey-context
 description: "A per-task context bootstrap. Reads the existing narrative docs and the project tech-stack note to map the current lifecycle phase and suggest the next skill. Use it at the start of any task, when returning after a break, or when unsure what to do next. For deriving a tech-stack note from scratch, use map-codebase first."
+kind: prose
 ---
 
 # Survey Context

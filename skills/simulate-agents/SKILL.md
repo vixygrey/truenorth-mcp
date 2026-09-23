@@ -1,6 +1,7 @@
 ---
 name: simulate-agents
 description: "Run a mock-user agent and an auditor agent against a feature in fresh contexts before human review. Use it after verify-work and before request-review, when the user wants a pre-review simulation."
+kind: prose
 ---
 
 # Simulate Agents

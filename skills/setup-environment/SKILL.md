@@ -1,6 +1,7 @@
 ---
 name: setup-environment
 description: Pre-install dependencies and configure tools before development begins. Use it at session start on a fresh clone, before kickoff-branch, or when the user says "setup environment" or "install deps".
+kind: prose
 ---
 
 # Setup Environment

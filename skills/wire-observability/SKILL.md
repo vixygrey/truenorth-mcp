@@ -1,6 +1,7 @@
 ---
 name: wire-observability
 description: Add structured JSON logging, observability commands, and idempotent setup scripts to a project. Use it when a project needs production-readiness instrumentation, when the user wants structured logging, or as a production-readiness gate at any phase.
+kind: prose
 ---
 
 # Wire Observability

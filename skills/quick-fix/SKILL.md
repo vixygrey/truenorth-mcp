@@ -1,6 +1,7 @@
 ---
 name: quick-fix
 description: "A streamlined fast path for a trivial data-only fix. No TDD, no branching ceremony. Collapses the flow for a change that is purely data with no logic risk. Aborts with a fallback to investigate-bug when a guardrail triggers."
+kind: prose
 ---
 
 # Quick Fix

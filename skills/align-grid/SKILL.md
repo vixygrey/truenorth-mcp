@@ -1,6 +1,8 @@
 ---
 name: align-grid
 description: "Build an editorial or report webpage on a genuine Müller-Brockmann modular grid (International Typographic Style), not a decorative one. Encodes the discipline (columns, modules, and a baseline, grotesque type, flush-left, a restrained black-white-red palette) and the front-end engineering to make the grid real and verified: one CSS-variable source of truth, an interactive grid-toggle overlay, subgrid bands so every element snaps to a column line, an 8px baseline lock, and runtime optical alignment. Ships with a scaffold generator and a verification harness."
+kind: scripted
+verify: python3 skills/align-grid/scripts/grid_tokens.py --help
 ---
 
 # Müller-Brockmann Grid Systems — built real, visible, and verified

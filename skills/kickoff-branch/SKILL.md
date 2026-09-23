@@ -1,6 +1,7 @@
 ---
 name: kickoff-branch
 description: Create an isolated Git worktree or branch, or a Jujutsu workspace, then verify a clean test baseline before code. Use it when starting a feature or task.
+kind: prose
 ---
 
 # Kickoff Branch

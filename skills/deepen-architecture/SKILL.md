@@ -1,6 +1,7 @@
 ---
 name: deepen-architecture
 description: "Find deepening opportunities in a codebase, informed by the domain language in the tech-architecture notes and the decisions in the ADRs. Use it to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and navigable."
+kind: prose
 ---
 
 # Deepen Architecture

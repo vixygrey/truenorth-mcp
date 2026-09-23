@@ -1,6 +1,7 @@
 ---
 name: session-state
 description: "Track implementation decisions and progress in .agent/tasks/state.yml to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached."
+kind: prose
 ---
 
 # Session State

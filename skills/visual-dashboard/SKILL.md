@@ -1,6 +1,8 @@
 ---
 name: visual-dashboard
 description: "Start a browser-based dashboard that visualizes the architecture, the implementation plans, and the project status. Reads the cockpit files (state, release plan, task groups, planning status) and serves a read-only view."
+kind: scripted
+verify: node --check skills/visual-dashboard/scripts/server.cjs
 ---
 
 # Visual Dashboard

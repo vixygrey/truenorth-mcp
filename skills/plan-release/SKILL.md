@@ -1,6 +1,7 @@
 ---
 name: plan-release
 description: "A release-index builder. Sequence elaborated task groups into .agent/tasks/release-plan.yml with WSJF ordering and BCP baselines. Not a planning-spine substitute: it does not scope work or write story tasks. Use it after elaborate-spec when the user wants a versioned release index of task groups."
+kind: prose
 ---
 
 # Plan Release
@@ -130,17 +131,12 @@ tasks:
 ```
 
 > **HARD GATE** — Every task MUST have a runnable `verify:` command. No `verify:` = not a task.
+> Confirm the release plan and the task groups parse as valid YAML.
 
-Confirm the release plan and the task groups parse as valid YAML.
+### 7b. Generate bug summary and sync execution status
 
-### 7b. Generate bug summary
-
-Read the bug references under `.agent/tasks/bugs.yml` and add a `bugs:` section to `release-plan.yaml` with totals by status (`fixed`, `deferred`, `wontfix`, `open`): `bugs: { total: N, fixed: N, deferred: N, wontfix: N, ref: .agent/tasks/bugs.yml }`.
-
-### 8. Sync execution status
-
-Update `.agent/tasks/execution-status.yml`. Record each story under `stories`, and update
-`development_status` for the corresponding group progress from the group manifests.
+Add `bugs` totals from `.agent/tasks/bugs.yml` to the release plan, then update
+`.agent/tasks/execution-status.yml` for story and group progress.
 
 ### 9. Snapshot on planning close (optional)
 

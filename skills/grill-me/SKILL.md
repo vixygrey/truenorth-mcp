@@ -1,6 +1,7 @@
 ---
 name: grill-me
 description: "Interactive assumption-surfacing Q&A that stress-tests a plan through relentless questioning until every decision is resolved. Use it to challenge a plan or validate decisions from the conversation. For the doc-grounded variant, use grill-with-docs."
+kind: prose
 ---
 
 # Grill Me

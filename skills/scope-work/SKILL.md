@@ -1,6 +1,7 @@
 ---
 name: scope-work
 description: "Planning spine step 1 of 3. Scope the work: define what is in and out of scope, and save the product scope. Use it before slice-tasks or plan-release on a new initiative. Not a substitute for slice-tasks or plan-work."
+kind: prose
 ---
 
 # Scope Work

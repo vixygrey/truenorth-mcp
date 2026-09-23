@@ -1,6 +1,7 @@
 ---
 name: grill-with-docs
 description: "A doc-grounded variant of grill-me. Stress-tests plan assumptions by fetching and citing real library or API documentation. Every challenge must cite a real URL. Use it when the plan depends on a specific library or external API."
+kind: prose
 ---
 
 # Grill With Docs

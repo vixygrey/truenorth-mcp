@@ -259,12 +259,15 @@ resources.
   deep, gated, verifiable), drafts the SKILL.md and a reference file, reviews with the user,
   and runs a completion-honesty gate that validates the name, description, body, and parse.
 - **When to use it**: to create a new skill for the lifecycle.
-- **Frontmatter discipline**: two fields only, `name` and `description`. No `model:` or
-  `effort:` field, because the runtime is model-agnostic.
+- **Frontmatter discipline**: every skill declares `name`, `description`, and `kind`.
+  `kind` is `prose` or `scripted`. A scripted skill also declares a runnable `verify`
+  command. A non-verb-noun name needs a concise `name_exception`. Do not add model or
+  effort metadata.
 - **Description discipline**: 1024 characters max, third person, capability plus "Use it"
   triggers only. No workflow steps, phase chains, numbered lists, or HARD GATE prose in the
   description.
-- **Hard gate**: a two-word verb-noun name. Validate the skill before merge, with evidence.
+- **Hard gate**: validate the skill before merge. Scripted skills must execute their declared
+  verify command; prose skills must pass structural validation.
 
 ### align-grid
 

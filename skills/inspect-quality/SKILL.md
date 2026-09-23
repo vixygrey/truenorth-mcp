@@ -1,6 +1,7 @@
 ---
 name: inspect-quality
 description: "An interactive QA session. The user reports bugs conversationally, and the agent logs them to the bug registry with a structured audit schema. Explores the codebase in the background for context and domain language. Use it to report bugs, do QA, or when the user mentions a QA session."
+kind: prose
 ---
 
 # Inspect Quality

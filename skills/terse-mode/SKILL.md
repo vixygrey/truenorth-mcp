@@ -1,6 +1,7 @@
 ---
 name: terse-mode
 description: 'A fallback ultra-compressed communication mode. Cuts token usage by dropping filler, articles, and pleasantries while keeping full technical accuracy. Use it only when context is critically long and compressing output is necessary to continue. Use it when the user says "terse mode", "less tokens", or "be brief".'
+kind: prose
 ---
 
 # Terse Mode

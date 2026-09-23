@@ -1,6 +1,7 @@
 ---
 name: run-benchmark
 description: "Run a skill quality benchmark from a benchmark definition. N-run with-and-without-skill delta grading, a train/validation split, and pass@k reports. Use it before and after evolve-skill to prove a quality change is an improvement, not a regression."
+kind: prose
 ---
 
 # Run Benchmark

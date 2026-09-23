@@ -41,7 +41,8 @@ The catalog tools read and search the library:
 - `index_skills`: list every skill and its phase.
 - `read_skill`: parse a `SKILL.md` into its frontmatter, headings, and sections.
 - `search_skills`: search skill metadata.
-- `validate_skill`: lint a `SKILL.md` against the conventions.
+- `validate_skill`: enforce the two-tier contract. Prose skills require structural metadata;
+  scripted skills also require a runnable frontmatter `verify` command.
 
 ## The skill graph
 

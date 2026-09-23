@@ -1,6 +1,7 @@
 ---
 name: validate-contracts
 description: "Assert data-shape consistency across system boundaries. Live API responses against a JSON schema, a key-set comparison across layers, and data-shape validation for migrations and exports. Catches silent data corruption before a deploy."
+kind: prose
 ---
 
 # Validate Contracts

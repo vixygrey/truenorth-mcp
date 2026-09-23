@@ -1,6 +1,7 @@
 ---
 name: spike-prototype
 description: 'A throw-away prototype for an unknown problem space. The output is learning notes, not production code. Use it when the domain or technology is unexplored, when an estimate is impossible without experimentation, or when the user says "spike", "prototype", or "proof of concept".'
+kind: prose
 ---
 
 # Spike Prototype

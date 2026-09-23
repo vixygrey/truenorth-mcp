@@ -1,6 +1,7 @@
 ---
 name: hook-commits
 description: Set up a pre-commit hook with lint-staged (Prettier), type checking, and tests in the current repo. Use it when the user wants to add a pre-commit hook, set up Husky, configure lint-staged, or add commit-time formatting, type checking, or testing.
+kind: prose
 ---
 
 # Hook Commits

@@ -1,6 +1,7 @@
 ---
 name: maintain-wiki
 description: "Maintain the concept-wiki bundle so it stays consistent with its source docs. Ingest source docs, lint for issues, and query across the concept pages. Use it to keep the wiki current with the skills, the conventions, and the agent guide."
+kind: prose
 ---
 
 # Maintain Wiki

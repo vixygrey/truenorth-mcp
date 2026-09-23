@@ -57,17 +57,22 @@ pub fn validate_skill(
     let mut checks = Vec::new();
     let name = &parsed.name;
 
-    let verb_noun = verb_noun_re().is_match(name);
+    let documented_name_exception = parsed
+        .frontmatter
+        .get("name_exception")
+        .and_then(serde_yaml::Value::as_str)
+        .is_some_and(|value| !value.trim().is_empty());
+    let verb_noun = verb_noun_re().is_match(name) || documented_name_exception;
     checks.push(ValidationCheck {
         id: "verb-noun-naming".to_string(),
         pass: verb_noun,
         message: if verb_noun {
-            "Skill name is verb-noun kebab-case".to_string()
+            "Skill name is verb-noun kebab-case or has a documented exception".to_string()
         } else {
             format!("Skill name `{name}` is not verb-noun kebab-case")
         },
         remediation: Some(
-            "Rename directory to two-word kebab-case (for example develop-tdd)".to_string(),
+            "Rename to verb-noun kebab-case or add a nonempty name_exception".to_string(),
         ),
     });
 
@@ -85,20 +90,44 @@ pub fn validate_skill(
         });
     }
 
-    let has_verify = parsed.raw_prose.contains("verify:")
-        || parsed
-            .code_blocks
-            .iter()
-            .any(|b| b.value.contains("verify:"));
+    let kind = parsed
+        .frontmatter
+        .get("kind")
+        .and_then(serde_yaml::Value::as_str);
+    let kind_valid = matches!(kind, Some("prose" | "scripted"));
+    checks.push(ValidationCheck {
+        id: "skill-kind".to_string(),
+        pass: kind_valid,
+        message: if kind_valid {
+            format!("Has supported skill kind `{}`", kind.unwrap_or_default())
+        } else {
+            "Missing or unsupported skill kind".to_string()
+        },
+        remediation: Some("Set frontmatter.kind to `prose` or `scripted`".to_string()),
+    });
+
+    let has_verify = match kind {
+        Some("prose") => true,
+        Some("scripted") => parsed
+            .frontmatter
+            .get("verify")
+            .and_then(serde_yaml::Value::as_str)
+            .is_some_and(|value| !value.trim().is_empty()),
+        _ => false,
+    };
     checks.push(ValidationCheck {
         id: "verify-command".to_string(),
         pass: has_verify,
-        message: if has_verify {
-            "Has verify command reference".to_string()
-        } else {
-            "Missing verify command".to_string()
+        message: match kind {
+            Some("prose") => "Prose skills do not require a runnable command".to_string(),
+            Some("scripted") if has_verify => {
+                "Scripted skill has a runnable verify command".to_string()
+            }
+            _ => "Scripted skills require a frontmatter verify command".to_string(),
         },
-        remediation: Some("Add a verify: block with a runnable check".to_string()),
+        remediation: Some(
+            "Set frontmatter.verify for a scripted skill, or declare the skill prose".to_string(),
+        ),
     });
 
     let within_cap = line_count <= SIZE_CAP_LINES;

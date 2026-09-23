@@ -1,6 +1,7 @@
 ---
 name: write-document
 description: "Write, organize, and sync a high-integrity technical document using the BMAD methodology. Makes every document Bold, Minimal, Actionable, and Durable. Use it to create an architectural doc, a technical guide, or to organize the narrative docs under the specs directory."
+kind: prose
 ---
 
 # Write Document (BMAD)
