@@ -1,6 +1,7 @@
 ---
 name: stocktake-skills
 description: "A batch audit of the skill catalog. A quick scan of changed skills, or a full audit of all skills. Use it during a sustain phase, before a major release, or when catalog drift is suspected."
+kind: prose
 ---
 
 # Stocktake Skills

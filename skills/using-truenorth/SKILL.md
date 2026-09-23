@@ -1,6 +1,7 @@
 ---
 name: using-truenorth
 description: 'A one-time bootstrap that introduces the skills system, the lifecycle arc, and tells you which skill to call first for your situation. Use it when starting for the first time, when the user asks "where do I start?", or when the skills system needs to be explained.'
+kind: prose
 ---
 
 # Using truenorth

@@ -1,6 +1,8 @@
 ---
 name: guard-git
 description: Block a dangerous git command (force push, reset --hard, clean, branch -D, checkout or restore of a path) before an agent runs it. Install a pre-command hook for the agent harness in use. Use it when the user wants git-safety hooks, to block a destructive git command in an agent, or to mirror the same policy across coding tools.
+kind: scripted
+verify: bash skills/guard-git/scripts/tests/run.sh
 ---
 
 # Guard Git

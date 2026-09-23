@@ -1,6 +1,7 @@
 ---
 name: develop-tdd
 description: Test-driven development with a red-green-refactor loop using vertical slices. Use it for a feature (a group task) or a bug (a BUG report).
+kind: prose
 ---
 
 # Develop TDD

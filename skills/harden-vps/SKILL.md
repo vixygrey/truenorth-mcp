@@ -1,6 +1,7 @@
 ---
 name: harden-vps
 description: "Harden a production Linux VPS across three layers: the application (systemd hardening, monitoring alerts, backup automation), the Ubuntu OS (UFW firewall, fail2ban SSH, unattended-upgrades, SSH hardening), and the VPS provider (health checks, daily backups, monthly snapshots). Use it to secure a production server, harden a VPS, or audit server security."
+kind: prose
 ---
 
 # Harden VPS

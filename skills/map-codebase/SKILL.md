@@ -1,6 +1,7 @@
 ---
 name: map-codebase
 description: "Derive the tech-stack note from scratch by scanning the codebase. Analyzes the stack, the architecture, and the gray areas (error handling, API shapes), and persists the findings into the project tech-stack note. Run it when the tech doc does not exist yet. Use survey-context to consume it once it does."
+kind: prose
 ---
 
 # Map Codebase

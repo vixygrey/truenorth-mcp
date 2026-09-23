@@ -1,6 +1,7 @@
 ---
 name: build-epic
 description: "The task-group build cycle. Reads the state, the execution status, and one task group, then advances the build flow one step per invocation in resume mode. Use it instead of an ad-hoc execute-plan for release work."
+kind: prose
 ---
 
 # Build Epic

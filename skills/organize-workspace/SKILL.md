@@ -1,6 +1,7 @@
 ---
 name: organize-workspace
 description: 'Scan the active workspace for a disposable artifact (a log, a cache, stale build output, a stray draft) and propose consolidating scattered assets. Produces a reviewable list, asks for explicit confirmation before any delete or move, and optionally revises the gitignore. Use it when the user says "clean my room", "organize workspace", "workspace cleanup", "remove temp files", or wants a safe tidy pass.'
+kind: prose
 ---
 
 # Organize Workspace

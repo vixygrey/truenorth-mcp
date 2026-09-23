@@ -1,6 +1,7 @@
 ---
 name: respond-review
 description: "Act on a reviewer agent feedback systematically. Categorize the findings, apply the fixes, and verify the tests still pass. Use it after request-review returns a report, or when the user wants to work through code-review findings."
+kind: prose
 ---
 
 # Respond Review

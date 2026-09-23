@@ -1,6 +1,7 @@
 ---
 name: commit-message
 description: Review the working-tree changes, draft a Conventional Commits title and body, and state the SemVer bump a single such commit would imply. Also note which defensive-code categories were touched. Use it when the user wants to commit recent work or prepare a Conventional Commits message before a git commit.
+kind: prose
 ---
 
 # Commit Message

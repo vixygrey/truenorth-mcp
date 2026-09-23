@@ -1,6 +1,7 @@
 ---
 name: design-interface
 description: 'Generate multiple radically different interface designs for a module using parallel sub-agents, then compare the trade-offs. Based on "Design It Twice" from A Philosophy of Software Design. Use it to design an API, explore interface options, or compare module shapes.'
+kind: prose
 ---
 
 # Design Interface

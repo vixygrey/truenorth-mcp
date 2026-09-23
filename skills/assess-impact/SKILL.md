@@ -1,6 +1,7 @@
 ---
 name: assess-impact
 description: 'Analyze the blast radius of a proposed change before any code is written. Maps the dependents, the affected stories, and the test coverage. Produces an impact report. Use it before plan-work on a non-trivial change, when touching a shared module, or when the user asks "what does this break?".'
+kind: prose
 ---
 
 # Assess Impact

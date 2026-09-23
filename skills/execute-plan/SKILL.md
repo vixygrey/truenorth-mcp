@@ -1,6 +1,7 @@
 ---
 name: execute-plan
 description: "Batch-execute the tasks from the active task group sequentially, with a human checkpoint after each step. Use it when the user has an approved plan and wants step-by-step oversight."
+kind: prose
 ---
 
 # Execute Plan

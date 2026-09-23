@@ -1,6 +1,7 @@
 ---
 name: smoke-test
 description: "Post-deploy health check against a live URL. Validates the HTTP status, the response content, and the critical endpoints. Run it standalone or as the final step of the deploy skill."
+kind: prose
 ---
 
 # Smoke Test

@@ -15,3 +15,11 @@ bugs:
   - release
   - workflow
   - v1
+- id: '375'
+  external_link: https://github.com/vixygrey/truenorth-mcp/issues/375
+  status: triaged
+  linked_ref: '375'
+  tags:
+  - methodology
+  - skills
+  - verify-gate

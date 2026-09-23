@@ -1,1 +1,50 @@
-backlog: []
+source:
+  provider: github
+  repository: vixygrey/truenorth-mcp
+  url: https://github.com/vixygrey/truenorth-mcp/issues
+  refreshed_at: "2026-09-22"
+backlog:
+  - id: '375'
+    title: 'fix: restore methodology gate and skill validation compliance'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/375
+    labels: []
+  - id: '344'
+    title: 'feat: prepare Jev integration for opt-in release'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/344
+    labels: []
+  - id: '320'
+    title: 'investigate: git-side guardrail enforcement at the commit boundary'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/320
+    labels: [enhancement, engine, security]
+  - id: '311'
+    title: 'feat: dependency weight auditor for cargo hygiene via Jev'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/311
+    labels: [enhancement, engine, dependencies]
+  - id: '310'
+    title: 'feat: agent circular-reasoning (loop) detection via Jev'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/310
+    labels: [enhancement, engine, security]
+  - id: '309'
+    title: 'feat: cost-aware model routing via Jev complexity scoring'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/309
+    labels: [enhancement, engine]
+  - id: '308'
+    title: 'feat: documentation-code drift detection via Jev'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/308
+    labels: [documentation, enhancement, engine]
+  - id: '307'
+    title: 'feat: predictive breakage probability for a proposed change'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/307
+    labels: [enhancement, engine]
+  - id: '306'
+    title: 'feat: semantic commit gatekeeper via Jev rigor scoring'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/306
+    labels: [enhancement, engine, tools]
+  - id: '122'
+    title: 'Investigate local-model-specific optimizations and accommodations'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/122
+    labels: [enhancement, question]
+  - id: '121'
+    title: 'Investigate workflow and cycle-time metrics'
+    url: https://github.com/vixygrey/truenorth-mcp/issues/121
+    labels: [enhancement, question]

@@ -1,6 +1,7 @@
 ---
 name: plan-work
 description: "Planning spine step 3 of 3. Plan the work: write detailed implementation tasks into the active task group. Produces a countable-story-format spec and a runnable tasks file. Use it after slice-tasks. Not a substitute for scope-work or slice-tasks."
+kind: prose
 ---
 
 # Plan Work

@@ -16,6 +16,7 @@ use rmcp::ServiceExt;
 use rmcp::model::{CallToolRequestParams, ReadResourceRequestParams};
 use tempfile::tempdir;
 
+use crate::config::VERIFY_CMD_ENV;
 use crate::server::TrueNorthServer;
 
 /// Seed a minimal repo so root resolution and the tools have something to work with.
@@ -145,6 +146,49 @@ async fn legacy_evidence_gate_requests_error_over_the_client() -> anyhow::Result
             "legacy evidence request must identify its rejected field: {result:?}"
         );
     }
+
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test]
+async fn configured_review_gate_passes_over_the_client() -> anyhow::Result<()> {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+    unsafe {
+        std::env::set_var(VERIFY_CMD_ENV, "true");
+    }
+
+    let (client, handle) = connect(root).await?;
+    let result = client
+        .call_tool(
+            CallToolRequestParams::new("truenorth_verify_gate").with_arguments(
+                serde_json::json!({ "phase": "review" })
+                    .as_object()
+                    .cloned()
+                    .expect("object"),
+            ),
+        )
+        .await?;
+    unsafe {
+        std::env::remove_var(VERIFY_CMD_ENV);
+    }
+
+    assert!(
+        !result.is_error.unwrap_or(false),
+        "configured review gate unexpectedly failed: {result:?}"
+    );
+    let text = match result.content.first() {
+        Some(rmcp::model::ContentBlock::Text(text)) => &text.text,
+        other => panic!("configured review gate returned no text result: {other:?}"),
+    };
+    let report: serde_json::Value = serde_json::from_str(text)?;
+    assert_eq!(
+        report["passed"], true,
+        "configured review gate result: {report}"
+    );
 
     client.cancel().await?;
     handle.abort();

@@ -1,6 +1,7 @@
 ---
 name: enforce-first
 description: "Apply the F.I.R.S.T test-quality rubric to a test suite or individual tests. Use it when develop-tdd is writing tests, when test quality needs a check, or when the user mentions F.I.R.S.T or test quality."
+kind: prose
 ---
 
 # Enforce FIRST

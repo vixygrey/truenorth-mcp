@@ -1,6 +1,7 @@
 ---
 name: release-branch
 description: Make the merge, PR, keep, or discard decision for a feature branch, verify the coverage gates, create the PR, and clean up the worktree. Use it when a feature is done and ready to ship, or when the user says "release", "merge", or "open a PR".
+kind: prose
 ---
 
 # Release Branch

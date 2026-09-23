@@ -83,10 +83,8 @@ fn checked_in_issue_per_task_cockpit_matches_scaffold_seeds() {
         fs::read_to_string(repo_root.join(".agent/profile.yml")).expect("read profile"),
         "profile: issue-per-task\n"
     );
-    assert_eq!(
-        fs::read_to_string(tasks.join("backlog.yml")).expect("read backlog"),
-        "backlog: []\n"
-    );
+    // The backlog is mixed human/runtime state, so its checked-in content is not a scaffold
+    // fixture. The scaffold test above still proves that it creates the empty starter file.
     assert_eq!(
         fs::read_to_string(tasks.join("execution-status.yml")).expect("read execution status"),
         "stories: {}\ndevelopment_status: {}\n"

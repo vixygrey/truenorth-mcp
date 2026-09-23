@@ -1,6 +1,7 @@
 ---
 name: generate-allure-report
 description: "Generate Allure-ready reports from the project YAML metadata. Reads the execution status, the release plan, the task groups, the task files, and the bug registry to produce a JUnit results file, a categories file, and an executor file. Use it when preparing a progress dashboard, integrating with Allure TestOps, or generating a CI report."
+kind: prose
 ---
 
 # Generate Allure Report

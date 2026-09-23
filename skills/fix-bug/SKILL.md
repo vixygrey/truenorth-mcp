@@ -1,6 +1,7 @@
 ---
 name: fix-bug
 description: "A bug-fix orchestrator. Sets the fix_bug flow, reads the BUG report, and chains investigate-bug, develop-tdd, and validate-fix. Use it when the user reports a defect."
+kind: prose
 ---
 
 # Fix Bug

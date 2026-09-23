@@ -1,6 +1,7 @@
 ---
 name: craft-skill
 description: "Create a new skill with proper structure, progressive disclosure, and bundled resources. Use it to create, write, or build a new skill for the lifecycle."
+kind: prose
 ---
 
 # Craft Skill

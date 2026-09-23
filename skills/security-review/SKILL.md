@@ -1,6 +1,7 @@
 ---
 name: security-review
 description: 'Security analysis of code changes. Traces data flow and detects injection, auth bypass, secrets exposure, and unsafe deserialization across files. Use it when reviewing pending changes, before release-branch, during verify-work, during build-epic threat modeling, or when the user says "security review".'
+kind: prose
 ---
 
 # Security Review

@@ -1,6 +1,8 @@
 ---
 name: deploy
 description: "Build, verify the artifact, deploy, wait, then smoke the deployment. Platform-agnostic (MCP or CLI), with a configurable timeout, retry with exponential backoff, and an integrated health check. The deploy half of CI/CD: run it after the build to push to production."
+kind: prose
+name_exception: Single-verb operational skill.
 ---
 
 # Deploy

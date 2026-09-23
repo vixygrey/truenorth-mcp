@@ -1,6 +1,7 @@
 ---
 name: audit-code
 description: "A self-review checklist for the coding agent to run before dispatching a reviewer. Checks convention compliance, the Boy Scout rule, test coverage, types, and SOLID. Produces a pass or fail checklist. Use it before request-review, before committing, or when the user asks for a code-quality check."
+kind: prose
 ---
 
 # Audit Code

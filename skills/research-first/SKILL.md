@@ -1,6 +1,7 @@
 ---
 name: research-first
 description: "Look before you build. Search the registries, the repo, the existing skills, and the web for prior art before implementing. Appends prior art to the spec. Use it after survey-context and before elaborate-spec, when adding a dependency, or when the task may already be solved."
+kind: prose
 ---
 
 # Research First

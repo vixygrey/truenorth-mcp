@@ -1,6 +1,7 @@
 ---
 name: validate-fix
 description: Prove a fix works before you declare it done. Re-run the failing test, run the full suite, typecheck, lint, and harden against recurrence. Use it after implementing a bug fix, when the user asks "is this fixed?", or before closing an investigation.
+kind: prose
 ---
 
 # Validate Fix
