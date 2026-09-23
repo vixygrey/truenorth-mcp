@@ -101,7 +101,7 @@ async function smokeCommand(
 
     if (checkBundledSkill) {
       const skill = await session.request('tools/call', {
-        name: 'truenorth_get_skill',
+        name: 'get_skill',
         arguments: { name: 'using-truenorth', tier: 'lean' },
       });
       assertObject(skill, 'get_skill result');
