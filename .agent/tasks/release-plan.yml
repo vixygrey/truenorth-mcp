@@ -83,3 +83,7 @@ tasks:
   group_kind: ticket
   task_name: 'Implement fresh project bootstrap for issue #379'
   verify_command: cargo test --manifest-path runtime/Cargo.toml && (cd npm && npm test)
+- group_id: '380'
+  group_kind: ticket
+  task_name: Reconcile token caps with runtime behavior
+  verify_command: cargo test --manifest-path runtime/Cargo.toml && TRUENORTH_VERIFY_CMD=true cargo run --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config

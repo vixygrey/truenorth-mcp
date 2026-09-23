@@ -33,7 +33,12 @@ fn gate_result_pass_is_success() {
         error: None,
         remediation_hints: Vec::new(),
     };
-    let result = gate_result(&outcome, "review").expect("pass is a success result");
+    let result = gate_result(
+        &outcome,
+        "review",
+        crate::engine::features::TokenCaps::default(),
+    )
+    .expect("pass is a success result");
     assert!(!result.is_error.unwrap_or(false));
 }
 
@@ -44,7 +49,12 @@ fn gate_result_failure_is_error_with_hints() {
         error: Some("the gate command exited with code 1".to_string()),
         remediation_hints: vec!["fix the failure".to_string()],
     };
-    let error = gate_result(&outcome, "review").expect_err("failure is an MCP error");
+    let error = gate_result(
+        &outcome,
+        "review",
+        crate::engine::features::TokenCaps::default(),
+    )
+    .expect_err("failure is an MCP error");
     assert!(error.message.contains("exited with code 1"));
     // The hints ride in the error data.
     let data = error.data.expect("hints in data");

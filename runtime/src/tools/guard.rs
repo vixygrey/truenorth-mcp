@@ -15,6 +15,7 @@
 //!
 //! Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 8.2, 8.4.
 
+use crate::tools::result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
@@ -93,7 +94,7 @@ impl TrueNorthServer {
         };
 
         let decision = self.evaluate_change(&change).await?;
-        decision_to_result(decision)
+        decision_to_result(decision, self.ctx.token_caps)
     }
 }
 
@@ -216,14 +217,23 @@ async fn run_decision(
 /// An `Allow` and an `Annotate` are success results carrying the notes. A `Block` is an MCP
 /// error carrying the neutralization packet as structured data. The packet carries no secret
 /// value and no API key (R6.3).
-fn decision_to_result(decision: GuardDecision) -> Result<CallToolResult, ErrorData> {
+fn decision_to_result(
+    decision: GuardDecision,
+    caps: crate::engine::features::TokenCaps,
+) -> Result<CallToolResult, ErrorData> {
     match decision {
-        GuardDecision::Allow { notes } => Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({ "decision": "allow", "notes": notes }).to_string(),
-        )])),
-        GuardDecision::Annotate { notes } => Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({ "decision": "annotate", "notes": notes }).to_string(),
-        )])),
+        GuardDecision::Allow { notes } => result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({ "decision": "allow", "notes": notes }).to_string(),
+            )],
+            caps,
+        ),
+        GuardDecision::Annotate { notes } => result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({ "decision": "annotate", "notes": notes }).to_string(),
+            )],
+            caps,
+        ),
         GuardDecision::Block(packet) => {
             let data = serde_json::to_value(&packet).unwrap_or(serde_json::Value::Null);
             Err(ErrorData::invalid_request(

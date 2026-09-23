@@ -255,3 +255,69 @@ fn ontology_and_jev_resolve_independently() {
         }
     );
 }
+
+#[test]
+fn token_caps_resolve_defaults_and_overrides() {
+    assert_eq!(
+        resolve_token_caps(TempDir::new().expect("temporary repository").path())
+            .expect("missing rules resolve defaults"),
+        TokenCaps::default()
+    );
+
+    let repo = seed_rules("token_caps:\n  skill_lean_tokens: 1200\n  tool_payload_tokens: 4000\n");
+    assert_eq!(
+        resolve_token_caps(repo.path()).expect("token caps resolve"),
+        TokenCaps {
+            skill_lean_tokens: 1200,
+            tool_payload_tokens: 4000,
+        }
+    );
+}
+
+#[test]
+fn token_caps_reject_zero_and_preserve_unrelated_keys() {
+    let repo = seed_rules(
+        "features:\n  ontology: false\ntoken_caps:\n  skill_lean_tokens: 0\n  tool_payload_tokens: 4000\nother: retained\n",
+    );
+    assert!(matches!(
+        resolve_token_caps(repo.path()),
+        Err(FeaturesError::InvalidTokenCap {
+            key: "token_caps.skill_lean_tokens"
+        })
+    ));
+    assert_eq!(
+        resolve(repo.path()).expect("features still resolve"),
+        Features {
+            ontology: false,
+            jev: false
+        }
+    );
+}
+
+#[test]
+fn token_caps_reject_invalid_type_and_negative_values() {
+    for body in [
+        "token_caps:\n  skill_lean_tokens: text\n",
+        "token_caps:\n  tool_payload_tokens: -5\n",
+        "token_caps:\n  skill_lean_tokens: 1.5\n",
+    ] {
+        let repo = seed_rules(body);
+        assert!(matches!(
+            resolve_token_caps(repo.path()),
+            Err(FeaturesError::Parse { .. })
+        ));
+    }
+}
+
+#[test]
+fn token_caps_default_independently_and_preserve_unrelated_rules() {
+    let body = "features:\n  ontology: false\ntoken_caps:\n  tool_payload_tokens: 2500\nmethodology:\n  model: generic\n";
+    let repo = seed_rules(body);
+    let caps = resolve_token_caps(repo.path()).expect("resolve partial caps");
+    assert_eq!(caps.skill_lean_tokens, 1500);
+    assert_eq!(caps.tool_payload_tokens, 2500);
+    assert_eq!(
+        fs::read_to_string(rules_path(&repo)).expect("read rules"),
+        body
+    );
+}

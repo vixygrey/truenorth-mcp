@@ -104,6 +104,10 @@ fn complete_configuration_reports_ready_without_mutation() {
     assert_eq!(report["layout"]["status"], "ok");
     assert_eq!(report["features"]["status"], "ok");
     assert_eq!(report["features"]["ontology"], false);
+    assert_eq!(report["token_caps"]["status"], "ok");
+    assert_eq!(report["token_caps"]["skill_lean_tokens"], 1500);
+    assert_eq!(report["token_caps"]["tool_payload_tokens"], 4000);
+    assert_eq!(report["token_caps"]["estimation"], "ceil(characters / 4)");
     assert_eq!(report["verify_gate"]["status"], "ok");
     assert_eq!(report["verify_gate"]["configured"], true);
     assert_eq!(
@@ -167,5 +171,34 @@ fn missing_verify_command_names_its_fix_without_echoing_values() {
         !String::from_utf8(output.stdout)
             .expect("diagnostic output is text")
             .contains("cargo test")
+    );
+}
+
+#[test]
+fn token_cap_overrides_are_reported_and_invalid_values_fail() {
+    let repo = seed_complete_repo();
+    let rules = repo.path().join(".agent/config/rules.yml");
+    fs::write(
+        &rules,
+        "features:\n  ontology: false\ntoken_caps:\n  skill_lean_tokens: 1200\n  tool_payload_tokens: 3000\nunrelated: true\n",
+    )
+    .expect("override rules");
+    let output = run(repo.path(), &["--check-config"], Some("true"));
+    assert!(output.status.success());
+    let report = parse_report(&output);
+    assert_eq!(report["features"]["ontology"], false);
+    assert_eq!(report["token_caps"]["skill_lean_tokens"], 1200);
+    assert_eq!(report["token_caps"]["tool_payload_tokens"], 3000);
+
+    fs::write(&rules, "token_caps:\n  tool_payload_tokens: 0\n").expect("write invalid rules");
+    let output = run(repo.path(), &["--check-config"], Some("true"));
+    assert!(!output.status.success());
+    let report = parse_report(&output);
+    assert_eq!(report["token_caps"]["status"], "error");
+    assert!(
+        report["token_caps"]["error"]["message"]
+            .as_str()
+            .expect("token cap error")
+            .contains("token_caps.tool_payload_tokens")
     );
 }

@@ -17,22 +17,16 @@ use std::sync::OnceLock;
 use regex::Regex;
 
 use super::tables::compact_tables;
-use super::{TIER_LEAN_TOKEN_BUDGET, collapse_blank_runs, encodes_invariant_or_ac, heading_level};
+use super::{collapse_blank_runs, encodes_invariant_or_ac, heading_level};
 
-/// Compress reasoning-tier markdown to imperative directives within the token budget
-/// (lean tier).
-///
-/// The transform drops the bodies of rationale, background, and verbose-example sections,
-/// converts headings to imperative bullets, dedupes repeated directive lines, and
-/// truncates to [`TIER_LEAN_TOKEN_BUDGET`] tokens. It keeps every line that encodes an
-/// invariant or an acceptance criterion (Requirement 6.8).
-pub fn compress_for_local_context(md: &str) -> String {
+/// Compress reasoning-tier markdown to an explicit estimated-token budget.
+pub fn compress_for_local_context(md: &str, budget: usize) -> String {
     let without_prose = drop_low_value_sections(md);
     let compact = compact_tables(&without_prose);
     let plain = strip_decoration(&compact);
     let bulleted = headings_to_bullets(&plain);
     let deduped = dedupe_directives(&bulleted);
-    truncate_to_budget(&deduped, TIER_LEAN_TOKEN_BUDGET)
+    truncate_to_budget(&deduped, budget)
 }
 
 /// Strip decorative formatting from lean markdown (#62).

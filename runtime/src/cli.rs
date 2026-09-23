@@ -121,6 +121,7 @@ struct DiagnosticReport {
     repository_root: RepositoryRootReport,
     layout: CheckReport,
     features: FeaturesReport,
+    token_caps: TokenCapsReport,
     verify_gate: VerifyGateReport,
 }
 
@@ -136,6 +137,7 @@ impl DiagnosticReport {
                 repository_root: RepositoryRootReport::ok(path.clone()),
                 layout: layout_report(&path),
                 features: features_report(&path),
+                token_caps: token_caps_report(&path),
                 verify_gate,
             },
             Err(error) => Self {
@@ -144,6 +146,7 @@ impl DiagnosticReport {
                 repository_root: RepositoryRootReport::error(error.to_string()),
                 layout: CheckReport::skipped("repository root could not be resolved"),
                 features: FeaturesReport::skipped("repository root could not be resolved"),
+                token_caps: TokenCapsReport::skipped("repository root could not be resolved"),
                 verify_gate,
             },
         }
@@ -153,6 +156,7 @@ impl DiagnosticReport {
         self.repository_root.status == Status::Ok
             && self.layout.status == Status::Ok
             && self.features.status == Status::Ok
+            && self.token_caps.status == Status::Ok
             && self.verify_gate.status == Status::Ok
     }
 }
@@ -316,6 +320,53 @@ fn features_report(root: &std::path::Path) -> FeaturesReport {
     match features::resolve(root) {
         Ok(features) => FeaturesReport::ok(features.ontology, features.jev),
         Err(error) => FeaturesReport::error(error.to_string()),
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct TokenCapsReport {
+    status: Status,
+    skill_lean_tokens: Option<usize>,
+    tool_payload_tokens: Option<usize>,
+    estimation: Option<&'static str>,
+    error: Option<ErrorReport>,
+    reason: Option<&'static str>,
+}
+
+impl TokenCapsReport {
+    fn skipped(reason: &'static str) -> Self {
+        Self {
+            status: Status::Skipped,
+            skill_lean_tokens: None,
+            tool_payload_tokens: None,
+            estimation: None,
+            error: None,
+            reason: Some(reason),
+        }
+    }
+}
+
+fn token_caps_report(root: &std::path::Path) -> TokenCapsReport {
+    match features::resolve_token_caps(root) {
+        Ok(caps) => TokenCapsReport {
+            status: Status::Ok,
+            skill_lean_tokens: Some(caps.skill_lean_tokens),
+            tool_payload_tokens: Some(caps.tool_payload_tokens),
+            estimation: Some("ceil(characters / 4)"),
+            error: None,
+            reason: None,
+        },
+        Err(error) => TokenCapsReport {
+            status: Status::Error,
+            skill_lean_tokens: None,
+            tool_payload_tokens: None,
+            estimation: None,
+            error: Some(ErrorReport::new(
+                error.to_string(),
+                "Fix the named .agent/config/rules.yml token cap.",
+            )),
+            reason: None,
+        },
     }
 }
 

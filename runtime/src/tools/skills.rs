@@ -19,6 +19,7 @@ use crate::engine::agnostic::ADAPTATION_NOTE;
 use crate::engine::skill::{SkillError, read_skill_raw};
 use crate::engine::tier::{Tier, render_skill};
 use crate::server::TrueNorthServer;
+use crate::tools::result;
 
 /// The environment variable that sets the default skill tier.
 const TIER_ENV: &str = "TRUENORTH_TIER";
@@ -49,17 +50,20 @@ impl TrueNorthServer {
         let tier = resolve_tier(args.tier.as_deref())?;
 
         let raw = read_skill_raw(&self.ctx.repo_root, &args.name).map_err(skill_error)?;
-        let rendered = render_skill(&raw.markdown, tier);
+        let rendered = render_skill(&raw.markdown, tier, self.ctx.token_caps.skill_lean_tokens);
 
         // The skill content is the first block, byte-identical at the full tier
         // (Requirement 6.6). A second block states that no model-specific or
         // harness-specific adaptation was applied, since the server never identifies the
         // client (Requirement 11.5). The content is identical for every client
         // (Requirements 11.2, 11.3).
-        Ok(CallToolResult::success(vec![
-            ContentBlock::text(rendered),
-            ContentBlock::text(ADAPTATION_NOTE),
-        ]))
+        result::success(
+            vec![
+                ContentBlock::text(rendered),
+                ContentBlock::text(ADAPTATION_NOTE),
+            ],
+            self.ctx.token_caps,
+        )
     }
 }
 

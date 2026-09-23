@@ -48,7 +48,7 @@ pub(super) const CHARS_PER_TOKEN: usize = 4;
 /// The estimate is the character count divided by [`CHARS_PER_TOKEN`], rounded up. This is
 /// the primitive behind [`estimate_tokens`], so the lean truncation (which tracks a
 /// running character count) and the string-based estimate share one definition.
-pub(super) fn estimate_tokens_from_chars(chars: usize) -> usize {
+pub(crate) fn estimate_tokens_from_chars(chars: usize) -> usize {
     chars.div_ceil(CHARS_PER_TOKEN)
 }
 
@@ -87,13 +87,13 @@ pub enum Tier {
 /// # Example
 ///
 /// ```ignore
-/// let out = tier::render_skill(md, tier::Tier::Reasoning);
+/// let out = tier::render_skill(md, tier::Tier::Reasoning, 1500);
 /// ```
-pub fn render_skill(md: &str, tier: Tier) -> String {
+pub fn render_skill(md: &str, tier: Tier, lean_token_budget: usize) -> String {
     match tier {
         Tier::Full => md.to_string(),
         Tier::Reasoning => strip_meta_steps(md),
-        Tier::Lean => compress_for_local_context(&strip_meta_steps(md)),
+        Tier::Lean => compress_for_local_context(&strip_meta_steps(md), lean_token_budget),
     }
 }
 

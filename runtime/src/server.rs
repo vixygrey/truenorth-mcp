@@ -3,7 +3,7 @@
 //! [`TrueNorthServer`] holds the tool router and the [`ServerContext`]. Each tools
 //! submodule attaches a named `#[tool_router]` impl to this type, and the routers merge
 //! in [`TrueNorthServer::from_context`]. The production constructor
-//! [`TrueNorthServer::resolve`] resolves the per-project feature flags from disk.
+//! [`TrueNorthServer::resolve`] resolves per-project features and token caps from disk.
 //!
 //! Design: Part II §1 (entrypoint), §2 (tools).
 
@@ -23,11 +23,11 @@ use rmcp::{
 };
 
 use crate::engine::agent_ws::{LayoutCache, LayoutError};
-use crate::engine::features::{self, Features, FeaturesError};
+use crate::engine::features::{self, Features, FeaturesError, TokenCaps};
 use crate::resources::{ResourceCache, ResourceReadError, served_from_uri, served_resources};
 
-/// The shared context: the resolved repository root, the resource cache, the resolved
-/// per-project feature flags, and the last-good layout contract.
+/// The shared context: repository root, resource cache, feature flags, token caps,
+/// and the last-good layout contract.
 #[derive(Debug, Default)]
 pub struct ServerContext {
     /// The governed repository root.
@@ -39,6 +39,8 @@ pub struct ServerContext {
     /// Read by the ontology tool gate in [`TrueNorthServer::from_context`] and, from issue
     /// #142, the ontology resource gate.
     pub features: Features,
+    /// The resolved token budgets for Lean skill rendering and tool responses.
+    pub token_caps: TokenCaps,
     /// The last-good `.agent/` layout contract (Requirement 1.12).
     ///
     /// [`ServerContext::resolve`] validates the contract at startup. A later broken read
@@ -47,11 +49,10 @@ pub struct ServerContext {
 }
 
 impl ServerContext {
-    /// Build a context, resolving the feature flags from disk (Requirement 1.2).
+    /// Build a context, resolving feature flags and token caps from disk.
     ///
-    /// Reads `.agent/config/rules.yml`. An absent file resolves to the default-enabled
-    /// flags (Requirement 1.3). A present-but-broken file returns a typed error naming the
-    /// path (Requirement 1.7, 1.8).
+    /// Reads `.agent/config/rules.yml`. An absent file resolves to defaults.
+    /// An invalid configured value returns a typed error naming the offending rule.
     ///
     /// # Errors
     ///
@@ -63,23 +64,28 @@ impl ServerContext {
     /// valid contract (Requirement 1.12).
     pub fn resolve(repo_root: PathBuf) -> Result<Self, FeaturesError> {
         let features = features::resolve(&repo_root)?;
-        let ctx = Self::with_features(repo_root, features);
+        let token_caps = features::resolve_token_caps(&repo_root)?;
+        let ctx = Self::with_config(repo_root, features, token_caps);
         ctx.validate_layout();
         Ok(ctx)
     }
 
-    /// Build a context from explicit feature flags, reading no disk.
+    /// Build a context from explicit feature flags and token caps, reading no disk.
     ///
-    /// This is the dependency-injected constructor. A test builds a deterministic context,
-    /// enabled or disabled, without writing a `rules.yml` to a temp directory. It does not
-    /// validate the layout; [`ServerContext::resolve`] does that at startup.
-    pub fn with_features(repo_root: PathBuf, features: Features) -> Self {
+    /// This is the dependency-injected constructor used by deterministic tests.
+    pub fn with_config(repo_root: PathBuf, features: Features, token_caps: TokenCaps) -> Self {
         Self {
             repo_root,
             resource_cache: ResourceCache::new(),
             features,
+            token_caps,
             layout: LayoutCache::new(),
         }
+    }
+
+    /// Build a context with default token caps for focused feature-gate tests.
+    pub fn with_features(repo_root: PathBuf, features: Features) -> Self {
+        Self::with_config(repo_root, features, TokenCaps::default())
     }
 
     /// Validate the `.agent/` layout contract and cache the last valid result.
@@ -214,12 +220,13 @@ impl TrueNorthServer {
 #[cfg(test)]
 impl TrueNorthServer {
     /// A default-enabled server for tests, built from an injected context and no disk read.
-    ///
-    /// Tests that need a disabled feature build the context with
-    /// `ServerContext::with_features(root, Features { ontology: false })` and call
-    /// [`TrueNorthServer::from_context`] directly.
+    /// Tests use the same token-cap defaults as a project with no rules file.
     pub fn test_server(repo_root: PathBuf) -> Self {
-        Self::from_context(ServerContext::with_features(repo_root, Features::default()))
+        Self::from_context(ServerContext::with_config(
+            repo_root,
+            Features::default(),
+            TokenCaps::default(),
+        ))
     }
 }
 
