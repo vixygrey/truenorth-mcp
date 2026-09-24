@@ -28,14 +28,21 @@ named files.
 | `telemetry/` | `runs.yml`                  | The agent cost audit, excluded from agent reads    |
 | (root)       | `layout.yml`, `profile.yml` | The contract and the active profile name           |
 
-The runtime also reads `tasks/release-plan.yml` for the recorded tasks and, when the
-ontology feature is enabled, `ontology.yml`. Product docs live under `product/`.
+The runtime also reads `tasks/release-plan.yml` for recorded tasks.
+`tasks/backlog.yml` independently declares whether backlog ownership is local or
+external. A local file owns its `backlog` list. An external declaration contains
+only a provider pointer, and consumers read current work from that tracker. The
+runtime does not contact an external tracker by default. When the ontology feature
+is enabled, the runtime also reads `ontology.yml`. Product docs live under
+`product/`.
 
 ## Who writes what
 
 - `tasks/state.yml`, `tasks/release-plan.yml`, and `tasks/bugs.yml` are runtime-written.
+- `tasks/backlog.yml` is human-seeded. Local owners may update its backlog; external
+  owners keep only provider metadata in it.
 - `layout.yml`, `profile.yml`, `config/*`, `spec/*`, and `product/*` are human-seeded.
-- `memories/*` and `tasks/backlog.yml` are mixed: human-seeded and runtime-updatable.
+- `memories/*` are human-seeded and runtime-updatable.
 - `telemetry/runs.yml` is runtime-written and excluded from agent reads.
 
 ## The single write guard

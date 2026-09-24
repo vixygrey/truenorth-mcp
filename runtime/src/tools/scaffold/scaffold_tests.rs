@@ -56,8 +56,11 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
     assert!(root.join(".agent/tasks/state.yml").is_file());
     assert!(root.join(".agent/memories/glossary.md").is_file());
     assert!(root.join(".agent/telemetry/runs.yml").is_file());
-    // The default profile's starter file (issue-per-task uses backlog).
-    assert!(root.join(".agent/tasks/backlog.yml").is_file());
+    // Backlog ownership is explicit and independent of the methodology profile.
+    assert_eq!(
+        fs::read_to_string(root.join(".agent/tasks/backlog.yml")).expect("read backlog"),
+        "version: '1'\nownership:\n  mode: local\nbacklog: []\n"
+    );
     assert_eq!(
         fs::read_to_string(root.join(".agent/tasks/execution-status.yml")).expect("read status"),
         "stories: {}\ndevelopment_status: {}\n"
@@ -83,8 +86,14 @@ fn checked_in_issue_per_task_cockpit_matches_scaffold_seeds() {
         fs::read_to_string(repo_root.join(".agent/profile.yml")).expect("read profile"),
         "profile: issue-per-task\n"
     );
-    // The backlog is mixed human/runtime state, so its checked-in content is not a scaffold
-    // fixture. The scaffold test above still proves that it creates the empty starter file.
+    let backlog: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(tasks.join("backlog.yml")).expect("read backlog"))
+            .expect("parse backlog ownership");
+    assert_eq!(backlog["ownership"]["mode"].as_str(), Some("external"));
+    assert!(
+        backlog.get("backlog").is_none(),
+        "an external backlog must not cache issue entries"
+    );
     assert_eq!(
         fs::read_to_string(tasks.join("execution-status.yml")).expect("read execution status"),
         "stories: {}\ndevelopment_status: {}\n"

@@ -129,7 +129,11 @@ outside `.agent/`.
 
 The cockpit lives under `.agent/tasks/`: `state.yml` carries the phase and the TDD
 loop, `release-plan.yml` carries the recorded tasks, `execution-status.yml` carries
-story status, and `bugs.yml` carries external-tracker bug references. The empty
+story status, and `bugs.yml` carries external-tracker bug references. `backlog.yml`
+declares backlog ownership independently from the methodology profile. In `local`
+mode its `backlog` list is authoritative. In `external` mode it contains only the
+provider pointer, and consumers must read current work from that tracker. The
+runtime never calls an external tracker in its default request path. The empty
 `execution-status.yml` seed has `stories` and `development_status` maps. The domain
 ontology is `.agent/ontology.yml`.
 

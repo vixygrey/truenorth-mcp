@@ -8,6 +8,10 @@ conventions are in [CONVENTIONS.md](CONVENTIONS.md), and the commit format is in
 
 This project uses an issue-first, trunk-based workflow.
 
+GitHub Issues is the backlog source of truth for this repository.
+`.agent/tasks/backlog.yml` declares that external ownership but does not cache
+issue data. Read issue status from GitHub before selecting or updating work.
+
 1. Open or claim an issue. One PR references at least one issue.
 2. Create a feature branch. Do NOT commit to `main`.
 3. Make atomic commits, each one a single logical change that leaves the tree
