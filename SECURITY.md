@@ -2,14 +2,13 @@
 
 ## Supported versions
 
-| Version line                  | Security support |
-| ----------------------------- | ---------------- |
-| `1.x`, after `1.0.0` releases | Supported        |
-| `0.x`                         | Unsupported      |
+| Version line | Security support |
+| ------------ | ---------------- |
+| `1.x`        | Supported        |
+| `0.x`        | Unsupported      |
 
-The first supported release line begins with `1.0.0`. Security fixes target the latest
-supported `1.x` release. Until then, use the latest source on `main` or the latest
-prerelease. No stable security-fix commitment exists for `0.x`.
+Security fixes target the latest supported `1.x` release. No stable security-fix
+commitment exists for `0.x`.
 
 ## Report a vulnerability privately
 
