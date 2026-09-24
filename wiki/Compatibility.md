@@ -21,6 +21,15 @@ success or error semantics, or removed resource URI is a breaking change. Breaki
 changes require a new major version, release notes, a replacement when one exists,
 and command-first migration steps.
 
+## Supported runtimes
+
+The npm wrapper supports macOS ARM64/x64 and Linux ARM64/x64. Native Windows is
+unsupported in v1; Windows users must run the wrapper and native binary in WSL.
+
+The wrapper requires Node.js 18 or newer. CI exercises Node.js 18, 20, 22, 24, and 26. Compatibility with an end-of-life Node.js release does not extend that release's
+upstream security support. Production installations should use a Node.js release that
+still receives upstream security fixes.
+
 ## Supported workspaces
 
 A v1 `.agent/` workspace has this layout contract:

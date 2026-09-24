@@ -103,3 +103,5 @@ tasks:
   group_kind: ticket
   task_name: Document backlog ownership compatibility
   verify_command: bash scripts/preflight.sh format
+- task_name: Implement combined wrapper compatibility for issues 388 and 389
+  verify_command: bash scripts/preflight.sh wrapper artifact-smoke format shell

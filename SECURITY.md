@@ -42,9 +42,11 @@ Merge, release, and emergency-bypass authority are defined in [GOVERNANCE.md](GO
 ## Support boundaries
 
 Supported v1 distributions are the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
-Windows is unsupported in v1. The wrapper requires Node.js 18 or newer. Source builds
-require Rust 1.88 or newer. The server supports MCP over stdio; it does not certify any
-vendor-specific MCP client.
+Native Windows is unsupported in v1; use the documented
+[WSL installation path](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
+The wrapper requires Node.js 18 or newer, but TrueNorth-MCP does not provide security
+support for end-of-life Node.js releases. Source builds require Rust 1.88 or newer. The
+server supports MCP over stdio; it does not certify any vendor-specific MCP client.
 
 Use GitHub Discussions for questions. Use the issue forms for reproducible non-security
 defects. Use the private advisory channel above for security reports only.

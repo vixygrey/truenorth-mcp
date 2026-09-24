@@ -34,6 +34,13 @@ The server reads and writes the governed project's `.agent/` workspace. Bootstra
 connecting, then configure the project's own `TRUENORTH_VERIFY_CMD` in the MCP client
 environment before using lifecycle, task, and quality-gate tools.
 
+## Supported environments
+
+The wrapper supports Node.js 18 or newer on macOS ARM64/x64 and Linux ARM64/x64. Use a
+Node.js release that still receives upstream security fixes for production. Native Windows
+is unsupported in v1; follow the
+[WSL installation path](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
+
 ## Documentation and support
 
 - [Install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)

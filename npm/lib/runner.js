@@ -41,6 +41,15 @@ function resolveBinary(platform, arch, resolver) {
 function run(deps) {
   const { argv, platform, arch, packageDir, resolver, spawn, stderr, exit } = deps;
 
+  if (platform === 'win32') {
+    stderr(
+      'truenorth-mcp: native Windows is not supported in v1. ' +
+        'Run TrueNorth-MCP in WSL: ' +
+        'https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows\n',
+    );
+    return exit(1);
+  }
+
   const binaryArgs =
     argv[0] === 'init' ? [...argv, '--skills-dir', path.join(packageDir, 'skills')] : argv;
 

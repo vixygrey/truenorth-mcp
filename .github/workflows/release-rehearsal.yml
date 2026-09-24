@@ -95,7 +95,7 @@ jobs:
           if-no-files-found: error
 
   verify-handoff:
-    name: verify ${{ matrix.platform }} handoff
+    name: verify ${{ matrix.platform }} on Node ${{ matrix.node }}
     needs: [resolve-version, build-platform]
     runs-on: ${{ matrix.os }}
     strategy:
@@ -104,12 +104,28 @@ jobs:
         include:
           - platform: darwin-arm64
             os: macos-14
+            node: "22"
           - platform: darwin-x64
             os: macos-15-intel
+            node: "22"
           - platform: linux-arm64
             os: ubuntu-24.04-arm
+            node: "22"
           - platform: linux-x64
             os: ubuntu-latest
+            node: "18"
+          - platform: linux-x64
+            os: ubuntu-latest
+            node: "20"
+          - platform: linux-x64
+            os: ubuntu-latest
+            node: "22"
+          - platform: linux-x64
+            os: ubuntu-latest
+            node: "24"
+          - platform: linux-x64
+            os: ubuntu-latest
+            node: "26"
     steps:
       - name: Check out the selected ref
         uses: actions/checkout@v7
@@ -117,7 +133,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: ${{ matrix.node }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Download and extract the platform package archive
