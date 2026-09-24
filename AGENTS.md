@@ -24,7 +24,8 @@ A single write guard funnels every runtime write and rejects any target outside
   ready and done.
 - `.agent/tasks/`: the cockpit. `state.yml` carries the phase and the TDD loop,
   `release-plan.yml` carries the recorded tasks, `execution-status.yml` carries
-  the story status, and `bugs.yml` carries the external-tracker bug references.
+  the story status, `bugs.yml` carries external-tracker bug references, and
+  `backlog.yml` declares whether backlog ownership is local or external.
 - `.agent/ontology.yml`: the domain ontology.
 - `.agent/product/`: the product scope, vision, and glossary.
 - `.agent/memories/`: the lessons and the glossary.
@@ -46,6 +47,9 @@ required, the branch pattern, and whether a commit needs an issue id (ADR-0009).
 
 ## Working rules
 
+- GitHub Issues is this repository's backlog source of truth. The external
+  ownership declaration in `.agent/tasks/backlog.yml` is a pointer, not an issue
+  cache. Never treat it as live backlog data.
 - Record a task with the `truenorth_record_task` tool. The grouping key is
   `group_id` with an optional `group_kind`. A legacy `epic_id` still maps to a
   group with `group_kind` set to epic.

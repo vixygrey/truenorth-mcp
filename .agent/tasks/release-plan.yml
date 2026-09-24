@@ -91,3 +91,7 @@ tasks:
   group_kind: ticket
   task_name: Add CI-aligned local preflight command
   verify_command: npm run preflight
+- group_id: '382'
+  group_kind: ticket
+  task_name: Make backlog ownership explicit
+  verify_command: cargo test --manifest-path runtime/Cargo.toml scaffold && npm run preflight

@@ -31,7 +31,7 @@ pub(super) const EXECUTION_STATUS_SEED: &str = "stories: {}\ndevelopment_status:
 pub(super) fn starter_seed(rel: &str) -> String {
     match rel {
         "tasks/release-plan.yml" => "tasks: []\n".to_string(),
-        "tasks/backlog.yml" => "backlog: []\n".to_string(),
+        "tasks/backlog.yml" => "version: '1'\nownership:\n  mode: local\nbacklog: []\n".to_string(),
         _ => "{}\n".to_string(),
     }
 }
@@ -44,6 +44,7 @@ pub(super) fn agents_md(profile: Profile) -> String {
          The machine-facing workspace is `.agent/`. The runtime reads, watches, and writes\n\
          only under `.agent/`. Human-authored narrative lives under `specs/`.\n\n\
          - Cockpit state: `.agent/tasks/`\n\
+         - Backlog ownership: `.agent/tasks/backlog.yml`\n\
          - Ontology: `.agent/ontology.yml`\n\
          - Product scope and vision: `.agent/product/`\n",
         profile.name
@@ -56,7 +57,10 @@ pub(super) fn conventions_md(profile: Profile) -> String {
         "# Conventions\n\n\
          Methodology profile: `{}`.\n\n\
          Commits are atomic and follow Conventional Commits. The grouping key for a task\n\
-         is `{}`.\n",
+         is `{}`.\n\n\
+         Backlog ownership is independent of methodology. `.agent/tasks/backlog.yml`\n\
+         declares local or external ownership. The runtime does not contact external\n\
+         trackers by default.\n",
         profile.name,
         grouping_label(profile.vocab),
     )

@@ -102,6 +102,7 @@ fn complete_configuration_reports_ready_without_mutation() {
     assert!(output.status.success(), "valid configuration succeeds");
     assert_eq!(report["repository_root"]["status"], "ok");
     assert_eq!(report["layout"]["status"], "ok");
+    assert_eq!(report["backlog"]["status"], "ok");
     assert_eq!(report["features"]["status"], "ok");
     assert_eq!(report["features"]["ontology"], false);
     assert_eq!(report["token_caps"]["status"], "ok");
@@ -171,6 +172,28 @@ fn missing_verify_command_names_its_fix_without_echoing_values() {
         !String::from_utf8(output.stdout)
             .expect("diagnostic output is text")
             .contains("cargo test")
+    );
+}
+
+#[test]
+fn external_backlog_rejects_cached_issue_entries() {
+    let repo = seed_complete_repo();
+    fs::write(
+        repo.path().join(".agent/tasks/backlog.yml"),
+        "version: '1'\nownership:\n  mode: external\n  provider: github\n  url: https://example.invalid/issues\nbacklog: []\n",
+    )
+    .expect("write invalid external backlog");
+
+    let output = run(repo.path(), &["--check-config"], Some("true"));
+    let report = parse_report(&output);
+
+    assert!(!output.status.success(), "stale external cache must fail");
+    assert_eq!(report["backlog"]["status"], "error");
+    assert!(
+        report["backlog"]["error"]["message"]
+            .as_str()
+            .expect("backlog error")
+            .contains("must not contain a cached `backlog`")
     );
 }
 

@@ -12,6 +12,7 @@ use serde::Serialize;
 
 use truenorth_mcp::config;
 use truenorth_mcp::engine::agent_ws::read_layout;
+use truenorth_mcp::engine::backlog;
 use truenorth_mcp::engine::features;
 use truenorth_mcp::tools::scaffold::bootstrap_project;
 
@@ -120,6 +121,7 @@ struct DiagnosticReport {
     platform: PlatformReport,
     repository_root: RepositoryRootReport,
     layout: CheckReport,
+    backlog: CheckReport,
     features: FeaturesReport,
     token_caps: TokenCapsReport,
     verify_gate: VerifyGateReport,
@@ -136,6 +138,7 @@ impl DiagnosticReport {
                 platform: PlatformReport::current(),
                 repository_root: RepositoryRootReport::ok(path.clone()),
                 layout: layout_report(&path),
+                backlog: backlog_report(&path),
                 features: features_report(&path),
                 token_caps: token_caps_report(&path),
                 verify_gate,
@@ -145,6 +148,7 @@ impl DiagnosticReport {
                 platform: PlatformReport::current(),
                 repository_root: RepositoryRootReport::error(error.to_string()),
                 layout: CheckReport::skipped("repository root could not be resolved"),
+                backlog: CheckReport::skipped("repository root could not be resolved"),
                 features: FeaturesReport::skipped("repository root could not be resolved"),
                 token_caps: TokenCapsReport::skipped("repository root could not be resolved"),
                 verify_gate,
@@ -155,6 +159,7 @@ impl DiagnosticReport {
     fn ready(&self) -> bool {
         self.repository_root.status == Status::Ok
             && self.layout.status == Status::Ok
+            && self.backlog.status == Status::Ok
             && self.features.status == Status::Ok
             && self.token_caps.status == Status::Ok
             && self.verify_gate.status == Status::Ok
@@ -268,6 +273,16 @@ fn layout_report(root: &std::path::Path) -> CheckReport {
         Err(error) => CheckReport::error(
             error.to_string(),
             "Restore the named .agent layout entry or scaffold the project with truenorth_scaffold_project.",
+        ),
+    }
+}
+
+fn backlog_report(root: &std::path::Path) -> CheckReport {
+    match backlog::validate_optional(root) {
+        Ok(()) => CheckReport::ok(),
+        Err(error) => CheckReport::error(
+            error.to_string(),
+            "Declare local ownership with a backlog list, or external ownership with provider metadata and no cached backlog.",
         ),
     }
 }

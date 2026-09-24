@@ -30,10 +30,16 @@ refined where that state lives by splitting the tree into a machine-facing `.age
 and a human-facing `specs/` layer, so this ADR is superseded by that split, not by a
 return to remote state.
 
-Two later decisions carry the premise forward. ADR-0011 relocated the cockpit into
-`.agent/`, so the runtime reads `.agent/tasks/state.yml` and `.agent/tasks/release-plan.yml`
-live. ADR-0010 kept bug detail in an external tracker while storing only a lean reference
-on disk, which is the one deliberate, bounded exception to pure local-first.
+Later decisions carry the premise forward. ADR-0011 relocated the cockpit into
+`.agent/`, so the runtime reads `.agent/tasks/state.yml` and
+`.agent/tasks/release-plan.yml` live. ADR-0010 keeps bug detail in an external
+tracker while storing only a lean reference on disk.
 
-**Status today:** superseded by ADR-0008; the local-first premise remains in force through
-ADR-0011.
+Backlog ownership is a second bounded exception. A project can keep an
+authoritative local list in `.agent/tasks/backlog.yml` or declare an external
+provider there. An external declaration contains ownership metadata only, never a
+snapshot. Methodology does not select the tracker, and the runtime makes no tracker
+API request in its default request path.
+
+**Status today:** superseded by ADR-0008; the local-first premise remains in force
+through ADR-0011, with explicit external ownership available for bugs and backlogs.
