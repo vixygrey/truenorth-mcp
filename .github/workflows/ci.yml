@@ -52,37 +52,9 @@ jobs:
         with:
           workspaces: runtime
 
-      - name: Check formatting
+      - name: Run the check preflight group
         if: steps.crate.outputs.present == 'true'
-        working-directory: runtime
-        run: cargo fmt --check
-
-      - name: Run clippy
-        if: steps.crate.outputs.present == 'true'
-        working-directory: runtime
-        run: cargo clippy --all-targets -- -D warnings
-
-      - name: Build
-        if: steps.crate.outputs.present == 'true'
-        working-directory: runtime
-        run: cargo build --verbose
-
-      - name: Run tests
-        if: steps.crate.outputs.present == 'true'
-        working-directory: runtime
-        run: cargo test --verbose
-
-      # The AST ontology analyzer is optional (feature `tree-sitter`). Gate the feature
-      # build too, so the optional path stays clippy-clean and tested.
-      - name: Run clippy with the tree-sitter feature
-        if: steps.crate.outputs.present == 'true'
-        working-directory: runtime
-        run: cargo clippy --features tree-sitter --all-targets -- -D warnings
-
-      - name: Run tests with the tree-sitter feature
-        if: steps.crate.outputs.present == 'true'
-        working-directory: runtime
-        run: cargo test --features tree-sitter --verbose
+        run: bash scripts/preflight.sh check
 
   wrapper:
     name: wrapper test
@@ -107,10 +79,9 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Run the wrapper tests
+      - name: Run the wrapper preflight group
         if: steps.wrapper.outputs.present == 'true'
-        working-directory: npm
-        run: node --test
+        run: bash scripts/preflight.sh wrapper
 
   artifact-smoke:
     name: artifact smoke
@@ -127,29 +98,8 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Test release record generation
-        run: node --test scripts/release-record.test.js
-
-      - name: Build the Linux x64 release binary
-        working-directory: runtime
-        run: cargo build --release
-
-      - name: Stage the Linux x64 package binary
-        run: |
-          cp runtime/target/release/truenorth-mcp npm/packages/linux-x64/truenorth-mcp
-          chmod +x npm/packages/linux-x64/truenorth-mcp
-
-      - name: Smoke the staged native artifact
-        run: |
-          node scripts/smoke-mcp-artifact.js \
-            --expected-version "$(node -p "require('./npm/package.json').version")" \
-            -- npm/packages/linux-x64/truenorth-mcp
-
-      - name: Smoke the packed wrapper artifact
-        run: |
-          node scripts/smoke-mcp-artifact.js \
-            --expected-version "$(node -p "require('./npm/package.json').version")" \
-            --packed-wrapper npm/packages/linux-x64
+      - name: Run the artifact-smoke preflight group
+        run: bash scripts/preflight.sh artifact-smoke
 
   format:
     name: prettier check
@@ -178,12 +128,9 @@ jobs:
         if: steps.tooling.outputs.present == 'true'
         run: npm install --no-audit --no-fund
 
-      - name: Check formatting
+      - name: Run the format preflight group
         if: steps.tooling.outputs.present == 'true'
-        run: npm run format:check
-
-      - name: Lint verify-gate documentation
-        run: npm run lint:verify-gate-docs
+        run: bash scripts/preflight.sh format
 
   shell:
     name: shell lint and test
@@ -216,41 +163,9 @@ jobs:
           sudo install "shellcheck-${version}/shellcheck" /usr/local/bin/shellcheck
           shellcheck --version
 
-      - name: Run shellcheck
+      - name: Run the shell preflight group
         if: steps.shell.outputs.present == 'true'
-        run: |
-          # Lint every tracked shell script under skills/ and scripts/. Deny warnings,
-          # matching the deny-warnings bar the Rust crate meets.
-          shellcheck --severity=warning $(git ls-files 'skills/**/*.sh' 'scripts/**/*.sh')
-
-      - name: Lint skill artifact-write paths
-        if: steps.shell.outputs.present == 'true'
-        run: |
-          # Check that skill scripts write machine artifacts under `.agent/` and transient
-          # render output to /tmp or a gitignored session dir, per ADR-0014 (issue #138).
-          bash scripts/lint-skill-artifacts.sh
-
-      - name: Lint skill cockpit paths
-        if: steps.shell.outputs.present == 'true'
-        run: |
-          # Check that a skill names `.agent/` cockpit paths under a known layout area and
-          # names no retired cockpit path, per ADR-0011 and ADR-0008 (issue #250).
-          bash scripts/lint-skill-paths.sh
-
-      - name: Lint skill handoff targets
-        if: steps.shell.outputs.present == 'true'
-        run: |
-          # Check that every concrete handoff target names a real skill, so a rename or a
-          # delete cannot leave a dangling next_skill pointer (issue #253).
-          bash scripts/lint-skill-handoffs.sh
-
-      - name: Verify the script-bearing skills
-        if: steps.shell.outputs.present == 'true'
-        run: |
-          # Run each script skill's documented verify command (guard-git, extract-design,
-          # align-grid, visual-dashboard). A browser- or server-bound verify is skipped in
-          # a headless CI. This subsumes the guard-git harness run (issue #250).
-          bash scripts/verify-skills.sh
+        run: bash scripts/preflight.sh shell
 
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only

@@ -21,28 +21,31 @@ See [GOVERNANCE.md](GOVERNANCE.md) for merge, emergency, and release authority.
 
 ## Before you push
 
-Run the full local verification.
+Install the root development dependencies once, then run the full local
+verification:
 
 ```bash
-cd runtime
-cargo fmt --check
-cargo clippy --all-targets -- -D warnings
-cargo test
+npm install --no-audit --no-fund
+npm run preflight
 ```
 
-For a wrapper change, also run `node --test` in `npm/`.
-
-For a change to a shell script under `skills/`, lint it with the pinned
-shellcheck the CI gate uses:
+`npm run preflight` runs the same five ownership groups as the required CI gate:
+`check`, `wrapper`, `artifact-smoke`, `format`, and `shell`. Run one or more
+groups directly for a focused rerun:
 
 ```bash
-bash scripts/lint-shell.sh
+bash scripts/preflight.sh check
+bash scripts/preflight.sh wrapper artifact-smoke
 ```
 
-The script reads the pinned version from `.github/workflows/ci.yml`
-(`SHELLCHECK_VERSION`), so a local run matches CI. It uses a matching local
-shellcheck when present, and the `koalaman/shellcheck` container otherwise. A
-version bump is one line in the workflow.
+The command checks the default and `tree-sitter` Rust builds, wrapper tests,
+native and packed artifacts, formatting, documentation, shell scripts, skill
+paths, handoffs, and script-bearing skills. It reports missing prerequisites and
+unsupported artifact platforms with remediation. Browser-bound skill checks are
+reported as skips when their optional dependencies are unavailable.
+
+The preflight never publishes, tags, or uses production credentials. Release
+rehearsal and cross-platform publication remain CI release responsibilities.
 
 ## Commits
 
