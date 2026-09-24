@@ -65,11 +65,33 @@ test('run spawns the resolved binary and propagates the exit code', () => {
   assert.strictEqual(state.exitCode, 3);
 });
 
-test('run exits 1 with a clear message on an unsupported platform', () => {
-  const { deps, state } = harness({ platform: 'win32', arch: 'x64' });
+test('run rejects native Windows before resolution or spawning', () => {
+  let resolved = false;
+  const { deps, state } = harness({
+    platform: 'win32',
+    arch: 'x64',
+    resolver: () => {
+      resolved = true;
+      throw new Error('resolver must not run');
+    },
+  });
   runner.run(deps);
   assert.strictEqual(state.exitCode, 1);
-  assert.match(state.stderr, /no prebuilt binary for win32-x64/);
+  assert.strictEqual(resolved, false);
+  assert.strictEqual(state.spawned, null);
+  assert.match(state.stderr, /native Windows is not supported in v1/);
+  assert.match(state.stderr, /WSL/);
+  assert.match(
+    state.stderr,
+    /https:\/\/github\.com\/vixygrey\/truenorth-mcp\/wiki\/Install-and-connect#windows/,
+  );
+});
+
+test('run exits 1 with a clear message on another unsupported platform', () => {
+  const { deps, state } = harness({ platform: 'freebsd', arch: 'x64' });
+  runner.run(deps);
+  assert.strictEqual(state.exitCode, 1);
+  assert.match(state.stderr, /no prebuilt binary for freebsd-x64/);
 });
 
 test('run exits 1 with a clear message on a spawn failure', () => {

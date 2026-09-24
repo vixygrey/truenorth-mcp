@@ -21,6 +21,21 @@ npx -y truenorth-mcp init --profile generic
 It refuses to overwrite an existing TrueNorth workspace. It does not create a language
 manifest, source tree, CI workflow, or verify command.
 
+## Windows
+
+Native Windows is unsupported in v1. Use WSL 2 so the npm wrapper and native Linux
+binary run in the same environment.
+
+1. Install WSL 2 from an elevated PowerShell terminal with `wsl --install`.
+2. Open the Linux distribution and install Node.js 18 or newer. Use a Node.js release
+   that still receives upstream security fixes for production.
+3. Clone or open the governed project inside WSL and run `npx -y truenorth-mcp init`
+   there.
+4. Run the MCP client inside WSL, or configure it to invoke the wrapper through WSL
+   with a Linux `TRUENORTH_ROOT` path.
+
+The wrapper does not publish or attempt to resolve a native Windows binary.
+
 ## Verify a native release download
 
 Each GitHub Release includes platform-native archives and a `SHA256SUMS` file. Download both

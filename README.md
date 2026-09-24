@@ -206,9 +206,11 @@ tools and the `truenorth://ontology` resource are absent.
 ## Support
 
 TrueNorth-MCP v1 supports the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
-Windows is unsupported. The wrapper requires Node.js 18 or newer. Source builds require
-Rust 1.88 or newer. The server supports MCP over stdio; vendor-specific MCP clients are
-not separately certified.
+Native Windows is unsupported; use
+[WSL](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
+The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
+upstream security fixes for production. Source builds require Rust 1.88 or newer. The
+server supports MCP over stdio; vendor-specific MCP clients are not separately certified.
 
 Use [GitHub Discussions](https://github.com/vixygrey/truenorth-mcp/discussions) for
 questions and the issue forms for reproducible non-security defects. Report vulnerabilities

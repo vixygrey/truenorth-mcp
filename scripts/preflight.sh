@@ -59,9 +59,9 @@ run_check() {
 }
 
 run_wrapper() {
-  require_command node "Install Node.js 22 or newer."
+  require_command node "Install Node.js 18 or newer. Use a release that still receives upstream security fixes for production."
   echo "preflight: [wrapper] node tests"
-  (cd npm && node --test)
+  (cd npm && node --test test/*.test.js)
 }
 
 platform_package() {
@@ -82,7 +82,7 @@ platform_package() {
 
 run_artifact_smoke() {
   require_command cargo "Install the stable Rust toolchain."
-  require_command node "Install Node.js 22 or newer."
+  require_command node "Install Node.js 18 or newer. Use a release that still receives upstream security fixes for production."
   require_command npm "Install npm with Node.js."
 
   local package expected_version release_binary stage_dir
@@ -112,7 +112,7 @@ run_artifact_smoke() {
 }
 
 run_format() {
-  require_command node "Install Node.js 22 or newer."
+  require_command node "Install Node.js 18 or newer. Use a release that still receives upstream security fixes for production."
   require_command npm "Install npm with Node.js."
   if [ ! -x node_modules/.bin/prettier ]; then
     fail "root npm development dependencies are unavailable. Run 'npm install --no-audit --no-fund'."

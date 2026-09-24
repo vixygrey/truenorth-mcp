@@ -57,8 +57,12 @@ jobs:
         run: bash scripts/preflight.sh check
 
   wrapper:
-    name: wrapper test
+    name: wrapper test (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["18", "20", "22", "24", "26"]
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7
@@ -77,7 +81,7 @@ jobs:
         if: steps.wrapper.outputs.present == 'true'
         uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: ${{ matrix.node }}
 
       - name: Run the wrapper preflight group
         if: steps.wrapper.outputs.present == 'true'
