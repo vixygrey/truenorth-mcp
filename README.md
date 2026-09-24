@@ -130,10 +130,10 @@ npx -y truenorth-mcp --version
 npx -y truenorth-mcp --check-config
 ```
 
-`--check-config` reports the repository root, workspace layout, enabled features,
-effective token caps, verify-gate readiness, package version, and platform. It reads
-configuration only. It does not start the MCP server, run the verify command, or print
-configured command values.
+`--check-config` reports the repository root, workspace layout, backlog ownership,
+enabled features, effective token caps, verify-gate readiness, package version, and
+platform. It reads configuration only. It does not start the MCP server, run the
+verify command, contact a backlog provider, or print configured command values.
 
 Set `token_caps.skill_lean_tokens` and `token_caps.tool_payload_tokens` in
 `.agent/config/rules.yml`. When omitted, they default to 1500 and 4000 respectively.

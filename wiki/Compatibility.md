@@ -64,6 +64,39 @@ fixed profile names:
 An absent `profile.yml` resolves to `issue-per-task`. An unknown or malformed
 profile is rejected without partial state.
 
+## Backlog ownership
+
+Backlog ownership is independent from the methodology profile. The optional
+`.agent/tasks/backlog.yml` can hold an authoritative local list or point to an
+external provider.
+
+An explicit local backlog uses contract version `"1"` and a `backlog` list:
+
+```yaml
+version: "1"
+ownership:
+  mode: local
+backlog: []
+```
+
+The list can contain project-defined issue or work-item records. A backlog file
+without `ownership` retains the legacy local behavior.
+
+An external backlog contains provider metadata only:
+
+```yaml
+version: "1"
+ownership:
+  mode: external
+  provider: github
+  url: https://github.com/example/project/issues
+```
+
+External ownership requires nonempty `provider` and `url` values and must not
+contain a `backlog` field, including an empty list. Consumers obtain current work
+from the declared provider. The runtime validates the ownership metadata but makes
+no external tracker request.
+
 ## Cockpit migration
 
 V1 reads the `.agent/` cockpit first. When the corresponding file is absent, it
@@ -145,6 +178,12 @@ The runtime tests enforce this policy:
 
 - `engine::agent_ws::layout::tests` validates layout version and required paths.
 - `engine::profile::tests` validates the default and five supported profiles.
+- `engine::backlog::tests` validates missing, legacy, local, external, and invalid
+  backlog ownership declarations.
+- `cli_diagnostics::external_backlog_rejects_cached_issue_entries` validates that
+  `--check-config` rejects cached entries under external ownership.
+- `tools::scaffold::tests::scaffold_emits_the_agent_tree_and_root_docs` validates
+  that a fresh project receives explicit local backlog ownership.
 - `engine::cockpit::tests` validates legacy reads, migration writes, source
   immutability, and state and release-plan field preservation.
 - `resources::tests` and `resources::prop_tests` validate resource URI stability,
