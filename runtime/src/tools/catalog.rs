@@ -19,12 +19,16 @@ use crate::engine::skill::{SkillError, discover_skills, read_skill_raw};
 use crate::engine::skill_parser::{ParsedSkill, parse_skill};
 use crate::engine::skill_validate::validate_skill;
 use crate::server::{ServerContext, TrueNorthServer};
+use crate::tools::result;
 
 /// Render a serializable value as a pretty JSON tool result.
-fn json_result<T: Serialize>(value: &T) -> Result<CallToolResult, ErrorData> {
+fn json_result<T: Serialize>(
+    value: &T,
+    caps: crate::engine::features::TokenCaps,
+) -> Result<CallToolResult, ErrorData> {
     let text = serde_json::to_string_pretty(value)
         .map_err(|e| ErrorData::internal_error(format!("could not serialize result: {e}"), None))?;
-    Ok(CallToolResult::success(vec![ContentBlock::text(text)]))
+    result::success(vec![ContentBlock::text(text)], caps)
 }
 
 /// Map a skill resolution error to an MCP error, preserving the legacy message.
@@ -91,7 +95,10 @@ impl TrueNorthServer {
     #[tool(description = "List all skills with name, relative path, and lifecycle phase.")]
     pub async fn index_skills(&self) -> Result<CallToolResult, ErrorData> {
         let skills = discover_skills(&self.ctx.repo_root);
-        json_result(&serde_json::json!({ "count": skills.len(), "skills": skills_json(&skills) }))
+        json_result(
+            &serde_json::json!({ "count": skills.len(), "skills": skills_json(&skills) }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Parse a SKILL.md into its structure.
@@ -103,7 +110,7 @@ impl TrueNorthServer {
         params: Parameters<NameArg>,
     ) -> Result<CallToolResult, ErrorData> {
         let parsed = self.parse_named_skill(&params.0.name)?;
-        json_result(&parsed)
+        json_result(&parsed, self.ctx.token_caps)
     }
 
     /// Search skills by metadata.
@@ -120,7 +127,10 @@ impl TrueNorthServer {
             ));
         }
         let results = self.run_search(&args);
-        json_result(&serde_json::json!({ "count": results.len(), "results": results }))
+        json_result(
+            &serde_json::json!({ "count": results.len(), "results": results }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Build and persist the skill graph.
@@ -128,6 +138,14 @@ impl TrueNorthServer {
     pub async fn build_skill_graph(&self) -> Result<CallToolResult, ErrorData> {
         let parsed = self.parse_all_skills();
         let graph = graph::build_graph(&parsed);
+        let response = json_result(
+            &serde_json::json!({
+                "entities": graph.entities.len(),
+                "relations": graph.relations.len(),
+                "graph_path": self.ctx.graph_path().display().to_string(),
+            }),
+            self.ctx.token_caps,
+        )?;
         // Write the cache under `.agent/` through the single write guard (ADR-0008). The
         // guard rejects any target outside `.agent/` and writes atomically, so the graph
         // never lands in the crate source tree.
@@ -136,21 +154,20 @@ impl TrueNorthServer {
             .map_err(|e| {
             ErrorData::internal_error(format!("could not persist the skill graph: {e}"), None)
         })?;
-        json_result(&serde_json::json!({
-            "entities": graph.entities.len(),
-            "relations": graph.relations.len(),
-            "graph_path": self.ctx.graph_path().display().to_string(),
-        }))
+        Ok(response)
     }
 
     /// Return the full skill graph.
     #[tool(description = "Return the persisted skill graph (entities and relations).")]
     pub async fn read_graph(&self) -> Result<CallToolResult, ErrorData> {
         let graph = self.load_persisted_graph()?;
-        json_result(&serde_json::json!({
-            "entities": graph.entities.values().collect::<Vec<_>>(),
-            "relations": graph.relations,
-        }))
+        json_result(
+            &serde_json::json!({
+                "entities": graph.entities.values().collect::<Vec<_>>(),
+                "relations": graph.relations,
+            }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Search graph entities.
@@ -161,7 +178,10 @@ impl TrueNorthServer {
     ) -> Result<CallToolResult, ErrorData> {
         let graph = self.load_persisted_graph()?;
         let results = graph::search_nodes(&graph, &params.0.query);
-        json_result(&serde_json::json!({ "results": results }))
+        json_result(
+            &serde_json::json!({ "results": results }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Open graph entities by name.
@@ -172,7 +192,10 @@ impl TrueNorthServer {
     ) -> Result<CallToolResult, ErrorData> {
         let graph = self.load_persisted_graph()?;
         let entities = graph::open_nodes(&graph, &params.0.names);
-        json_result(&serde_json::json!({ "entities": entities }))
+        json_result(
+            &serde_json::json!({ "entities": entities }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Report a skill's dependencies and handoff chain.
@@ -185,13 +208,16 @@ impl TrueNorthServer {
     ) -> Result<CallToolResult, ErrorData> {
         let graph = self.load_persisted_graph()?;
         let name = &params.0.name;
-        json_result(&serde_json::json!({
-            "skill": name,
-            "depends_on": graph::forward_deps(&graph, name),
-            "depended_by": graph::reverse_deps(&graph, name),
-            "handoff_chain": graph::handoff_chain(&graph, name),
-            "conventions": graph::conventions(&graph, name),
-        }))
+        json_result(
+            &serde_json::json!({
+                "skill": name,
+                "depends_on": graph::forward_deps(&graph, name),
+                "depended_by": graph::reverse_deps(&graph, name),
+                "handoff_chain": graph::handoff_chain(&graph, name),
+                "conventions": graph::conventions(&graph, name),
+            }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Return git context scoped to the cockpit directories.
@@ -202,7 +228,10 @@ impl TrueNorthServer {
     ) -> Result<CallToolResult, ErrorData> {
         let action = parse_git_action(params.0.action.as_deref())?;
         let output = git::git_context(&self.ctx.repo_root, action).map_err(git_error)?;
-        json_result(&serde_json::json!({ "action": action_name(action), "output": output }))
+        json_result(
+            &serde_json::json!({ "action": action_name(action), "output": output }),
+            self.ctx.token_caps,
+        )
     }
 
     /// Validate a skill against the conventions.
@@ -214,7 +243,7 @@ impl TrueNorthServer {
         let parsed = self.parse_named_skill(&params.0.name)?;
         let line_count = self.skill_line_count(&params.0.name)?;
         let report = validate_skill(&parsed, &self.ctx.repo_root, line_count);
-        json_result(&report)
+        json_result(&report, self.ctx.token_caps)
     }
 }
 

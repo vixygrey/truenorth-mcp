@@ -131,8 +131,19 @@ npx -y truenorth-mcp --check-config
 ```
 
 `--check-config` reports the repository root, workspace layout, enabled features,
-verify-gate readiness, package version, and platform. It reads configuration only. It
-does not start the MCP server, run the verify command, or print configured command values.
+effective token caps, verify-gate readiness, package version, and platform. It reads
+configuration only. It does not start the MCP server, run the verify command, or print
+configured command values.
+
+Set `token_caps.skill_lean_tokens` and `token_caps.tool_payload_tokens` in
+`.agent/config/rules.yml`. When omitted, they default to 1500 and 4000 respectively.
+Both values must be positive integers. Token counts are estimated as
+`ceil(characters / 4)`. The Lean cap is a rendering target: a single long line
+may be retained whole rather than cut mid-line. The payload cap applies to
+the text of every successful MCP tool response; oversized responses fail
+without truncation. If `get_skill` exceeds the payload cap, request `tier: "lean"`
+or raise the configured cap. This does not prevent a client from following
+a skill it has already read.
 
 ## Methodology profiles
 

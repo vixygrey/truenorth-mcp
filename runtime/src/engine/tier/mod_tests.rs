@@ -73,13 +73,16 @@ fn estimate_tokens_counts_characters_not_bytes() {
 #[test]
 fn full_tier_is_identity() {
     // Requirement 6.6: full is byte-for-byte identical.
-    assert_eq!(render_skill(SKILL_FIXTURE, Tier::Full), SKILL_FIXTURE);
+    assert_eq!(
+        render_skill(SKILL_FIXTURE, Tier::Full, TIER_LEAN_TOKEN_BUDGET),
+        SKILL_FIXTURE
+    );
 }
 
 #[test]
 fn reasoning_removes_meta_scaffolding() {
     // Requirement 6.7: reasoning removes meta and guardrail scaffolding.
-    let out = render_skill(SKILL_FIXTURE, Tier::Reasoning);
+    let out = render_skill(SKILL_FIXTURE, Tier::Reasoning, TIER_LEAN_TOKEN_BUDGET);
     assert!(!out.contains("<thinking>"));
     assert!(!out.contains("</thinking>"));
     assert!(!out.to_lowercase().contains("think step by step"));
@@ -89,7 +92,7 @@ fn reasoning_removes_meta_scaffolding() {
 #[test]
 fn reasoning_keeps_every_heading() {
     // Requirement 6.7: reasoning keeps every heading.
-    let out = render_skill(SKILL_FIXTURE, Tier::Reasoning);
+    let out = render_skill(SKILL_FIXTURE, Tier::Reasoning, TIER_LEAN_TOKEN_BUDGET);
     for heading in [
         "# Develop TDD",
         "## Philosophy",
@@ -108,7 +111,7 @@ fn reasoning_keeps_every_heading() {
 #[test]
 fn reasoning_keeps_every_invariant_line() {
     // Property 4: reasoning retains every invariant and acceptance-criterion line.
-    let out = render_skill(SKILL_FIXTURE, Tier::Reasoning);
+    let out = render_skill(SKILL_FIXTURE, Tier::Reasoning, TIER_LEAN_TOKEN_BUDGET);
     for line in INVARIANT_LINES {
         assert!(
             out.contains(line),
@@ -119,7 +122,7 @@ fn reasoning_keeps_every_invariant_line() {
 
 #[test]
 fn lean_removes_meta_scaffolding() {
-    let out = render_skill(SKILL_FIXTURE, Tier::Lean);
+    let out = render_skill(SKILL_FIXTURE, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(!out.contains("<thinking>"));
     assert!(!out.to_lowercase().contains("think step by step"));
     assert!(!out.to_lowercase().contains("take a deep breath"));
@@ -128,7 +131,7 @@ fn lean_removes_meta_scaffolding() {
 #[test]
 fn lean_drops_rationale_section_body() {
     // Requirement 6.8: lean drops rationale and background section bodies.
-    let out = render_skill(SKILL_FIXTURE, Tier::Lean);
+    let out = render_skill(SKILL_FIXTURE, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(
         !out.contains("It explains why the discipline matters"),
         "lean kept a rationale body line"
@@ -144,7 +147,7 @@ fn lean_drops_rationale_section_body() {
 fn lean_keeps_every_invariant_line() {
     // Property 4: lean retains every invariant and acceptance-criterion line, even those
     // inside a dropped rationale section.
-    let out = render_skill(SKILL_FIXTURE, Tier::Lean);
+    let out = render_skill(SKILL_FIXTURE, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     for line in INVARIANT_LINES {
         assert!(out.contains(line), "lean dropped invariant line `{line}`");
     }
@@ -154,7 +157,7 @@ fn lean_keeps_every_invariant_line() {
 fn lean_converts_headings_to_bullets() {
     // Requirement 6.8: lean converts headings to imperative bullets. `### 1. Planning`
     // loses its ordinal prefix and becomes `- Planning`.
-    let out = render_skill(SKILL_FIXTURE, Tier::Lean);
+    let out = render_skill(SKILL_FIXTURE, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(
         out.contains("- Planning"),
         "lean did not strip the step prefix"
@@ -166,7 +169,7 @@ fn lean_converts_headings_to_bullets() {
 fn lean_respects_the_token_budget() {
     // Requirement 6.8: lean does not exceed the configured token budget. The budget is
     // measured in estimated tokens (#83).
-    let out = render_skill(SKILL_FIXTURE, Tier::Lean);
+    let out = render_skill(SKILL_FIXTURE, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     let tokens = estimate_tokens(&out);
     assert!(
         tokens <= TIER_LEAN_TOKEN_BUDGET,
@@ -184,7 +187,7 @@ fn lean_truncates_a_large_document_to_budget() {
             "Filler prose line number {i} with several words here.\n"
         ));
     }
-    let out = render_skill(&big, Tier::Lean);
+    let out = render_skill(&big, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     let tokens = estimate_tokens(&out);
     assert!(
         tokens <= TIER_LEAN_TOKEN_BUDGET,
@@ -197,11 +200,21 @@ fn lean_truncates_a_large_document_to_budget() {
 }
 
 #[test]
+fn lean_budget_override_limits_output_without_changing_full() {
+    let text = format!("# Skill\n{}\n", "line of ordinary prose\n".repeat(500));
+    let lean = render_skill(&text, Tier::Lean, 120);
+    assert!(estimate_tokens(&lean) <= 120);
+    assert!(lean.contains("- Skill"));
+    assert!(!lean.contains("line of ordinary prose\n".repeat(500).as_str()));
+    assert_eq!(render_skill(&text, Tier::Full, 120), text);
+}
+
+#[test]
 fn duplicate_guardrail_collapses_in_reasoning() {
     // A repeated non-invariant blockquote collapses to its first occurrence. This quote
     // carries no gate marker, so it is guardrail scaffolding, not an invariant.
     let md = "# Skill\n\n> Remember to be careful.\n\n> Remember to be careful.\n";
-    let out = render_skill(md, Tier::Reasoning);
+    let out = render_skill(md, Tier::Reasoning, TIER_LEAN_TOKEN_BUDGET);
     let occurrences = out.matches("Remember to be careful.").count();
     assert_eq!(occurrences, 1, "duplicate guardrail was not collapsed");
 }
@@ -213,7 +226,7 @@ fn real_skill_full_tier_roundtrips_when_present() {
         return;
     };
     let md = std::fs::read_to_string(&path).expect("read real SKILL.md");
-    assert_eq!(render_skill(&md, Tier::Full), md);
+    assert_eq!(render_skill(&md, Tier::Full, TIER_LEAN_TOKEN_BUDGET), md);
 }
 
 #[test]
@@ -227,7 +240,7 @@ fn real_skill_reasoning_keeps_verify_line_when_present() {
     if !md.contains("verify:") {
         return;
     }
-    let out = render_skill(&md, Tier::Reasoning);
+    let out = render_skill(&md, Tier::Reasoning, TIER_LEAN_TOKEN_BUDGET);
     assert!(out.contains("verify:"), "reasoning dropped the verify line");
 }
 
@@ -238,7 +251,7 @@ fn lean_keeps_wiring_lines_in_a_dropped_section() {
     // skill and the state writes. Rationale is a drop-body section today, so this test
     // stands on its own before the Handoff title joins the set.
     let md = "# Skill\n\n## Rationale\n\nThis section explains the downstream flow in prose.\nGate: READY. Next: kickoff-branch.\nWrites: `state.yaml` `handoff.next_skill = kickoff-branch`.\n";
-    let out = render_skill(md, Tier::Lean);
+    let out = render_skill(md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(
         out.contains("Next: kickoff-branch"),
         "lean dropped the Next: wiring line"
@@ -259,7 +272,7 @@ fn lean_drops_references_and_out_of_scope_bodies() {
     // Requirement 6.8 (#62): References citations and Out of scope exclusions are inert
     // for a lean acting agent, so their bodies drop while the heading stays.
     let md = "# Skill\n\n## References\n\n- Fowler's Refactoring Catalog: the canonical vocabulary.\n\n## Out of scope\n\nWork beyond the destination is not routed here.\n";
-    let out = render_skill(md, Tier::Lean);
+    let out = render_skill(md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(
         out.contains("References"),
         "lean dropped the References heading"
@@ -282,7 +295,7 @@ fn lean_drops_references_and_out_of_scope_bodies() {
 fn lean_drops_handoff_prose_but_keeps_wiring() {
     // Handoff joins the drop-body set (#62). Its prose drops, its wiring survives.
     let md = "# Skill\n\n## Handoff\n\nThe downstream flow is described in this prose sentence.\nNext: kickoff-branch.\nWrites: `state.yaml`.\n";
-    let out = render_skill(md, Tier::Lean);
+    let out = render_skill(md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(out.contains("Handoff"), "lean dropped the Handoff heading");
     assert!(
         !out.contains("described in this prose"),
@@ -297,7 +310,7 @@ fn lean_keeps_integration_points_and_notes_bodies() {
     // #62: integration points and notes carry action-relevant prose, so they are NOT in
     // the drop-body set. Their bodies survive.
     let md = "# Skill\n\n## Integration points\n\nThe release-branch gate blocks the merge on a FAIL.\n\n## Notes\n\nHusky v9 does not need shebangs in hook files.\n";
-    let out = render_skill(md, Tier::Lean);
+    let out = render_skill(md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(
         out.contains("release-branch gate blocks the merge"),
         "lean wrongly dropped the Integration points body"
@@ -313,7 +326,7 @@ fn wiring_keyword_in_prose_is_not_preserved() {
     // The anchor is the line start. A sentence that merely contains the word is prose,
     // so a dropped section still removes it.
     let md = "# Skill\n\n## Rationale\n\nThe planner writes to disk and moves next when ready.\n";
-    let out = render_skill(md, Tier::Lean);
+    let out = render_skill(md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     assert!(
         !out.contains("moves next when ready"),
         "a mid-line keyword was wrongly preserved"
@@ -371,8 +384,16 @@ const STRUCTURAL_INVARIANTS: [&str; 6] = [
 fn lean_meaningfully_compresses_a_structural_skill() {
     // Acceptance criterion (#62), measured in estimated tokens (#83): lean is at most 60%
     // of full tokens on a skill with structural sections and a table.
-    let full = estimate_tokens(&render_skill(STRUCTURAL_FIXTURE, Tier::Full));
-    let lean = estimate_tokens(&render_skill(STRUCTURAL_FIXTURE, Tier::Lean));
+    let full = estimate_tokens(&render_skill(
+        STRUCTURAL_FIXTURE,
+        Tier::Full,
+        TIER_LEAN_TOKEN_BUDGET,
+    ));
+    let lean = estimate_tokens(&render_skill(
+        STRUCTURAL_FIXTURE,
+        Tier::Lean,
+        TIER_LEAN_TOKEN_BUDGET,
+    ));
     assert!(
         (lean as f64) <= 0.60 * (full as f64),
         "lean did not compress enough: {lean} lean vs {full} full tokens"
@@ -383,7 +404,7 @@ fn lean_meaningfully_compresses_a_structural_skill() {
 fn lean_keeps_every_structural_invariant() {
     // Property 4 (#62): every load-bearing line survives, including a table verdict, the
     // handoff wiring, and a checkbox inside the compressed output.
-    let out = render_skill(STRUCTURAL_FIXTURE, Tier::Lean);
+    let out = render_skill(STRUCTURAL_FIXTURE, Tier::Lean, TIER_LEAN_TOKEN_BUDGET);
     for line in STRUCTURAL_INVARIANTS {
         assert!(out.contains(line), "lean dropped invariant `{line}`");
     }
@@ -408,8 +429,8 @@ fn real_skill_lean_compresses_when_present() {
         return;
     };
     let md = std::fs::read_to_string(&path).expect("read real SKILL.md");
-    let full = estimate_tokens(&render_skill(&md, Tier::Full));
-    let lean = estimate_tokens(&render_skill(&md, Tier::Lean));
+    let full = estimate_tokens(&render_skill(&md, Tier::Full, TIER_LEAN_TOKEN_BUDGET));
+    let lean = estimate_tokens(&render_skill(&md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET));
     assert!(
         (lean as f64) < 0.80 * (full as f64),
         "lean did not compress the real skill: {lean} lean vs {full} full tokens"
@@ -425,8 +446,8 @@ fn table_dense_skill_compresses_in_tokens_not_words() {
         return;
     };
     let md = std::fs::read_to_string(&path).expect("read real SKILL.md");
-    let full = estimate_tokens(&render_skill(&md, Tier::Full));
-    let lean = estimate_tokens(&render_skill(&md, Tier::Lean));
+    let full = estimate_tokens(&render_skill(&md, Tier::Full, TIER_LEAN_TOKEN_BUDGET));
+    let lean = estimate_tokens(&render_skill(&md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET));
     assert!(
         (lean as f64) < 0.85 * (full as f64),
         "the table-dense skill did not compress in tokens: {lean} lean vs {full} full"

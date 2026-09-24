@@ -15,6 +15,7 @@
 
 use std::path::Path;
 
+use crate::tools::result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
@@ -116,6 +117,17 @@ impl TrueNorthServer {
                 None,
             ));
         }
+        let response = result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({
+                    "recorded_bug": args.id,
+                    "status": args.status.as_str(),
+                    "linked_ref": args.linked_ref,
+                })
+                .to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
 
         // Append the record to bugs.yml through the single write guard, preserving any
         // existing bug references (Requirement 8.1).
@@ -128,14 +140,7 @@ impl TrueNorthServer {
             ErrorData::internal_error(format!("could not write .agent/tasks/bugs.yml: {e}"), None)
         })?;
 
-        Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({
-                "recorded_bug": args.id,
-                "status": args.status.as_str(),
-                "linked_ref": args.linked_ref,
-            })
-            .to_string(),
-        )]))
+        Ok(response)
     }
 }
 

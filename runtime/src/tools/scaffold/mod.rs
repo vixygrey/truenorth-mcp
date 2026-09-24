@@ -14,6 +14,7 @@
 
 use std::path::Path;
 
+use crate::tools::result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
@@ -77,9 +78,12 @@ impl TrueNorthServer {
 
         let emissions = scaffold_project(&self.ctx.repo_root, profile)?;
 
-        Ok(CallToolResult::success(vec![ContentBlock::text(
-            result_json(profile, &emissions).to_string(),
-        )]))
+        result::success(
+            vec![ContentBlock::text(
+                result_json(profile, &emissions).to_string(),
+            )],
+            self.ctx.token_caps,
+        )
     }
 }
 
@@ -147,7 +151,7 @@ fn emit_agent_tree(
     let area_files: [(&str, &str); 8] = [
         (
             "config/rules.yml",
-            "# Token caps, human-approval gates, protected paths.\n",
+            "# Runtime configuration.\n# Token estimates use ceil(characters / 4). Oversized tool responses fail without truncation.\ntoken_caps:\n  skill_lean_tokens: 1500\n  tool_payload_tokens: 4000\n",
         ),
         ("spec/requirements.md", "# Requirements\n"),
         ("tasks/state.yml", "phase: discover\n"),

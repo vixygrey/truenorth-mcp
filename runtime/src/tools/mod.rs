@@ -10,6 +10,7 @@ pub mod guard;
 pub mod hooks;
 pub mod lifecycle;
 pub mod ontology;
+pub mod result;
 pub mod scaffold;
 pub mod skills;
 pub mod tdd;

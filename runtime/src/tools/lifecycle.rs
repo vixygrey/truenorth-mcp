@@ -12,6 +12,7 @@
 //!
 //! Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.11, 2.12. Design: Part II §2.
 
+use crate::tools::result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{CallToolResult, ContentBlock, ResourceUpdatedNotificationParam};
 use rmcp::service::{Peer, RoleServer};
@@ -99,6 +100,12 @@ impl TrueNorthServer {
             MAX_ARTIFACTS_SUMMARY,
             "artifacts_summary",
         )?;
+        let response = result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({ "advanced_to": args.to_phase }).to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
 
         // Capture the git-scoped context. A non-git repo yields an empty context rather
         // than failing the advance.
@@ -115,9 +122,7 @@ impl TrueNorthServer {
 
         notify_updated(&peer, ResourceUri::State).await;
 
-        Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({ "advanced_to": args.to_phase }).to_string(),
-        )]))
+        Ok(response)
     }
 
     /// Register a task with its optional grouping key and a verify command.
@@ -141,6 +146,17 @@ impl TrueNorthServer {
             "verify_command",
         )?;
         let grouping = resolve_grouping(&self.ctx.repo_root, &args)?;
+        let response = result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({
+                    "recorded_task": args.task_name,
+                    "group_id": grouping.id,
+                    "group_kind": grouping.kind,
+                })
+                .to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
 
         cockpit::record_task(
             &self.ctx.repo_root,
@@ -153,14 +169,7 @@ impl TrueNorthServer {
 
         notify_updated(&peer, ResourceUri::Cockpit).await;
 
-        Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({
-                "recorded_task": args.task_name,
-                "group_id": grouping.id,
-                "group_kind": grouping.kind,
-            })
-            .to_string(),
-        )]))
+        Ok(response)
     }
 }
 

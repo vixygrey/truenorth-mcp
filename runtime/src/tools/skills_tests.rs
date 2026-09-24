@@ -79,3 +79,39 @@ fn resolve_errors_on_unresolved_name() {
     assert!(mcp.message.contains("not found"), "{}", mcp.message);
     assert!(mcp.message.contains("absent"), "{}", mcp.message);
 }
+
+#[tokio::test]
+async fn oversized_full_skill_fails_but_lean_skill_remains_readable() {
+    use crate::engine::features::{Features, TokenCaps};
+    use crate::server::ServerContext;
+
+    let repo = tempdir().expect("temporary repository");
+    let markdown = format!("# Skill\n{}\n", "ordinary instruction line\n".repeat(100));
+    make_skill(repo.path(), "large-skill", &markdown);
+    let caps = TokenCaps {
+        skill_lean_tokens: 30,
+        tool_payload_tokens: 100,
+    };
+    let server = TrueNorthServer::from_context(ServerContext::with_config(
+        repo.path().to_path_buf(),
+        Features::default(),
+        caps,
+    ));
+    let full = server
+        .get_skill(Parameters(GetSkillArgs {
+            name: "large-skill".into(),
+            tier: Some("full".into()),
+        }))
+        .await
+        .expect_err("oversized full representation must fail");
+    assert!(full.message.contains("token cap"));
+    assert!(full.message.contains("lean tier"));
+    let lean = server
+        .get_skill(Parameters(GetSkillArgs {
+            name: "large-skill".into(),
+            tier: Some("lean".into()),
+        }))
+        .await
+        .expect("lean representation fits the response cap");
+    assert!(matches!(&lean.content[0], ContentBlock::Text(text) if text.text.contains("- Skill")));
+}

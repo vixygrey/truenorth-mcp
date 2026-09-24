@@ -10,6 +10,7 @@
 //!
 //! Requirements: 3.1. Design: Part II §2, §5.
 
+use crate::tools::result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
@@ -53,7 +54,7 @@ impl TrueNorthServer {
 
         let cfg = SandboxConfig::new(self.ctx.repo_root.clone(), allowlist(&command));
         let outcome = run_gate(&command, &cfg, &SystemCommandRunner);
-        gate_result(&outcome, &args.phase)
+        gate_result(&outcome, &args.phase, self.ctx.token_caps)
     }
 }
 
@@ -82,11 +83,19 @@ fn allowlist(command: &str) -> Vec<String> {
 
 /// Render a gate outcome as a tool result. A pass is a success result; a failure is an
 /// MCP error carrying the message and remediation hints (Property 2).
-fn gate_result(outcome: &GateOutcome, phase: &str) -> Result<CallToolResult, ErrorData> {
+fn gate_result(
+    outcome: &GateOutcome,
+    phase: &str,
+    caps: crate::engine::features::TokenCaps,
+) -> Result<CallToolResult, ErrorData> {
     if outcome.passed {
-        return Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({ "passed": true, "phase": phase, "mode": "execute" }).to_string(),
-        )]));
+        return result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({ "passed": true, "phase": phase, "mode": "execute" })
+                    .to_string(),
+            )],
+            caps,
+        );
     }
     let message = outcome
         .error

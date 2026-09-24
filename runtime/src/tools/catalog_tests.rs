@@ -19,6 +19,45 @@ fn server_at(root: &std::path::Path) -> TrueNorthServer {
     }
 }
 
+#[tokio::test]
+async fn catalog_json_respects_the_same_payload_cap() {
+    let repo = tempdir().expect("temporary repository");
+    make_skill(repo.path(), "develop-tdd", "# TDD\n");
+    let server = TrueNorthServer::from_context(crate::server::ServerContext::with_config(
+        repo.path().to_path_buf(),
+        crate::engine::features::Features::default(),
+        crate::engine::features::TokenCaps {
+            skill_lean_tokens: 100,
+            tool_payload_tokens: 1,
+        },
+    ));
+    let error = server
+        .index_skills()
+        .await
+        .expect_err("catalog JSON exceeds one token");
+    assert!(error.message.contains("token cap"));
+}
+
+#[tokio::test]
+async fn oversized_graph_receipt_rejects_before_writing_cache() {
+    let repo = tempdir().expect("temporary repository");
+    make_skill(repo.path(), "develop-tdd", "# TDD\n");
+    let server = TrueNorthServer::from_context(crate::server::ServerContext::with_config(
+        repo.path().to_path_buf(),
+        crate::engine::features::Features::default(),
+        crate::engine::features::TokenCaps {
+            skill_lean_tokens: 100,
+            tool_payload_tokens: 1,
+        },
+    ));
+    let error = server
+        .build_skill_graph()
+        .await
+        .expect_err("receipt exceeds cap");
+    assert!(error.message.contains("token cap"));
+    assert!(!server.ctx.graph_path().exists());
+}
+
 /// Write a minimal skill for discovery.
 fn make_skill(root: &std::path::Path, name: &str, body: &str) {
     let dir = root.join("skills").join(name);

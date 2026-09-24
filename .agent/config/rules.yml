@@ -1,6 +1,6 @@
-# The per-project runtime config. The runtime parses the `features` block. The other
-# blocks record the project conventions the styleguide names for this file: token caps,
-# human-approval gates, protected paths, and lint standards.
+# The per-project runtime config. The runtime parses `features` and `token_caps`.
+# The Jev guard reads `protected_paths` when enabled. Other blocks record project
+# conventions, not runtime-enforced policy.
 
 features:
   # The ontology feature is disabled for this project. When disabled, the two ontology
@@ -22,20 +22,21 @@ methodology:
   commit_requires_issue_id: true
 
 token_caps:
-  # A soft ceiling on an emitted tool payload. The lean and reasoning tiers must not pad.
+  # Lean bodies use this estimated-token target. Tool responses above their cap fail rather
+  # than truncating content. Estimates are ceil(characters / 4).
   tool_payload_tokens: 4000
   skill_lean_tokens: 1200
 
 approval_gates:
-  # Actions that need explicit human approval before the runtime or an agent proceeds.
+  # Human-facing approval policy. This list is not enforced by the runtime.
   - destructive_git
   - production_change
   - dependency_addition
   - schema_migration
 
 protected_paths:
-  # Paths the runtime must never mutate. The write guard already blocks writes outside
-  # `.agent/`; this records the human-facing intent for paths inside the repo.
+  # The Jev change guard reads this list when enabled. The write guard independently
+  # confines runtime writes to `.agent/`; this list does not authorize other writes.
   - specs/
   - specs/adr/
   - LICENSE
@@ -53,7 +54,7 @@ lint_standards:
     - house-writing-rules
 
 secret_denylist:
-  # The runtime never reads, echoes, or writes a value matching these.
+  # Human-facing policy. Runtime secret filtering uses its built-in denylist, not this list.
   - "\\.env"
   - "\\.pem$"
   - "secret"

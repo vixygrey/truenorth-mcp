@@ -15,6 +15,7 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::tools::result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
@@ -92,6 +93,18 @@ impl TrueNorthServer {
         let yaml = serde_yaml::to_string(&ontology).map_err(|e| {
             ErrorData::internal_error(format!("could not serialize the ontology: {e}"), None)
         })?;
+        let response = result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({
+                    "domain": args.domain,
+                    "path": ".agent/ontology.yml",
+                    "entities": ontology.entities.len(),
+                    "constraints": ontology.constraints.len(),
+                })
+                .to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
 
         // Write through the single guard, so the target stays under `.agent/`
         // (Requirement 4.2, 4.4).
@@ -105,15 +118,7 @@ impl TrueNorthServer {
             },
         )?;
 
-        Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({
-                "domain": args.domain,
-                "path": ".agent/ontology.yml",
-                "entities": ontology.entities.len(),
-                "constraints": ontology.constraints.len(),
-            })
-            .to_string(),
-        )]))
+        Ok(response)
     }
 
     /// Scan code against the ontology and report the first violation, if any.
@@ -127,33 +132,41 @@ impl TrueNorthServer {
         // A not-yet-defined ontology passes with an informational note, so a pass against
         // an empty ontology does not read as false assurance (Requirement 4.10).
         if ontology.is_empty_stub() {
-            return Ok(CallToolResult::success(vec![ContentBlock::text(
-                serde_json::json!({
-                    "passed": true,
-                    "files_scanned": 0,
-                    "note": "The ontology is not yet defined (empty stub). \
-                             Run truenorth_generate_ontology to define it."
-                })
-                .to_string(),
-            )]));
+            return result::success(
+                vec![ContentBlock::text(
+                    serde_json::json!({
+                        "passed": true,
+                        "files_scanned": 0,
+                        "note": "The ontology is not yet defined (empty stub). Run truenorth_generate_ontology to define it."
+                    })
+                    .to_string(),
+                )],
+                self.ctx.token_caps,
+            );
         }
 
         let scope = self.resolve_scope(params.0.scope_paths)?;
 
         // Empty scope passes with zero files scanned (Requirement 4.8).
         if scope.is_empty() {
-            return Ok(CallToolResult::success(vec![ContentBlock::text(
-                serde_json::json!({ "passed": true, "files_scanned": 0 }).to_string(),
-            )]));
+            return result::success(
+                vec![ContentBlock::text(
+                    serde_json::json!({ "passed": true, "files_scanned": 0 }).to_string(),
+                )],
+                self.ctx.token_caps,
+            );
         }
 
         let violations = scan_scope(&self.ctx.repo_root, &scope, &ontology);
 
         match violations.first() {
             // No violations passes (Requirement 4.10).
-            None => Ok(CallToolResult::success(vec![ContentBlock::text(
-                serde_json::json!({ "passed": true, "files_scanned": scope.len() }).to_string(),
-            )])),
+            None => result::success(
+                vec![ContentBlock::text(
+                    serde_json::json!({ "passed": true, "files_scanned": scope.len() }).to_string(),
+                )],
+                self.ctx.token_caps,
+            ),
             // Otherwise return the formatted first violation.
             Some(first) => Err(ErrorData::invalid_request(
                 first.message.clone(),

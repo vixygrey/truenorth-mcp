@@ -18,6 +18,7 @@ use crate::engine::cockpit::{self, CockpitError};
 use crate::engine::gate_runner::{CommandRunner, SystemCommandRunner};
 use crate::engine::tdd::{TddStep, next_step};
 use crate::server::TrueNorthServer;
+use crate::tools::result;
 
 /// The maximum length of the failing test command (Requirement 2.6).
 const MAX_FAILING_TEST_CMD: usize = 1000;
@@ -63,6 +64,12 @@ impl TrueNorthServer {
         let current = cockpit::read_tdd_step(&self.ctx.repo_root).map_err(cockpit_error)?;
         let step = next_step(current, requested)
             .map_err(|error| ErrorData::invalid_request(error.to_string(), None))?;
+        let response = result::success(
+            vec![ContentBlock::text(
+                serde_json::json!({ "step": step.as_str(), "step_ok": true }).to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
 
         // The red step runs the failing test command and checks its exit code.
         if step == TddStep::Red {
@@ -72,9 +79,7 @@ impl TrueNorthServer {
         // Record the step only after the checks pass.
         cockpit::write_tdd_step(&self.ctx.repo_root, step).map_err(cockpit_error)?;
 
-        Ok(CallToolResult::success(vec![ContentBlock::text(
-            serde_json::json!({ "step": step.as_str(), "step_ok": true }).to_string(),
-        )]))
+        Ok(response)
     }
 }
 
