@@ -1,13 +1,10 @@
 'use strict';
 
-const { execFileSync, spawn } = require('node:child_process');
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const readline = require('node:readline');
-
-const REQUEST_TIMEOUT_MS = 10_000;
-const EXIT_TIMEOUT_MS = 5_000;
+const { startSession } = require('./lib/mcp-session.js');
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -157,137 +154,6 @@ function usage() {
   ].join('\n');
 }
 
-function startSession(command, args, root) {
-  const executable = command.includes(path.sep) ? path.resolve(command) : command;
-  const child = spawn(executable, args, {
-    cwd: root,
-    env: { ...process.env, TRUENORTH_ROOT: root },
-    stdio: ['pipe', 'pipe', 'pipe'],
-  });
-  const pending = new Map();
-  const stderr = [];
-  let nextId = 1;
-  let processError;
-  let exited = false;
-
-  child.stderr.setEncoding('utf8');
-  child.stderr.on('data', (chunk) => stderr.push(chunk));
-  child.on('error', (error) => {
-    processError = error;
-    rejectPending(pending, formatFailure(`could not start ${command}: ${error.message}`, stderr));
-  });
-  child.on('exit', (code, signal) => {
-    exited = true;
-    if (code !== 0) {
-      rejectPending(
-        pending,
-        formatFailure(
-          `${command} exited with code ${code ?? 'none'}${signal ? ` (${signal})` : ''}`,
-          stderr,
-        ),
-      );
-    }
-  });
-
-  const lines = readline.createInterface({ input: child.stdout });
-  lines.on('line', (line) => {
-    let message;
-    try {
-      message = JSON.parse(line);
-    } catch {
-      rejectPending(pending, formatFailure(`received invalid MCP JSON: ${line}`, stderr));
-      return;
-    }
-
-    if (message.id === undefined || !pending.has(message.id)) {
-      return;
-    }
-
-    const request = pending.get(message.id);
-    pending.delete(message.id);
-    if (message.error) {
-      request.reject(
-        formatFailure(`MCP ${request.method} failed: ${message.error.message}`, stderr),
-      );
-      return;
-    }
-    request.resolve(message.result);
-  });
-
-  return {
-    request(method, params) {
-      if (processError || exited) {
-        return Promise.reject(
-          formatFailure(`cannot send ${method}: process is not running`, stderr),
-        );
-      }
-
-      const id = nextId++;
-      return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-          pending.delete(id);
-          reject(formatFailure(`timed out waiting for MCP ${method}`, stderr));
-        }, REQUEST_TIMEOUT_MS);
-        pending.set(id, {
-          method,
-          resolve: (result) => {
-            clearTimeout(timer);
-            resolve(result);
-          },
-          reject: (error) => {
-            clearTimeout(timer);
-            reject(error);
-          },
-        });
-        child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`);
-      });
-    },
-    notify(method, params) {
-      child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method, params })}\n`);
-    },
-    async close() {
-      if (exited) {
-        return;
-      }
-      child.stdin.end();
-      await waitForExit(child, stderr);
-    },
-    async terminate() {
-      if (!exited) {
-        child.kill();
-      }
-    },
-  };
-}
-
-function waitForExit(child, stderr) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(formatFailure('MCP process did not exit after stdin closed', stderr));
-    }, EXIT_TIMEOUT_MS);
-    child.once('exit', (code, signal) => {
-      clearTimeout(timer);
-      if (code === 0) {
-        resolve();
-        return;
-      }
-      reject(
-        formatFailure(
-          `MCP process exited with code ${code ?? 'none'}${signal ? ` (${signal})` : ''}`,
-          stderr,
-        ),
-      );
-    });
-  });
-}
-
-function rejectPending(pending, error) {
-  for (const request of pending.values()) {
-    request.reject(error);
-  }
-  pending.clear();
-}
-
 function assertEqual(actual, expected, field) {
   if (actual !== expected) {
     throw new Error(`${field} is ${actual ?? 'missing'}, expected ${expected}`);
@@ -304,11 +170,6 @@ function assertContains(items, field, expected, method) {
   if (!Array.isArray(items) || !items.some((item) => item?.[field] === expected)) {
     throw new Error(`${method} does not include ${expected}`);
   }
-}
-
-function formatFailure(message, stderr) {
-  const output = stderr.join('').trim();
-  return new Error(output ? `${message}\nstderr:\n${output}` : message);
 }
 
 main().catch((error) => {

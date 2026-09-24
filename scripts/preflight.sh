@@ -93,6 +93,8 @@ run_artifact_smoke() {
 
   echo "preflight: [artifact-smoke] release record tests"
   node --test scripts/release-record.test.js
+  echo "preflight: [artifact-smoke] runtime benchmark accounting tests"
+  node --test scripts/benchmark-runtime.test.js
   echo "preflight: [artifact-smoke] release build for $package"
   cargo build --release --manifest-path runtime/Cargo.toml
 

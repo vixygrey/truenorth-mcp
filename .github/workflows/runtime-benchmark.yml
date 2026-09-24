@@ -1,0 +1,56 @@
+name: Runtime benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      startup-samples:
+        description: Fresh-process startup samples
+        required: false
+        default: "20"
+      request-samples:
+        description: Warm request samples
+        required: false
+        default: "30"
+      watcher-samples:
+        description: Watcher response samples
+        required: false
+        default: "20"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Informational runtime baseline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Install the stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: runtime
+
+      - name: Run the informational benchmark
+        run: |
+          node scripts/benchmark-runtime.js \
+            --startup-samples "${{ inputs.startup-samples }}" \
+            --request-samples "${{ inputs.request-samples }}" \
+            --watcher-samples "${{ inputs.watcher-samples }}" \
+            --output benchmark-output
+
+      - name: Upload raw samples and report
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-benchmark-${{ github.sha }}
+          path: benchmark-output/
+          if-no-files-found: error
