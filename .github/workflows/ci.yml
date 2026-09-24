@@ -40,6 +40,24 @@ jobs:
             echo "The runtime crate is not present on this branch. Skipping the Rust checks."
           fi
 
+      - name: Set up Node.js
+        if: steps.crate.outputs.present == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        if: steps.crate.outputs.present == 'true'
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3"
+
+      - name: Set up Go
+        if: steps.crate.outputs.present == 'true'
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
       - name: Install the stable Rust toolchain
         if: steps.crate.outputs.present == 'true'
         uses: dtolnay/rust-toolchain@stable
