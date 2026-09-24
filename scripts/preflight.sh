@@ -48,8 +48,9 @@ run_check() {
   cargo fmt --manifest-path runtime/Cargo.toml -- --check
   echo "preflight: [check] cargo clippy"
   cargo clippy --manifest-path runtime/Cargo.toml --all-targets -- -D warnings
-  echo "preflight: [check] cargo build"
-  cargo build --manifest-path runtime/Cargo.toml --verbose
+  # `cargo test` builds the normal binary because the crate has an integration-test
+  # target. Together with Clippy's `--all-targets`, this covers the standalone
+  # default build without repeating its compilation work.
   echo "preflight: [check] cargo test"
   cargo test --manifest-path runtime/Cargo.toml --verbose
   echo "preflight: [check] cargo clippy with tree-sitter"

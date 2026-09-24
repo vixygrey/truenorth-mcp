@@ -105,3 +105,7 @@ tasks:
   verify_command: bash scripts/preflight.sh format
 - task_name: Implement combined wrapper compatibility for issues 388 and 389
   verify_command: bash scripts/preflight.sh wrapper artifact-smoke format shell
+- group_id: '391'
+  group_kind: ticket
+  task_name: Measure and tighten local preflight duration
+  verify_command: npm run preflight

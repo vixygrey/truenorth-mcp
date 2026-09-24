@@ -24,7 +24,7 @@ env:
 
 jobs:
   check:
-    name: fmt, clippy, build, test
+    name: fmt, clippy, test
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
