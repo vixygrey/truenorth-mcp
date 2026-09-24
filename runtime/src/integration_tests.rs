@@ -529,3 +529,6 @@ async fn enabled_ontology_is_listed_and_seeds_on_read() -> anyhow::Result<()> {
     handle.abort();
     Ok(())
 }
+
+#[path = "profile_workflow_tests.rs"]
+mod profile_workflow_tests;
