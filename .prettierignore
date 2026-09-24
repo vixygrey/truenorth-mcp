@@ -25,3 +25,5 @@ THIRD-PARTY-NOTICES.md
 
 # Lockfiles and generated data.
 **/*.jsonl
+benchmarks/runtime-baseline.json
+benchmarks/README.md
