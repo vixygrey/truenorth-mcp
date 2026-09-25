@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "updated_on": "2026-09-25",
+  "clients": [
+    {
+      "name": "MCP Inspector CLI",
+      "version": "2.5.0",
+      "status": "certified",
+      "evidence": "mcp-inspector.json"
+    },
+    {
+      "name": "Oh My Pi",
+      "version": null,
+      "status": "pending_manual_certification",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/403"
+    },
+    {
+      "name": "OpenCode",
+      "version": null,
+      "status": "pending_manual_certification",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/405"
+    },
+    {
+      "name": "Kiro",
+      "version": null,
+      "status": "pending_manual_certification",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/407"
+    },
+    {
+      "name": "Croft IDE",
+      "version": null,
+      "status": "pending_capability_assessment",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/406"
+    },
+    {
+      "name": "VS Code and GitHub Copilot",
+      "version": null,
+      "status": "pending_manual_certification",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/404"
+    },
+    {
+      "name": "Claude Desktop or Claude Code",
+      "version": null,
+      "status": "untested"
+    },
+    {
+      "name": "Cursor",
+      "version": null,
+      "status": "untested"
+    },
+    {
+      "name": "Gemini CLI",
+      "version": null,
+      "status": "untested"
+    }
+  ]
+}

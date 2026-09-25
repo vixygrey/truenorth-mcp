@@ -95,6 +95,8 @@ run_artifact_smoke() {
   node --test scripts/release-record.test.js
   echo "preflight: [artifact-smoke] runtime benchmark accounting tests"
   node --test scripts/benchmark-runtime.test.js
+  echo "preflight: [artifact-smoke] MCP Inspector evidence tests"
+  node --test scripts/certify-mcp-inspector.test.js
   echo "preflight: [artifact-smoke] release build for $package"
   cargo build --release --manifest-path runtime/Cargo.toml
 

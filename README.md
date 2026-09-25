@@ -209,8 +209,23 @@ TrueNorth-MCP v1 supports the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64
 Native Windows is unsupported; use
 [WSL](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
 The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
-upstream security fixes for production. Source builds require Rust 1.88 or newer. The
-server supports MCP over stdio; vendor-specific MCP clients are not separately certified.
+upstream security fixes for production. Source builds require Rust 1.88 or newer.
+
+MCP Inspector CLI 2.5.0 is certified against TrueNorth-MCP 1.0.1 over stdio. The
+certification proves initialization, tool and resource discovery, a state resource read, a
+task mutation confined to a disposable workspace, and clean client shutdown. See the
+[client matrix](compatibility/mcp-clients.json) and
+[certification evidence](compatibility/mcp-inspector.json). Other clients remain pending or
+untested and are not implied supported.
+
+Reproduce certification with a staged platform package:
+
+```bash
+node scripts/certify-mcp-inspector.js \
+  --expected-version 1.0.1 \
+  --platform-package <platform-package-directory> \
+  --output compatibility
+```
 
 Use [GitHub Discussions](https://github.com/vixygrey/truenorth-mcp/discussions) for
 questions and the issue forms for reproducible non-security defects. Report vulnerabilities
