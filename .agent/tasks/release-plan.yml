@@ -137,3 +137,7 @@ tasks:
   group_kind: ticket
   task_name: Certify VS Code and GitHub Copilot MCP compatibility
   verify_command: node --test scripts/certify-vscode.test.js && npm run format:check
+- group_id: '414'
+  group_kind: ticket
+  task_name: Avoid duplicate branch and pull request CI runs
+  verify_command: actionlint .github/workflows/ci.yml && bash scripts/preflight.sh format

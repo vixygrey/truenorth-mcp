@@ -1,11 +1,14 @@
 name: CI
 
 # Lint, build, and test the runtime crate, test the npm wrapper, and check formatting with
-# Prettier. The workflow runs on every push and pull request so it always reports the
-# required CI Gate status. The per-area steps run only when that area is present, so a job
-# stays cheap and green on a branch or change that does not touch it.
+# Prettier. Pull requests validate their merge context once. Pushes run only on main so a
+# feature-branch push does not duplicate the pull request matrix. The per-area steps run
+# only when that area is present, so a job stays cheap and green when unrelated files
+# change.
 on:
   push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
