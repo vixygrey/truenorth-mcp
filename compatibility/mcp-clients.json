@@ -16,9 +16,9 @@
     },
     {
       "name": "OpenCode",
-      "version": null,
-      "status": "pending_manual_certification",
-      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/405"
+      "version": "2.0.16",
+      "status": "certified",
+      "evidence": "opencode.json"
     },
     {
       "name": "Kiro",

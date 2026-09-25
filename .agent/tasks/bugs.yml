@@ -23,3 +23,10 @@ bugs:
   - methodology
   - skills
   - verify-gate
+- id: '410'
+  external_link: https://github.com/vixygrey/truenorth-mcp/issues/410
+  status: open
+  linked_ref: '405'
+  tags:
+  - opencode
+  - client-compatibility

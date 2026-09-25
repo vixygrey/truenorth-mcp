@@ -129,3 +129,7 @@ tasks:
   group_kind: ticket
   task_name: Certify Oh My Pi MCP compatibility
   verify_command: node --test scripts/certify-omp.test.js && bash scripts/preflight.sh
+- group_id: '405'
+  group_kind: ticket
+  task_name: Certify OpenCode MCP client
+  verify_command: node --test scripts/certify-opencode.test.js && bash scripts/preflight.sh

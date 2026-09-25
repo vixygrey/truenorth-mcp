@@ -211,13 +211,14 @@ Native Windows is unsupported; use
 The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
 upstream security fixes for production. Source builds require Rust 1.88 or newer.
 
-MCP Inspector CLI 2.5.0 and Oh My Pi 18.2.11 are certified against
-TrueNorth-MCP 1.0.1 over stdio. The certifications prove initialization, tool
-and resource discovery, a read operation, a task mutation confined to a
-disposable workspace, and clean client shutdown. See the
+MCP Inspector CLI 2.5.0, Oh My Pi 18.2.11, and OpenCode 2.0.16 are
+certified against TrueNorth-MCP 1.0.1 over stdio. The certifications prove
+initialization, tool and resource discovery, a read operation, a task mutation
+confined to a disposable workspace, and clean client shutdown. See the
 [client matrix](compatibility/mcp-clients.json), the
-[Inspector evidence](compatibility/mcp-inspector.json), and the
-[Oh My Pi evidence](compatibility/oh-my-pi.json). Other clients remain pending
+[Inspector evidence](compatibility/mcp-inspector.json), the
+[Oh My Pi evidence](compatibility/oh-my-pi.json), and the
+[OpenCode evidence](compatibility/opencode.json). Other clients remain pending
 or untested and are not implied supported.
 
 Reproduce the Inspector certification with a staged platform package:
@@ -229,10 +230,11 @@ node scripts/certify-mcp-inspector.js \
   --output compatibility
 ```
 
-The Oh My Pi certification uses a keyless local model endpoint. The model must
-return native OpenAI tool calls and support at least a 32,768-token context.
-The recorded certificate used Hermes 3 Llama 3.1 8B with the compatible
-tool-use template in `scripts/fixtures/hermes-3-tool-use.jinja`.
+The Oh My Pi and OpenCode certifications use a keyless local model endpoint.
+The model must return native OpenAI tool calls and support at least a
+32,768-token context. The recorded certificates used Hermes 3 Llama 3.1 8B
+with the compatible tool-use template in
+`scripts/fixtures/hermes-3-tool-use.jinja`.
 
 ```bash
 llama-server \
@@ -249,6 +251,22 @@ node scripts/certify-omp.js \
   --platform-package <platform-package-directory> \
   --output compatibility
 ```
+
+Reproduce the OpenCode certification with OpenCode 2.0.16 and the same model
+endpoint:
+
+```bash
+node scripts/certify-opencode.js \
+  --expected-version 1.0.1 \
+  --platform-package <platform-package-directory> \
+  --output compatibility
+```
+
+The script verifies the project-local `opencode.json` through `--standalone`.
+It then uses a private, ephemeral OpenCode API server for the capability checks.
+It does not read a user-global OpenCode configuration or use a shared
+background service. [Issue #410](https://github.com/vixygrey/truenorth-mcp/issues/410)
+tracks the OpenCode 2.0.16 standalone discovery race.
 
 Use [GitHub Discussions](https://github.com/vixygrey/truenorth-mcp/discussions) for
 questions and the issue forms for reproducible non-security defects. Report vulnerabilities
