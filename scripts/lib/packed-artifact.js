@@ -42,11 +42,11 @@ function createPackedWrapperFixture(platformPackage, prefix = 'tn-packed-mcp-') 
       command: process.execPath,
       args: [wrapper],
       cleanup() {
-        fs.rmSync(work, { recursive: true, force: true });
+        fs.rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       },
     };
   } catch (error) {
-    fs.rmSync(work, { recursive: true, force: true });
+    fs.rmSync(work, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     throw error;
   }
 }

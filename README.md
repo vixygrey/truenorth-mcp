@@ -211,17 +211,40 @@ Native Windows is unsupported; use
 The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
 upstream security fixes for production. Source builds require Rust 1.88 or newer.
 
-MCP Inspector CLI 2.5.0 is certified against TrueNorth-MCP 1.0.1 over stdio. The
-certification proves initialization, tool and resource discovery, a state resource read, a
-task mutation confined to a disposable workspace, and clean client shutdown. See the
-[client matrix](compatibility/mcp-clients.json) and
-[certification evidence](compatibility/mcp-inspector.json). Other clients remain pending or
-untested and are not implied supported.
+MCP Inspector CLI 2.5.0 and Oh My Pi 18.2.11 are certified against
+TrueNorth-MCP 1.0.1 over stdio. The certifications prove initialization, tool
+and resource discovery, a read operation, a task mutation confined to a
+disposable workspace, and clean client shutdown. See the
+[client matrix](compatibility/mcp-clients.json), the
+[Inspector evidence](compatibility/mcp-inspector.json), and the
+[Oh My Pi evidence](compatibility/oh-my-pi.json). Other clients remain pending
+or untested and are not implied supported.
 
-Reproduce certification with a staged platform package:
+Reproduce the Inspector certification with a staged platform package:
 
 ```bash
 node scripts/certify-mcp-inspector.js \
+  --expected-version 1.0.1 \
+  --platform-package <platform-package-directory> \
+  --output compatibility
+```
+
+The Oh My Pi certification uses a keyless local model endpoint. The model must
+return native OpenAI tool calls and support at least a 32,768-token context.
+The recorded certificate used Hermes 3 Llama 3.1 8B with the compatible
+tool-use template in `scripts/fixtures/hermes-3-tool-use.jinja`.
+
+```bash
+llama-server \
+  --hf-repo bartowski/Hermes-3-Llama-3.1-8B-GGUF:Q4_K_M \
+  --alias hermes-3-llama-3.1-8b \
+  --host 127.0.0.1 \
+  --port 18081 \
+  --ctx-size 32768 \
+  --jinja \
+  --chat-template-file scripts/fixtures/hermes-3-tool-use.jinja
+
+node scripts/certify-omp.js \
   --expected-version 1.0.1 \
   --platform-package <platform-package-directory> \
   --output compatibility
