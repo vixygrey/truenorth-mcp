@@ -1,0 +1,56 @@
+name: MCP client certification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspector:
+    name: Certify MCP Inspector CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install development dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Install the stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: runtime
+
+      - name: Build the release artifact
+        run: cargo build --release --manifest-path runtime/Cargo.toml
+
+      - name: Stage the platform package
+        run: |
+          mkdir platform-package
+          cp npm/packages/linux-x64/package.json platform-package/package.json
+          cp runtime/target/release/truenorth-mcp platform-package/truenorth-mcp
+          chmod +x platform-package/truenorth-mcp
+
+      - name: Certify MCP Inspector
+        run: |
+          node scripts/certify-mcp-inspector.js \
+            --expected-version "$(node -p "require('./npm/package.json').version")" \
+            --platform-package platform-package \
+            --output certification-output
+
+      - name: Upload certification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-inspector-certification-${{ github.sha }}
+          path: certification-output/
+          if-no-files-found: error

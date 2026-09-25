@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-25",
+  "client": {
+    "name": "MCP Inspector CLI",
+    "version": "2.5.0"
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.1",
+    "transport": "stdio"
+  },
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v24.18.1",
+    "protocol_version": "2025-11-25"
+  },
+  "fixture": {
+    "profile": "generic",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "packed wrapper installed with scripts disabled"
+    },
+    "initialize": {
+      "status": "pass",
+      "detail": "Inspector negotiated MCP 2025-11-25"
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "tools/list includes truenorth_record_task"
+    },
+    "resources_list": {
+      "status": "pass",
+      "detail": "resources/list includes truenorth://state"
+    },
+    "resource_read": {
+      "status": "pass",
+      "detail": "resources/read returned truenorth://state content"
+    },
+    "task_mutation": {
+      "status": "pass",
+      "detail": "truenorth_record_task changed only the disposable release plan"
+    },
+    "clean_shutdown": {
+      "status": "pass",
+      "detail": "every Inspector invocation exited zero without a signal after its request"
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "repository status and release plan were unchanged during certification"
+    }
+  },
+  "certified": true
+}

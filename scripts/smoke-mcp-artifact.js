@@ -1,10 +1,10 @@
 'use strict';
 
-const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { startSession } = require('./lib/mcp-session.js');
+const { createPackedWrapperFixture } = require('./lib/packed-artifact.js');
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -16,49 +16,12 @@ async function main() {
 }
 
 async function smokePackedWrapper(expectedVersion, platformPackage) {
-  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-packed-mcp-smoke-'));
+  const fixture = createPackedWrapperFixture(platformPackage, 'tn-packed-mcp-smoke-');
   try {
-    const packs = path.join(work, 'packs');
-    const install = path.join(work, 'install');
-    fs.mkdirSync(packs);
-    fs.mkdirSync(install);
-    fs.writeFileSync(path.join(install, 'package.json'), '{"private":true}\n');
-
-    const platformTarball = pack(platformPackage, packs);
-    const wrapperTarball = pack('npm', packs);
-    execFileSync(
-      'npm',
-      [
-        'install',
-        '--ignore-scripts',
-        '--no-audit',
-        '--no-fund',
-        '--offline',
-        platformTarball,
-        wrapperTarball,
-      ],
-      { cwd: install, stdio: 'inherit' },
-    );
-
-    const project = path.join(work, 'project');
-    fs.mkdirSync(project);
-    const wrapper = path.join(install, 'node_modules', 'truenorth-mcp', 'bin', 'truenorth.js');
-    bootstrapWorkspace(process.execPath, [wrapper, 'init', '--profile', 'generic'], project);
-    checkConfiguration(process.execPath, [wrapper, '--check-config'], project);
-    await smokeCommand(expectedVersion, process.execPath, [wrapper], project, true);
+    await smokeCommand(expectedVersion, fixture.command, fixture.args, fixture.project, true);
   } finally {
-    fs.rmSync(work, { recursive: true, force: true });
+    fixture.cleanup();
   }
-}
-
-function pack(packageDirectory, destination) {
-  const output = execFileSync(
-    'npm',
-    ['pack', '--json', '--pack-destination', destination, path.resolve(packageDirectory)],
-    { encoding: 'utf8' },
-  );
-  const [{ filename }] = JSON.parse(output);
-  return path.join(destination, filename);
 }
 
 async function smokeCommand(
@@ -112,22 +75,6 @@ async function smokeCommand(
       fs.rmSync(root, { recursive: true, force: true });
     }
   }
-}
-
-function bootstrapWorkspace(command, args, root) {
-  execFileSync(command, args, {
-    cwd: root,
-    env: { ...process.env, TRUENORTH_ROOT: root, TRUENORTH_VERIFY_CMD: 'true' },
-    stdio: 'inherit',
-  });
-}
-
-function checkConfiguration(command, args, root) {
-  execFileSync(command, args, {
-    cwd: root,
-    env: { ...process.env, TRUENORTH_ROOT: root, TRUENORTH_VERIFY_CMD: 'true' },
-    stdio: 'inherit',
-  });
 }
 
 function parseArgs(argv) {
