@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-25",
+  "client": {
+    "name": "Visual Studio Code",
+    "version": "1.139.1",
+    "commit": "04c0d99f4fb0d8afe6ce4f0c58e31e183ac3e4b1",
+    "extension": {
+      "name": "GitHub Copilot Chat",
+      "version": "0.67.0",
+      "distribution": "bundled"
+    }
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.1",
+    "transport": "stdio"
+  },
+  "model": {
+    "provider": "GitHub Copilot",
+    "id": "gpt-5.6-luna",
+    "authentication": "existing host GitHub authentication provider"
+  },
+  "environment": {
+    "platform": "darwin",
+    "os_version": "25.6.0",
+    "architecture": "arm64",
+    "node": "v24.18.1"
+  },
+  "fixture": {
+    "profile": "generic",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true,
+    "disposable_vscode_profile": true,
+    "isolated_home": false,
+    "workspace_local_configuration": true,
+    "normal_vscode_profile_unchanged": true,
+    "real_project_workspace_unchanged": true,
+    "host_authentication_provider_reused": true
+  },
+  "client_evidence": {
+    "source": "sanitized protocol proxy and VS Code client logs",
+    "protocol_version": "2025-11-25",
+    "client_info": {
+      "name": "Visual Studio Code",
+      "version": "1.139.1"
+    },
+    "protocol_methods": [
+      "initialize",
+      "notifications/initialized",
+      "resources/list",
+      "resources/read",
+      "resources/templates/list",
+      "tools/call",
+      "tools/list"
+    ],
+    "protocol_sequence": [
+      {
+        "request_id": 1,
+        "method": "initialize",
+        "status": "completed"
+      },
+      {
+        "request_id": 2,
+        "method": "tools/list",
+        "status": "completed"
+      },
+      {
+        "request_id": 3,
+        "method": "resources/templates/list",
+        "status": "completed"
+      },
+      {
+        "request_id": 4,
+        "method": "resources/list",
+        "status": "completed"
+      },
+      {
+        "request_id": 5,
+        "method": "resources/read",
+        "status": "completed"
+      },
+      {
+        "request_id": 6,
+        "method": "resources/read",
+        "status": "completed"
+      },
+      {
+        "request_id": 7,
+        "method": "tools/call",
+        "tool": "truenorth_record_task",
+        "status": "completed"
+      },
+      {
+        "request_id": 8,
+        "method": "tools/call",
+        "tool": "get_skill",
+        "status": "completed"
+      }
+    ],
+    "protocol_tool_count": 19,
+    "required_tools": ["get_skill", "truenorth_record_task"],
+    "protocol_resources": [
+      "truenorth://adr",
+      "truenorth://cockpit",
+      "truenorth://conventions",
+      "truenorth://ontology",
+      "truenorth://state"
+    ],
+    "protocol_tool_calls": [
+      {
+        "tool": "truenorth_record_task",
+        "status": "completed"
+      },
+      {
+        "tool": "get_skill",
+        "status": "completed"
+      }
+    ],
+    "client_log": {
+      "connection_states": ["Starting", "Running", "Stopped"],
+      "discovered_tools": 19,
+      "server_processes": {
+        "started": 1,
+        "exited": 1
+      },
+      "server_exit": {
+        "code": 0,
+        "signal": null
+      }
+    }
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "packed truenorth-mcp 1.0.1 wrapper installed with scripts disabled in a disposable package root"
+    },
+    "initialize": {
+      "status": "pass",
+      "detail": "VS Code initialized the TrueNorth stdio server and negotiated MCP 2025-11-25"
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "VS Code requested tools/list and discovered 19 tools, including get_skill and truenorth_record_task"
+    },
+    "resources_list": {
+      "status": "pass",
+      "detail": "VS Code requested resources/list and discovered five TrueNorth resources"
+    },
+    "read_operation": {
+      "status": "pass",
+      "detail": "VS Code completed resources/read and Copilot completed get_skill"
+    },
+    "task_mutation": {
+      "status": "pass",
+      "detail": "Copilot called truenorth_record_task and added Certify VS Code only to the disposable release plan"
+    },
+    "clean_shutdown": {
+      "status": "pass",
+      "detail": "MCP: List Servers then Stop Server closed stdin and the monitored server exited with code 0"
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "the real repository status and release plan remained unchanged during certification"
+    }
+  },
+  "warnings": [
+    {
+      "severity": "non_blocking",
+      "component": "GitHub Copilot Chat",
+      "summary": "Copilot logged that its validator could not load the JSON Schema 2020-12 meta-schema before both tool calls",
+      "impact": "both tool calls still completed; client-side argument validation may be degraded",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/412"
+    }
+  ],
+  "certified": true
+}
