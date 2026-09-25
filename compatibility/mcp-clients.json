@@ -34,9 +34,12 @@
     },
     {
       "name": "VS Code and GitHub Copilot",
-      "version": null,
-      "status": "pending_manual_certification",
-      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/404"
+      "version": "VS Code 1.139.1 / GitHub Copilot Chat 0.67.0",
+      "status": "certified",
+      "certified_on": "2026-09-25",
+      "evidence": "vscode-copilot.json",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/404",
+      "warning_issue": "https://github.com/vixygrey/truenorth-mcp/issues/412"
     },
     {
       "name": "Claude Desktop or Claude Code",

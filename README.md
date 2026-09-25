@@ -211,15 +211,17 @@ Native Windows is unsupported; use
 The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
 upstream security fixes for production. Source builds require Rust 1.88 or newer.
 
-MCP Inspector CLI 2.5.0, Oh My Pi 18.2.11, and OpenCode 2.0.16 are
-certified against TrueNorth-MCP 1.0.1 over stdio. The certifications prove
-initialization, tool and resource discovery, a read operation, a task mutation
-confined to a disposable workspace, and clean client shutdown. See the
+MCP Inspector CLI 2.5.0, Oh My Pi 18.2.11, OpenCode 2.0.16, and VS Code
+1.139.1 with bundled GitHub Copilot Chat 0.67.0 are certified against
+TrueNorth-MCP 1.0.1 over stdio. The certifications prove initialization, tool
+and resource discovery, a read operation, a task mutation confined to a
+disposable workspace, and clean client shutdown. See the
 [client matrix](compatibility/mcp-clients.json), the
 [Inspector evidence](compatibility/mcp-inspector.json), the
-[Oh My Pi evidence](compatibility/oh-my-pi.json), and the
-[OpenCode evidence](compatibility/opencode.json). Other clients remain pending
-or untested and are not implied supported.
+[Oh My Pi evidence](compatibility/oh-my-pi.json), the
+[OpenCode evidence](compatibility/opencode.json), and the
+[VS Code evidence](compatibility/vscode-copilot.json). Other clients remain
+pending or untested and are not implied supported.
 
 Reproduce the Inspector certification with a staged platform package:
 
@@ -267,6 +269,75 @@ It then uses a private, ephemeral OpenCode API server for the capability checks.
 It does not read a user-global OpenCode configuration or use a shared
 background service. [Issue #410](https://github.com/vixygrey/truenorth-mcp/issues/410)
 tracks the OpenCode 2.0.16 standalone discovery race.
+
+### Reproduce the VS Code certification
+
+The recorded certificate covers VS Code 1.139.1 for macOS ARM64, its bundled
+GitHub Copilot Chat 0.67.0 extension, and TrueNorth-MCP 1.0.1. It requires an
+account with GitHub Copilot access. Authentication remains the responsibility of
+VS Code and is not captured in the evidence.
+
+Download and extract the pinned official VS Code build, then prepare the
+disposable certification session with a staged `darwin-arm64` platform package:
+
+```bash
+curl -fL \
+  https://update.code.visualstudio.com/1.139.1/darwin-arm64/stable \
+  -o /tmp/truenorth-vscode.zip
+mkdir -p /tmp/truenorth-vscode
+ditto -x -k /tmp/truenorth-vscode.zip /tmp/truenorth-vscode
+
+node scripts/certify-vscode.js prepare \
+  --expected-version 1.0.1 \
+  --platform-package <platform-package-directory> \
+  --vscode-app "/tmp/truenorth-vscode/Visual Studio Code.app"
+```
+
+The helper verifies both pinned client versions and the packaged server version.
+It creates disposable VS Code user-data and extensions directories, an
+initialized TrueNorth workspace, workspace-local `.vscode/mcp.json`, and a
+sanitizing stdio evidence proxy. The isolated profile reuses the operator's
+existing system GitHub authentication provider; it does not copy credentials.
+The helper prints the direct VS Code launch command and the session directory.
+Run that command, then complete these steps in the isolated window:
+
+1. Trust the generated disposable workspace. Do not add its parent directory to
+   the trusted-folders list.
+2. Confirm Copilot is signed in. If prompted, authenticate the account that has
+   Copilot access inside this disposable profile.
+3. Open `MCP: List Servers`, select `truenorth`, and start the server.
+4. Open `MCP: Browse Resources`, select `truenorth`, then open
+   `truenorth://state`.
+5. Open Copilot Chat in Agent mode and send:
+
+   ```text
+   Use the TrueNorth MCP get_skill tool exactly once with name
+   "using-truenorth" and tier "lean". Then use truenorth_record_task exactly
+   once with task_name "Certify VS Code" and verify_command "true". Do not edit
+   files directly. Stop after reporting both tool results.
+   ```
+
+6. Approve both tool calls when prompted.
+7. Open `MCP: List Servers`, select `truenorth`, and stop the server. Quit the
+   isolated VS Code instance.
+8. Collect, validate, and remove the disposable session:
+
+   ```bash
+   node scripts/certify-vscode.js collect \
+     --session <session-directory> \
+     --output compatibility
+   node scripts/certify-vscode.js validate \
+     --evidence compatibility/vscode-copilot.json
+   node scripts/certify-vscode.js cleanup \
+     --session <session-directory>
+   ```
+
+Collection fails unless the client performed initialization, tool and resource
+discovery, a read, the task mutation, clean server shutdown, and workspace
+isolation. The committed evidence contains no operator-specific paths or account
+identity. [Issue #412](https://github.com/vixygrey/truenorth-mcp/issues/412)
+tracks a non-blocking Copilot warning when compiling the standard JSON Schema
+2020-12 tool input dialect.
 
 Use [GitHub Discussions](https://github.com/vixygrey/truenorth-mcp/discussions) for
 questions and the issue forms for reproducible non-security defects. Report vulnerabilities

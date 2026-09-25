@@ -30,3 +30,12 @@ bugs:
   tags:
   - opencode
   - client-compatibility
+- id: '412'
+  external_link: https://github.com/vixygrey/truenorth-mcp/issues/412
+  status: open
+  linked_ref: '404'
+  tags:
+  - compatibility
+  - vscode
+  - copilot
+  - json-schema

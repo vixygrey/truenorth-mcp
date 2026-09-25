@@ -99,6 +99,8 @@ run_artifact_smoke() {
   node --test scripts/certify-mcp-inspector.test.js
   echo "preflight: [artifact-smoke] Oh My Pi evidence tests"
   node --test scripts/certify-omp.test.js
+  echo "preflight: [artifact-smoke] VS Code evidence tests"
+  node --test scripts/certify-vscode.test.js
   echo "preflight: [artifact-smoke] release build for $package"
   cargo build --release --manifest-path runtime/Cargo.toml
 
