@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-25",
+  "client": {
+    "name": "Oh My Pi",
+    "version": "18.2.11"
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.1",
+    "transport": "stdio"
+  },
+  "model": {
+    "provider": "llama.cpp",
+    "id": "hermes-3-llama-3.1-8b",
+    "endpoint": "http://127.0.0.1:18081",
+    "authentication": "none",
+    "hosted_fallback": false
+  },
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v24.18.1",
+    "rpc_protocol_version": 2
+  },
+  "fixture": {
+    "profile": "generic",
+    "omp_profile": "truenorth-certification",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true,
+    "isolated_home": true
+  },
+  "rpc_evidence": {
+    "ready": {
+      "type": "ready",
+      "protocolVersion": 1,
+      "supportedProtocolVersions": [1, 2]
+    },
+    "model": {
+      "id": "hermes-3-llama-3.1-8b",
+      "name": "hermes-3-llama-3.1-8b",
+      "api": "openai-completions",
+      "provider": "llama.cpp",
+      "baseUrl": "http://127.0.0.1:18081",
+      "reasoning": false,
+      "input": ["text"],
+      "supportsTools": true,
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "contextWindow": 32768,
+      "maxTokens": 512,
+      "compat": {
+        "supportsStore": false,
+        "supportsDeveloperRole": false,
+        "supportsMultipleSystemMessages": false,
+        "supportsReasoningEffort": false,
+        "supportsReasoningParams": true,
+        "supportsSamplingParams": true,
+        "supportsPenaltyAndStopParams": true,
+        "reasoningEffortMap": {},
+        "supportsUsageInStreaming": true,
+        "alwaysSendMaxTokens": false,
+        "disableReasoningOnForcedToolChoice": false,
+        "disableReasoningOnToolChoice": false,
+        "disableReasoningWithTools": false,
+        "supportsToolChoice": true,
+        "supportsForcedToolChoice": true,
+        "supportsNamedToolChoice": false,
+        "maxTokensField": "max_completion_tokens",
+        "requiresToolResultName": false,
+        "requiresAssistantAfterToolResult": false,
+        "requiresThinkingAsText": false,
+        "requiresMistralToolIds": false,
+        "thinkingFormat": "openai",
+        "reasoningDisableMode": "lowest-effort",
+        "omitReasoningEffort": true,
+        "includeEncryptedReasoning": true,
+        "filterReasoningHistory": false,
+        "reasoningContentField": "reasoning_content",
+        "requiresReasoningContentForToolCalls": false,
+        "requiresReasoningContentForAllAssistantTurns": false,
+        "allowsSyntheticReasoningContentForToolCalls": true,
+        "replayReasoningContent": true,
+        "qwenPreserveThinking": false,
+        "qwenTemplateReasoningEffort": false,
+        "requiresAssistantContentForToolCalls": false,
+        "supportsPromptCacheBreakpoints": false,
+        "isOpenRouterHost": false,
+        "wireModelIdMode": "raw",
+        "isVercelGatewayHost": false,
+        "supportsStrictMode": false,
+        "toolStrictMode": "mixed",
+        "toolSchemaFlavor": "grammar",
+        "streamFirstEventTimeoutMs": 0,
+        "streamIdleTimeoutMs": 300000,
+        "stripDeepseekSpecialTokens": false,
+        "streamMarkupHealingPattern": "thinking",
+        "reasoningDeltasMayBeCumulative": false,
+        "emptyLengthFinishIsContextError": false,
+        "usesOpenAIToolCallIdLimit": false,
+        "dropThinkingWhenReasoningEffort": false,
+        "nativeKimiK3Reasoning": false,
+        "zaiReasoningEffortDialect": false,
+        "clampOutputToModelMax": true,
+        "stripImageInput": false,
+        "rejectRootObjectUnion": false,
+        "retryWithoutStrictOnGrammarError": false,
+        "supportsPromptCacheKey": false
+      },
+      "identity": {
+        "class": "unknown"
+      },
+      "requiresGlyphTokenization": false,
+      "supportsComputerUse": false
+    },
+    "tools": ["mcp__truenorth_get_skill", "mcp__truenorth_record_task"],
+    "mcp_list_observed": true,
+    "state_resource_observed": true,
+    "tool_events": [
+      {
+        "type": "tool_execution_start",
+        "toolName": "mcp__truenorth_get_skill",
+        "isError": false
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "mcp__truenorth_get_skill",
+        "isError": false
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "mcp__truenorth_get_skill",
+        "isError": false
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "mcp__truenorth_get_skill",
+        "isError": false
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "mcp__truenorth_record_task",
+        "isError": false
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "mcp__truenorth_record_task",
+        "isError": false
+      }
+    ],
+    "terminal_agent_end": true,
+    "process_exit": {
+      "code": 0,
+      "signal": null
+    },
+    "server_exit": {
+      "observed": true,
+      "alive_after_omp_exit": false
+    }
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "packed wrapper installed with scripts disabled"
+    },
+    "initialize": {
+      "status": "pass",
+      "detail": "OMP RPC v2 started with the pinned keyless llama.cpp model and loaded MCP state"
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "OMP get_state dumpTools includes TrueNorth read and mutation tools"
+    },
+    "resources_list": {
+      "status": "pass",
+      "detail": "OMP /mcp resources output includes truenorth://state"
+    },
+    "read_operation": {
+      "status": "pass",
+      "detail": "mcp__truenorth_get_skill completed through an OMP tool execution"
+    },
+    "task_mutation": {
+      "status": "pass",
+      "detail": "truenorth_record_task changed the disposable release plan"
+    },
+    "clean_shutdown": {
+      "status": "pass",
+      "detail": "closing RPC stdin exited OMP zero and terminated its TrueNorth stdio child"
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "repository status and release plan were unchanged during certification"
+    }
+  },
+  "certified": true
+}

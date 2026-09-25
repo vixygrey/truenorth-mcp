@@ -10,9 +10,9 @@
     },
     {
       "name": "Oh My Pi",
-      "version": null,
-      "status": "pending_manual_certification",
-      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/403"
+      "version": "18.2.11",
+      "status": "certified",
+      "evidence": "oh-my-pi.json"
     },
     {
       "name": "OpenCode",
