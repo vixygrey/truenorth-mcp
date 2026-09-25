@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-25",
+  "client": {
+    "name": "OpenCode",
+    "version": "2.0.16"
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.1",
+    "transport": "stdio"
+  },
+  "model": {
+    "provider": "llama.cpp",
+    "id": "hermes-3-llama-3.1-8b",
+    "endpoint": "http://127.0.0.1:18081",
+    "authentication": "none",
+    "hosted_fallback": false
+  },
+  "environment": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v24.18.1"
+  },
+  "fixture": {
+    "profile": "generic",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true,
+    "isolated_home": true,
+    "standalone_configuration_probe": true,
+    "ephemeral_api_server": true,
+    "shared_service": false,
+    "project_local_configuration": true
+  },
+  "client_evidence": {
+    "protocol_methods": [
+      "initialize",
+      "notifications/initialized",
+      "resources/list",
+      "resources/templates/list",
+      "tools/call",
+      "tools/list"
+    ],
+    "protocol_tools": [
+      "build_skill_graph",
+      "get_dependencies",
+      "get_git_context",
+      "get_skill",
+      "index_skills",
+      "open_nodes",
+      "read_graph",
+      "read_skill",
+      "search_nodes",
+      "search_skills",
+      "truenorth_advance_phase",
+      "truenorth_generate_ontology",
+      "truenorth_record_bug",
+      "truenorth_record_task",
+      "truenorth_scaffold_project",
+      "truenorth_tdd_cycle",
+      "truenorth_verify_gate",
+      "truenorth_verify_ontology",
+      "validate_skill"
+    ],
+    "protocol_resources": [
+      "truenorth://adr",
+      "truenorth://cockpit",
+      "truenorth://conventions",
+      "truenorth://ontology",
+      "truenorth://state"
+    ],
+    "protocol_tool_calls": [
+      {
+        "tool": "get_skill",
+        "status": "completed"
+      },
+      {
+        "tool": "truenorth_record_task",
+        "status": "completed"
+      }
+    ],
+    "resources": [
+      "truenorth://adr",
+      "truenorth://cockpit",
+      "truenorth://conventions",
+      "truenorth://ontology",
+      "truenorth://state"
+    ],
+    "tool_events": [
+      {
+        "tool": "execute",
+        "status": "completed",
+        "call_id": "yO8MI059zwVy0DLymoFeQGNFCyR336ML",
+        "calls": [
+          {
+            "tool": "truenorth.get_skill",
+            "status": "completed"
+          },
+          {
+            "tool": "truenorth.truenorth_record_task",
+            "status": "completed"
+          }
+        ]
+      }
+    ],
+    "invocations": [
+      {
+        "purpose": "standalone configuration probe",
+        "exit_code": 0,
+        "signal": null
+      },
+      {
+        "purpose": "configuration load",
+        "exit_code": 0,
+        "signal": null
+      },
+      {
+        "purpose": "MCP connect",
+        "exit_code": 0,
+        "signal": null
+      },
+      {
+        "purpose": "tool catalog reload",
+        "exit_code": 0,
+        "signal": null
+      },
+      {
+        "purpose": "MCP reconnect",
+        "exit_code": 0,
+        "signal": null
+      },
+      {
+        "purpose": "resources/list",
+        "exit_code": 0,
+        "signal": null
+      },
+      {
+        "purpose": "read and task mutation",
+        "exit_code": 0,
+        "signal": null
+      }
+    ],
+    "api_server_exit": {
+      "code": 130,
+      "signal": null
+    },
+    "server_processes": {
+      "started": 4,
+      "exited": 4
+    }
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "packed wrapper installed with scripts disabled"
+    },
+    "initialize": {
+      "status": "pass",
+      "detail": "OpenCode sent initialize to the TrueNorth stdio server"
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "OpenCode sent tools/list and exposed the required TrueNorth tools"
+    },
+    "resources_list": {
+      "status": "pass",
+      "detail": "OpenCode sent resources/list and returned truenorth://state through its resource catalog API"
+    },
+    "read_operation": {
+      "status": "pass",
+      "detail": "OpenCode JSON events and MCP protocol records show a completed get_skill call"
+    },
+    "task_mutation": {
+      "status": "pass",
+      "detail": "OpenCode JSON events and MCP protocol records show record_task changed the disposable release plan"
+    },
+    "clean_shutdown": {
+      "status": "pass",
+      "detail": "every OpenCode flow closed its monitored TrueNorth stdio child"
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "repository status and release plan were unchanged during certification"
+    }
+  },
+  "certified": true
+}
