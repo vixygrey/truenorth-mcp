@@ -120,7 +120,9 @@ Then register the wrapper as an MCP server in your client:
 
 Run the client from the repository root instead of setting `TRUENORTH_ROOT` when that is more
 convenient. Configure `TRUENORTH_VERIFY_CMD` for the project's own language and tooling.
-The [install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
+Gate commands inherit only `PATH`, `HOME`, `TMPDIR`, `TMP`, and `TEMP` by default. Add safe
+required names with `TRUENORTH_GATE_ENV_ALLOWLIST`. The
+[install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
 has per-client steps.
 
 ## Diagnose a setup
@@ -131,9 +133,10 @@ npx -y truenorth-mcp --check-config
 ```
 
 `--check-config` reports the repository root, workspace layout, backlog ownership,
-enabled features, effective token caps, verify-gate readiness, package version, and
-platform. It reads configuration only. It does not start the MCP server, run the
-verify command, contact a backlog provider, or print configured command values.
+enabled features, effective token caps, verify-gate readiness, allowed gate environment
+names, package version, and platform. It reads configuration only. It does not start the
+MCP server, run the verify command, contact a backlog provider, or print configured command
+or environment values.
 
 Set `token_caps.skill_lean_tokens` and `token_caps.tool_payload_tokens` in
 `.agent/config/rules.yml`. When omitted, they default to 1500 and 4000 respectively.
@@ -171,7 +174,7 @@ Run the tests with `cargo test`. Run the wrapper tests with `node --test` in `np
 Active tools drive the workflow:
 
 - `truenorth_advance_phase`, `truenorth_record_task`: drive the lifecycle.
-- `truenorth_verify_gate`: run a project gate command in a sandbox, pass only on exit 0.
+- `truenorth_verify_gate`: run a project gate command through the bounded gate executor, pass only on exit 0.
 - `truenorth_tdd_cycle`: enforce the red-green-refactor order.
 - `truenorth_scaffold_project`: seed a new project's `.agent/` tree for a methodology profile.
 - `truenorth_record_bug`: record an external-tracker bug reference in `.agent/tasks/bugs.yml`.

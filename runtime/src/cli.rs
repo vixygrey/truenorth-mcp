@@ -389,26 +389,68 @@ fn token_caps_report(root: &std::path::Path) -> TokenCapsReport {
 struct VerifyGateReport {
     status: Status,
     configured: bool,
+    environment: VerifyGateEnvironmentReport,
     error: Option<ErrorReport>,
+}
+
+#[derive(Debug, Serialize)]
+struct VerifyGateEnvironmentReport {
+    allowed_names: Vec<String>,
+    configured_names: Vec<String>,
+    rejected_names: Vec<String>,
+    invalid_names: Vec<String>,
 }
 
 impl VerifyGateReport {
     fn collect() -> Self {
-        if config::verify_command().is_some() {
-            Self {
+        use truenorth_mcp::config::gate_environment::{
+            DEFAULT_GATE_ENV_NAMES, GateEnvironmentPolicy,
+        };
+
+        let command_configured = config::verify_command().is_some();
+        match GateEnvironmentPolicy::from_process() {
+            Ok(policy) if command_configured => Self {
                 status: Status::Ok,
                 configured: true,
+                environment: VerifyGateEnvironmentReport {
+                    allowed_names: policy.allowed_names().to_vec(),
+                    configured_names: policy.configured_names().to_vec(),
+                    rejected_names: Vec::new(),
+                    invalid_names: Vec::new(),
+                },
                 error: None,
-            }
-        } else {
-            Self {
+            },
+            Ok(policy) => Self {
                 status: Status::Error,
                 configured: false,
+                environment: VerifyGateEnvironmentReport {
+                    allowed_names: policy.allowed_names().to_vec(),
+                    configured_names: policy.configured_names().to_vec(),
+                    rejected_names: Vec::new(),
+                    invalid_names: Vec::new(),
+                },
                 error: Some(ErrorReport::new(
                     "no verify command configured".to_string(),
                     "Set TRUENORTH_VERIFY_CMD to the project verify or test command.",
                 )),
-            }
+            },
+            Err(error) => Self {
+                status: Status::Error,
+                configured: command_configured,
+                environment: VerifyGateEnvironmentReport {
+                    allowed_names: DEFAULT_GATE_ENV_NAMES
+                        .into_iter()
+                        .map(str::to_string)
+                        .collect(),
+                    configured_names: Vec::new(),
+                    rejected_names: error.credential_names().to_vec(),
+                    invalid_names: error.invalid_names().to_vec(),
+                },
+                error: Some(ErrorReport::new(
+                    error.to_string(),
+                    "Remove rejected names from TRUENORTH_GATE_ENV_ALLOWLIST, then restart the MCP client.",
+                )),
+            },
         }
     }
 }

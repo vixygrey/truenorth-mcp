@@ -51,9 +51,9 @@ so a green result at the red step is itself a failure. Then run `green`, then `r
 ## Review
 
 Run the quality gate with `truenorth_verify_gate`. It takes only the `phase` and runs the
-configured project verify command in a sandbox. It passes only on a real exit code of `0`
-that the server observed. A timeout or non-zero exit returns an error with a remediation
-hint.
+configured project verify command through the bounded gate executor. It passes only on a
+real exit code of `0` that the server observed. A timeout or non-zero exit returns an error
+with a remediation hint.
 
 ```json
 {
@@ -63,9 +63,10 @@ hint.
 
 The successful result includes `"mode": "execute"` as output. Do not send `mode` or
 `test_evidence`; both fields are rejected. The gate is trustworthy because the server, not
-the model, observed the exit code. The sandbox bounds the run with a wall-clock timeout, a
-working directory pinned under the repository root, a command allowlist, and an environment
-sanitized against the secret denylist.
+the model, observed the exit code. The executor bounds the run with a wall-clock timeout,
+a process-group kill, a working directory pinned under the repository root, a first-token
+command allowlist, and exact-name environment inheritance. It retains normal filesystem
+and network access and is not a hostile-command containment boundary.
 
 ## Integrate
 

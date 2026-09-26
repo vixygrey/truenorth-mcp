@@ -18,9 +18,9 @@ how to run it.
 ## What it is
 
 The runtime delivers engineering discipline through typed MCP tools and resources, not
-through a large instruction file dumped into a context window. It advances lifecycle
-state, runs quality gates in a sandbox, and drives a Red-Green-Refactor loop. The governed
-project can be any language.
+through a large instruction file dumped into a context window. It advances lifecycle state,
+runs quality gates through a bounded executor, and drives a Red-Green-Refactor loop. The
+governed project can be any language.
 
 ## The two-layer model
 

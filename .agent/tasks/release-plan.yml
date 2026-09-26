@@ -149,3 +149,7 @@ tasks:
   group_kind: ticket
   task_name: Emit version-aware cache metadata for MCP resource responses
   verify_command: cargo test --manifest-path runtime/Cargo.toml resource_cache_metadata && npm run preflight
+- group_id: '429'
+  group_kind: ticket
+  task_name: Isolate verify-gate environment and correct executor terminology
+  verify_command: npm run preflight

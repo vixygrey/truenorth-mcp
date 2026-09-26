@@ -13,7 +13,8 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
-use crate::config::SandboxConfig;
+use crate::config::GateExecutionConfig;
+use crate::config::gate_environment::{GATE_ENV_ALLOWLIST_ENV, GateEnvironmentPolicy};
 use crate::engine::cockpit::{self, CockpitError};
 use crate::engine::gate_runner::{CommandRunner, SystemCommandRunner};
 use crate::engine::tdd::{TddStep, next_step};
@@ -94,7 +95,19 @@ impl TrueNorthServer {
             .next()
             .map(str::to_string)
             .unwrap_or_default();
-        let cfg = SandboxConfig::new(self.ctx.repo_root.clone(), vec![binary]);
+        let environment = GateEnvironmentPolicy::from_process().map_err(|error| {
+            ErrorData::invalid_request(
+                format!(
+                    "invalid bounded gate environment configuration: {error}. Remove credential-like names or configure safe names in `{GATE_ENV_ALLOWLIST_ENV}`."
+                ),
+                None,
+            )
+        })?;
+        let cfg = GateExecutionConfig::new(
+            self.ctx.repo_root.clone(),
+            vec![binary],
+            environment.allowed_names().to_vec(),
+        );
 
         let result = SystemCommandRunner
             .run(failing_test_cmd, &cfg)

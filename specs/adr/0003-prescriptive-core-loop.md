@@ -32,7 +32,7 @@ TrueNorth-MCP keeps the prescriptive loop and delivers it through two layers. Th
 workflow through skills. The runtime adds an active enforcement layer: the
 `truenorth_advance_phase` tool moves the phase and writes `.agent/tasks/state.yml`
 (`truenorth-mcp/src/tools/lifecycle.rs`), and the `truenorth_verify_gate` tool runs a
-project gate command in a sandbox and passes only on exit 0
+project gate command through a bounded executor and passes only on exit 0
 (`truenorth-mcp/src/tools/gates.rs`).
 
 The decision stands; the mechanism gained a protocol layer. The 6-phase lifecycle

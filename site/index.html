@@ -65,8 +65,8 @@
           <li>
             <h3>Active tools, not markdown blobs</h3>
             <p>
-              Tools advance a lifecycle phase, record a task, and run a quality gate in a sandbox.
-              The server observes the exit code, so a gate cannot be faked.
+              Tools advance a lifecycle phase, record a task, and run a quality gate through a
+              bounded executor. The server observes the exit code, so a gate cannot be faked.
             </p>
           </li>
           <li>
@@ -102,7 +102,7 @@
         <div class="code-card">
           <pre><code>read  truenorth://state          # the active phase and handoff
 call  truenorth_record_task      # register a task with a verify command
-call  truenorth_verify_gate      # run the verify command in a sandbox
+call  truenorth_verify_gate      # run the verify command through the bounded executor
 call  truenorth_advance_phase    # move the lifecycle forward</code></pre>
         </div>
         <p>

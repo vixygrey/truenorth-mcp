@@ -4,17 +4,26 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const publicDocPaths = ['.agent/product/scope.yml', 'README.md', 'wiki', 'site'];
+const publicDocPaths = [
+  '.agent/product/glossary.yml',
+  '.agent/product/scope.yml',
+  'README.md',
+  'wiki',
+  'site',
+];
 const forbiddenPatterns = [
   /\bevidence\s+mode\b/i,
   /["']mode["']\s*:\s*["']evidence["']/i,
   /["']test_evidence["']\s*:/i,
   /\baccepts?\s+(?:model[-\s]+supplied\s+)?evidence\b/i,
+  /\b(?:verify|quality|project)\s+gate[^\n]{0,80}\bin a sandbox\b/i,
+  /\bthe sandbox bounds\b/i,
 ];
 const requiredConfigurationNames = [
   'TRUENORTH_ROOT',
   'TRUENORTH_VERIFY_CMD',
   'TRUENORTH_GATE_ALLOWLIST',
+  'TRUENORTH_GATE_ENV_ALLOWLIST',
 ];
 
 const files = publicDocPaths.flatMap((docPath) => collectFiles(path.join(repoRoot, docPath)));

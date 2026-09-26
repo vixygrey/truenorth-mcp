@@ -1,10 +1,10 @@
-//! Tests for the sandboxed gate runner (task 5.2).
+//! Tests for the bounded gate executor.
 //!
 //! Included from `gate_runner.rs` via `#[path]`, so `super` is the gate_runner module.
 //!
 //! Property 2: `run_gate` passes only on a real exit-0 observation. The fake runner
-//! covers pass, fail, timeout, and allowlist-reject paths. The real runner covers `cwd`
-//! pinning and environment sanitization.
+//! covers pass, fail, timeout, and command-allowlist rejection. The real runner covers
+//! cwd pinning, exact-name environment inheritance, redaction, and process control.
 //!
 //! Requirements: 3.2, 3.3, 3.4, 3.5, 3.6.
 
@@ -39,15 +39,19 @@ impl FakeCommandRunner {
 }
 
 impl CommandRunner for FakeCommandRunner {
-    fn run(&self, _command: &str, _cfg: &SandboxConfig) -> std::io::Result<CommandResult> {
+    fn run(&self, _command: &str, _cfg: &GateExecutionConfig) -> std::io::Result<CommandResult> {
         self.ran.set(true);
         Ok(self.result.clone())
     }
 }
 
-/// A sandbox config with `cargo` allowlisted.
-fn cfg_with_cargo() -> SandboxConfig {
-    SandboxConfig::new(PathBuf::from("/repo"), vec!["cargo".to_string()])
+/// An execution config with `cargo` allowlisted and no inherited environment.
+fn cfg_with_cargo() -> GateExecutionConfig {
+    GateExecutionConfig::new(
+        PathBuf::from("/repo"),
+        vec!["cargo".to_string()],
+        Vec::new(),
+    )
 }
 
 #[test]
@@ -111,14 +115,18 @@ fn timeout_fails_with_timeout_hints() {
     assert!(error.contains("timed out"));
     let hints = outcome.remediation_hints.join(" ");
     assert!(hints.contains("reduce the test scope"));
-    assert!(hints.contains("raise the sandbox timeout"));
+    assert!(hints.contains("raise the bounded executor timeout"));
 }
 
 #[test]
 fn allowlist_miss_rejects_without_executing() {
     // Requirement 3.5: a command not in the allowlist is rejected without execution.
     let runner = FakeCommandRunner::passing();
-    let cfg = SandboxConfig::new(PathBuf::from("/repo"), vec!["cargo".to_string()]);
+    let cfg = GateExecutionConfig::new(
+        PathBuf::from("/repo"),
+        vec!["cargo".to_string()],
+        Vec::new(),
+    );
     let outcome = run_gate("rm -rf /", &cfg, &runner);
     assert!(!outcome.passed);
     assert!(
@@ -143,9 +151,9 @@ fn empty_command_is_rejected() {
 #[test]
 fn real_runner_reports_exit_code_and_cwd() {
     // Requirement 3.6: the working directory is pinned under the repo root. The command
-    // prints its cwd, which must match the sandbox working_dir.
+    // prints its cwd, which must match the configured working directory.
     let temp = std::env::temp_dir();
-    let cfg = SandboxConfig::new(temp.clone(), vec!["pwd".to_string()]);
+    let cfg = GateExecutionConfig::new(temp.clone(), vec!["pwd".to_string()], Vec::new());
     let runner = SystemCommandRunner;
     let result = runner.run("pwd 1>&2", &cfg).expect("run pwd");
     assert_eq!(result.exit_code, Some(0));
@@ -157,31 +165,61 @@ fn real_runner_reports_exit_code_and_cwd() {
 }
 
 #[test]
-fn real_runner_drops_secret_env_values() {
-    // Requirement 3.6: an environment value matching the denylist is dropped before the
-    // subprocess spawns.
-    // SAFETY: the test sets and removes a process-local env var it owns. No other test
-    // reads `TRUENORTH_TEST_TOKEN`, so the mutation is isolated.
+fn real_runner_drops_unlisted_credentials() {
+    let previous = std::env::var_os("GITHUB_TOKEN");
+    // SAFETY: the test restores the process-local value before returning.
     unsafe {
-        std::env::set_var("TRUENORTH_TEST_TOKEN", "/tmp/my-secret-value.pem");
+        std::env::set_var("GITHUB_TOKEN", "placeholder-github-token-value");
     }
-    let cfg = SandboxConfig::new(std::env::temp_dir(), vec!["printenv".to_string()]);
-    let runner = SystemCommandRunner;
-    let result = runner
-        .run("printenv TRUENORTH_TEST_TOKEN 1>&2", &cfg)
+    let cfg = GateExecutionConfig::new(
+        std::env::temp_dir(),
+        vec!["printenv".to_string()],
+        Vec::new(),
+    );
+    let result = SystemCommandRunner
+        .run("printenv GITHUB_TOKEN 1>&2", &cfg)
         .expect("run printenv");
-    unsafe {
-        std::env::remove_var("TRUENORTH_TEST_TOKEN");
-    }
-    // `printenv` exits non-zero when the variable is absent, which is the point: the
-    // secret-valued variable was dropped from the sanitized environment.
+    restore_environment("GITHUB_TOKEN", previous);
+
     assert_ne!(result.exit_code, Some(0));
+    assert!(!String::from_utf8_lossy(&result.stderr).contains("placeholder-github-token-value"));
+}
+
+#[test]
+fn real_runner_inherits_opted_in_name_and_redacts_its_value() {
+    let previous = std::env::var_os("TRUENORTH_TEST_FLAG");
+    // SAFETY: the test restores the process-local value before returning.
+    unsafe {
+        std::env::set_var("TRUENORTH_TEST_FLAG", "visible-only-inside-child");
+    }
+    let cfg = GateExecutionConfig::new(
+        std::env::temp_dir(),
+        vec!["printenv".to_string()],
+        vec!["TRUENORTH_TEST_FLAG".to_string()],
+    );
+    let result = SystemCommandRunner
+        .run("printenv TRUENORTH_TEST_FLAG 1>&2", &cfg)
+        .expect("run printenv");
+    restore_environment("TRUENORTH_TEST_FLAG", previous);
+
+    assert_eq!(result.exit_code, Some(0));
+    assert_eq!(result.stderr, b"[REDACTED_ENV]\n");
+}
+
+fn restore_environment(name: &str, previous: Option<std::ffi::OsString>) {
+    // SAFETY: callers restore a process-local environment variable owned by the test.
+    unsafe {
+        match previous {
+            Some(value) => std::env::set_var(name, value),
+            None => std::env::remove_var(name),
+        }
+    }
 }
 
 #[test]
 fn real_runner_nonzero_exit_is_observed() {
     // Property 2: the runner observes a real non-zero exit code.
-    let cfg = SandboxConfig::new(std::env::temp_dir(), vec!["false".to_string()]);
+    let cfg = GateExecutionConfig::new(std::env::temp_dir(), vec!["false".to_string()], Vec::new());
     let runner = SystemCommandRunner;
     let result = runner.run("false", &cfg).expect("run false");
     assert_eq!(result.exit_code, Some(1));
@@ -191,7 +229,8 @@ fn real_runner_nonzero_exit_is_observed() {
 #[test]
 fn real_runner_hard_kills_on_timeout() {
     // Requirement 3.4: a command that exceeds the timeout is hard-killed.
-    let mut cfg = SandboxConfig::new(std::env::temp_dir(), vec!["sleep".to_string()]);
+    let mut cfg =
+        GateExecutionConfig::new(std::env::temp_dir(), vec!["sleep".to_string()], Vec::new());
     cfg.timeout = Duration::from_millis(200);
     let runner = SystemCommandRunner;
     let result = runner.run("sleep 30", &cfg).expect("run sleep");
@@ -219,7 +258,7 @@ fn real_runner_kills_a_backgrounded_descendant_on_timeout() {
     // `real_runner_spawns_the_child_in_its_own_process_group` test below covers the
     // mechanism deterministically on every Unix target.
     let command = format!("(echo $$ > '{pidfile_arg}'; exec sleep 10) >/dev/null 2>&1 & sleep 10");
-    let mut cfg = SandboxConfig::new(std::env::temp_dir(), vec!["(".to_string()]);
+    let mut cfg = GateExecutionConfig::new(std::env::temp_dir(), vec!["(".to_string()], Vec::new());
     cfg.timeout = Duration::from_millis(300);
     // The allowlist gates the first token, which is `(` here. Allow it so the command runs.
     let runner = SystemCommandRunner;
@@ -276,7 +315,7 @@ fn real_runner_spawns_the_child_in_its_own_process_group() {
     // `ps -o pgid= -p $$` prints this shell's process-group id, then the shell prints its
     // own pid. A `/bin/sh` that leads its own group prints equal values.
     let command = format!("ps -o pgid= -p $$ > '{out_arg}'; echo $$ >> '{out_arg}'");
-    let cfg = SandboxConfig::new(std::env::temp_dir(), vec!["ps".to_string()]);
+    let cfg = GateExecutionConfig::new(std::env::temp_dir(), vec!["ps".to_string()], Vec::new());
     let runner = SystemCommandRunner;
     let result = runner.run(&command, &cfg).expect("run ps");
     assert_eq!(result.exit_code, Some(0), "the ps command must succeed");
