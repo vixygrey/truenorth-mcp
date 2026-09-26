@@ -170,7 +170,7 @@ clean shutdown against the packaged TrueNorth-MCP version in its evidence file.
 
 | Client                           | Pinned version      | Date       | Result      | Evidence                                                      |
 | -------------------------------- | ------------------- | ---------- | ----------- | ------------------------------------------------------------- |
-| MCP Inspector CLI                | 2.5.0               | 2026-09-25 | Certified   | [`mcp-inspector.json`](../compatibility/mcp-inspector.json)   |
+| MCP Inspector CLI                | 2.8.0               | 2026-09-27 | Certified   | [`mcp-inspector.json`](../compatibility/mcp-inspector.json)   |
 | Oh My Pi                         | 18.2.11             | 2026-09-25 | Certified   | [`oh-my-pi.json`](../compatibility/oh-my-pi.json)             |
 | OpenCode                         | 2.0.16              | 2026-09-25 | Certified   | [`opencode.json`](../compatibility/opencode.json)             |
 | VS Code with GitHub Copilot Chat | 1.139.1 with 0.67.0 | 2026-09-25 | Certified   | [`vscode-copilot.json`](../compatibility/vscode-copilot.json) |
