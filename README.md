@@ -220,8 +220,11 @@ disposable workspace, and clean client shutdown. See the
 [Inspector evidence](compatibility/mcp-inspector.json), the
 [Oh My Pi evidence](compatibility/oh-my-pi.json), the
 [OpenCode evidence](compatibility/opencode.json), and the
-[VS Code evidence](compatibility/vscode-copilot.json). Other clients remain
-pending or untested and are not implied supported.
+[VS Code evidence](compatibility/vscode-copilot.json). Croft 0.1.700 is
+unsupported for full certification because it exposes no MCP resources and
+cannot construct the required multi-field task mutation; see the
+[Croft assessment](compatibility/croft.json). Other clients remain pending or
+untested and are not implied supported.
 
 Reproduce the Inspector certification with a staged platform package:
 

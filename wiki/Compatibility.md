@@ -168,20 +168,31 @@ below. Each pass requires initialization, tool and resource discovery, one read,
 one `truenorth_record_task` mutation confined to a disposable workspace, and
 clean shutdown against the packaged TrueNorth-MCP 1.0.1 stdio artifact.
 
-| Client                           | Pinned version      | Date       | Result                        | Evidence                                                           |
-| -------------------------------- | ------------------- | ---------- | ----------------------------- | ------------------------------------------------------------------ |
-| MCP Inspector CLI                | 2.5.0               | 2026-09-25 | Certified                     | [`mcp-inspector.json`](../compatibility/mcp-inspector.json)        |
-| Oh My Pi                         | 18.2.11             | 2026-09-25 | Certified                     | [`oh-my-pi.json`](../compatibility/oh-my-pi.json)                  |
-| OpenCode                         | 2.0.16              | 2026-09-25 | Certified                     | [`opencode.json`](../compatibility/opencode.json)                  |
-| VS Code with GitHub Copilot Chat | 1.139.1 with 0.67.0 | 2026-09-25 | Certified                     | [`vscode-copilot.json`](../compatibility/vscode-copilot.json)      |
-| Kiro                             | Not pinned          | Not tested | Pending manual certification  | [Issue #407](https://github.com/vixygrey/truenorth-mcp/issues/407) |
-| Croft IDE                        | Not pinned          | Not tested | Pending capability assessment | [Issue #406](https://github.com/vixygrey/truenorth-mcp/issues/406) |
+| Client                           | Pinned version      | Date       | Result                       | Evidence                                                           |
+| -------------------------------- | ------------------- | ---------- | ---------------------------- | ------------------------------------------------------------------ |
+| MCP Inspector CLI                | 2.5.0               | 2026-09-25 | Certified                    | [`mcp-inspector.json`](../compatibility/mcp-inspector.json)        |
+| Oh My Pi                         | 18.2.11             | 2026-09-25 | Certified                    | [`oh-my-pi.json`](../compatibility/oh-my-pi.json)                  |
+| OpenCode                         | 2.0.16              | 2026-09-25 | Certified                    | [`opencode.json`](../compatibility/opencode.json)                  |
+| VS Code with GitHub Copilot Chat | 1.139.1 with 0.67.0 | 2026-09-25 | Certified                    | [`vscode-copilot.json`](../compatibility/vscode-copilot.json)      |
+| Kiro                             | Not pinned          | Not tested | Pending manual certification | [Issue #407](https://github.com/vixygrey/truenorth-mcp/issues/407) |
+| Croft IDE                        | 0.1.700             | 2026-09-25 | Unsupported                  | [`croft.json`](../compatibility/croft.json)                        |
 
 The machine-readable [client matrix](../compatibility/mcp-clients.json) is the
 authoritative status index. The repository [README](../README.md#reproduce-the-vs-code-certification)
 contains the repeatable VS Code disposable-profile procedure. The VS Code
 certificate records one non-blocking Copilot JSON Schema warning tracked in
 [issue #412](https://github.com/vixygrey/truenorth-mcp/issues/412).
+
+Croft 0.1.700 can initialize a local stdio server, discover tools, and invoke a
+predeclared zero-argument read tool. It cannot complete this certification
+contract because its client exposes no MCP resources and its deterministic
+command model can supply at most one string argument, while
+`truenorth_record_task` requires both `task_name` and `verify_command`. The
+[Croft assessment](../compatibility/croft.json) records the partial
+interoperability. [Issue #406](https://github.com/vixygrey/truenorth-mcp/issues/406)
+tracks the assessment, and
+[croft#685](https://github.com/vitali87/croft/issues/685) tracks forced sidecar
+shutdown.
 
 ## Upgrade to v1
 

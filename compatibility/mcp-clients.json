@@ -28,9 +28,13 @@
     },
     {
       "name": "Croft IDE",
-      "version": null,
-      "status": "pending_capability_assessment",
-      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/406"
+      "version": "0.1.700",
+      "status": "unsupported",
+      "assessed_on": "2026-09-25",
+      "evidence": "croft.json",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/406",
+      "client_issue": "https://github.com/vitali87/croft/issues/685",
+      "note": "Tool-only interoperability works, but Croft exposes no MCP resources and cannot construct the required multi-field task mutation."
     },
     {
       "name": "VS Code and GitHub Copilot",
