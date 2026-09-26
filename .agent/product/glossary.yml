@@ -17,16 +17,18 @@ terms:
 
   - term: verify gate
     definition: >
-      The truenorth_verify_gate tool runs the project verify or test command in a sandbox
-      and returns passed only on a real exit-0 the server observed. Correctness Property 2.
-    related_terms: [sandbox, active tool, TDD cycle]
+      The truenorth_verify_gate tool runs the project verify or test command through the
+      bounded gate executor and returns passed only on a real exit-0 the server observed.
+      Correctness Property 2.
+    related_terms: [bounded gate executor, active tool, TDD cycle]
 
-  - term: sandbox
+  - term: bounded gate executor
     definition: >
-      The bounded environment for gate execution: a wall-clock timeout with a hard
-      kill, a working directory pinned under the repo root, a command allowlist on the
-      first token, and an environment sanitized against the secret denylist.
-    related_terms: [verify gate, secret denylist]
+      The gate process runner: a wall-clock timeout with a process-group kill, a working
+      directory pinned under the repo root, a first-token command allowlist, and exact-name
+      environment inheritance. It retains normal filesystem and network access and is not
+      a hostile-command containment boundary.
+    related_terms: [verify gate, gate environment allowlist]
 
   - term: ontology
     definition: >
@@ -139,10 +141,17 @@ terms:
 
   - term: secret denylist
     definition: >
-      The set of patterns the runtime never reads, echoes, or writes (.env, *.pem,
-      secret, credentials). The environment is sanitized against it before a gate
-      subprocess runs.
-    related_terms: [sandbox, verify gate]
+      The set of path and content patterns the runtime never reads, echoes, or writes
+      (.env, *.pem, secret, credentials). Gate environment inheritance uses a separate
+      exact-name allowlist.
+    related_terms: [verify gate, write guard]
+
+  - term: gate environment allowlist
+    definition: >
+      The exact environment variable names a gate subprocess can inherit. The runtime
+      supplies a minimal default and accepts safe operator additions through
+      TRUENORTH_GATE_ENV_ALLOWLIST. Credential-like names are rejected.
+    related_terms: [bounded gate executor, verify gate]
 
   - term: correctness property
     definition: >

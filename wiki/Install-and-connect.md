@@ -90,9 +90,9 @@ npx -y truenorth-mcp --check-config
 ```
 
 The configuration check returns a JSON report with the repository root, workspace layout,
-enabled features, verify-gate readiness, package version, and platform. It does not start
-the MCP server or run the verify command. The report does not include configured command
-values or other secret environment values.
+enabled features, verify-gate readiness, allowed gate environment names, package version,
+and platform. It does not start the MCP server or run the verify command. The report does
+not include configured command or environment values.
 
 ## The repository root
 
@@ -119,7 +119,8 @@ it:
       "args": ["-y", "truenorth-mcp"],
       "env": {
         "TRUENORTH_ROOT": "/absolute/path/to/repo",
-        "TRUENORTH_VERIFY_CMD": "<your-project-verify-command>"
+        "TRUENORTH_VERIFY_CMD": "<your-project-verify-command>",
+        "TRUENORTH_GATE_ENV_ALLOWLIST": "JAVA_HOME,CARGO_HOME"
       }
     }
   }
@@ -129,10 +130,20 @@ it:
 `TRUENORTH_ROOT` is optional when the client starts in the repository root.
 `TRUENORTH_VERIFY_CMD` is required and must name the project's verify or test command.
 The command's first executable is automatically allowlisted.
-`TRUENORTH_GATE_ALLOWLIST` is an optional comma-separated extension to that allowlist.
-It checks only the first command token and is not a security boundary for shell fragments
-such as `&&`, pipes, or redirects. The command is trusted operator configuration and never
-comes from an MCP tool argument.
+`TRUENORTH_GATE_ALLOWLIST` is an optional comma-separated extension to the command
+allowlist. It checks only the first command token and is not a security boundary for shell
+fragments such as `&&`, pipes, or redirects. The command is trusted operator configuration
+and never comes from a verify-tool argument.
+
+The bounded executor clears the inherited environment, then restores `PATH`, `HOME`,
+`TMPDIR`, `TMP`, and `TEMP` when present. Add other safe names with the optional
+comma-separated `TRUENORTH_GATE_ENV_ALLOWLIST`. Credential-like names, SSH agent variables,
+and `TRUENORTH_*` names are rejected. Run `--check-config` after changing the list, then
+restart the client. The diagnostic report shows names only.
+
+This is not an operating-system sandbox. The command retains normal filesystem and network
+access. Environment values are not included in diagnostics, and exact inherited values are
+redacted from returned stderr.
 
 Call the tool with only the phase:
 

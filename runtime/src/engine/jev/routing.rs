@@ -157,7 +157,7 @@ fn structured_criteria() -> BTreeMap<String, Option<serde_json::Value>> {
         (
             "truenorth_verify_gate",
             json!({
-                "what": "Run the project test or build command in a sandbox and pass only on exit zero.",
+                "what": "Run the project test or build command through the bounded gate executor and pass only on exit zero.",
                 "not_for": "Checking the code against the domain ontology (truenorth_verify_ontology).",
             }),
         ),

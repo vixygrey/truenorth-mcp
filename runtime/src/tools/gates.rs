@@ -1,12 +1,11 @@
 //! Gate tool: `truenorth_verify_gate` (ADR-1).
 //!
-//! The tool runs the project's configured verify or test command in the sandbox and
-//! passes only on a real exit-0 observation (Requirement 3.1, Property 2).
+//! The tool runs the project's configured verify or test command through the bounded gate
+//! executor and passes only on a real exit-0 observation (Requirement 3.1, Property 2).
 //!
-//! The verify command and the command allowlist come from the environment, so an operator
-//! configures them per project without a rebuild. The command sits behind
-//! `engine::gate_runner`, so the sandbox enforces the timeout, the working directory, the
-//! allowlist, and the environment sanitization.
+//! The verify command, command allowlist, and environment-name allowlist come from operator
+//! configuration. The executor enforces the timeout, working directory, process-group kill,
+//! first-token command guardrail, and exact-name environment inheritance.
 //!
 //! Requirements: 3.1. Design: Part II §2, §5.
 
@@ -16,7 +15,8 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
-use crate::config::{SandboxConfig, VERIFY_CMD_ENV, verify_command};
+use crate::config::gate_environment::{GATE_ENV_ALLOWLIST_ENV, GateEnvironmentPolicy};
+use crate::config::{GateExecutionConfig, VERIFY_CMD_ENV, verify_command};
 use crate::engine::gate_runner::{GateOutcome, SystemCommandRunner, run_gate};
 use crate::server::TrueNorthServer;
 
@@ -33,15 +33,17 @@ pub struct VerifyGateArgs {
 
 #[tool_router(router = gates_router, vis = "pub")]
 impl TrueNorthServer {
-    /// Run the configured project verify gate in its sandbox.
-    #[tool(description = "Run the configured project verify/test command in a sandbox.")]
+    /// Run the configured project verify gate through the bounded executor.
+    #[tool(
+        description = "Run the configured project verify/test command through the bounded gate executor."
+    )]
     pub async fn truenorth_verify_gate(
         &self,
         params: Parameters<VerifyGateArgs>,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
-        // Requirement 3.1: run the configured verify command in the sandbox.
+        // Requirement 3.1: run the configured verify command through the bounded executor.
         let command = verify_command().ok_or_else(|| {
             ErrorData::invalid_params(
                 format!(
@@ -51,8 +53,19 @@ impl TrueNorthServer {
                 None,
             )
         })?;
-
-        let cfg = SandboxConfig::new(self.ctx.repo_root.clone(), allowlist(&command));
+        let environment = GateEnvironmentPolicy::from_process().map_err(|error| {
+            ErrorData::invalid_request(
+                format!(
+                    "invalid bounded gate environment configuration: {error}. Remove credential-like names or configure safe names in `{GATE_ENV_ALLOWLIST_ENV}`."
+                ),
+                None,
+            )
+        })?;
+        let cfg = GateExecutionConfig::new(
+            self.ctx.repo_root.clone(),
+            allowlist(&command),
+            environment.allowed_names().to_vec(),
+        );
         let outcome = run_gate(&command, &cfg, &SystemCommandRunner);
         gate_result(&outcome, &args.phase, self.ctx.token_caps)
     }

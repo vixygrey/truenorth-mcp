@@ -1,12 +1,12 @@
 //! Runtime configuration: repository-root resolution, secret denylist, git scope,
-//! and sandbox settings.
+//! and bounded gate execution.
 //!
 //! This module ports the upstream `config.ts` behavior into typed Rust. It resolves
 //! the governed repository root, exposes the secret denylist that keeps credential
 //! files out of produced output, pins the git scope to the two cockpit directories,
-//! and defines the sandbox contract for gate execution.
+//! and defines the bounded executor contract for gate commands.
 //!
-//! Requirements: 1.4, 1.5, 1.6, 1.7, 1.8. Design: Part II §1 (Config), §5 (Sandbox).
+//! Requirements: 1.4, 1.5, 1.6, 1.7, 1.8. Design: Part II §1 (Config), §5 (Gate execution).
 
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
@@ -14,6 +14,8 @@ use std::time::Duration;
 
 use regex::Regex;
 use thiserror::Error;
+
+pub mod gate_environment;
 
 /// Environment variable that names an explicit repository root.
 const REPO_ROOT_ENV: &str = "TRUENORTH_ROOT";
@@ -37,7 +39,7 @@ pub const GIT_SCOPE_DIRS: [&str; 3] = [".agent", "specs", "skills"];
 /// Maximum byte size of a single skill file read into memory.
 pub const MAX_READ_SKILL_BYTES: usize = 512 * 1024;
 
-/// Default wall-clock timeout for a sandboxed gate command (Requirement 3.2, §5).
+/// Default wall-clock timeout for a gate command (Requirement 3.2, §5).
 pub const DEFAULT_GATE_TIMEOUT: Duration = Duration::from_secs(300);
 
 /// An error from repository-root resolution.
@@ -176,12 +178,12 @@ fn format_candidates(candidates: &[PathBuf]) -> String {
         .join(", ")
 }
 
-/// The compiled secret denylist (Requirement 1.7).
+/// The compiled secret denylist for paths and produced content (Requirement 1.7).
 ///
-/// A path that matches any of these patterns is excluded from produced output and its
-/// environment value is dropped before a gate subprocess spawns. The denylist covers
-/// environment files (`.env`), PEM files (`*.pem`), and any path that contains a
-/// `secret` or `credentials` marker.
+/// A path that matches any of these patterns is excluded from produced output. The
+/// denylist covers environment files (`.env`), PEM files (`*.pem`), and any path that
+/// contains a `secret` or `credentials` marker. Gate subprocess environments use the
+/// exact-name policy in [`gate_environment`] instead.
 ///
 /// The patterns are case-insensitive and match against the full path. The set is
 /// compiled once and reused.
@@ -225,13 +227,13 @@ pub fn is_secret_path(path: &Path) -> bool {
         .any(|pattern| pattern.is_match(&text))
 }
 
-/// Sandbox configuration for gate execution (ADR-1, §5).
+/// Configuration for bounded gate execution (ADR-1, §5).
 ///
-/// The gate runner reads this contract to bound a subprocess: a wall-clock timeout with
-/// a hard kill, a working directory pinned under the repository root, and an allowlist that
-/// gates the command's first token.
+/// The gate runner reads this contract to bound a subprocess with a wall-clock timeout,
+/// a hard kill, a working directory pinned under the repository root, a first-token
+/// command allowlist, and an exact-name environment allowlist.
 #[derive(Debug, Clone)]
-pub struct SandboxConfig {
+pub struct GateExecutionConfig {
     /// Wall-clock timeout. The runner hard-kills a command that exceeds it.
     pub timeout: Duration,
     /// Working directory for the spawned command. It must be under the repository root.
@@ -239,22 +241,28 @@ pub struct SandboxConfig {
     /// Permitted command binaries, matched against the command's first token.
     ///
     /// This gates the leading binary only. The command runs through `/bin/sh -c`, so it is
-    /// a guardrail against a mistyped operator command, not a containment boundary against
-    /// a hostile one. The command is trusted operator configuration, never caller input.
-    /// See the trust-model note on `engine::gate_runner`.
-    pub allowlist: Vec<String>,
+    /// a guardrail against a mistyped command, not a containment boundary against hostile
+    /// shell input.
+    pub command_allowlist: Vec<String>,
+    /// Environment variable names that the subprocess may inherit when present.
+    pub environment_allowlist: Vec<String>,
 }
 
-impl SandboxConfig {
-    /// Build a sandbox config rooted at `working_dir` with the default gate timeout.
+impl GateExecutionConfig {
+    /// Build an execution config rooted at `working_dir` with the default gate timeout.
     ///
-    /// The caller supplies the allowlist. An empty allowlist rejects every command.
-    /// The gate runner surfaces this with a remediation hint (§5, task 5).
-    pub fn new(working_dir: PathBuf, allowlist: Vec<String>) -> Self {
+    /// An empty command allowlist rejects every command. An empty environment allowlist
+    /// inherits no variables.
+    pub fn new(
+        working_dir: PathBuf,
+        command_allowlist: Vec<String>,
+        environment_allowlist: Vec<String>,
+    ) -> Self {
         Self {
             timeout: DEFAULT_GATE_TIMEOUT,
             working_dir,
-            allowlist,
+            command_allowlist,
+            environment_allowlist,
         }
     }
 }

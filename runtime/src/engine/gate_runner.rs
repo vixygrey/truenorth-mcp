@@ -1,38 +1,35 @@
-//! Sandboxed subprocess execution for quality gates (ADR-1, design §5).
+//! Bounded subprocess execution for quality gates (ADR-1, design §5).
 //!
-//! `run_gate` runs a project verify or test command under a sandbox and reports whether
-//! the gate passed. The sandbox bounds the subprocess with a wall-clock timeout and a
-//! hard kill, a working directory pinned under the repository root, an allowlist on the
-//! command's first token, and an environment sanitized of secret values.
+//! `run_gate` runs a project verify or test command and reports whether the gate passed.
+//! The executor bounds the subprocess with a wall-clock timeout and hard kill, a working
+//! directory pinned under the repository root, a first-token command allowlist, and an
+//! exact-name inherited environment allowlist.
 //!
 //! The gate passes only on a real exit-0 observation by the server (Property 2). A
 //! non-zero exit, a timeout, or an allowlist miss always yields an error with remediation
-//! hints. Command execution sits behind the [`CommandRunner`] trait, so the sandbox logic
-//! is testable with a fake runner and only the real runner touches processes.
+//! hints. Command execution sits behind the [`CommandRunner`] trait, so policy logic is
+//! testable with a fake runner and only the real runner touches processes.
 //!
 //! # Trust model
 //!
-//! The gate command is trusted operator configuration, not caller input. It comes from the
-//! `TRUENORTH_VERIFY_CMD` environment variable an operator sets per project, and the
-//! allowlist comes from `TRUENORTH_GATE_ALLOWLIST`. No MCP tool argument feeds the command
-//! string: `truenorth_verify_gate` takes only a phase.
+//! `truenorth_verify_gate` reads its command from trusted operator configuration and accepts
+//! only a lifecycle phase from the MCP caller. `truenorth_tdd_cycle` also uses this executor
+//! for its caller-provided red-stage command. Environment isolation applies to both paths.
 //!
-//! The command runs through `/bin/sh -c`, so shell features work (pipes, `&&`, redirects,
-//! variable expansion). The allowlist gates the command's first token only. It is a
-//! guardrail against a mistyped or unexpected operator command, not a containment boundary
-//! against a hostile one: a shell metacharacter (for example `;` or `&&`) runs a second
-//! command that the first-token check does not see. That is acceptable because the command
-//! is operator-controlled. Do not treat the allowlist as a sandbox against untrusted
-//! command strings, and do not wire a caller-supplied string into the command.
+//! Commands run through `/bin/sh -c`, so shell features work and the first-token allowlist
+//! does not inspect later commands. The executor does not restrict filesystem or network
+//! access and is not a containment boundary for hostile commands. Environment values are
+//! inherited only by exact configured name and are redacted from captured standard error.
 //!
 //! Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6. Design: Part II §5.
 
+use std::ffi::OsString;
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
 use wait_timeout::ChildExt;
 
-use crate::config::{SandboxConfig, secret_denylist};
+use crate::config::GateExecutionConfig;
 
 /// The maximum stderr tail returned on a gate failure (Requirement 3.3).
 const MAX_STDERR_TAIL_BYTES: usize = 2 * 1024;
@@ -84,30 +81,34 @@ pub struct CommandResult {
 
 /// A command execution backend.
 ///
-/// The trait lets the sandbox logic run against a fake in tests, so the allowlist,
-/// evidence, stderr-tail, and hint behavior is testable without spawning a process.
+/// The trait lets bounded execution run against a fake in tests, so the command allowlist,
+/// stderr-tail, and outcome behavior are testable without spawning a process.
 pub trait CommandRunner {
-    /// Run `command` with the sandbox config, returning the observed result.
+    /// Run `command` with the bounded execution config, returning the observed result.
     ///
     /// # Errors
     ///
     /// Returns a spawn error when the process cannot start.
-    fn run(&self, command: &str, cfg: &SandboxConfig) -> std::io::Result<CommandResult>;
+    fn run(&self, command: &str, cfg: &GateExecutionConfig) -> std::io::Result<CommandResult>;
 }
 
-/// Run a gate command under the sandbox (design §5).
+/// Run a gate command through the bounded executor (design §5).
 ///
-/// The steps are: reject when the first token is not in the allowlist without executing
-/// (Requirement 3.5), then run the command and map the result. The gate passes only on
-/// exit code 0 within the timeout (Requirement 3.2). A non-zero exit returns the stderr
-/// tail (Requirement 3.3). A timeout returns a timeout error (Requirement 3.4).
+/// The steps are: reject when the first token is not in the command allowlist without
+/// executing (Requirement 3.5), then run the command and map the result. The gate passes
+/// only on exit code 0 within the timeout (Requirement 3.2). A non-zero exit returns the
+/// stderr tail (Requirement 3.3). A timeout returns a timeout error (Requirement 3.4).
 ///
 /// # Example
 ///
 /// ```ignore
 /// let outcome = gate_runner::run_gate("cargo test", &cfg, &runner);
 /// ```
-pub fn run_gate<R: CommandRunner>(command: &str, cfg: &SandboxConfig, runner: &R) -> GateOutcome {
+pub fn run_gate<R: CommandRunner>(
+    command: &str,
+    cfg: &GateExecutionConfig,
+    runner: &R,
+) -> GateOutcome {
     let Some(binary) = first_token(command) else {
         return GateOutcome::failed(
             "the gate command is empty",
@@ -115,11 +116,15 @@ pub fn run_gate<R: CommandRunner>(command: &str, cfg: &SandboxConfig, runner: &R
         );
     };
 
-    if !cfg.allowlist.iter().any(|allowed| allowed == binary) {
+    if !cfg
+        .command_allowlist
+        .iter()
+        .any(|allowed| allowed == binary)
+    {
         // Requirement 3.5: do not execute a command whose binary is not allowlisted.
         return GateOutcome::failed(
             format!("command `{binary}` is not in the allowlist"),
-            &["add the binary to the sandbox allowlist"],
+            &["add the binary to the gate command allowlist"],
         );
     }
 
@@ -140,7 +145,7 @@ fn map_result(result: CommandResult, timeout: Duration) -> GateOutcome {
             format!("the gate timed out after {} seconds", timeout.as_secs()),
             &[
                 "reduce the test scope so the gate finishes within the timeout",
-                "raise the sandbox timeout for this gate",
+                "raise the bounded executor timeout for this gate",
             ],
         );
     }
@@ -179,22 +184,26 @@ fn stderr_tail(stderr: &[u8]) -> String {
 }
 
 /// The real command runner. It spawns the command with `std::process`, pins the working
-/// directory under the repository root, sanitizes the environment, and enforces the
-/// wall-clock timeout with a hard kill (Requirements 3.4, 3.6).
+/// directory under the repository root, inherits only exact allowed environment names,
+/// redacts their values from stderr, and enforces the wall-clock timeout with a hard kill
+/// (Requirements 3.4, 3.6).
 pub struct SystemCommandRunner;
 
 impl CommandRunner for SystemCommandRunner {
-    fn run(&self, command: &str, cfg: &SandboxConfig) -> std::io::Result<CommandResult> {
+    fn run(&self, command: &str, cfg: &GateExecutionConfig) -> std::io::Result<CommandResult> {
+        let environment = selected_environment(&cfg.environment_allowlist);
         let mut builder = Command::new("/bin/sh");
         builder
             .arg("-c")
             .arg(command)
             .current_dir(&cfg.working_dir)
             .env_clear()
-            .envs(sanitized_env())
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::piped());
+        for (name, value) in &environment {
+            builder.env(name, value);
+        }
 
         // On Unix, run the command in its own process group (pgid = child pid). A timeout
         // then signals the whole group, so a backgrounded descendant cannot outlive the
@@ -215,7 +224,10 @@ impl CommandRunner for SystemCommandRunner {
         let status = child.wait_timeout(cfg.timeout)?;
         match status {
             Some(status) => {
-                let stderr = stderr_reader.map(join_stderr).unwrap_or_default();
+                let stderr = stderr_reader
+                    .map(join_stderr)
+                    .map(|stderr| redact_environment_values(stderr, &environment))
+                    .unwrap_or_default();
                 Ok(CommandResult {
                     exit_code: status.code(),
                     stderr,
@@ -290,21 +302,58 @@ fn hard_kill(child: &mut std::process::Child) {
     let _ = child.kill();
 }
 
-/// The current environment with secret-matching values dropped (Requirement 3.6).
-///
-/// A variable whose value or name matches the secret denylist is excluded, so a token or
-/// credential never reaches the gate subprocess.
-fn sanitized_env() -> Vec<(String, String)> {
-    std::env::vars()
-        .filter(|(key, value)| !is_secret_env(key, value))
+/// Select only environment entries named by the validated allowlist.
+fn selected_environment(names: &[String]) -> Vec<(String, OsString)> {
+    names
+        .iter()
+        .filter_map(|name| std::env::var_os(name).map(|value| (name.clone(), value)))
         .collect()
 }
 
-/// Report whether an environment entry matches the secret denylist by name or value.
-fn is_secret_env(key: &str, value: &str) -> bool {
-    secret_denylist()
+/// Remove exact inherited environment values from captured stderr.
+fn redact_environment_values(mut stderr: Vec<u8>, environment: &[(String, OsString)]) -> Vec<u8> {
+    let mut values: Vec<Vec<u8>> = environment
         .iter()
-        .any(|pattern| pattern.is_match(key) || pattern.is_match(value))
+        .map(|(_, value)| environment_value_bytes(value))
+        .filter(|value| !value.is_empty())
+        .collect();
+    values.sort_by_key(|value| std::cmp::Reverse(value.len()));
+    values.dedup();
+
+    for value in values {
+        stderr = replace_bytes(stderr, &value, b"[REDACTED_ENV]");
+    }
+    stderr
+}
+
+#[cfg(unix)]
+fn environment_value_bytes(value: &std::ffi::OsStr) -> Vec<u8> {
+    use std::os::unix::ffi::OsStrExt;
+    value.as_bytes().to_vec()
+}
+
+#[cfg(not(unix))]
+fn environment_value_bytes(value: &std::ffi::OsStr) -> Vec<u8> {
+    value.to_string_lossy().into_owned().into_bytes()
+}
+
+fn replace_bytes(input: Vec<u8>, needle: &[u8], replacement: &[u8]) -> Vec<u8> {
+    if needle.is_empty() || !input.windows(needle.len()).any(|window| window == needle) {
+        return input;
+    }
+
+    let mut output = Vec::with_capacity(input.len());
+    let mut offset = 0;
+    while offset < input.len() {
+        if input[offset..].starts_with(needle) {
+            output.extend_from_slice(replacement);
+            offset += needle.len();
+        } else {
+            output.push(input[offset]);
+            offset += 1;
+        }
+    }
+    output
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

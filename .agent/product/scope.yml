@@ -4,15 +4,15 @@ core_value: "Turn spec-driven engineering discipline into active MCP tools and l
 summary: |
   TrueNorth-MCP is an active, protocol-first MCP execution runtime. The runtime
   crate is Rust. A thin Node.js wrapper distributes the platform binary. The runtime
-  advances lifecycle state, runs quality gates in a sandbox, enforces a shared domain
-  ontology, and drives a Red-Green-Refactor loop. The governed project can be any
-  language.
+  advances lifecycle state, runs quality gates through a bounded executor, enforces a
+  shared domain ontology, and drives a Red-Green-Refactor loop. The governed project can
+  be any language.
 
 in_scope:
   - id: fr-01
     title: Active lifecycle tools (advance phase, record task, TDD cycle) that write cockpit state
   - id: fr-02
-    title: Verify gate that runs the project verify command in a sandbox and passes only on a server-observed exit 0
+    title: Verify gate that runs the project verify command through a bounded executor and passes only on a server-observed exit 0
   - id: fr-03
     title: Live MCP resources (state, cockpit, conventions, ontology, adr) with resources/updated notifications
   - id: fr-04

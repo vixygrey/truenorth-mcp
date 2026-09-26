@@ -13,9 +13,9 @@ truenorth-mcp --check-config
 
 `--check-config` returns a JSON report and exits nonzero when a required check fails. It
 reports an actionable fix for a missing repository root, invalid layout, unreadable feature
-configuration, or missing verify command. It reads configuration only. It does not start
-the MCP server, mutate the workspace, run the verify command, or print configured command
-values.
+configuration, missing verify command, or invalid gate environment name. It reads
+configuration only. It does not start the MCP server, mutate the workspace, run the verify
+command, or print configured command or environment values.
 
 ## The server cannot resolve the repository root
 
@@ -73,10 +73,13 @@ other resources. Fix the YAML in the named file. The watcher revalidates on the 
 
 `truenorth_verify_gate` accepts only a lifecycle phase. It runs the operator-configured
 project command and passes only when the server observes exit code `0`. Set
-`TRUENORTH_VERIFY_CMD` in the MCP client environment, then restart the client. See
+`TRUENORTH_VERIFY_CMD` in the MCP client environment. If the command needs a non-default
+environment variable, add its name to `TRUENORTH_GATE_ENV_ALLOWLIST`. Run
+`truenorth-mcp --check-config`, then restart the client. Credential-like and
+`TRUENORTH_*` names are rejected. See
 [Install and connect](Install-and-connect#configure-the-verify-gate) for the complete
 configuration.
 
-A non-zero exit or timeout returns the command error and remediation hints. Fix the command
-or its failure, then run the gate again. Do not send `mode` or `test_evidence`; both fields
-are rejected.
+A non-zero exit or timeout returns the command error and remediation hints. Exact inherited
+environment values are redacted from returned stderr. Fix the command or its failure, then
+run the gate again. Do not send `mode` or `test_evidence`; both fields are rejected.

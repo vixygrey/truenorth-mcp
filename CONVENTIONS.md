@@ -77,13 +77,15 @@ See the "Relationship to upstream" section in `README.md`.
 - Preserve an unknown field on read and write, for backward compatibility. Map a
   legacy phase name (Build to Execute, Verify to Review, Release or Sustain to
   Integrate).
-- The gate command is trusted operator configuration (`TRUENORTH_VERIFY_CMD`), never a
-  tool argument. It runs through `/bin/sh -c`, and the allowlist gates the leading
-  binary only, as a guardrail, not a sandbox against a hostile command. Never wire a
-  caller-supplied string into the gate command.
-- The secret denylist is load-bearing. Never read, echo, or write a value matching it
-  (`.env`, `*.pem`, `secret`, `credentials`). Sanitize the environment before a gate
-  subprocess runs.
+- The verify gate command is trusted operator configuration (`TRUENORTH_VERIFY_CMD`), never
+  a verify-tool argument. It runs through `/bin/sh -c`, and the command allowlist gates the
+  leading binary only. The bounded gate executor is not a filesystem, network, or hostile
+  command containment boundary.
+- A gate subprocess inherits only exact environment names from the built-in allowlist and
+  `TRUENORTH_GATE_ENV_ALLOWLIST`. Reject credential-like and `TRUENORTH_*` additions. Never
+  persist or return inherited values, and redact exact inherited values from stderr.
+- The secret denylist is load-bearing for paths and produced content. Never read, echo, or
+  write a value matching it (`.env`, `*.pem`, `secret`, `credentials`).
 
 ## Tests
 

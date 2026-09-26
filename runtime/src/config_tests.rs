@@ -190,9 +190,14 @@ fn denylist_does_not_match_environment_word() {
 }
 
 #[test]
-fn sandbox_config_defaults() {
-    let cfg = SandboxConfig::new(PathBuf::from("/repo"), vec!["cargo".to_string()]);
+fn gate_execution_config_defaults() {
+    let cfg = GateExecutionConfig::new(
+        PathBuf::from("/repo"),
+        vec!["cargo".to_string()],
+        vec!["PATH".to_string()],
+    );
     assert_eq!(cfg.timeout, DEFAULT_GATE_TIMEOUT);
     assert_eq!(cfg.working_dir, PathBuf::from("/repo"));
-    assert_eq!(cfg.allowlist, vec!["cargo".to_string()]);
+    assert_eq!(cfg.command_allowlist, vec!["cargo".to_string()]);
+    assert_eq!(cfg.environment_allowlist, vec!["PATH".to_string()]);
 }

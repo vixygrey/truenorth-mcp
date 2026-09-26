@@ -15,11 +15,15 @@ fn command(root: &Path) -> Command {
 }
 
 fn run(root: &Path, args: &[&str], verify_command: Option<&str>) -> Output {
+    let environment = verify_command
+        .map(|value| vec![("TRUENORTH_VERIFY_CMD", value)])
+        .unwrap_or_default();
+    run_with_environment(root, args, &environment)
+}
+
+fn run_with_environment(root: &Path, args: &[&str], environment: &[(&str, &str)]) -> Output {
     let mut command = command(root);
-    command.args(args);
-    if let Some(verify_command) = verify_command {
-        command.env("TRUENORTH_VERIFY_CMD", verify_command);
-    }
+    command.args(args).envs(environment.iter().copied());
     command.output().expect("run truenorth-mcp")
 }
 
@@ -112,10 +116,68 @@ fn complete_configuration_reports_ready_without_mutation() {
     assert_eq!(report["verify_gate"]["status"], "ok");
     assert_eq!(report["verify_gate"]["configured"], true);
     assert_eq!(
+        report["verify_gate"]["environment"]["allowed_names"],
+        serde_json::json!(["PATH", "HOME", "TMPDIR", "TMP", "TEMP"])
+    );
+    assert_eq!(
+        report["verify_gate"]["environment"]["configured_names"],
+        serde_json::json!([])
+    );
+    assert_eq!(
         snapshot(repo.path()),
         before,
         "diagnostics leave the workspace unchanged"
     );
+}
+
+#[test]
+fn safe_gate_environment_names_are_reported_without_values() {
+    let repo = seed_complete_repo();
+    let marker = "diagnostic-value-must-stay-private";
+    let output = run_with_environment(
+        repo.path(),
+        &["--check-config"],
+        &[
+            ("TRUENORTH_VERIFY_CMD", "true"),
+            ("TRUENORTH_GATE_ENV_ALLOWLIST", "JAVA_HOME"),
+            ("JAVA_HOME", marker),
+        ],
+    );
+    let report = parse_report(&output);
+    let text = String::from_utf8(output.stdout).expect("diagnostic output is text");
+
+    assert!(output.status.success());
+    assert_eq!(
+        report["verify_gate"]["environment"]["configured_names"],
+        serde_json::json!(["JAVA_HOME"])
+    );
+    assert!(!text.contains(marker));
+}
+
+#[test]
+fn credential_gate_environment_name_fails_without_echoing_its_value() {
+    let repo = seed_complete_repo();
+    let marker = "credential-value-must-stay-private";
+    let output = run_with_environment(
+        repo.path(),
+        &["--check-config"],
+        &[
+            ("TRUENORTH_VERIFY_CMD", "true"),
+            ("TRUENORTH_GATE_ENV_ALLOWLIST", "GITHUB_TOKEN"),
+            ("GITHUB_TOKEN", marker),
+        ],
+    );
+    let report = parse_report(&output);
+    let text = String::from_utf8(output.stdout).expect("diagnostic output is text");
+
+    assert!(!output.status.success());
+    assert_eq!(report["verify_gate"]["status"], "error");
+    assert_eq!(
+        report["verify_gate"]["environment"]["rejected_names"],
+        serde_json::json!(["GITHUB_TOKEN"])
+    );
+    assert!(text.contains("GITHUB_TOKEN"));
+    assert!(!text.contains(marker));
 }
 
 #[test]
