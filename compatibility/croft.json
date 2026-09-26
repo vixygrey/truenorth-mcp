@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-25",
+  "assessment": "unsupported_for_full_certification",
+  "client": {
+    "name": "Croft",
+    "version": "0.1.700",
+    "command": "croft",
+    "distribution": "croft-software"
+  },
+  "source": {
+    "repository": "https://github.com/vitali87/croft",
+    "revision": "217bda1cac9f71ceef59e9f1165837c27f159711"
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.1",
+    "transport": "stdio"
+  },
+  "environment": {
+    "platform": "darwin",
+    "os_version": "25.6.0",
+    "architecture": "arm64",
+    "node": "v24.18.1"
+  },
+  "fixture": {
+    "profile": "generic",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true,
+    "isolated_home": true,
+    "isolated_xdg_directories": true,
+    "user_global_configuration_unchanged": true,
+    "real_project_workspace_unchanged": true
+  },
+  "client_surface": {
+    "kind": "deterministic_palette_sidecar_host",
+    "model_controlled": false,
+    "local_stdio": true,
+    "workspace_scoped_process": true,
+    "supported_methods": ["initialize", "notifications/initialized", "tools/list", "tools/call"],
+    "resources_supported": false,
+    "command_argument_model": "zero arguments or one prompted string property"
+  },
+  "client_evidence": {
+    "protocol_version": "2025-11-25",
+    "client_info": {
+      "name": "croft",
+      "version": "0.1.700"
+    },
+    "protocol_methods": ["initialize", "notifications/initialized", "tools/call", "tools/list"],
+    "protocol_tool_count": 19,
+    "required_tools_discovered": ["index_skills", "truenorth_record_task"],
+    "resource_methods_exposed": [],
+    "tool_calls": [
+      {
+        "tool": "index_skills",
+        "arguments": {},
+        "status": "completed",
+        "client_surface": "result opened in a Croft scratch tab"
+      },
+      {
+        "tool": "truenorth_record_task",
+        "arguments": {
+          "task_name": "Croft compatibility probe"
+        },
+        "status": "rejected_by_server",
+        "client_surface": "validation result opened in a Croft scratch tab",
+        "result": "failed to deserialize parameters: missing field `verify_command`"
+      }
+    ],
+    "sidecar_processes": {
+      "started": 2,
+      "running_after_client_exit": 0,
+      "graceful_shutdown_observed": false
+    }
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "Croft 0.1.700 was installed as a terminal client and the packed TrueNorth wrapper was staged with install scripts disabled"
+    },
+    "initialize": {
+      "status": "pass",
+      "detail": "Croft initialized the TrueNorth stdio server and negotiated MCP 2025-11-25"
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "Croft requested tools/list and discovered all 19 TrueNorth tools"
+    },
+    "resources_list": {
+      "status": "not_exposed",
+      "detail": "Croft 0.1.700 implements no resources/list or resources/read client path"
+    },
+    "read_operation": {
+      "status": "pass",
+      "detail": "Croft called index_skills with an empty arguments object and rendered the successful result"
+    },
+    "task_mutation": {
+      "status": "not_exposed",
+      "detail": "Croft can construct at most one string argument, but truenorth_record_task requires task_name and verify_command"
+    },
+    "clean_shutdown": {
+      "status": "fail",
+      "detail": "Both sidecars were no longer running, but forced termination prevented an EOF-first graceful shutdown"
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "the disposable release plan was not created and the real repository remained unchanged"
+    }
+  },
+  "limitations": [
+    {
+      "capability": "resources",
+      "impact": "the required resources/list certification operation cannot be performed"
+    },
+    {
+      "capability": "general JSON tool arguments",
+      "impact": "the required truenorth_record_task mutation cannot supply both required fields"
+    }
+  ],
+  "client_defects": [
+    {
+      "summary": "MCP sidecars are forcibly terminated before stdin receives an EOF-first grace period",
+      "issue": "https://github.com/vitali87/croft/issues/685"
+    }
+  ],
+  "certified": false
+}
