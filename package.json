@@ -10,7 +10,7 @@
     "preflight": "bash scripts/preflight.sh"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "2.5.0",
+    "@modelcontextprotocol/inspector": "2.7.0",
     "prettier": "3.9.6"
   }
 }
