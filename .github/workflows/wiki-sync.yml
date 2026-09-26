@@ -23,10 +23,10 @@ concurrency:
 jobs:
   sync:
     name: mirror wiki/ to the wiki repo
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Mirror wiki/ into the wiki repo and push
         env:

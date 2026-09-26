@@ -10,7 +10,10 @@ const { test } = require('node:test');
 const {
   PLATFORM_PACKAGES,
   ROOT_PACKAGE,
+  createBuildEvidence,
   createInitialRecord,
+  createPublicationEvidence,
+  sha256File,
   createRegistryRecord,
   nativeArchiveName,
   validateNotes,
@@ -20,22 +23,68 @@ const VERSION = '1.2.3';
 const NOTES =
   '# v1.2.3\n\n## Highlights\n\n- Added audit records.\n\n## Migration\n\nNo migration required.\n';
 
-function withAssets(callback) {
+function withFixture(callback) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-release-record-'));
+  const assetsDir = path.join(directory, 'assets');
+  const evidenceDir = path.join(directory, 'evidence');
+  const cargoLock = path.join(directory, 'Cargo.lock');
+  const npmLock = path.join(directory, 'package-lock.json');
+  const rustToolchain = path.join(directory, 'rust-toolchain.toml');
+  const nodeVersionFile = path.join(directory, '.node-version');
+  const npmVersionFile = path.join(directory, '.npm-version');
+  fs.mkdirSync(assetsDir);
+  fs.mkdirSync(evidenceDir);
+  fs.writeFileSync(cargoLock, 'cargo lock\n');
+  fs.writeFileSync(npmLock, 'npm lock\n');
+  fs.writeFileSync(rustToolchain, '[toolchain]\nchannel = "1.88.0"\n');
+  fs.writeFileSync(nodeVersionFile, '22.23.3\n');
+  fs.writeFileSync(npmVersionFile, '11.15.0\n');
   try {
     for (const [platform] of PLATFORM_PACKAGES) {
       fs.writeFileSync(
-        path.join(directory, nativeArchiveName(VERSION, platform)),
+        path.join(assetsDir, nativeArchiveName(VERSION, platform)),
         `binary-${platform}`,
       );
+      const build = createBuildEvidence({
+        platform,
+        target: `${platform}-target`,
+        commit: 'abc123',
+        runnerLabel: `${platform}-runner`,
+        runnerOs: platform.startsWith('darwin') ? 'macOS' : 'Linux',
+        runnerArch: platform.endsWith('arm64') ? 'ARM64' : 'X64',
+        rustcVerbose: 'rustc 1.88.0 (fixture)\nbinary: rustc',
+        cargoVersion: 'cargo 1.88.0 (fixture)',
+        cargoLockSha256: sha256File(cargoLock),
+      });
+      fs.writeFileSync(path.join(evidenceDir, `build-${platform}.json`), JSON.stringify(build));
     }
-    callback(directory);
+    for (const name of [ROOT_PACKAGE, ...PLATFORM_PACKAGES.map(([, name]) => name)]) {
+      const publication = createPublicationEvidence({
+        package: name,
+        commit: 'abc123',
+        nodeVersion: 'v22.23.3',
+        npmVersion: '11.15.0',
+      });
+      fs.writeFileSync(
+        path.join(evidenceDir, `publication-${name.replace('/', '__')}.json`),
+        JSON.stringify(publication),
+      );
+    }
+    callback({
+      assetsDir,
+      evidenceDir,
+      cargoLock,
+      npmLock,
+      rustToolchain,
+      nodeVersionFile,
+      npmVersionFile,
+    });
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }
 }
 
-function initialRecord(assetsDir) {
+function initialRecord(fixture) {
   return createInitialRecord({
     version: VERSION,
     tag: `v${VERSION}`,
@@ -43,7 +92,7 @@ function initialRecord(assetsDir) {
     runUrl: 'https://github.com/example/repo/actions/runs/1',
     repository: 'example/repo',
     notes: NOTES,
-    assetsDir,
+    ...fixture,
   });
 }
 
@@ -80,8 +129,8 @@ test('rejects malformed or incomplete release notes', () => {
 });
 
 test('creates sorted native checksums and a non-secret staged record', () => {
-  withAssets((assetsDir) => {
-    const record = initialRecord(assetsDir);
+  withFixture((fixture) => {
+    const record = initialRecord(fixture);
     const lines = record.checksums.trim().split('\n');
 
     assert.deepStrictEqual(
@@ -94,17 +143,47 @@ test('creates sorted native checksums and a non-secret staged record', () => {
       assert.ok(record.checksums.includes(`${digest}  ${nativeArchiveName(VERSION, platform)}`));
     }
     const verification = JSON.parse(record.verification);
+    assert.strictEqual(verification.schema_version, 2);
     assert.strictEqual(verification.npm.status, 'staged_pending_approval');
     assert.strictEqual(verification.npm.packages.length, 5);
+    assert.strictEqual(verification.builders.builds.length, 4);
+    assert.strictEqual(verification.builders.publications.length, 5);
+    assert.deepStrictEqual(verification.dependency_locks, [
+      { path: fixture.cargoLock, sha256: sha256File(fixture.cargoLock) },
+      { path: fixture.npmLock, sha256: sha256File(fixture.npmLock) },
+    ]);
     assert.ok(record.preamble.includes('Registry status: staged_pending_approval.'));
     assert.ok(!record.preamble.includes('NPM_TOKEN'));
   });
 });
 
 test('rejects a missing native archive', () => {
-  withAssets((assetsDir) => {
-    fs.rmSync(path.join(assetsDir, nativeArchiveName(VERSION, 'linux-x64')));
-    assert.throws(() => initialRecord(assetsDir), /linux-x64/);
+  withFixture((fixture) => {
+    fs.rmSync(path.join(fixture.assetsDir, nativeArchiveName(VERSION, 'linux-x64')));
+    assert.throws(() => initialRecord(fixture), /linux-x64/);
+  });
+});
+
+test('rejects incomplete or conflicting builder evidence', () => {
+  withFixture((fixture) => {
+    fs.rmSync(path.join(fixture.evidenceDir, 'build-linux-x64.json'));
+    assert.throws(() => initialRecord(fixture), /missing native-build evidence for linux-x64/);
+  });
+
+  withFixture((fixture) => {
+    const file = path.join(fixture.evidenceDir, 'build-linux-x64.json');
+    const evidence = JSON.parse(fs.readFileSync(file, 'utf8'));
+    evidence.commit = 'different';
+    fs.writeFileSync(file, JSON.stringify(evidence));
+    assert.throws(() => initialRecord(fixture), /evidence commit/);
+  });
+
+  withFixture((fixture) => {
+    const file = path.join(fixture.evidenceDir, 'build-linux-x64.json');
+    const evidence = JSON.parse(fs.readFileSync(file, 'utf8'));
+    evidence.cargo_lock_sha256 = '0'.repeat(64);
+    fs.writeFileSync(file, JSON.stringify(evidence));
+    assert.throws(() => initialRecord(fixture), /Cargo.lock digest mismatch/);
   });
 });
 

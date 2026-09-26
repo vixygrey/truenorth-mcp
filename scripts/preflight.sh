@@ -47,16 +47,16 @@ run_check() {
   echo "preflight: [check] cargo fmt"
   cargo fmt --manifest-path runtime/Cargo.toml -- --check
   echo "preflight: [check] cargo clippy"
-  cargo clippy --manifest-path runtime/Cargo.toml --all-targets -- -D warnings
+  cargo clippy --locked --manifest-path runtime/Cargo.toml --all-targets -- -D warnings
   # `cargo test` builds the normal binary because the crate has an integration-test
   # target. Together with Clippy's `--all-targets`, this covers the standalone
   # default build without repeating its compilation work.
   echo "preflight: [check] cargo test"
-  cargo test --manifest-path runtime/Cargo.toml --verbose
+  cargo test --locked --manifest-path runtime/Cargo.toml --verbose
   echo "preflight: [check] cargo clippy with tree-sitter"
-  cargo clippy --manifest-path runtime/Cargo.toml --features tree-sitter --all-targets -- -D warnings
+  cargo clippy --locked --manifest-path runtime/Cargo.toml --features tree-sitter --all-targets -- -D warnings
   echo "preflight: [check] cargo test with tree-sitter"
-  cargo test --manifest-path runtime/Cargo.toml --features tree-sitter --verbose
+  cargo test --locked --manifest-path runtime/Cargo.toml --features tree-sitter --verbose
 }
 
 run_wrapper() {
@@ -104,7 +104,7 @@ run_artifact_smoke() {
   echo "preflight: [artifact-smoke] Zed evidence tests"
   node --test scripts/certify-zed.test.js
   echo "preflight: [artifact-smoke] release build for $package"
-  cargo build --release --manifest-path runtime/Cargo.toml
+  cargo build --locked --release --manifest-path runtime/Cargo.toml
 
   stage_dir=$(mktemp -d "${TMPDIR:-/tmp}/truenorth-preflight.XXXXXX")
   TEMP_DIRS+=("$stage_dir")
@@ -126,7 +126,7 @@ run_format() {
   require_command node "Install Node.js 18 or newer. Use a release that still receives upstream security fixes for production."
   require_command npm "Install npm with Node.js."
   if [ ! -x node_modules/.bin/prettier ]; then
-    fail "root npm development dependencies are unavailable. Run 'npm install --no-audit --no-fund'."
+    fail "root npm development dependencies are unavailable. Run 'npm ci --ignore-scripts --no-audit --no-fund'."
   fi
 
   echo "preflight: [format] prettier"

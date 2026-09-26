@@ -29,7 +29,7 @@ Install the root development dependencies once, then run the full local
 verification:
 
 ```bash
-npm install --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
 npm run preflight
 ```
 
@@ -95,12 +95,14 @@ node --test scripts/release-record.test.js
 node scripts/check-release-version.js <version>
 ```
 
-The release workflow verifies committed metadata and release notes, builds each native target,
-and smoke tests both the staged executable and a clean installation of the packed wrapper. It
-then stages the npm packages after `release-publication` Environment approval, and publishes a
-GitHub Release with native archives, `SHA256SUMS`, and `RELEASE-VERIFICATION.json`.
+The release workflow verifies committed metadata and release notes, builds each native target
+with pinned toolchains under Cargo `--locked`, and smoke tests both the staged executable and a
+clean installation of the packed wrapper. It stages the npm packages after `release-publication`
+Environment approval, captures builder evidence, and creates a draft GitHub Release with native
+archives, `SHA256SUMS`, and schema version 2 `RELEASE-VERIFICATION.json`.
 
 Staged npm packages become public only after a maintainer's 2FA approval. Run the protected
 `Finalize release record` workflow after that approval. It verifies every package's registry
-integrity metadata and attaches `NPM-VERIFICATION.json` to the GitHub Release. A protected
-`v*` tag must name the current `main` commit.
+integrity metadata, attaches `NPM-VERIFICATION.json` to the draft release, publishes the release
+to make it immutable, and confirms GitHub reports `isImmutable: true`. A protected `v*` tag must
+name the current `main` commit.

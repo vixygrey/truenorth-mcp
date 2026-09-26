@@ -170,7 +170,7 @@ built-in profiles:
 
 ```bash
 cd runtime
-cargo build --release
+cargo build --locked --release
 ```
 
 Run the tests with `cargo test`. Run the wrapper tests with `node --test` in `npm/`.
