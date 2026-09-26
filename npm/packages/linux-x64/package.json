@@ -1,6 +1,6 @@
 {
   "name": "@truenorth-mcp/linux-x64",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "TrueNorth-MCP native binary for Linux on x64.",
   "license": "MIT",
   "repository": {

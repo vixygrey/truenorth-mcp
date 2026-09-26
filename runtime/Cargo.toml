@@ -1,6 +1,6 @@
 [package]
 name = "truenorth-mcp"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 description = "Active, protocol-first MCP execution runtime for spec-driven engineering discipline"
 license = "MIT"

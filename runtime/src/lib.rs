@@ -23,3 +23,6 @@ pub mod tools;
 
 #[cfg(test)]
 mod integration_tests;
+
+#[cfg(test)]
+mod resource_cache_tests;
