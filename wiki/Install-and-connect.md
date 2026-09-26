@@ -66,6 +66,16 @@ command and its arguments.
 }
 ```
 
+### One mutating server per worktree
+
+The first TrueNorth server for a worktree owns its writer lease. Other servers can read
+existing resources, but their mutating tools return `writer_lease_conflict`. Close the
+original server to transfer mutation rights, or give each parallel agent a separate Git
+worktree and set `TRUENORTH_ROOT` to that worktree.
+
+The lease path is `.agent/runtime/writer.lock`. Do not delete it to force ownership. The
+operating-system lock, not the file's presence, controls ownership.
+
 ## Confirm the handshake
 
 On `initialize`, the server reports its identity. A correct handshake returns the server

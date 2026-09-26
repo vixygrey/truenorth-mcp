@@ -185,3 +185,73 @@ fn is_excluded_read_is_true_only_for_telemetry() {
         ".agent/tasks/telemetry-notes.md"
     )));
 }
+
+#[test]
+fn conditional_write_rejects_a_stale_revision_and_preserves_external_bytes() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("tasks/state.yml");
+    let target = repo.path().join(AGENT_DIR).join(rel);
+    fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
+    fs::write(&target, "phase: discover\n").expect("seed state");
+    let observed = ObservedFile::observe(&target).expect("observe state");
+    let precondition = WritePrecondition::new(observed);
+
+    fs::write(&target, "phase: design\nexternal: true\n").expect("external edit");
+    let error = write_under_agent_if_unchanged(repo.path(), rel, "phase: plan\n", &precondition)
+        .expect_err("stale write must fail");
+
+    assert!(matches!(error, WriteGuardError::Conflict(_)));
+    assert_eq!(
+        fs::read_to_string(target).expect("read external edit"),
+        "phase: design\nexternal: true\n"
+    );
+}
+
+#[test]
+fn conditional_write_rejects_a_file_created_after_observation() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("tasks/state.yml");
+    let target = repo.path().join(AGENT_DIR).join(rel);
+    let observed = ObservedFile::observe(&target).expect("observe missing state");
+    let precondition = WritePrecondition::new(observed);
+
+    fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
+    fs::write(&target, "external: true\n").expect("external create");
+    let error =
+        write_under_agent_if_unchanged(repo.path(), rel, "phase: discover\n", &precondition)
+            .expect_err("created target must conflict");
+
+    assert!(matches!(error, WriteGuardError::Conflict(_)));
+    assert_eq!(
+        fs::read_to_string(target).expect("read external create"),
+        "external: true\n"
+    );
+}
+
+#[test]
+fn concurrent_atomic_writes_use_distinct_temporary_files() {
+    let repo = std::sync::Arc::new(TempDir::new().expect("temp repo"));
+    let barrier = std::sync::Arc::new(std::sync::Barrier::new(32));
+    let mut handles = Vec::new();
+
+    for index in 0..32 {
+        let repo = std::sync::Arc::clone(&repo);
+        let barrier = std::sync::Arc::clone(&barrier);
+        handles.push(std::thread::spawn(move || {
+            let payload = format!("writer: {index}\nbody: {}\n", "x".repeat(4096));
+            barrier.wait();
+            write_under_agent(repo.path(), Path::new("tasks/state.yml"), &payload).map(|()| payload)
+        }));
+    }
+
+    let payloads: Vec<String> = handles
+        .into_iter()
+        .map(|handle| handle.join().expect("writer thread").expect("atomic write"))
+        .collect();
+    let final_text = fs::read_to_string(repo.path().join(AGENT_DIR).join("tasks/state.yml"))
+        .expect("read final state");
+    assert!(
+        payloads.contains(&final_text),
+        "target contains one complete payload"
+    );
+}

@@ -125,6 +125,12 @@ required names with `TRUENORTH_GATE_ENV_ALLOWLIST`. The
 [install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
 has per-client steps.
 
+### One mutating server per worktree
+
+One TrueNorth server owns mutation rights for a Git worktree. A second server can read
+existing resources, but mutating tools return `writer_lease_conflict`. Use a separate Git
+worktree for each parallel agent that needs to write TrueNorth state.
+
 ## Diagnose a setup
 
 ```bash

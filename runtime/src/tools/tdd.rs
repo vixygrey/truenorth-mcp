@@ -19,6 +19,7 @@ use crate::engine::cockpit::{self, CockpitError};
 use crate::engine::gate_runner::{CommandRunner, SystemCommandRunner};
 use crate::engine::tdd::{TddStep, next_step};
 use crate::server::TrueNorthServer;
+use crate::tools::mutation_error::{mutation_error, write_error};
 use crate::tools::result;
 
 /// The maximum length of the failing test command (Requirement 2.6).
@@ -59,11 +60,12 @@ impl TrueNorthServer {
         })?;
         check_failing_test_cmd(&args.failing_test_cmd)?;
         check_files_to_modify(&args.files_to_modify)?;
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
 
         // Enforce ordering. An invalid transition leaves the recorded step unchanged,
         // because no write happens (Requirement 2.8).
-        let current = cockpit::read_tdd_step(&self.ctx.repo_root).map_err(cockpit_error)?;
-        let step = next_step(current, requested)
+        let mutation = cockpit::read_tdd_mutation(&self.ctx.repo_root).map_err(cockpit_error)?;
+        let step = next_step(mutation.current(), requested)
             .map_err(|error| ErrorData::invalid_request(error.to_string(), None))?;
         let response = result::success(
             vec![ContentBlock::text(
@@ -78,8 +80,8 @@ impl TrueNorthServer {
         }
 
         // Record the step only after the checks pass.
-        cockpit::write_tdd_step(&self.ctx.repo_root, step).map_err(cockpit_error)?;
-
+        cockpit::commit_tdd_step(&self.ctx.repo_root, mutation, step).map_err(cockpit_error)?;
+        drop(permit);
         Ok(response)
     }
 }
@@ -166,9 +168,8 @@ fn cockpit_error(error: CockpitError) -> ErrorData {
         CockpitError::Transition { .. } | CockpitError::InvalidPhase { .. } => {
             ErrorData::invalid_request(error.to_string(), None)
         }
-        CockpitError::Write(_) | CockpitError::Io { .. } => {
-            ErrorData::internal_error(error.to_string(), None)
-        }
+        CockpitError::Write(error) => write_error(error),
+        CockpitError::Io { .. } => ErrorData::internal_error(error.to_string(), None),
     }
 }
 

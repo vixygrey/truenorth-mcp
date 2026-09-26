@@ -56,6 +56,22 @@ To fix it, add the named entry. The full set of required entries is on
 [The .agent workspace](The-agent-workspace). For a new project, run
 `truenorth_scaffold_project` to seed the complete tree.
 
+## A mutating tool reports `writer_lease_conflict`
+
+Another TrueNorth server owns mutation rights for the same worktree. Existing resource reads
+remain available. Use the client connected to the owner, close the owner and retry, or use a
+separate Git worktree for each parallel agent.
+
+The error identifies `.agent/runtime/writer.lock` and can include the owner process id. Do
+not delete the file. It is a persistent rendezvous path, while the operating-system lock is
+released automatically when the owner exits or crashes. A running contender retries the
+lease on its next mutation.
+
+## A mutating tool reports `stale_write_conflict`
+
+A file changed after the tool read it. The runtime left the external content unchanged.
+Read the current cockpit state, reconcile the edit, and retry the tool.
+
 ## An ontology tool or resource is missing
 
 When the ontology feature is disabled, the two ontology tools and the `truenorth://ontology`

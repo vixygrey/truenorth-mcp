@@ -21,10 +21,12 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
+use crate::engine::agent_ws::{ObservedFile, WritePrecondition, write_under_agent_if_unchanged};
 use crate::engine::git::changed_files_in_scope;
 use crate::engine::ontology_scan::{Violation, pick_analyzer};
 use crate::engine::spec::{Constraint, Entity, Ontology};
 use crate::server::TrueNorthServer;
+use crate::tools::mutation_error::{mutation_error, write_error};
 
 /// The maximum length of the domain name (Requirement 4.1).
 const MAX_DOMAIN: usize = 200;
@@ -72,14 +74,23 @@ impl TrueNorthServer {
                 None,
             ));
         }
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
 
         // Overwrite only the empty stub. A real ontology is left for the human to edit
         // (Requirement 4.5, 4.6, 4.7). The resource may seed the stub first, so the stub
         // must remain overwritable.
         let primary = ontology_path(&self.ctx.repo_root);
-        if primary.is_file() {
-            let existing = read_and_parse(&primary)?;
-            if !existing.is_empty_stub() {
+        let (existing, observed) = ObservedFile::read_string(&primary).map_err(|error| {
+            ErrorData::internal_error(format!("could not read .agent/ontology.yml: {error}"), None)
+        })?;
+        if let Some(text) = existing.as_deref() {
+            let ontology: Ontology = serde_yaml::from_str(text).map_err(|error| {
+                ErrorData::invalid_request(
+                    format!(".agent/ontology.yml failed to parse: {error}"),
+                    None,
+                )
+            })?;
+            if !ontology.is_empty_stub() {
                 return Err(ErrorData::invalid_request(
                     ".agent/ontology.yml already exists. Edit it directly rather than \
                      regenerating."
@@ -88,6 +99,7 @@ impl TrueNorthServer {
                 ));
             }
         }
+        let precondition = WritePrecondition::new(observed);
 
         let ontology = seed_ontology(&args.domain, &args.source_paths);
         let yaml = serde_yaml::to_string(&ontology).map_err(|e| {
@@ -109,14 +121,9 @@ impl TrueNorthServer {
         // Write through the single guard, so the target stays under `.agent/`
         // (Requirement 4.2, 4.4).
         let rel = std::path::Path::new("ontology.yml");
-        crate::engine::agent_ws::write_under_agent(&self.ctx.repo_root, rel, &yaml).map_err(
-            |e| {
-                ErrorData::internal_error(
-                    format!("could not write .agent/ontology.yml: {e}. No file was created."),
-                    None,
-                )
-            },
-        )?;
+        write_under_agent_if_unchanged(&self.ctx.repo_root, rel, &yaml, &precondition)
+            .map_err(write_error)?;
+        drop(permit);
 
         Ok(response)
     }

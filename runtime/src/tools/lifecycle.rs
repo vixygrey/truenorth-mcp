@@ -28,6 +28,7 @@ use crate::engine::spec::Phase;
 use crate::engine::validate::{ValidationError, map_legacy_phase};
 use crate::engine::watcher::ResourceUri;
 use crate::server::TrueNorthServer;
+use crate::tools::mutation_error::{mutation_error, write_error};
 
 /// The maximum length of an artifacts summary (Requirement 2.2).
 const MAX_ARTIFACTS_SUMMARY: usize = 4000;
@@ -106,6 +107,7 @@ impl TrueNorthServer {
             )],
             self.ctx.token_caps,
         )?;
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
 
         // Capture the git-scoped context. A non-git repo yields an empty context rather
         // than failing the advance.
@@ -119,9 +121,9 @@ impl TrueNorthServer {
             &git_context,
         )
         .map_err(cockpit_error)?;
+        drop(permit);
 
         notify_updated(&peer, ResourceUri::State).await;
-
         Ok(response)
     }
 
@@ -145,6 +147,7 @@ impl TrueNorthServer {
             MAX_VERIFY_COMMAND,
             "verify_command",
         )?;
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
         let grouping = resolve_grouping(&self.ctx.repo_root, &args)?;
         let response = result::success(
             vec![ContentBlock::text(
@@ -166,6 +169,7 @@ impl TrueNorthServer {
             &args.verify_command,
         )
         .map_err(cockpit_error)?;
+        drop(permit);
 
         notify_updated(&peer, ResourceUri::Cockpit).await;
 
@@ -309,9 +313,8 @@ fn cockpit_error(error: CockpitError) -> ErrorData {
         CockpitError::Transition { .. } | CockpitError::InvalidPhase { .. } => {
             ErrorData::invalid_request(error.to_string(), None)
         }
-        CockpitError::Write(_) | CockpitError::Io { .. } => {
-            ErrorData::internal_error(error.to_string(), None)
-        }
+        CockpitError::Write(error) => write_error(error),
+        CockpitError::Io { .. } => ErrorData::internal_error(error.to_string(), None),
     }
 }
 

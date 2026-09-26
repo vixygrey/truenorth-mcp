@@ -160,6 +160,11 @@ impl ResourceDoc {
         }
     }
 
+    /// Whether reading this resource would create the ontology backing file.
+    pub(crate) fn needs_seed(self, repo_root: &std::path::Path) -> bool {
+        self == ResourceDoc::Ontology && self.read_path(repo_root).is_none()
+    }
+
     /// Read and validate the backing file's current content (Requirement 5.5).
     ///
     /// The read prefers the `.agent/` path and falls back to a legacy `specs/` file when
@@ -259,13 +264,23 @@ fn ontology_seed() -> Result<String, ResourceReadError> {
 /// (Requirement 2.5).
 fn create_ontology_on_read(repo_root: &std::path::Path) -> Result<PathBuf, ResourceReadError> {
     let rel = std::path::Path::new("ontology.yml");
+    let path = repo_root.join(".agent").join(rel);
+    let (existing, observed) =
+        crate::engine::agent_ws::ObservedFile::read_string(&path).map_err(|error| {
+            ResourceReadError::Invalid(format!("could not inspect .agent/ontology.yml: {error}"))
+        })?;
+    if existing.is_some() {
+        return Ok(path);
+    }
     let seed = ontology_seed()?;
-    crate::engine::agent_ws::write_under_agent(repo_root, rel, &seed).map_err(|e| {
+    let precondition = crate::engine::agent_ws::WritePrecondition::new(observed);
+    crate::engine::agent_ws::write_under_agent_if_unchanged(repo_root, rel, &seed, &precondition)
+        .map_err(|e| {
         ResourceReadError::Invalid(format!(
             "could not create .agent/ontology.yml: {e}. No file was created."
         ))
     })?;
-    Ok(repo_root.join(".agent").join("ontology.yml"))
+    Ok(path)
 }
 
 /// Reject a resolved read path that is excluded or secret (Requirements 1.7, 1.10).

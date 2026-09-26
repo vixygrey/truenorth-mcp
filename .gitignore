@@ -45,5 +45,9 @@ node_modules/
 # The rest of `.agent/` is tracked; only this cache file is ignored.
 .agent/tasks/skill-graph.jsonl
 
+# The writer lease is process-local coordination. The file can survive a crash, but the
+# operating-system lock is released when the process exits.
+.agent/runtime/
+
 # Kiro workspace files (specs, steering, agents, hooks). No longer tracked.
 .kiro/

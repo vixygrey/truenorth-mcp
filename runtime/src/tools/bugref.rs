@@ -22,9 +22,10 @@ use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::{Deserialize, Serialize};
 use serde_yaml::Value;
 
-use crate::engine::agent_ws::write_under_agent;
+use crate::engine::agent_ws::{ObservedFile, WritePrecondition, write_under_agent_if_unchanged};
 use crate::engine::cockpit::release_plan_path;
 use crate::server::TrueNorthServer;
+use crate::tools::mutation_error::{mutation_error, write_error};
 
 /// The maximum length of a bug id (Requirement 8.6).
 const MAX_BUG_ID: usize = 200;
@@ -107,6 +108,7 @@ impl TrueNorthServer {
                 None,
             ));
         }
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
         if !self.linked_ref_resolves(&args.linked_ref) {
             return Err(ErrorData::invalid_params(
                 format!(
@@ -131,14 +133,19 @@ impl TrueNorthServer {
 
         // Append the record to bugs.yml through the single write guard, preserving any
         // existing bug references (Requirement 8.1).
-        let mut doc = self.read_bugs();
+        let (mut doc, precondition) = self.read_bugs_for_write()?;
         append_bug(&mut doc, &args);
         let yaml = serde_yaml::to_string(&doc).map_err(|e| {
             ErrorData::internal_error(format!("could not serialize the bug references: {e}"), None)
         })?;
-        write_under_agent(&self.ctx.repo_root, Path::new(BUGS_REL_PATH), &yaml).map_err(|e| {
-            ErrorData::internal_error(format!("could not write .agent/tasks/bugs.yml: {e}"), None)
-        })?;
+        write_under_agent_if_unchanged(
+            &self.ctx.repo_root,
+            Path::new(BUGS_REL_PATH),
+            &yaml,
+            &precondition,
+        )
+        .map_err(write_error)?;
+        drop(permit);
 
         Ok(response)
     }
@@ -160,6 +167,37 @@ impl TrueNorthServer {
         } else {
             empty_bugs_doc()
         }
+    }
+
+    fn read_bugs_for_write(&self) -> Result<(Value, WritePrecondition), ErrorData> {
+        let path = self.ctx.repo_root.join(".agent").join(BUGS_REL_PATH);
+        let (text, observed) = ObservedFile::read_string(path).map_err(|error| {
+            ErrorData::internal_error(
+                format!("could not read .agent/tasks/bugs.yml: {error}"),
+                None,
+            )
+        })?;
+        let parsed = text
+            .as_deref()
+            .map(serde_yaml::from_str)
+            .transpose()
+            .map_err(|error| {
+                ErrorData::invalid_request(
+                    format!(
+                        ".agent/tasks/bugs.yml failed to parse: {error}. Fix the YAML and retry."
+                    ),
+                    None,
+                )
+            })?
+            .unwrap_or_else(empty_bugs_doc);
+        if !parsed.is_mapping() {
+            return Err(ErrorData::invalid_request(
+                ".agent/tasks/bugs.yml must contain a YAML mapping. Fix the file and retry."
+                    .to_string(),
+                None,
+            ));
+        }
+        Ok((parsed, WritePrecondition::new(observed)))
     }
 
     /// Report whether `linked_ref` resolves to an existing task or group id.
