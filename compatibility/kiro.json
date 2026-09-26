@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-26",
+  "client": {
+    "name": "Kiro",
+    "version": "1.1.70",
+    "commit": "8ce1870416c7dc7e51fffb01765d93ef7ad55102",
+    "architecture": "arm64",
+    "embedded_vscode": "1.131.0",
+    "extension": {
+      "id": "kiro.kiro-agent",
+      "version": "1.1.158"
+    }
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.2",
+    "platform_package": "@truenorth-mcp/darwin-arm64@1.0.2",
+    "transport": "stdio"
+  },
+  "model": {
+    "provider": "Kiro",
+    "id": "Default (client-selected)",
+    "authentication": "existing host Builder ID authentication"
+  },
+  "environment": {
+    "platform": "darwin",
+    "os_version": "26.6.2",
+    "os_build": "25G83",
+    "architecture": "arm64",
+    "node": "v24.18.1"
+  },
+  "fixture": {
+    "profile": "generic",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true,
+    "isolated_user_data": true,
+    "isolated_extensions": true,
+    "isolated_home": false,
+    "workspace_local_configuration": true,
+    "user_global_configuration_unchanged": true,
+    "real_project_workspace_unchanged": true,
+    "host_authentication_provider_reused": true,
+    "server_name": "truenorth407",
+    "server_name_note": "A unique workspace-local name prevented an existing user-global server with the name truenorth from shadowing the certification server. The prompt and captured protocol traffic used only truenorth407."
+  },
+  "configuration": {
+    "path": ".kiro/settings/mcp.json",
+    "template": {
+      "mcpServers": {
+        "truenorth-certification": {
+          "command": "node",
+          "args": ["<released-install>/node_modules/truenorth-mcp/bin/truenorth.js"],
+          "env": {
+            "TRUENORTH_ROOT": "<disposable-workspace>",
+            "TRUENORTH_VERIFY_CMD": "true"
+          },
+          "disabled": false,
+          "autoApprove": ["*"]
+        }
+      }
+    }
+  },
+  "procedure": [
+    "Install truenorth-mcp@1.0.2 and @truenorth-mcp/darwin-arm64@1.0.2 in a disposable package root with install scripts disabled.",
+    "Run the released wrapper init command with the generic profile in a disposable workspace.",
+    "Write the workspace-local .kiro/settings/mcp.json configuration shown above. Use a unique server name if the user already has a global server with the same name.",
+    "Launch Kiro with isolated --user-data-dir and --extensions-dir paths and open only the disposable workspace.",
+    "Trust the disposable workspace, open the Kiro panel, and confirm that the workspace-local server reports Connected (19 tools).",
+    "In Agent Focus, select Add context, MCP, and the workspace-local state resource. Ask Kiro to call get_skill and truenorth_record_task on the workspace-local server.",
+    "Quit Kiro with Command-Q. Check the fixture release plan, Kiro extension-host logs, and server stderr for the mutation and clean shutdown evidence."
+  ],
+  "client_evidence": {
+    "source": "sanitized stdio protocol proxy, Kiro MCP and extension-host logs, Kiro UI, disposable release plan, and server stderr",
+    "protocol_version": "2026-07-28",
+    "protocol_client_info": {
+      "name": "kiro",
+      "version": "0.0.0"
+    },
+    "protocol_sequence": [
+      {
+        "request_id": "server-discover-probe-1",
+        "method": "server/discover",
+        "status": "complete",
+        "ttl_ms": 0,
+        "cache_scope": "private"
+      },
+      {
+        "request_id": 0,
+        "method": "tools/list",
+        "status": "complete",
+        "ttl_ms": 0,
+        "cache_scope": "public"
+      },
+      {
+        "request_id": 1,
+        "method": "resources/list",
+        "status": "complete",
+        "ttl_ms": 0,
+        "cache_scope": "private"
+      },
+      {
+        "request_id": 2,
+        "method": "resources/templates/list",
+        "status": "complete",
+        "ttl_ms": 0,
+        "cache_scope": "private"
+      },
+      {
+        "request_id": 3,
+        "method": "resources/read",
+        "resource": "truenorth://state",
+        "status": "complete",
+        "ttl_ms": 0,
+        "cache_scope": "private"
+      },
+      {
+        "request_id": 4,
+        "method": "tools/call",
+        "tool": "get_skill",
+        "status": "complete"
+      },
+      {
+        "request_id": 5,
+        "method": "tools/call",
+        "tool": "truenorth_record_task",
+        "status": "complete"
+      }
+    ],
+    "protocol_tool_count": 19,
+    "protocol_resources": [
+      "truenorth://state",
+      "truenorth://cockpit",
+      "truenorth://conventions",
+      "truenorth://ontology",
+      "truenorth://adr"
+    ],
+    "protocol_tool_calls": [
+      {
+        "tool": "get_skill",
+        "arguments": {
+          "name": "spike-prototype",
+          "tier": "lean"
+        },
+        "status": "complete"
+      },
+      {
+        "tool": "truenorth_record_task",
+        "arguments": {
+          "task_name": "Certify Kiro MCP integration #407",
+          "verify_command": "true"
+        },
+        "count": 1,
+        "status": "complete"
+      }
+    ],
+    "fixture_release_plan": {
+      "task_count": 1,
+      "task_name": "Certify Kiro MCP integration #407",
+      "verify_command": "true"
+    },
+    "shutdown": {
+      "kiro_extension_hosts_exit_code": 0,
+      "server_input_stream_terminated": true,
+      "server_quit_reason": "Closed",
+      "server_process_present_after_exit": false
+    }
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "Released truenorth-mcp 1.0.2 and its darwin-arm64 platform package ran from a disposable install root."
+    },
+    "lifecycle_negotiation": {
+      "status": "pass",
+      "detail": "Kiro used modern server/discover with MCP 2026-07-28. The complete response included ttlMs 0 and private cache scope."
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "Kiro requested tools/list and displayed the workspace-local server as Connected (19 tools)."
+    },
+    "resources_list": {
+      "status": "pass",
+      "detail": "Kiro requested resources/list and displayed all five resources in its MCP context picker. The complete response included ttlMs 0 and private cache scope."
+    },
+    "resource_read": {
+      "status": "pass",
+      "detail": "Kiro requested truenorth://state through its MCP context picker and received a complete private response with ttlMs 0."
+    },
+    "read_tool_operation": {
+      "status": "pass",
+      "detail": "Kiro called get_skill for spike-prototype at the lean tier and rendered the returned skill."
+    },
+    "task_mutation": {
+      "status": "pass",
+      "detail": "Kiro called truenorth_record_task exactly once. Only the disposable release plan received the requested task."
+    },
+    "clean_shutdown": {
+      "status": "pass",
+      "detail": "Command-Q closed Kiro. Its extension hosts exited with code 0, the server logged a closed input stream, and the traced server process no longer existed."
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "The run used a disposable workspace and workspace-local MCP configuration. User-global Kiro configuration and the real project workspace were not mutated."
+    }
+  },
+  "certified": true
+}

@@ -164,18 +164,18 @@ release material and pull request.
 ## MCP client certifications
 
 Certification covers only the exact client and extension versions recorded
-below. Each pass requires initialization, tool and resource discovery, one read,
-one `truenorth_record_task` mutation confined to a disposable workspace, and
-clean shutdown against the packaged TrueNorth-MCP 1.0.1 stdio artifact.
+below. Each pass requires lifecycle negotiation, tool and resource discovery, one
+read, one `truenorth_record_task` mutation confined to a disposable workspace, and
+clean shutdown against the packaged TrueNorth-MCP version in its evidence file.
 
-| Client                           | Pinned version      | Date       | Result                       | Evidence                                                           |
-| -------------------------------- | ------------------- | ---------- | ---------------------------- | ------------------------------------------------------------------ |
-| MCP Inspector CLI                | 2.5.0               | 2026-09-25 | Certified                    | [`mcp-inspector.json`](../compatibility/mcp-inspector.json)        |
-| Oh My Pi                         | 18.2.11             | 2026-09-25 | Certified                    | [`oh-my-pi.json`](../compatibility/oh-my-pi.json)                  |
-| OpenCode                         | 2.0.16              | 2026-09-25 | Certified                    | [`opencode.json`](../compatibility/opencode.json)                  |
-| VS Code with GitHub Copilot Chat | 1.139.1 with 0.67.0 | 2026-09-25 | Certified                    | [`vscode-copilot.json`](../compatibility/vscode-copilot.json)      |
-| Kiro                             | Not pinned          | Not tested | Pending manual certification | [Issue #407](https://github.com/vixygrey/truenorth-mcp/issues/407) |
-| Croft IDE                        | 0.1.700             | 2026-09-25 | Unsupported                  | [`croft.json`](../compatibility/croft.json)                        |
+| Client                           | Pinned version      | Date       | Result      | Evidence                                                      |
+| -------------------------------- | ------------------- | ---------- | ----------- | ------------------------------------------------------------- |
+| MCP Inspector CLI                | 2.5.0               | 2026-09-25 | Certified   | [`mcp-inspector.json`](../compatibility/mcp-inspector.json)   |
+| Oh My Pi                         | 18.2.11             | 2026-09-25 | Certified   | [`oh-my-pi.json`](../compatibility/oh-my-pi.json)             |
+| OpenCode                         | 2.0.16              | 2026-09-25 | Certified   | [`opencode.json`](../compatibility/opencode.json)             |
+| VS Code with GitHub Copilot Chat | 1.139.1 with 0.67.0 | 2026-09-25 | Certified   | [`vscode-copilot.json`](../compatibility/vscode-copilot.json) |
+| Kiro                             | 1.1.70              | 2026-09-26 | Certified   | [`kiro.json`](../compatibility/kiro.json)                     |
+| Croft IDE                        | 0.1.700             | 2026-09-25 | Unsupported | [`croft.json`](../compatibility/croft.json)                   |
 
 The machine-readable [client matrix](../compatibility/mcp-clients.json) is the
 authoritative status index. The repository [README](../README.md#reproduce-the-vs-code-certification)
