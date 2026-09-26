@@ -40,7 +40,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `grill-me`               | Stress-test a plan through relentless questioning               | [Design](Skills-Design)     |
 | `grill-with-docs`        | The doc-grounded variant of grill-me                            | [Design](Skills-Design)     |
 | `guard-git`              | Block a dangerous git command, enforce opt-in policy            | [Build](Skills-Build)       |
-| `harden-vps`             | Harden a production Linux VPS across three layers               | [Utility](Skills-Utility)   |
 | `hook-commits`           | Set up a pre-commit hook with lint-staged                       | [Build](Skills-Build)       |
 | `inspect-quality`        | An interactive QA session that logs bugs to the registry        | [Verify](Skills-Verify)     |
 | `investigate-bug`        | Investigate a bug, find the root cause, write a fix plan        | [Verify](Skills-Verify)     |

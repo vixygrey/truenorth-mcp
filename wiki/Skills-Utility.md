@@ -151,16 +151,3 @@ Extract a `DESIGN.md` from an HTML prototype using a headless browser.
 - **Hard gates**: the extraction must use a headless-browser dual pass; static-HTML tokens
   are invalid. Flag a low-confidence assertion. Do not ship without running the linter.
 - **Handoff**: `grill-me` with the uncertain-decisions context.
-
-### harden-vps
-
-Harden a production Linux VPS across three independently verifiable layers.
-
-- **What it does**: applies the OS layer first (UFW firewall, fail2ban, unattended-upgrades,
-  SSH hardening), then the application layer (systemd hardening, monitoring alerts, backup
-  automation), then the provider layer (health checks, backups, snapshots), with an
-  eight-gate verification.
-- **When to use it**: to secure a production server, harden a VPS, or audit server
-  security.
-- **Hard gate**: run `ufw status` first; no firewall means layer 1 takes priority over
-  everything.
