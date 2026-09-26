@@ -20,10 +20,13 @@ use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
-use crate::engine::agent_ws::{write_repo_seed, write_under_agent};
+use crate::engine::agent_ws::{
+    ObservedFile, WritePrecondition, write_repo_seed, write_under_agent_if_unchanged,
+};
 use crate::engine::profile::{self, Profile};
 use crate::server::TrueNorthServer;
 use crate::tools::hooks::{commit_msg_hook, post_merge_hook};
+use crate::tools::mutation_error::{mutation_error, write_error};
 
 mod bootstrap;
 mod templates;
@@ -76,7 +79,9 @@ impl TrueNorthServer {
         // change and returns an error naming the value and the known names (R5.1, R5.2).
         let profile = resolve_scaffold_profile(args.profile.as_deref())?;
 
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
         let emissions = scaffold_project(&self.ctx.repo_root, profile)?;
+        drop(permit);
 
         result::success(
             vec![ContentBlock::text(
@@ -270,12 +275,16 @@ fn seed_under_agent(
 ) -> Result<(), ErrorData> {
     let target = repo_root.join(".agent").join(rel);
     let display = format!(".agent/{rel}");
-    if target.exists() {
+    let (existing, observed) = ObservedFile::read_string(&target).map_err(|error| {
+        ErrorData::internal_error(format!("could not inspect `{display}`: {error}"), None)
+    })?;
+    if existing.is_some() {
         out.push(Emission::Skipped(display));
         return Ok(());
     }
-    write_under_agent(repo_root, Path::new(rel), body)
-        .map_err(|e| ErrorData::internal_error(format!("could not seed `{display}`: {e}"), None))?;
+    let precondition = WritePrecondition::new(observed);
+    write_under_agent_if_unchanged(repo_root, Path::new(rel), body, &precondition)
+        .map_err(write_error)?;
     out.push(Emission::Wrote(display));
     Ok(())
 }

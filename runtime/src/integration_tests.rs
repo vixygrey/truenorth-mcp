@@ -306,6 +306,29 @@ async fn call_tool(
     Ok(())
 }
 
+async fn concurrent_tool_calls(
+    client: std::sync::Arc<Client>,
+    name: &'static str,
+    arguments: Vec<serde_json::Value>,
+) -> Vec<bool> {
+    let mut calls = tokio::task::JoinSet::new();
+    for arguments in arguments {
+        let client = std::sync::Arc::clone(&client);
+        calls.spawn(async move {
+            let arguments = arguments.as_object().cloned().expect("tool arguments");
+            client
+                .call_tool(CallToolRequestParams::new(name).with_arguments(arguments))
+                .await
+                .is_ok()
+        });
+    }
+    let mut outcomes = Vec::new();
+    while let Some(outcome) = calls.join_next().await {
+        outcomes.push(outcome.expect("concurrent tool task"));
+    }
+    outcomes
+}
+
 /// A connected in-process client and its server task, for a repo at `root`.
 type Client = rmcp::service::RunningService<rmcp::RoleClient, ()>;
 
@@ -532,3 +555,193 @@ async fn enabled_ontology_is_listed_and_seeds_on_read() -> anyhow::Result<()> {
 
 #[path = "profile_workflow_tests.rs"]
 mod profile_workflow_tests;
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn concurrent_task_mutations_retain_every_accepted_update() -> anyhow::Result<()> {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+    let (client, handle) = connect(root.clone()).await?;
+    let client = std::sync::Arc::new(client);
+    let mut calls = tokio::task::JoinSet::new();
+
+    for index in 0..64 {
+        let client = std::sync::Arc::clone(&client);
+        calls.spawn(async move {
+            let arguments = serde_json::json!({
+                "task_name": format!("Concurrent task {index}"),
+                "verify_command": "true"
+            })
+            .as_object()
+            .cloned()
+            .expect("task arguments");
+            client
+                .call_tool(
+                    CallToolRequestParams::new("truenorth_record_task").with_arguments(arguments),
+                )
+                .await
+        });
+    }
+
+    while let Some(outcome) = calls.join_next().await {
+        let result = outcome??;
+        assert!(
+            !result.is_error.unwrap_or(false),
+            "concurrent task call failed: {result:?}"
+        );
+    }
+
+    let text = fs::read_to_string(root.join(".agent/tasks/release-plan.yml"))?;
+    let plan: serde_yaml::Value = serde_yaml::from_str(&text)?;
+    let tasks = plan
+        .get("tasks")
+        .and_then(serde_yaml::Value::as_sequence)
+        .expect("recorded tasks");
+    for index in 0..64 {
+        let name = format!("Concurrent task {index}");
+        assert_eq!(
+            tasks
+                .iter()
+                .filter(
+                    |task| task.get("task_name").and_then(serde_yaml::Value::as_str)
+                        == Some(name.as_str())
+                )
+                .count(),
+            1,
+            "{name} must be retained exactly once"
+        );
+    }
+
+    let client = match std::sync::Arc::try_unwrap(client) {
+        Ok(client) => client,
+        Err(_) => panic!("all concurrent client handles must be dropped"),
+    };
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn concurrent_mutation_matrix_remains_serializable() -> anyhow::Result<()> {
+    let dir = tempdir().expect("temp dir");
+    let root = dir.path().to_path_buf();
+    seed_repo(&root);
+    let (client, handle) = connect(root.clone()).await?;
+    let client = std::sync::Arc::new(client);
+
+    call_tool(
+        &client,
+        "truenorth_record_task",
+        serde_json::json!({
+            "task_name": "Bug anchor",
+            "verify_command": "true"
+        }),
+    )
+    .await?;
+
+    let bug_calls = (0..32)
+        .map(|index| {
+            serde_json::json!({
+                "id": format!("concurrent-{index}"),
+                "external_link": format!("https://example.test/bugs/{index}"),
+                "status": "open",
+                "linked_ref": "Bug anchor",
+                "tags": []
+            })
+        })
+        .collect();
+    assert!(
+        concurrent_tool_calls(
+            std::sync::Arc::clone(&client),
+            "truenorth_record_bug",
+            bug_calls,
+        )
+        .await
+        .into_iter()
+        .all(|success| success)
+    );
+    let bugs: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?)?;
+    assert_eq!(
+        bugs.get("bugs")
+            .and_then(serde_yaml::Value::as_sequence)
+            .map(Vec::len),
+        Some(32)
+    );
+
+    let phase_args = serde_json::json!({
+        "from_phase": "discover",
+        "to_phase": "design",
+        "artifacts_summary": "concurrent transition"
+    });
+    let phase_outcomes = concurrent_tool_calls(
+        std::sync::Arc::clone(&client),
+        "truenorth_advance_phase",
+        vec![phase_args; 16],
+    )
+    .await;
+    assert_eq!(
+        phase_outcomes
+            .into_iter()
+            .filter(|success| *success)
+            .count(),
+        1
+    );
+
+    let tdd_args = serde_json::json!({
+        "step": "red",
+        "failing_test_cmd": "false",
+        "files_to_modify": ["src/lib.rs"]
+    });
+    let tdd_outcomes = concurrent_tool_calls(
+        std::sync::Arc::clone(&client),
+        "truenorth_tdd_cycle",
+        vec![tdd_args; 16],
+    )
+    .await;
+    assert_eq!(
+        tdd_outcomes.into_iter().filter(|success| *success).count(),
+        1
+    );
+
+    let ontology_args = serde_json::json!({
+        "domain": "concurrency",
+        "source_paths": ["src"]
+    });
+    let ontology_outcomes = concurrent_tool_calls(
+        std::sync::Arc::clone(&client),
+        "truenorth_generate_ontology",
+        vec![ontology_args; 16],
+    )
+    .await;
+    assert_eq!(
+        ontology_outcomes
+            .into_iter()
+            .filter(|success| *success)
+            .count(),
+        1
+    );
+    let _: crate::engine::spec::Ontology =
+        serde_yaml::from_str(&fs::read_to_string(root.join(".agent/ontology.yml"))?)?;
+
+    let graph_outcomes = concurrent_tool_calls(
+        std::sync::Arc::clone(&client),
+        "build_skill_graph",
+        vec![serde_json::json!({}); 16],
+    )
+    .await;
+    assert!(graph_outcomes.into_iter().all(|success| success));
+    let graph = fs::read_to_string(root.join(".agent/tasks/skill-graph.jsonl"))?;
+    assert!(!graph.is_empty());
+    for line in graph.lines() {
+        let _: serde_json::Value = serde_json::from_str(line)?;
+    }
+
+    let client = match std::sync::Arc::try_unwrap(client) {
+        Ok(client) => client,
+        Err(_) => panic!("all concurrent client handles must be dropped"),
+    };
+    client.cancel().await?;
+    handle.abort();
+    Ok(())
+}

@@ -18,6 +18,7 @@
 //! Requirements: 1.1, 1.2, 1.3, 1.9, 1.10, 1.11, 1.12, 5.5, 5.6, 5.8, 5.9.
 //! Design: agent-workspace-profiles §1, ADR-6.
 
+use std::io::Write;
 use std::path::{Component, Path, PathBuf};
 
 use thiserror::Error;
@@ -29,6 +30,10 @@ pub const AGENT_DIR: &str = ".agent";
 pub const TELEMETRY_AREA: &str = "telemetry";
 
 mod layout;
+mod revision;
+
+use revision::RevisionCheckError;
+pub use revision::{ObservedFile, RevisionConflict, WritePrecondition};
 
 pub use layout::{LayoutCache, LayoutError, read_layout};
 
@@ -53,6 +58,10 @@ pub enum WriteGuardError {
         /// The underlying I/O error.
         source: std::io::Error,
     },
+
+    /// A source or destination changed after the mutation read it.
+    #[error(transparent)]
+    Conflict(#[from] RevisionConflict),
 }
 
 /// Write `contents` to `rel_path` under `.agent/`, rejecting any escaping path.
@@ -87,10 +96,37 @@ pub fn write_under_agent(
         });
     }
 
-    write_atomic(&target, contents).map_err(|source| WriteGuardError::Io {
-        target: target.display().to_string(),
-        source,
-    })
+    write_atomic(&target, contents, None).map_err(|error| map_atomic_error(&target, error))
+}
+
+/// Conditionally write `contents` under `.agent/` when every observed revision is current.
+pub fn write_under_agent_if_unchanged(
+    repo_root: &Path,
+    rel_path: &Path,
+    contents: &str,
+    precondition: &WritePrecondition,
+) -> Result<(), WriteGuardError> {
+    let agent_root = repo_root.join(AGENT_DIR);
+    let target =
+        resolve_under(&agent_root, rel_path).ok_or_else(|| WriteGuardError::OutsideAgent {
+            target: rel_path.display().to_string(),
+        })?;
+    if !contained_under(&agent_root, &target) {
+        return Err(WriteGuardError::OutsideAgent {
+            target: rel_path.display().to_string(),
+        });
+    }
+    if precondition.target_path() != target {
+        return Err(WriteGuardError::Io {
+            target: target.display().to_string(),
+            source: std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "the write precondition names a different target",
+            ),
+        });
+    }
+    write_atomic(&target, contents, Some(precondition))
+        .map_err(|error| map_atomic_error(&target, error))
 }
 
 /// Write `contents` to `rel_path` under the repository root, for the scaffold seed only.
@@ -153,10 +189,7 @@ pub fn write_repo_seed_bytes(
         });
     }
 
-    write_atomic(&target, contents).map_err(|source| WriteGuardError::Io {
-        target: target.display().to_string(),
-        source,
-    })
+    write_atomic(&target, contents, None).map_err(|error| map_atomic_error(&target, error))
 }
 
 /// Report whether a read target is excluded (the telemetry area, Requirement 1.10).
@@ -263,42 +296,65 @@ fn resolve_under(base: &Path, rel_path: &Path) -> Option<PathBuf> {
 
 /// Write `contents` to `path` atomically.
 ///
-/// The write goes to a temp file in the same directory, then renames over the target. A
-/// same-directory rename is atomic on the same filesystem, so a reader sees either the old
-/// or the new file, never a partial one. On any failure the target is unchanged.
-///
-/// This is private to the write guard. Every runtime write reaches it only through
-/// [`write_under_agent`], [`write_repo_seed`], or [`write_repo_seed_bytes`], so the guard is
-/// the only door to the byte write and cannot be bypassed by a direct call (ADR-6, #187).
-fn write_atomic(path: &Path, contents: impl AsRef<[u8]>) -> std::io::Result<()> {
+/// The temporary file is created exclusively in the target directory. An optional revision
+/// precondition is checked after the complete temporary content is durable and immediately
+/// before rename.
+fn write_atomic(
+    path: &Path,
+    contents: impl AsRef<[u8]>,
+    precondition: Option<&WritePrecondition>,
+) -> Result<(), AtomicWriteError> {
     let parent = path.parent().unwrap_or_else(|| Path::new("."));
     std::fs::create_dir_all(parent)?;
 
-    let temp = temp_sibling(path);
-    std::fs::write(&temp, contents)?;
-    match std::fs::rename(&temp, path) {
-        Ok(()) => Ok(()),
-        Err(error) => {
-            // Clean up the temp file so a failed write leaves no residue.
-            let _ = std::fs::remove_file(&temp);
-            Err(error)
+    let prefix = path
+        .file_name()
+        .map(|name| format!(".{}.", name.to_string_lossy()))
+        .unwrap_or_else(|| ".truenorth.".to_string());
+    let mut temp = tempfile::Builder::new()
+        .prefix(&prefix)
+        .suffix(".tmp")
+        .tempfile_in(parent)?;
+    temp.write_all(contents.as_ref())?;
+    temp.as_file().sync_all()?;
+
+    if let Some(expected) = precondition {
+        expected.verify()?;
+    }
+
+    temp.persist(path)
+        .map(|_| ())
+        .map_err(|error| AtomicWriteError::Io(error.error))
+}
+
+#[derive(Debug, Error)]
+enum AtomicWriteError {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error(transparent)]
+    Conflict(#[from] RevisionConflict),
+}
+
+impl From<RevisionCheckError> for AtomicWriteError {
+    fn from(error: RevisionCheckError) -> Self {
+        match error {
+            RevisionCheckError::Conflict(conflict) => Self::Conflict(conflict),
+            RevisionCheckError::Io { path, source } => Self::Io(std::io::Error::new(
+                source.kind(),
+                format!("could not verify `{path}`: {source}"),
+            )),
         }
     }
 }
 
-/// A temp sibling path for the atomic write, unique to the process and target.
-fn temp_sibling(path: &Path) -> PathBuf {
-    let name = path
-        .file_name()
-        .map(|n| n.to_string_lossy().into_owned())
-        .unwrap_or_default();
-    let pid = std::process::id();
-    let unique = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map(|d| d.as_nanos())
-        .unwrap_or(0);
-    let parent = path.parent().unwrap_or_else(|| Path::new("."));
-    parent.join(format!(".{name}.{pid}.{unique}.tmp"))
+fn map_atomic_error(path: &Path, error: AtomicWriteError) -> WriteGuardError {
+    match error {
+        AtomicWriteError::Io(source) => WriteGuardError::Io {
+            target: path.display().to_string(),
+            source,
+        },
+        AtomicWriteError::Conflict(conflict) => WriteGuardError::Conflict(conflict),
+    }
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

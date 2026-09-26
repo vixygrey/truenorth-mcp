@@ -24,10 +24,12 @@ use rmcp::{
 
 use crate::engine::agent_ws::{LayoutCache, LayoutError};
 use crate::engine::features::{self, Features, FeaturesError, TokenCaps};
+use crate::engine::mutation::MutationCoordinator;
 use crate::resources::{ResourceCache, ResourceReadError, served_from_uri, served_resources};
+use crate::tools::mutation_error::mutation_error;
 
 /// The shared context: repository root, resource cache, feature flags, token caps,
-/// and the last-good layout contract.
+/// mutation coordinator, and the last-good layout contract.
 #[derive(Debug, Default)]
 pub struct ServerContext {
     /// The governed repository root.
@@ -46,6 +48,8 @@ pub struct ServerContext {
     /// [`ServerContext::resolve`] validates the contract at startup. A later broken read
     /// leaves the cached contract intact, so the runtime keeps the last valid state.
     pub layout: LayoutCache,
+    /// Serializes mutations and owns the worktree writer lease.
+    pub mutations: MutationCoordinator,
 }
 
 impl ServerContext {
@@ -65,7 +69,13 @@ impl ServerContext {
     pub fn resolve(repo_root: PathBuf) -> Result<Self, FeaturesError> {
         let features = features::resolve(&repo_root)?;
         let token_caps = features::resolve_token_caps(&repo_root)?;
-        let ctx = Self::with_config(repo_root, features, token_caps);
+        let mutations = MutationCoordinator::for_repo(repo_root.clone());
+        tracing::info!(
+            lease = mutations.initial_status(),
+            "resolved the worktree writer lease"
+        );
+        let mut ctx = Self::with_config(repo_root, features, token_caps);
+        ctx.mutations = mutations;
         ctx.validate_layout();
         Ok(ctx)
     }
@@ -75,6 +85,7 @@ impl ServerContext {
     /// This is the dependency-injected constructor used by deterministic tests.
     pub fn with_config(repo_root: PathBuf, features: Features, token_caps: TokenCaps) -> Self {
         Self {
+            mutations: MutationCoordinator::local_only(repo_root.clone()),
             repo_root,
             resource_cache: ResourceCache::new(),
             features,
@@ -277,11 +288,17 @@ impl ServerHandler for TrueNorthServer {
             ErrorData::invalid_params(format!("unknown resource: {}", request.uri), None)
         })?;
 
+        let permit = if doc.needs_seed(&self.ctx.repo_root) {
+            Some(self.ctx.mutations.begin().await.map_err(mutation_error)?)
+        } else {
+            None
+        };
         let content = self
             .ctx
             .resource_cache
             .read(doc, &self.ctx.repo_root)
             .map_err(resource_error)?;
+        drop(permit);
 
         let contents = ResourceContents::text(content, doc.uri()).with_mime_type(doc.mime_type());
         let result = ReadResourceResult::new(vec![contents]);

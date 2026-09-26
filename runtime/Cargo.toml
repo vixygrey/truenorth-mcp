@@ -33,11 +33,13 @@ jev-http = ["dep:reqwest"]
 
 [dependencies]
 rmcp = { version = "3.4", features = ["server", "macros", "schemars", "transport-io"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "signal"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "signal", "sync"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 serde_json = "1"
 schemars = "1"
+sha2 = "0.10"
+tempfile = "3"
 notify = "8"
 regex = "1"
 wait-timeout = "0.2"
@@ -67,7 +69,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 libc = "0.2"
 
 [dev-dependencies]
-tempfile = "3"
 # Property-based tests for the design correctness properties (P6 onward). The testing
 # strategy names proptest with a minimum of 100 iterations per property.
 proptest = "1"

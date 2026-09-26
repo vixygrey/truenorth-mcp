@@ -19,6 +19,7 @@ use crate::engine::skill::{SkillError, discover_skills, read_skill_raw};
 use crate::engine::skill_parser::{ParsedSkill, parse_skill};
 use crate::engine::skill_validate::validate_skill;
 use crate::server::{ServerContext, TrueNorthServer};
+use crate::tools::mutation_error::{mutation_error, write_error};
 use crate::tools::result;
 
 /// Render a serializable value as a pretty JSON tool result.
@@ -136,6 +137,10 @@ impl TrueNorthServer {
     /// Build and persist the skill graph.
     #[tool(description = "Build the entity-relation skill graph and persist it to disk.")]
     pub async fn build_skill_graph(&self) -> Result<CallToolResult, ErrorData> {
+        let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
+        let observed = agent_ws::ObservedFile::observe(self.ctx.graph_path()).map_err(|error| {
+            ErrorData::internal_error(format!("could not inspect the skill graph: {error}"), None)
+        })?;
         let parsed = self.parse_all_skills();
         let graph = graph::build_graph(&parsed);
         let response = json_result(
@@ -146,14 +151,16 @@ impl TrueNorthServer {
             }),
             self.ctx.token_caps,
         )?;
-        // Write the cache under `.agent/` through the single write guard (ADR-0008). The
-        // guard rejects any target outside `.agent/` and writes atomically, so the graph
-        // never lands in the crate source tree.
         let jsonl = graph::to_jsonl(&graph);
-        agent_ws::write_under_agent(&self.ctx.repo_root, ServerContext::graph_rel_path(), &jsonl)
-            .map_err(|e| {
-            ErrorData::internal_error(format!("could not persist the skill graph: {e}"), None)
-        })?;
+        let precondition = agent_ws::WritePrecondition::new(observed);
+        agent_ws::write_under_agent_if_unchanged(
+            &self.ctx.repo_root,
+            ServerContext::graph_rel_path(),
+            &jsonl,
+            &precondition,
+        )
+        .map_err(write_error)?;
+        drop(permit);
         Ok(response)
     }
 

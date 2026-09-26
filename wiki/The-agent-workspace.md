@@ -53,6 +53,20 @@ invariant of the machine-facing layer. The scaffold is the one authorized except
 seeds files outside `.agent/` (root docs, git hooks, `.github/`) through an audited seed
 path that the runtime tools never call.
 
+## One writer per worktree
+
+One TrueNorth server owns mutation rights for a Git worktree. It holds an operating-system
+lock on `.agent/runtime/writer.lock` and serializes mutating requests inside the process. A
+second server can read existing resources, but its mutating tools return a typed
+`writer_lease_conflict`.
+
+The lock file can remain after the owner exits or crashes. Its presence does not mean the
+worktree is locked. The operating-system lock on the open file descriptor is authoritative,
+and another running server retries it on the next mutation.
+
+Use separate Git worktrees for parallel agents that both need to mutate TrueNorth state.
+Network-filesystem coordination is unsupported.
+
 ## Version control
 
 The `.agent/` tree tracks under version control. It is the durable project state, so it is
