@@ -37,33 +37,57 @@ async function smokeCommand(
     for (const marker of ['.agent', 'specs', 'skills']) {
       fs.mkdirSync(path.join(root, marker));
     }
+    const tasks = path.join(root, '.agent', 'tasks');
+    fs.mkdirSync(tasks);
+    fs.writeFileSync(
+      path.join(tasks, 'state.yml'),
+      'active_flow: null\nactive_group: null\nactive_task: null\nphase: null\ntdd:\n  step: refactor\nhandoff:\n  next_skill: null\n  context: null\n  group: null\ngit:\n  branch: main\n',
+    );
   }
   const session = startSession(command, args, root);
 
   try {
-    const initialize = await session.request('initialize', {
-      protocolVersion: '2024-11-05',
-      capabilities: {},
-      clientInfo: { name: 'truenorth-artifact-smoke', version: '1.0.0' },
-    });
-    assertEqual(initialize.serverInfo?.name, 'truenorth-mcp', 'serverInfo.name');
-    assertEqual(initialize.serverInfo?.version, expectedVersion, 'serverInfo.version');
-    assertObject(initialize.capabilities?.tools, 'initialize capabilities.tools');
-    assertObject(initialize.capabilities?.resources, 'initialize capabilities.resources');
+    const clientContext = {
+      'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+      'io.modelcontextprotocol/clientInfo': {
+        name: 'truenorth-artifact-smoke',
+        version: '1.0.0',
+      },
+      'io.modelcontextprotocol/clientCapabilities': {},
+    };
+    const params = (value = {}) => ({ ...value, _meta: clientContext });
+    const discovery = await session.request('server/discover', params());
+    const serverInfo = discovery._meta?.['io.modelcontextprotocol/serverInfo'];
 
-    session.notify('notifications/initialized', {});
+    assertIncludes(discovery.supportedVersions, '2026-07-28', 'server/discover');
+    assertEqual(serverInfo?.name, 'truenorth-mcp', 'serverInfo.name');
+    assertEqual(serverInfo?.version, expectedVersion, 'serverInfo.version');
+    assertObject(discovery.capabilities?.tools, 'server/discover capabilities.tools');
+    assertObject(discovery.capabilities?.resources, 'server/discover capabilities.resources');
+    assertCacheMetadata(discovery, 'server/discover');
 
-    const tools = await session.request('tools/list', {});
+    const tools = await session.request('tools/list', params());
     assertContains(tools.tools, 'name', 'truenorth_verify_gate', 'tools/list');
 
-    const resources = await session.request('resources/list', {});
+    const resources = await session.request('resources/list', params());
     assertContains(resources.resources, 'uri', 'truenorth://state', 'resources/list');
+    assertCacheMetadata(resources, 'resources/list');
+
+    const templates = await session.request('resources/templates/list', params());
+    assertCacheMetadata(templates, 'resources/templates/list');
+
+    const state = await session.request('resources/read', params({ uri: 'truenorth://state' }));
+    assertContains(state.contents, 'uri', 'truenorth://state', 'resources/read');
+    assertCacheMetadata(state, 'resources/read');
 
     if (checkBundledSkill) {
-      const skill = await session.request('tools/call', {
-        name: 'get_skill',
-        arguments: { name: 'using-truenorth', tier: 'lean' },
-      });
+      const skill = await session.request(
+        'tools/call',
+        params({
+          name: 'get_skill',
+          arguments: { name: 'using-truenorth', tier: 'lean' },
+        }),
+      );
       assertObject(skill, 'get_skill result');
     }
 
@@ -117,6 +141,17 @@ function assertContains(items, field, expected, method) {
   if (!Array.isArray(items) || !items.some((item) => item?.[field] === expected)) {
     throw new Error(`${method} does not include ${expected}`);
   }
+}
+
+function assertIncludes(items, expected, method) {
+  if (!Array.isArray(items) || !items.includes(expected)) {
+    throw new Error(`${method} does not include ${expected}`);
+  }
+}
+
+function assertCacheMetadata(result, method) {
+  assertEqual(result.ttlMs, 0, `${method} ttlMs`);
+  assertEqual(result.cacheScope, 'private', `${method} cacheScope`);
 }
 
 main().catch((error) => {

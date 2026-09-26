@@ -13,8 +13,8 @@ use std::sync::Arc;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::model::ReadResourceResponse;
 use rmcp::model::{
-    ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams, ReadResourceResult,
-    Resource, ResourceContents,
+    CacheScope, ListResourceTemplatesResult, ListResourcesResult, PaginatedRequestParams,
+    ReadResourceRequestParams, ReadResourceResult, Resource, ResourceContents,
 };
 use rmcp::service::RequestContext;
 use rmcp::{
@@ -241,13 +241,24 @@ impl ServerHandler for TrueNorthServer {
     async fn list_resources(
         &self,
         _request: Option<PaginatedRequestParams>,
-        _context: RequestContext<RoleServer>,
+        context: RequestContext<RoleServer>,
     ) -> Result<ListResourcesResult, ErrorData> {
         let resources: Vec<Resource> = served_resources(self.ctx.features)
             .into_iter()
             .map(|doc| Resource::new(doc.uri(), doc.name()).with_mime_type(doc.mime_type()))
             .collect();
-        Ok(ListResourcesResult::with_all_items(resources))
+        let result = ListResourcesResult::with_all_items(resources);
+        Ok(with_resource_cache_hints(result, &context))
+    }
+
+    /// List the resource templates. TrueNorth currently serves only fixed resource URIs.
+    async fn list_resource_templates(
+        &self,
+        _request: Option<PaginatedRequestParams>,
+        context: RequestContext<RoleServer>,
+    ) -> Result<ListResourceTemplatesResult, ErrorData> {
+        let result = ListResourceTemplatesResult::default();
+        Ok(with_resource_template_cache_hints(result, &context))
     }
 
     /// Read a resource's current on-disk content (Requirements 5.5, 5.7).
@@ -257,7 +268,7 @@ impl ServerHandler for TrueNorthServer {
     async fn read_resource(
         &self,
         request: ReadResourceRequestParams,
-        _context: RequestContext<RoleServer>,
+        context: RequestContext<RoleServer>,
     ) -> Result<ReadResourceResponse, ErrorData> {
         // Resolve against the flag-filtered set. A disabled ontology URI is unknown here,
         // so it never reaches read_current and no ontology file is seeded (Requirement 3.3,
@@ -273,7 +284,47 @@ impl ServerHandler for TrueNorthServer {
             .map_err(resource_error)?;
 
         let contents = ResourceContents::text(content, doc.uri()).with_mime_type(doc.mime_type());
-        Ok(ReadResourceResult::new(vec![contents]).into())
+        let result = ReadResourceResult::new(vec![contents]);
+        Ok(with_read_resource_cache_hints(result, &context).into())
+    }
+}
+
+fn supports_resource_cache_hints(context: &RequestContext<RoleServer>) -> bool {
+    context
+        .protocol_version()
+        .is_some_and(|version| version.as_str() >= ProtocolVersion::V_2026_07_28.as_str())
+}
+
+fn with_resource_cache_hints(
+    result: ListResourcesResult,
+    context: &RequestContext<RoleServer>,
+) -> ListResourcesResult {
+    if supports_resource_cache_hints(context) {
+        result.with_ttl_ms(0).with_cache_scope(CacheScope::Private)
+    } else {
+        result
+    }
+}
+
+fn with_resource_template_cache_hints(
+    result: ListResourceTemplatesResult,
+    context: &RequestContext<RoleServer>,
+) -> ListResourceTemplatesResult {
+    if supports_resource_cache_hints(context) {
+        result.with_ttl_ms(0).with_cache_scope(CacheScope::Private)
+    } else {
+        result
+    }
+}
+
+fn with_read_resource_cache_hints(
+    result: ReadResourceResult,
+    context: &RequestContext<RoleServer>,
+) -> ReadResourceResult {
+    if supports_resource_cache_hints(context) {
+        result.with_ttl_ms(0).with_cache_scope(CacheScope::Private)
+    } else {
+        result
     }
 }
 

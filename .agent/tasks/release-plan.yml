@@ -145,3 +145,7 @@ tasks:
   group_kind: ticket
   task_name: Publish Croft MCP capability assessment
   verify_command: npm run format:check && git diff --check
+- group_id: '424'
+  group_kind: ticket
+  task_name: Emit version-aware cache metadata for MCP resource responses
+  verify_command: cargo test --manifest-path runtime/Cargo.toml resource_cache_metadata && npm run preflight

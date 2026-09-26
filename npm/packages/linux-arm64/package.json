@@ -1,6 +1,6 @@
 {
   "name": "@truenorth-mcp/linux-arm64",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "TrueNorth-MCP native binary for Linux on arm64.",
   "license": "MIT",
   "repository": {
