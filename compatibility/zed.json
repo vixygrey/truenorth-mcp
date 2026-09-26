@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "generated_on": "2026-09-26",
+  "assessment": "unsupported_for_full_certification",
+  "client": {
+    "name": "Zed",
+    "version": "1.21.0",
+    "commit": "33c95853ed2b6956f339733c63a8220964ecbeb6",
+    "channel": "stable"
+  },
+  "server": {
+    "name": "truenorth-mcp",
+    "version": "1.0.2",
+    "platform_package": "@truenorth-mcp/darwin-arm64@1.0.2",
+    "transport": "stdio"
+  },
+  "model": {
+    "provider": "Zed hosted",
+    "id": "Gemini 3.5 Flash-Lite"
+  },
+  "environment": {
+    "platform": "darwin",
+    "os_version": "25.6.0",
+    "architecture": "arm64",
+    "node": "v24.18.1"
+  },
+  "fixture": {
+    "profile": "generic",
+    "packaged_wrapper": true,
+    "install_scripts": false,
+    "disposable_workspace": true,
+    "isolated_user_data": true,
+    "isolated_home": false,
+    "workspace_local_configuration": true,
+    "user_global_configuration_unchanged": true,
+    "real_project_workspace_unchanged": true,
+    "server_name": "truenorth427"
+  },
+  "configuration": {
+    "path": ".zed/settings.json",
+    "template": {
+      "context_servers": {
+        "truenorth427": {
+          "command": "node",
+          "args": ["<protocol-monitor>", "<released-wrapper-command>"],
+          "env": {
+            "TRUENORTH_ROOT": "<disposable-workspace>",
+            "TRUENORTH_VERIFY_CMD": "true"
+          }
+        }
+      }
+    }
+  },
+  "procedure": [
+    "Install the pinned released TrueNorth wrapper and darwin-arm64 package in a disposable package root with install scripts disabled.",
+    "Initialize a disposable generic-profile TrueNorth workspace and write the workspace-local .zed/settings.json configuration shown above.",
+    "Launch pinned Zed with a disposable --user-data-dir and open only the disposable workspace.",
+    "Review and trust the disposable workspace, then confirm that truenorth427 is active in Settings, AI, MCP Servers.",
+    "Use the native Zed Agent to call get_skill exactly once and truenorth_record_task exactly once. Inspect whether Zed exposes MCP resources.",
+    "Close Zed normally, then verify the disposable release-plan mutation, protocol transcript, clean server exit, and unchanged real workspace and user settings."
+  ],
+  "client_evidence": {
+    "source": "sanitized stdio protocol proxy, Zed MCP UI, disposable release plan, and server lifecycle log",
+    "protocol_version": "2025-11-25",
+    "protocol_client_info": {
+      "name": "Zed",
+      "version": "0.1.0"
+    },
+    "protocol_methods": ["initialize", "notifications/initialized", "tools/call", "tools/list"],
+    "protocol_tool_count": 19,
+    "required_tools": ["get_skill", "truenorth_record_task"],
+    "protocol_resources": [],
+    "protocol_tool_calls": [
+      {
+        "tool": "get_skill",
+        "status": "completed"
+      },
+      {
+        "tool": "truenorth_record_task",
+        "status": "completed"
+      }
+    ],
+    "fixture_release_plan": {
+      "task_count": 1,
+      "task_name": "Certify Zed MCP integration #427",
+      "verify_command": "true"
+    },
+    "shutdown": {
+      "server_processes_started": 1,
+      "server_processes_exited": 1,
+      "server_exit_codes": [0]
+    }
+  },
+  "operations": {
+    "install": {
+      "status": "pass",
+      "detail": "released truenorth-mcp 1.0.2 wrapper installed with scripts disabled"
+    },
+    "lifecycle_negotiation": {
+      "status": "pass",
+      "detail": "Zed initialized the TrueNorth stdio server"
+    },
+    "tools_list": {
+      "status": "pass",
+      "detail": "Zed requested tools/list and discovered the required TrueNorth tools"
+    },
+    "resources_list": {
+      "status": "not_exposed",
+      "detail": "Zed did not request resources/list"
+    },
+    "resource_read": {
+      "status": "not_exposed",
+      "detail": "Zed did not expose an MCP resource read operation"
+    },
+    "read_tool_operation": {
+      "status": "pass",
+      "detail": "Zed completed get_skill through the workspace-local TrueNorth server"
+    },
+    "task_mutation": {
+      "status": "pass",
+      "detail": "Zed called truenorth_record_task once and changed only the disposable release plan"
+    },
+    "clean_shutdown": {
+      "status": "pass",
+      "detail": "every monitored TrueNorth stdio process exited with code 0"
+    },
+    "workspace_isolation": {
+      "status": "pass",
+      "detail": "repository status, real release plan, and user-global Zed settings remained unchanged"
+    }
+  },
+  "certified": false
+}

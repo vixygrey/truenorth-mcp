@@ -213,15 +213,20 @@ upstream security fixes for production. Source builds require Rust 1.88 or newer
 
 MCP Inspector CLI 2.5.0, Oh My Pi 18.2.11, OpenCode 2.0.16, and VS Code
 1.139.1 with bundled GitHub Copilot Chat 0.67.0 are certified against
-TrueNorth-MCP 1.0.1 over stdio. The certifications prove initialization, tool
-and resource discovery, a read operation, a task mutation confined to a
-disposable workspace, and clean client shutdown. See the
+TrueNorth-MCP 1.0.1 over stdio. Kiro 1.1.70 is certified against
+TrueNorth-MCP 1.0.2. The certifications prove initialization, tool and resource
+discovery, a read operation, a task mutation confined to a disposable
+workspace, and clean client shutdown. See the
 [client matrix](compatibility/mcp-clients.json), the
 [Inspector evidence](compatibility/mcp-inspector.json), the
 [Oh My Pi evidence](compatibility/oh-my-pi.json), the
-[OpenCode evidence](compatibility/opencode.json), and the
-[VS Code evidence](compatibility/vscode-copilot.json). Croft 0.1.700 is
-unsupported for full certification because it exposes no MCP resources and
+[OpenCode evidence](compatibility/opencode.json), the
+[VS Code evidence](compatibility/vscode-copilot.json), and the
+[Kiro evidence](compatibility/kiro.json).
+
+Zed 1.21.0 and Croft 0.1.700 are unsupported for full certification. Zed
+completes the required tool operations but exposes no MCP resources; see the
+[Zed assessment](compatibility/zed.json). Croft exposes no MCP resources and
 cannot construct the required multi-field task mutation; see the
 [Croft assessment](compatibility/croft.json). Other clients remain pending or
 untested and are not implied supported.
@@ -341,6 +346,58 @@ isolation. The committed evidence contains no operator-specific paths or account
 identity. [Issue #412](https://github.com/vixygrey/truenorth-mcp/issues/412)
 tracks a non-blocking Copilot warning when compiling the standard JSON Schema
 2020-12 tool input dialect.
+
+### Reproduce the Zed assessment
+
+The recorded assessment covers Zed 1.21.0 stable on macOS ARM64 and the
+released TrueNorth-MCP 1.0.2 artifact. Download the pinned official Zed
+`Zed-aarch64.dmg`, extract `Zed.app`, and prepare an isolated session with a
+staged `darwin-arm64` platform package:
+
+```bash
+node scripts/certify-zed.js prepare \
+  --expected-version 1.0.2 \
+  --platform-package <platform-package-directory> \
+  --zed "<path-to-Zed.app>/Contents/MacOS/cli" \
+  --model-provider "<provider>" \
+  --model-id "<model>"
+```
+
+The helper verifies the pinned Zed and server versions. It creates a
+disposable initialized workspace, isolated Zed user-data directory,
+workspace-local `.zed/settings.json`, and a sanitizing stdio evidence proxy.
+Run the printed Zed command, then:
+
+1. Review and trust only the disposable workspace.
+2. Open **Settings**, **AI**, **MCP Servers** and confirm `truenorth427` is
+   active.
+3. Open a native Zed Agent thread and send:
+
+   ```text
+   Use only the truenorth427 MCP server. Call get_skill exactly once with name
+   using-truenorth and tier lean. Then call truenorth_record_task exactly once
+   with task_name Certify Zed MCP integration #427 and verify_command true. Do
+   not edit files directly. Stop after reporting both tool results.
+   ```
+
+4. Approve only those two tool calls. Inspect whether Zed exposes any MCP
+   resource list or read surface.
+5. Quit Zed normally, then collect, validate, and remove the session:
+
+   ```bash
+   node scripts/certify-zed.js collect \
+     --session <session-directory> \
+     --output compatibility
+   node scripts/certify-zed.js validate \
+     --evidence compatibility/zed.json
+   node scripts/certify-zed.js cleanup \
+     --session <session-directory>
+   ```
+
+The collector reports each required operation as pass, fail, or not exposed.
+Zed 1.21.0 does not request `resources/list` or expose `resources/read`, so the
+recorded run is unsupported rather than certified. Tool discovery, both tool
+calls, the disposable mutation, isolation, and clean shutdown passed.
 
 Use [GitHub Discussions](https://github.com/vixygrey/truenorth-mcp/discussions) for
 questions and the issue forms for reproducible non-security defects. Report vulnerabilities

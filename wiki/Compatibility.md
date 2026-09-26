@@ -175,6 +175,7 @@ clean shutdown against the packaged TrueNorth-MCP version in its evidence file.
 | OpenCode                         | 2.0.16              | 2026-09-25 | Certified   | [`opencode.json`](../compatibility/opencode.json)             |
 | VS Code with GitHub Copilot Chat | 1.139.1 with 0.67.0 | 2026-09-25 | Certified   | [`vscode-copilot.json`](../compatibility/vscode-copilot.json) |
 | Kiro                             | 1.1.70              | 2026-09-26 | Certified   | [`kiro.json`](../compatibility/kiro.json)                     |
+| Zed                              | 1.21.0              | 2026-09-26 | Unsupported | [`zed.json`](../compatibility/zed.json)                       |
 | Croft IDE                        | 0.1.700             | 2026-09-25 | Unsupported | [`croft.json`](../compatibility/croft.json)                   |
 
 The machine-readable [client matrix](../compatibility/mcp-clients.json) is the
@@ -182,6 +183,16 @@ authoritative status index. The repository [README](../README.md#reproduce-the-v
 contains the repeatable VS Code disposable-profile procedure. The VS Code
 certificate records one non-blocking Copilot JSON Schema warning tracked in
 [issue #412](https://github.com/vixygrey/truenorth-mcp/issues/412).
+
+Zed 1.21.0 initializes the released TrueNorth-MCP 1.0.2 stdio
+artifact, discovers all 19 tools, completes `get_skill` and
+`truenorth_record_task`, and shuts the server down cleanly. Its native MCP
+integration does not request `resources/list` or expose `resources/read`, so it
+does not satisfy the full certification contract. The
+[Zed assessment](../compatibility/zed.json) records the project-local
+configuration, protocol trace, disposable mutation, and isolation evidence.
+[Issue #427](https://github.com/vixygrey/truenorth-mcp/issues/427) tracks the
+assessment.
 
 Croft 0.1.700 can initialize a local stdio server, discover tools, and invoke a
 predeclared zero-argument read tool. It cannot complete this certification

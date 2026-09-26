@@ -29,6 +29,15 @@
       "issue": "https://github.com/vixygrey/truenorth-mcp/issues/407"
     },
     {
+      "name": "Zed",
+      "version": "1.21.0",
+      "status": "unsupported",
+      "assessed_on": "2026-09-26",
+      "evidence": "zed.json",
+      "issue": "https://github.com/vixygrey/truenorth-mcp/issues/427",
+      "note": "Lifecycle negotiation, tool discovery, read tools, task mutation, and clean shutdown pass, but Zed exposes no MCP resources."
+    },
+    {
       "name": "Croft IDE",
       "version": "0.1.700",
       "status": "unsupported",
