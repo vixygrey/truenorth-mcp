@@ -88,7 +88,7 @@ jobs:
           tar -C "${package_dir}" -cf "release-package-${{ matrix.platform }}.tar" .
 
       - name: Upload the rehearsal package archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-package-${{ matrix.platform }}
           path: release-package-${{ matrix.platform }}.tar

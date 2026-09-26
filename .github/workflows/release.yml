@@ -119,7 +119,7 @@ jobs:
             truenorth-mcp
 
       - name: Upload the public native binary archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-binary-${{ matrix.platform }}
           path: truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz
@@ -133,7 +133,7 @@ jobs:
             -cf "release-package-${{ matrix.platform }}.tar" .
 
       - name: Upload the verified platform package archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-package-${{ matrix.platform }}
           path: release-package-${{ matrix.platform }}.tar
