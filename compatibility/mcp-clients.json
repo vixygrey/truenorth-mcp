@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_on": "2026-09-25",
+  "updated_on": "2026-09-26",
   "clients": [
     {
       "name": "MCP Inspector CLI",
@@ -22,8 +22,10 @@
     },
     {
       "name": "Kiro",
-      "version": null,
-      "status": "pending_manual_certification",
+      "version": "1.1.70",
+      "status": "certified",
+      "certified_on": "2026-09-26",
+      "evidence": "kiro.json",
       "issue": "https://github.com/vixygrey/truenorth-mcp/issues/407"
     },
     {
