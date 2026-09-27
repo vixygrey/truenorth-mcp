@@ -4,7 +4,6 @@ const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const prettier = require('prettier');
 
 function trackedPaths(repoRoot, prefix) {
   const output = execFileSync('git', ['ls-files', '-z', prefix], {
@@ -143,14 +142,25 @@ function buildManifest(repoRoot) {
   };
 }
 
-async function serialized(manifest) {
-  return prettier.format(JSON.stringify(manifest), { parser: 'json' });
+function serialized(manifest) {
+  const json = JSON.stringify(manifest, null, 2).replace(
+    /^(\s*)"([^"]+)": \[\n((?:\s+"[^"]+"(?:,)?\n)+)\s+\](,?)$/gm,
+    (block, indent, key, body, comma) => {
+      const items = body
+        .trim()
+        .split('\n')
+        .map((line) => line.trim().replace(/,$/, ''));
+      const compact = `${indent}"${key}": [${items.join(', ')}]${comma}`;
+      return compact.length <= 100 ? compact : block;
+    },
+  );
+  return `${json}\n`;
 }
 
-async function main(argv) {
+function main(argv) {
   const repoRoot = path.resolve(__dirname, '..');
   const target = path.join(repoRoot, 'npm', 'bundle', 'current.json');
-  const expected = await serialized(buildManifest(repoRoot));
+  const expected = serialized(buildManifest(repoRoot));
   if (argv.includes('--check')) {
     const actual = fs.readFileSync(target, 'utf8');
     if (actual !== expected) {
@@ -165,10 +175,12 @@ async function main(argv) {
 }
 
 if (require.main === module) {
-  main(process.argv.slice(2)).catch((error) => {
+  try {
+    main(process.argv.slice(2));
+  } catch (error) {
     process.stderr.write(`bundle manifest: ${error.message}\n`);
     process.exitCode = 1;
-  });
+  }
 }
 
 module.exports = {
