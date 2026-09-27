@@ -30,8 +30,10 @@ use crate::tools::mutation_error::{mutation_error, write_error};
 
 mod bootstrap;
 mod templates;
+mod upgrade;
 
 pub use bootstrap::bootstrap_project;
+pub use upgrade::{apply_workspace_upgrade, plan_workspace_upgrade};
 
 use templates::{
     COMMIT_TEMPLATE, EXECUTION_STATUS_SEED, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK,
@@ -118,152 +120,72 @@ pub(super) fn resolve_scaffold_profile(name: Option<&str>) -> Result<Profile, Er
     })
 }
 
+/// One deterministic source file emitted by the scaffold and CLI workspace manager.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScaffoldSource {
+    pub path: String,
+    pub body: String,
+}
+
+/// Build the complete profile-specific generated workspace file set.
+pub fn scaffold_sources(profile: Profile) -> Vec<ScaffoldSource> {
+    let mut files = vec![
+        source(".agent/layout.yml", layout_contract()),
+        source(".agent/profile.yml", format!("profile: {}\n", profile.name)),
+        source(
+            ".agent/config/rules.yml",
+            "# Runtime configuration.\n# Token estimates use ceil(characters / 4). Oversized tool responses fail without truncation.\ntoken_caps:\n  skill_lean_tokens: 1500\n  tool_payload_tokens: 4000\n",
+        ),
+        source(".agent/spec/requirements.md", "# Requirements\n"),
+        source(".agent/tasks/state.yml", "phase: discover\n"),
+        source(".agent/tasks/execution-status.yml", EXECUTION_STATUS_SEED),
+        source(".agent/memories/lessons.md", "# Lessons\n"),
+        source(".agent/memories/glossary.md", "# Glossary\n"),
+        source(".agent/product/scope.md", "# Product scope\n"),
+        source(".agent/telemetry/runs.yml", "runs: []\n"),
+    ];
+    files.extend(
+        profile
+            .starter_files
+            .iter()
+            .map(|starter| source(format!(".agent/{starter}"), starter_seed(starter))),
+    );
+    files.extend([
+        source("AGENTS.md", agents_md(profile)),
+        source("CONVENTIONS.md", conventions_md(profile)),
+        source(".githooks/commit-msg", commit_msg_hook(profile)),
+        source(".githooks/post-merge", post_merge_hook(profile)),
+        source(".kiro/hooks/jev-guard.json", JEV_GUARD_HOOK),
+        source(".github/commit-template.md", COMMIT_TEMPLATE),
+        source(".github/pull-request-template.md", PULL_REQUEST_TEMPLATE),
+        source(".github/ISSUE_TEMPLATE/bug.md", bug_form(profile)),
+        source(".github/ISSUE_TEMPLATE/feature.md", feature_form(profile)),
+        source(".github/ISSUE_TEMPLATE/config.yml", ISSUE_TEMPLATE_CONFIG),
+    ]);
+    files
+}
+
+fn source(path: impl Into<String>, body: impl Into<String>) -> ScaffoldSource {
+    ScaffoldSource {
+        path: path.into(),
+        body: body.into(),
+    }
+}
+
 /// Emit all existing-project scaffold targets and return their write outcomes.
-///
-/// Both the MCP tool and the command-line bootstrap use this shared core so the workspace
-/// layout, profile seeds, root docs, hooks, and GitHub templates cannot drift apart.
 pub(super) fn scaffold_project(
     repo_root: &Path,
     profile: Profile,
 ) -> Result<Vec<Emission>, ErrorData> {
     let mut emissions = Vec::new();
-    emit_agent_tree(repo_root, profile, &mut emissions)?;
-    emit_root_docs(repo_root, profile, &mut emissions)?;
-    emit_hooks(repo_root, profile, &mut emissions)?;
-    emit_github(repo_root, profile, &mut emissions)?;
+    for file in scaffold_sources(profile) {
+        if let Some(relative) = file.path.strip_prefix(".agent/") {
+            seed_under_agent(repo_root, relative, &file.body, &mut emissions)?;
+        } else {
+            seed_repo_root(repo_root, &file.path, &file.body, &mut emissions)?;
+        }
+    }
     Ok(emissions)
-}
-
-/// Emit the `.agent/` tree and the cockpit seed files through the write guard.
-///
-/// The tree follows the layout contract (design §1.1). Each file is written only when
-/// absent, so an existing `.agent/` tree is left unchanged (Requirement 5.12).
-fn emit_agent_tree(
-    repo_root: &Path,
-    profile: Profile,
-    out: &mut Vec<Emission>,
-) -> Result<(), ErrorData> {
-    // The layout contract and the active profile name.
-    seed_under_agent(repo_root, "layout.yml", &layout_contract(), out)?;
-    seed_under_agent(
-        repo_root,
-        "profile.yml",
-        &format!("profile: {}\n", profile.name),
-        out,
-    )?;
-
-    // The required area files (Requirement 1.5 to 1.9).
-    let area_files: [(&str, &str); 8] = [
-        (
-            "config/rules.yml",
-            "# Runtime configuration.\n# Token estimates use ceil(characters / 4). Oversized tool responses fail without truncation.\ntoken_caps:\n  skill_lean_tokens: 1500\n  tool_payload_tokens: 4000\n",
-        ),
-        ("spec/requirements.md", "# Requirements\n"),
-        ("tasks/state.yml", "phase: discover\n"),
-        ("tasks/execution-status.yml", EXECUTION_STATUS_SEED),
-        ("memories/lessons.md", "# Lessons\n"),
-        ("memories/glossary.md", "# Glossary\n"),
-        ("product/scope.md", "# Product scope\n"),
-        ("telemetry/runs.yml", "runs: []\n"),
-    ];
-    for (rel, body) in area_files {
-        seed_under_agent(repo_root, rel, body, out)?;
-    }
-
-    // The profile's starter files, seeded as empty-but-valid cockpit files (R5.3).
-    for starter in profile.starter_files {
-        seed_under_agent(repo_root, starter, &starter_seed(starter), out)?;
-    }
-
-    Ok(())
-}
-
-/// Emit the root `AGENTS.md` and `CONVENTIONS.md` through the audited repo-seed path.
-///
-/// Both are wired to `.agent/`, never to `specs/` (Requirement 5.5). They are written
-/// only when absent (Requirement 5.12).
-fn emit_root_docs(
-    repo_root: &Path,
-    profile: Profile,
-    out: &mut Vec<Emission>,
-) -> Result<(), ErrorData> {
-    seed_repo_root(repo_root, "AGENTS.md", &agents_md(profile), out)?;
-    seed_repo_root(repo_root, "CONVENTIONS.md", &conventions_md(profile), out)?;
-    Ok(())
-}
-
-/// Emit the two git hooks into `.githooks/` through the audited repo-seed path.
-///
-/// The hooks are templated per profile (Requirement 5.6). The scaffold prints the
-/// `core.hooksPath` command in its result and never runs it (Requirement 5.7).
-fn emit_hooks(
-    repo_root: &Path,
-    profile: Profile,
-    out: &mut Vec<Emission>,
-) -> Result<(), ErrorData> {
-    seed_repo_root(
-        repo_root,
-        ".githooks/commit-msg",
-        &commit_msg_hook(profile),
-        out,
-    )?;
-    seed_repo_root(
-        repo_root,
-        ".githooks/post-merge",
-        &post_merge_hook(profile),
-        out,
-    )?;
-
-    // The emitted PreToolUse hook that calls the guardrail on a write tool (R7.1). It is
-    // profile-independent, so it is the same for every profile. The automatic interception
-    // holds only where the client honors the hook; the guard tool is the fallback (R7.4).
-    seed_repo_root(repo_root, ".kiro/hooks/jev-guard.json", JEV_GUARD_HOOK, out)?;
-    Ok(())
-}
-
-/// Emit the `.github/` templates through the audited repo-seed path.
-///
-/// The commit and PR templates are neutral and profile-identical (Requirement 5.8). The
-/// issue forms are generic, with no copied domain content and no hardcoded URLs
-/// (Requirement 5.9, 5.10). The forms include a grouping field when the profile vocabulary
-/// is epic or milestone, and omit the issue-id field when the profile is kanban or generic
-/// (Requirement 5.11).
-fn emit_github(
-    repo_root: &Path,
-    profile: Profile,
-    out: &mut Vec<Emission>,
-) -> Result<(), ErrorData> {
-    seed_repo_root(
-        repo_root,
-        ".github/commit-template.md",
-        COMMIT_TEMPLATE,
-        out,
-    )?;
-    seed_repo_root(
-        repo_root,
-        ".github/pull-request-template.md",
-        PULL_REQUEST_TEMPLATE,
-        out,
-    )?;
-    seed_repo_root(
-        repo_root,
-        ".github/ISSUE_TEMPLATE/bug.md",
-        &bug_form(profile),
-        out,
-    )?;
-    seed_repo_root(
-        repo_root,
-        ".github/ISSUE_TEMPLATE/feature.md",
-        &feature_form(profile),
-        out,
-    )?;
-    seed_repo_root(
-        repo_root,
-        ".github/ISSUE_TEMPLATE/config.yml",
-        ISSUE_TEMPLATE_CONFIG,
-        out,
-    )?;
-    Ok(())
 }
 
 /// Write `rel` under `.agent/` when absent, recording the outcome (Requirement 5.12).

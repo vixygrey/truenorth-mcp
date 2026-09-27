@@ -50,8 +50,8 @@ function run(deps) {
     return exit(1);
   }
 
-  const binaryArgs =
-    argv[0] === 'init' ? [...argv, '--skills-dir', path.join(packageDir, 'skills')] : argv;
+  const needsBundle = argv[0] === 'init' || argv[0] === 'upgrade';
+  const binaryArgs = needsBundle ? [...argv, '--bundle-dir', packageDir] : argv;
 
   let binary;
   try {

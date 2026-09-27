@@ -14,9 +14,11 @@ use truenorth_mcp::config;
 use truenorth_mcp::engine::agent_ws::read_layout;
 use truenorth_mcp::engine::backlog;
 use truenorth_mcp::engine::features;
-use truenorth_mcp::tools::scaffold::bootstrap_project;
+use truenorth_mcp::tools::scaffold::{
+    apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
+};
 
-const USAGE: &str = "usage: truenorth-mcp [--version | --check-config | init --skills-dir <path> [--profile <name>]]";
+const USAGE: &str = "usage: truenorth-mcp [--version | --check-config | init --bundle-dir <path> [--profile <name>] | upgrade [--check] --bundle-dir <path>]";
 
 /// The operation requested by the process arguments.
 #[derive(Debug, PartialEq, Eq)]
@@ -27,12 +29,19 @@ pub enum Mode {
     Version,
     /// Report the read-only configuration diagnostics.
     CheckConfig,
-    /// Seed a fresh project from an explicit skill bundle before MCP startup.
+    /// Seed a fresh project from an explicit package bundle before MCP startup.
     Init {
         /// Optional methodology profile.
         profile: Option<String>,
-        /// Directory containing the complete versioned skill bundle.
-        skills_dir: PathBuf,
+        /// Root of the installed package, containing `bundle/` and `skills/`.
+        bundle_dir: PathBuf,
+    },
+    /// Plan or apply a workspace upgrade from the installed package bundle.
+    Upgrade {
+        /// Report the plan without mutation.
+        check: bool,
+        /// Root of the installed package, containing `bundle/` and `skills/`.
+        bundle_dir: PathBuf,
     },
 }
 
@@ -44,6 +53,7 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
         [flag] if flag == "--version" => Ok(Mode::Version),
         [flag] if flag == "--check-config" => Ok(Mode::CheckConfig),
         [command, rest @ ..] if command == "init" => parse_init(rest),
+        [command, rest @ ..] if command == "upgrade" => parse_upgrade(rest),
         _ => Err(USAGE.to_string()),
     }
 }
@@ -53,8 +63,8 @@ pub fn print_version() {
     println!("{}", env!("CARGO_PKG_VERSION"));
 }
 
-/// Seed the current directory from a versioned skill bundle without starting MCP.
-pub fn init(profile: Option<String>, skills_dir: PathBuf) -> ExitCode {
+/// Seed the current directory from a versioned package bundle without starting MCP.
+pub fn init(profile: Option<String>, bundle_dir: PathBuf) -> ExitCode {
     let repo_root = match std::env::current_dir() {
         Ok(path) => path,
         Err(error) => {
@@ -63,7 +73,7 @@ pub fn init(profile: Option<String>, skills_dir: PathBuf) -> ExitCode {
         }
     };
 
-    match bootstrap_project(&repo_root, profile.as_deref(), &skills_dir) {
+    match bootstrap_project(&repo_root, profile.as_deref(), &bundle_dir) {
         Ok(result) => {
             println!("{result}");
             ExitCode::SUCCESS
@@ -78,7 +88,7 @@ pub fn init(profile: Option<String>, skills_dir: PathBuf) -> ExitCode {
 /// Parse the bootstrap command without accepting ambiguous or repeated options.
 fn parse_init(args: &[String]) -> Result<Mode, String> {
     let mut profile = None;
-    let mut skills_dir = None;
+    let mut bundle_dir = None;
     let mut index = 0;
     while index < args.len() {
         let Some(value) = args.get(index + 1) else {
@@ -86,18 +96,75 @@ fn parse_init(args: &[String]) -> Result<Mode, String> {
         };
         match args[index].as_str() {
             "--profile" if profile.is_none() => profile = Some(value.clone()),
-            "--skills-dir" if skills_dir.is_none() => skills_dir = Some(PathBuf::from(value)),
+            "--bundle-dir" if bundle_dir.is_none() => bundle_dir = Some(PathBuf::from(value)),
             _ => return Err(USAGE.to_string()),
         }
         index += 2;
     }
-    let Some(skills_dir) = skills_dir else {
+    let Some(bundle_dir) = bundle_dir else {
         return Err(USAGE.to_string());
     };
     Ok(Mode::Init {
         profile,
-        skills_dir,
+        bundle_dir,
     })
+}
+
+fn parse_upgrade(args: &[String]) -> Result<Mode, String> {
+    let mut check = false;
+    let mut bundle_dir = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--check" if !check => {
+                check = true;
+                index += 1;
+            }
+            "--bundle-dir" if bundle_dir.is_none() => {
+                let Some(value) = args.get(index + 1) else {
+                    return Err(USAGE.to_string());
+                };
+                bundle_dir = Some(PathBuf::from(value));
+                index += 2;
+            }
+            _ => return Err(USAGE.to_string()),
+        }
+    }
+    let Some(bundle_dir) = bundle_dir else {
+        return Err(USAGE.to_string());
+    };
+    Ok(Mode::Upgrade { check, bundle_dir })
+}
+
+pub fn upgrade(check: bool, bundle_dir: PathBuf) -> ExitCode {
+    let repo_root = match std::env::current_dir() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("truenorth-mcp: could not resolve the current directory: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let result = if check {
+        plan_workspace_upgrade(&repo_root, &bundle_dir)
+    } else {
+        apply_workspace_upgrade(&repo_root, &bundle_dir)
+    };
+    match result {
+        Ok(plan) => match serde_json::to_string(&plan) {
+            Ok(json) => {
+                println!("{json}");
+                ExitCode::SUCCESS
+            }
+            Err(error) => {
+                eprintln!("truenorth-mcp: could not serialize the upgrade plan: {error}");
+                ExitCode::FAILURE
+            }
+        },
+        Err(error) => {
+            eprintln!("truenorth-mcp: {error}");
+            ExitCode::FAILURE
+        }
+    }
 }
 
 /// Inspect the configuration without starting the server or running a gate command.

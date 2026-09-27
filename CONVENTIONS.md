@@ -31,6 +31,10 @@ See the "Relationship to upstream" section in `README.md`.
 - The runtime is a Rust crate (`runtime/`), MCP over stdio.
 - The distribution is a thin Node.js wrapper (`npm/`) that resolves the platform
   binary and runs it.
+- Each wrapper release regenerates `npm/bundle/current.json`, retains every supported historical
+  manifest under `npm/bundle/history/`, and keeps the bundle, wrapper, native package, Cargo
+  manifest, and lockfile versions aligned. `node scripts/build-bundle-manifest.js --check` is a
+  release gate.
 - `cargo fmt` and `cargo clippy` settle Rust style. CI denies warnings. Run both
   before every commit.
 

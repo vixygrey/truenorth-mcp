@@ -101,6 +101,20 @@ npx -y truenorth-mcp init --profile generic
 `init` refuses to overwrite `.agent/`, `specs/`, `skills/`, or its workflow files. It does
 not create a language manifest, source tree, CI workflow, or verify command.
 
+Upgrade an initialized workspace with the same npm package:
+
+```bash
+npx -y truenorth-mcp upgrade --check
+npx -y truenorth-mcp upgrade
+```
+
+The check command prints a deterministic JSON plan and does not write. Apply requires a clean Git
+worktree and index. Managed files that still match their installed source are updated or removed;
+local edits and unowned path collisions are preserved. Interrupted upgrades resume from the
+journal under `.agent/runtime/upgrade`. TrueNorth-MCP 1.0.2 workspaces without a workspace
+manifest are adopted only where content and file mode match the packaged historical baseline.
+Neither command mutates `specs/`.
+
 Then register the wrapper as an MCP server in your client:
 
 ```json

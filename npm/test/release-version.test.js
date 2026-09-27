@@ -26,6 +26,13 @@ function fixture() {
       PLATFORMS.map((platform) => [`@truenorth-mcp/${platform}`, VERSION]),
     ),
   });
+  writeJson(root, 'npm/bundle/current.json', {
+    schema_version: 1,
+    bundle_version: VERSION,
+    workspace_schema_version: '1',
+    supported_from: [],
+    files: [],
+  });
   for (const platform of PLATFORMS) {
     writeJson(root, `npm/packages/${platform}/package.json`, {
       name: `@truenorth-mcp/${platform}`,
@@ -101,6 +108,19 @@ test('rejects a mismatched root wrapper version', () => {
     assert.match(
       checkReleaseVersion(root, VERSION).join('\n'),
       /npm\/package\.json: package version is 0\.9\.0, expected 1\.0\.0/,
+    );
+  });
+});
+
+test('rejects a mismatched bundle version', () => {
+  withFixture((root) => {
+    const manifest = path.join(root, 'npm/bundle/current.json');
+    const bundle = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+    bundle.bundle_version = '0.9.0';
+    fs.writeFileSync(manifest, `${JSON.stringify(bundle, null, 2)}\n`);
+    assert.match(
+      checkReleaseVersion(root, VERSION).join('\n'),
+      /npm\/bundle\/current\.json: bundle version is 0\.9\.0, expected 1\.0\.0/,
     );
   });
 });

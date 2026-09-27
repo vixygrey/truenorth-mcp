@@ -12,6 +12,7 @@
   },
   "files": [
     "bin/truenorth.js",
+    "bundle",
     "lib/runner.js",
     "skills"
   ],
