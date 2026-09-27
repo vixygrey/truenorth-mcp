@@ -44,7 +44,8 @@ tasks:
     status: failing # flip to passing only after verify exits 0 (e45s06)
 ```
 
-Update the `.agent/tasks/<capsule>/group.yml` manifest to list the story and its BCPs. Update `.agent/tasks/execution-status.yml` after structural changes.
+The story must already be listed in `group.yml`. Do not update the manifest or
+`.agent/tasks/execution-status.yml`; report a mismatch to the owning skill.
 
 ## Plan template
 
@@ -106,7 +107,9 @@ N. <What to do> → verify: <runnable command that proves it worked>
 
 ### Risk Assignment Heuristics
 
-Every task and story MUST be assigned a `risk:` level (P0, P1, P2, P3). When the test plan note exists for the task group, defer to its scenario risk mapping (`SC-eNNsYY-P0-NN`). Otherwise, apply these heuristics based on BCP and story type:
+Every task and story MUST be assigned a `risk:` level (P0, P1, P2, P3). When
+`.agent/tasks/<capsule>/test-plan.md` exists, preserve its scenario risk mapping
+(`SC-eNNsYY-P0-NN`). Otherwise, apply these heuristics based on BCP and story type:
 
 - **P0**: Critical path, data loss risk, auth/security boundary, external integration, or high BCP (≥ 5).
 - **P1**: Core feature logic, state mutations, standard business value (BCP 3-4).

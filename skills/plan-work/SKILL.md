@@ -6,22 +6,29 @@ kind: prose
 
 # Plan Work
 
-> **Spine position**: step 3. scope-work, then slice-tasks, then plan-work.
+> **Spine position**: step 3. `scope-work`, then `slice-tasks`, optional
+> `plan-tests`, then `plan-work`.
 
-Produce a detailed, verifiable implementation plan in the active task group
-directory. Output: a story-spec file (countable-story-format) and a tasks file with
-runnable verify commands. "I think it works" is not a step.
+Produce the detailed specification and runnable task ledger for one story already
+declared in the active group manifest.
 
-> **HARD GATE**: Do NOT proceed with a plan until the task success criteria are clear. When success is ambiguous, convert the task into "step, then verify: `<cmd>`" pairs here before writing the tasks. Every task ships a runnable verify, or the plan is not done.
+## Artifact contract
+
+- **Planning writes**: `.agent/tasks/<capsule>/eNNsYY-<slug>.md` and
+  `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` for the selected story.
+- **Coordination write**: `.agent/tasks/state.yml` handoff only.
+- **Reads**: the release index, product scope, active `group.yml`, tech stack,
+  glossary, and `test-plan.md` when present.
+- **Readers**: execution, development, verification, and traceability skills.
+- **Never writes**: the release index, `group.yml`, `test-plan.md`, or
+  `execution-status.yml`.
+
+> **HARD GATE**: The selected story must already exist in `group.yml`, with its
+> specification and task filenames reserved. If the group or story is missing,
+> return to `slice-tasks`. Never synthesize or repair an upstream artifact.
 >
-> **RECURSIVE DISCIPLINE**: this lifecycle applies to every task, including updating these skills. Never skip planning because a task is meta or documentation.
-
-## Pre-flight
-
-Read the release plan, the product scope, the active task group, the tech stack,
-and the glossary.
-
-> **ZOOM-OUT MANDATE**: when modifying an existing module, state the module purpose, name its callers, and list its contracts. When you cannot answer all three, stop. The scope is misunderstood.
+> Do not proceed until the success criteria are clear. Every task must include a
+> runnable verify command.
 
 When the plan touches an existing module, run `assess-impact` first to understand
 the blast radius.
@@ -49,12 +56,13 @@ the blast radius.
    Each step leaves the codebase working, has one observable outcome, and is
    verifiable with a single command. Name any rationalization you caught before you
    move on.
-3. **Write the capsule story spec and tasks**: output two files inside the active
-   task group. See [REFERENCE.md](REFERENCE.md) for the file formats. Each task
-   MUST include a `risk:` field (`P0` to `P3`). When a test plan exists, inherit its
-   risk classifications and scenario ids. Each task optionally includes a
-   `security:` field, and a `security: medium` or `high` task MUST include "no new
-   security findings in affected paths" in its verify steps.
+3. **Write the selected story specification and task ledger**: create only the two
+   filenames reserved for the story in `group.yml`. See
+   [REFERENCE.md](REFERENCE.md) for their formats. Each task MUST include a `risk:`
+   field from P0 to P3. When `test-plan.md` exists, preserve its risk
+   classifications and scenario ids. Each task can include a `security:` field. A
+   `security: medium` or `high` task MUST include "no new security findings in
+   affected paths" in its verify steps.
 
    Requirement delta tags: when a story modifies existing behavior, the story-spec
    requirements MUST use delta tags with mandatory before-and-after content.
@@ -71,10 +79,12 @@ the blast radius.
 
 4. **Verify the step format**: every step MUST follow "N. <what to do>, then
    verify: <runnable command>". See [REFERENCE.md](REFERENCE.md) for examples.
-   4a. **Cross-artifact consistency pass** (HARD GATE): before handoff, check the
-   capsule artifacts for consistency. Classify each finding as CRITICAL, HIGH, or
-   MED. A CRITICAL or HIGH blocks code generation. Fix the capsule artifacts first.
-   A MED requires explicit user acknowledgment.
+   4a. **Cross-artifact consistency pass** (HARD GATE): before handoff, verify
+   that the story id agrees across `group.yml`, both reserved filenames, the story
+   specification, and the task ledger. Every referenced scenario id must exist in
+   `test-plan.md`. Classify each mismatch as CRITICAL, HIGH, or MED. A CRITICAL or
+   HIGH finding blocks handoff. Report an upstream mismatch to its owning skill;
+   never rewrite that artifact. A MED finding requires explicit user acknowledgment.
    4b. **Tasks failing ledger**: every new task entry starts with `status: failing`.
    Flip it to `status: passing` only after its verify command exits 0 during
    develop-tdd or verify-work. Never pre-mark a task passing at plan time.
@@ -94,10 +104,11 @@ feature branch), then `build-epic`, `execute-plan`, or `develop-tdd`.
 
 ## Verify
 
-Confirm the active task group has a story spec and a tasks file, and that the
-cross-artifact consistency pass reports no CRITICAL or HIGH finding.
+Confirm the selected story has exactly one specification and one task ledger, all
+story ids and reserved filenames agree with `group.yml`, every test scenario
+reference resolves, and no CRITICAL or HIGH consistency finding remains.
 
 ## Handoff
 
-Gate: READY. Next: kickoff-branch.
-Writes: `state.yaml` `handoff.next_skill = kickoff-branch`.
+Gate: READY. Next: `kickoff-branch`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = kickoff-branch`.

@@ -21,18 +21,26 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 ### PHASE 3: PLAN
 
 - **Goal**: Write a verifiable implementation plan with success criteria.
-- **Deliverables**: `release-plan.yaml`, per-group task manifests under `.agent/tasks/<capsule>/` with `verify:` per task.
-- **Skills**: `scope-work`, `slice-tasks`, `plan-work`.
-- **Gate**: Quality (request-review ≥94%) + slopcheck [SUS]/[SLOP].
+- **Deliverables**: `.agent/tasks/release-plan.yml`, each
+  `.agent/tasks/<capsule>/group.yml`, optional
+  `.agent/tasks/<capsule>/test-plan.md`, and per-story specification and task
+  ledger files.
+- **Skills**: `plan-release` owns the release index, `slice-tasks` owns group
+  boundaries, `plan-tests` owns test architecture, and `plan-work` owns story
+  detail.
+- **Gate**: Quality (request-review ≥94%) plus slopcheck [SUS]/[SLOP].
 
 ### PHASE 4: BUILD
 
-- **Goal**: Execute the plan story-by-story using the 8-step `build-epic` cycle with TDD and vertical slices.
-- **Deliverables**: Code; `execution-status.yaml` updated per story. Cycle-time metrics are out of scope; the per-story metrics row is removed.
-- **Skills**: `build-epic` (conductor) → per-story: `survey-context`, `plan-work`, `kickoff-branch`, `develop-tdd`, `verify-work`, `audit-code`, `commit-message`, `release-branch`.
-- **BCP tracking**: `plan-release` sizes each story in Business Complexity Points (BCP) before the build queue. `plan-work` confirms and writes the size to `state.yaml` as `group_cycle.story_bcps`.
-- **Timestamps**: Cycle-time metrics are out of scope; the metrics stamps and BCP/hr ledger are removed.
-- **next_skill**: Each critical-path skill writes `handoff.next_skill` to `state.yaml`. Agents resume by reading `state.yaml` — no guessing.
+- **Goal**: Execute the plan story by story using the `build-epic` cycle with TDD
+  and vertical slices.
+- **Deliverables**: Code and `.agent/tasks/execution-status.yml` updates per story.
+- **Skills**: `build-epic` (conductor) → per-story: `survey-context`,
+  `plan-work`, `kickoff-branch`, `develop-tdd`, `verify-work`, `audit-code`,
+  `commit-message`, `release-branch`.
+- **BCP tracking**: `slice-tasks` records story BCPs in `group.yml`.
+- **next_skill**: Each critical-path skill writes `handoff.next_skill` to
+  `.agent/tasks/state.yml`. Agents resume by reading that file.
 - **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742) shows live pipeline, task group queue, and BCP metrics.
 - **Gate**: Integration tests PASS; all 8 build-epic steps completed per story.
 
@@ -109,6 +117,6 @@ Orchestrate maintains `.agent/tasks/state.yml` to track:
 - **Current flow / task group**: `active_flow`, `active_group_id`, `group_cycle`.
 - **Handoff**: `last_step_completed`, `open_decisions`, `required_reading`, `next_skill`.
 - **Git**: `branch`, `hash` for session continuity.
-- **Progress**: Story status lives in `execution-status.yaml` only.
+- **Progress**: Story status lives in `.agent/tasks/execution-status.yml` only.
 
 In the event of a crash or exit, resume the orchestrate skill to pick up exactly where the session left off.

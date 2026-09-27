@@ -6,43 +6,49 @@ kind: prose
 
 # Plan Tests
 
-> **Spine position**: between `slice-tasks` and `plan-work` for a task group with `risk: P0` or `P1`. Optional for P2 or P3, and can be waived in `state.yaml`.
+> **Spine position**: after `slice-tasks` and before `plan-work` for a task group
+> with P0 or P1 risk. Optional for P2 or P3.
 
-Bridge the gap between slicing and planning by designing the test suite as a
-first-class system. Produces the group test plan.
+Design the risk-scaled test architecture for one group and write it to
+`.agent/tasks/<capsule>/test-plan.md`.
 
-## Pre-flight
+## Artifact contract
 
-- Read the story list for the active group.
+- **Writes**: `.agent/tasks/<capsule>/test-plan.md`.
+- **Reads**: `.agent/tasks/<capsule>/group.yml` and relevant product and
+  architecture context.
+- **Readers**: `plan-work`, `verify-work`, and lifecycle gate orchestration.
+- **Never writes**: the release index, group manifest, story specifications, task
+  ledgers, test code, production code, or execution status.
+
+`group.yml` must exist and contain the story boundaries. If it is missing or a
+requested story is unknown, return to `slice-tasks`. Do not synthesize stories.
 
 ## Core workflow
 
-1. **Analyze the group**: read the sliced stories in the active task group.
-2. **Risk assessment**: map each behavior to a P0 to P3 risk tier.
-3. **Level strategy**: classify each scenario as unit, integration, or E2E.
-4. **Fixture design**: plan the factories, network intercepts, and mocks. See
-   REFERENCE.md.
-5. **NFR plan**: define verifiable commands for the non-functional requirements.
-   Skip when `--lite`.
-6. **Publish**: generate the group test plan.
+1. **Read the group**: use the exact story ids and boundaries from `group.yml`.
+2. **Assess risk**: map each behavior to P0 through P3.
+3. **Choose levels**: place each scenario at the lowest effective unit,
+   integration, or end-to-end level.
+4. **Design fixtures**: specify factories, network intercepts, and database state.
+5. **Plan NFR checks**: define runnable commands for applicable non-functional
+   requirements. Skip this step in `--lite` mode.
+6. **Publish**: write `.agent/tasks/<capsule>/test-plan.md` using the template in
+   [REFERENCE.md](REFERENCE.md).
 
-## Hard gates and guardrails
+## Hard gates
 
-- Do NOT write test code or production code during this skill.
-- The scenario id format MUST be `SC-eNNsYY-P{0|1|2|3}-NN`.
-- `plan-work` MUST reference these scenario ids in its Gherkin acceptance criteria.
-- Default to pushing a test to the lowest possible level.
-
-## Execution modes
-
-- Standard: the full plan.
-- `--lite`: skip the NFRs and the complex fixture planning.
+- Scenario ids use `SC-eNNsYY-P{0|1|2|3}-NN`.
+- Every scenario names a story present in `group.yml`.
+- Every P0 and P1 behavior has a verification level and runnable command.
+- No scenario changes a story boundary.
+- `plan-work` must preserve scenario ids and risk classifications.
 
 ## Verify
 
-Confirm the group test plan exists for the active group.
+Confirm `.agent/tasks/<capsule>/test-plan.md` exists, every scenario references a
+story in `group.yml`, and no upstream or implementation artifact changed.
 
 ## Handoff
 
-Gate: READY. Next: plan-work.
-Writes: `state.yaml` `handoff.next_skill = plan-work`.
+Gate: READY. Next: `plan-work`.

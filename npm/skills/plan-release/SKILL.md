@@ -6,144 +6,85 @@ kind: prose
 
 # Plan Release
 
-> **HARD GATE** — Do NOT run this skill unless `elaborate-spec` has produced a clear spec or the user has already defined the feature in detail. If the problem is still fuzzy, run `elaborate-spec` first.
-> **HARD GATE** — `.agent/product/scope.yml` must exist. If missing, run `scope-work` first.
+> **HARD GATE**: Run this skill only after `elaborate-spec` has produced a clear
+> specification and `.agent/product/scope.yml` exists. Run `elaborate-spec` or
+> `scope-work` first when either input is missing.
 
-Synthesize the conversation context into `.agent/tasks/release-plan.yml` (index) and shard detail into the task group under `.agent/tasks/`. No new interview — only clarify if something is genuinely ambiguous.
+Create or update the release index at `.agent/tasks/release-plan.yml`. This skill
+owns release metadata, group identity, capsule paths, prioritization, and group
+ordering. It does not create capsule contents.
 
-## Outputs
+## Artifact contract
 
-| File                                       | Content                                                                                                                     |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `.agent/tasks/release-plan.yml`            | `release.version`, semver bump hint, WSJF-ordered group list with `id`, `capsule_dir`, `wsjf`, `bcps` — **no story status** |
-| `.agent/tasks/<capsule>/group.yml`         | Group manifest: `id`, `title`, `wsjf`, `total_bcps`, `status`, `stories[]` list                                             |
-| `.agent/tasks/<capsule>/eNNsYY-<slug>.md`  | Story spec in the countable-story-format with 20 sections and Gherkin acceptance criteria                                   |
-| `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` | Decoupled task checklist with `verify:` commands per task                                                                   |
-| `.agent/tasks/execution-status.yml`        | `stories` and `development_status` maps for story and group progress                                                        |
+- **Writes**: `.agent/tasks/release-plan.yml`.
+- **Reads**: the elaborated specification, product scope, and relevant risk reports.
+- **Readers**: `slice-tasks`, planning analysis, execution, traceability, and status
+  views.
+- **Never writes**: `group.yml`, `test-plan.md`, story specifications, task ledgers,
+  or `execution-status.yml`.
 
-## Task Group Structure
-
-All task groups use capsule directories (no flat/folder distinction):
-
-```
-.agent/tasks/e01-auth-system/
-├── group.yml              # Group manifest
-├── adr/                   # Group-local ADRs (created lazily)
-├── e01s01-login.md        # Story spec (countable-story-format)
-├── e01s01-tasks.yaml      # Decoupled task checklist
-├── e01s02-jwt.md          # Story spec
-└── e01s02-tasks.yaml      # Decoupled task checklist
-```
-
-**Rationale:** Capsule dirs achieve change isolation (C9), enable archive pruning (C2/C6), and enforce SRP by decoupling spec `.md` from execution `-tasks.yaml` (C1).
+If a required group manifest, story specification, or task ledger is missing, hand
+off to its owner. Do not regenerate it.
 
 ## Process
 
-### 1. Draft task groups and stories
+### 1. Define release groups
 
-From the conversation context, define:
+Identify the task groups needed to deliver the scoped release. Give each group a
+stable id, title, capsule path, BCP baseline, and WSJF inputs. Do not define story
+boundaries or implementation tasks here.
 
-- **Task groups** — `e01`, `e02`, … (stable IDs; WSJF order in `release-plan.yaml` only)
-- **Stories** — `e01s01`, `e01s02`, … with Gherkin acceptance criteria
+### 2. Order groups
 
-WSJF-sort the groups: score = (Business Value + Time Criticality + Risk Reduction) / Job Size. Highest score first.
+Calculate WSJF as:
 
-> **Security risk boost:** If the security review report for a task group identifies HIGH or CRITICAL risk, add +2 to the WSJF numerator (BV + TC + RR + 2) to reflect the urgency of addressing security concerns before they ship. Document the boost in the group note field in release-plan.yaml.
+```text
+(Business Value + Time Criticality + Risk Reduction) / Job Size
+```
 
-### 2. Write acceptance criteria (Gherkin)
+Sort groups from highest to lowest score. If a security report identifies HIGH or
+CRITICAL risk for a group, add 2 to the numerator and record the reason in that
+group's release-index note.
 
-For each story, write at least one happy-path and one edge-case scenario (countable format §17 if maturity ≥ 3).
+### 3. Save the release index
 
-### 3. Write tasks with verify commands
-
-Every task must have a `verify:` command. No verify command = not a task.
-
-### 4. Save .agent/tasks/release-plan.yml
-
-> **Do NOT hand-track the real version.** The release is tag-driven. A `v*` tag
-> triggers the release. The `version` here is a non-authoritative label. Read the
-> real number from the published release. Set the `bump_hint`, the expectation.
+The version is a non-authoritative label. The published tag remains authoritative.
 
 ```yaml
 release:
-  version: "2.29.0" # a mirror of the next expected tag, not authoritative
+  version: "2.29.0"
   codename: "Feature Name"
-  status: planning # planning | in_progress | released
-  bump_hint: minor # patch | minor | major
+  status: planning
+  bump_hint: minor
 groups:
   - id: e01
     title: Auth System
     wsjf: 4.5
-    capsule_dir: epics/e01-auth-system
+    bcps: 8
+    capsule_dir: .agent/tasks/e01-auth-system
   - id: e02
     title: User Profile
     wsjf: 3.8
-    capsule_dir: epics/e02-user-profile
-```
-
-### 5. Save group manifest (`group.yml`)
-
-Each task group directory contains a `group.yml` manifest:
-
-```yaml
-id: e01
-title: Auth System
-wsjf: 4.5
-total_bcps: 8
-status: in_progress
-stories:
-  - id: e01s01
-    title: Login
-    bcps: 3
-    status: todo
-    spec: e01s01-login.md
-    tasks: e01s01-tasks.yaml
-  - id: e01s02
-    title: JWT Token Management
     bcps: 5
-    status: todo
-    spec: e01s02-jwt.md
-    tasks: e01s02-tasks.yaml
+    capsule_dir: .agent/tasks/e02-user-profile
 ```
 
-### 6. Save story specs (countable-story-format .md)
+Each `capsule_dir` uses `.agent/tasks/<capsule>/`. `slice-tasks` owns the
+`group.yml` within that directory.
 
-Each story becomes a standalone `.md` file following the countable-story-format. Minimum: maturity 3 (Countable) with all 20 sections present. Acceptance criteria in §17 use Gherkin scenarios.
+### 4. Validate ownership and ordering
 
-### 7. Save decoupled task files (`-tasks.yaml`)
+- Every group has one stable id and one unique capsule path.
+- Group order matches descending WSJF.
+- Every referenced capsule path is under `.agent/tasks/`.
+- The change set contains no capsule artifact or execution-status mutation.
 
-Each story has a decoupled `-tasks.yaml` with implementation steps:
+## Verify
 
-```yaml
-story_id: e01s01
-title: Login
-status: todo
-bcps: 3
-tasks:
-  - id: 1
-    description: "Add login form component tests"
-    verify: "npm test -- login-form.test.tsx"
-    status: todo
-  - id: 2
-    description: "Implement login form with validation"
-    verify: "npm test -- login-form.test.tsx"
-    status: todo
-```
+Confirm `.agent/tasks/release-plan.yml` exists, parses as YAML through the project's
+configured YAML tooling, and contains a unique ordered group list. Confirm no file
+owned by another planning skill changed.
 
-> **HARD GATE** — Every task MUST have a runnable `verify:` command. No `verify:` = not a task.
-> Confirm the release plan and the task groups parse as valid YAML.
+## Handoff
 
-### 7b. Generate bug summary and sync execution status
-
-Add `bugs` totals from `.agent/tasks/bugs.yml` to the release plan, then update
-`.agent/tasks/execution-status.yml` for story and group progress.
-
-### 9. Snapshot on planning close (optional)
-
-Copy to `.agent/product/snapshots/release-<version>/` when the user approves the plan.
-
-### 10. Suggest next steps
-
-- Run `assess-impact` before `plan-work` for any story touching existing modules.
-- Run `plan-work` per story for detailed steps inside the group shard.
-- Run `change-request` if a new requirement arrives mid-flight.
+Gate: INDEXED. Next: `slice-tasks` for each indexed group.

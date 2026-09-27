@@ -189,3 +189,5 @@ tasks:
   group_kind: ticket
   task_name: Define core catalog and optional skill sets
   verify_command: bash scripts/preflight.sh check wrapper artifact-smoke format shell
+- task_name: 'Implement planning artifact ownership for issue #450'
+  verify_command: node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && cargo test
