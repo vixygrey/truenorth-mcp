@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-77 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+76 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -70,7 +70,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `session-state`       | Track decisions and progress to prevent context rot             | [Sustain](Skills-Sustain)   |
 | `setup-environment`   | Pre-install dependencies and configure tools                    | [Build](Skills-Build)       |
 | `simple-english`      | Write technical text with Simplified Technical English          | [Utility](Skills-Utility)   |
-| `simulate-agents`     | Run a mock-user and auditor agent before human review           | [Sustain](Skills-Sustain)   |
 | `slice-tasks`         | Break a scoped PRD into vertical slices (spine step 2)          | [Plan](Skills-Plan)         |
 | `smoke-test`          | Post-deploy health check against a live URL                     | [Build](Skills-Build)       |
 | `spike-prototype`     | A throw-away prototype for an unknown problem space             | [Build](Skills-Build)       |

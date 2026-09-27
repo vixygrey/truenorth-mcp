@@ -59,7 +59,7 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
 
         "session-state" | "compose-workflow" | "delegate-task" | "dispatch-agents"
         | "edit-document" | "evolve-skill" | "migrate-spec" | "organize-workspace"
-        | "reset-baseline" | "simulate-agents" | "stocktake-skills" | "write-document" => "Sustain",
+        | "reset-baseline" | "stocktake-skills" | "write-document" => "Sustain",
 
         _ => return None,
     };

@@ -1,6 +1,6 @@
 ---
 name: verify-work
-description: Multi-phase UAT gate. Cold-start smoke, build, typecheck, lint, tests, step-by-step manual verification, and a gaps-closure loop. Use it after execute-plan or develop-tdd, before audit-code.
+description: "Multi-phase UAT gate with cold-start smoke, mechanical checks, manual verification, and a gaps loop. Supports fresh-context user simulation for gap discovery. Use it after execute-plan or develop-tdd, before audit-code, or for a mock-user or user-observable simulation."
 kind: prose
 ---
 
@@ -19,6 +19,9 @@ was promised?".
 - `--smoke`: cold-start only plus one happy-path flow. Use it for hotfixes.
 - `--cli`: CLI-tool verification. Replaces cold-start with a binary smoke
   checklist. Use it for a CLI tool with no server process.
+- `--simulate-user`: follow the Verification Script in a fresh context from the
+  user's perspective. Record UX and behavior gaps. This mode does not replace
+  mechanical gates or user-confirmed manual UAT.
 
 ## Risk-scaled depth
 
@@ -66,6 +69,8 @@ Read the `risk:` field from the story (default `P1` when absent) to scale the ri
    performance, reliability, and operability. Read the thresholds from the test
    plan. A FAIL on any dimension blocks the gate.
 6. **Step-by-step UAT** (skip if P2 or P3): one user-observable action at a time.
+   In `--simulate-user` mode, use a fresh context and record expected versus
+   actual behavior, but require real user confirmation before a pass.
 7. **Gaps loop**: a failure logs a gap, routes to `plan-work`, then re-verifies.
    An unaddressed HIGH finding from step 5 feeds this loop.
    7a. **Validation gate**: every task is `status: passing`, the evidence is
@@ -89,11 +94,6 @@ After UAT, close any gap between the promised behavior and the actual behavior.
 - When the behavior does not match the promise, log the gap.
 - Route back to `plan-work` or `develop-tdd` to fix the gap.
 - Re-verify until the gap count is zero.
-
-## UAT dialogue
-
-- Pass: the user confirms each step.
-- Fail: capture expected versus actual. Do not mark the story done.
 
 ## Persist verification evidence
 

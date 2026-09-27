@@ -173,3 +173,7 @@ tasks:
   group_kind: ticket
   task_name: Retire terse-mode in favor of agent conventions
   verify_command: test ! -e skills/terse-mode && test ! -e npm/skills/terse-mode && ! git grep -q terse-mode -- skills npm/skills wiki specs/adr runtime/src scripts .agent/tasks/skill-graph.jsonl && diff -qr skills npm/skills && cargo test --locked --manifest-path runtime/Cargo.toml checked_in_skill_catalog_matches_the_two_tier_contract && bash scripts/preflight.sh check format shell wrapper
+- group_id: '442'
+  group_kind: ticket
+  task_name: Retire simulate-agents duplicate review ceremony
+  verify_command: test ! -e skills/simulate-agents && test ! -e npm/skills/simulate-agents && ! git grep -q simulate-agents -- skills npm/skills wiki runtime/src .agent/tasks/skill-graph.jsonl && diff -qr skills npm/skills && cargo test --locked --manifest-path runtime/Cargo.toml checked_in_skill_catalog_matches_the_two_tier_contract && bash scripts/preflight.sh check format shell wrapper

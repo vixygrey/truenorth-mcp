@@ -1,6 +1,6 @@
 ---
 name: request-review
-description: "Dispatch a fresh reviewer agent with a clean context to critique the code after audit-code passes. The reviewer has no shared state with the coding agent and gives a genuine second opinion. Use it after audit-code passes, before committing, or when the user wants an independent code review."
+description: "Dispatch fresh reviewer agents with clean contexts to critique code after audit-code passes. The reviewers give a genuine independent second opinion. Use it before committing or for an independent auditor, code review, or pre-review critique."
 kind: prose
 ---
 
@@ -9,8 +9,8 @@ kind: prose
 Dispatch a fresh reviewer agent with a clean context. A reviewer has no shared
 state, so it finds what the coding agent missed.
 
-Distinct from `audit-code`. `audit-code` is self-review. This skill dispatches an
-external agent.
+Distinct from `audit-code`. `audit-code` is self-review. This skill dispatches
+external agents for a genuine second opinion, including auditor-style critique.
 
 Run `audit-code` first. Do not waste reviewer attention on a hygiene issue you could
 have caught yourself.
