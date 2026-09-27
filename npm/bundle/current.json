@@ -661,6 +661,16 @@
       "mode": "0644"
     },
     {
+      "path": "skills/release-branch/scripts/check-route.sh",
+      "sha256": "6b5dd26ebb3bb479e264a2d3f5ae0025a9f07ad4492cd27fc2e2f4a524057261",
+      "mode": "0755"
+    },
+    {
+      "path": "skills/release-branch/scripts/tests/run.sh",
+      "sha256": "26dac56d7506f6e2444530d6ec7160f5bb85ddac9b0a5b5911421d63bd4e699e",
+      "mode": "0755"
+    },
+    {
       "path": "skills/request-review/SKILL.md",
       "sha256": "589e3278925217ca897d5c30ba73a87d968395f141600b06f30158a5279e97b6",
       "mode": "0644"

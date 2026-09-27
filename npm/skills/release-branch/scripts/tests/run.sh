@@ -23,7 +23,7 @@ make_git() {
   local bin_dir="$1"
   mkdir -p "$bin_dir"
   cat >"$bin_dir/git" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 if [ "${1:-}" = "rev-parse" ]; then
   printf 'true\n'
 fi
@@ -36,7 +36,7 @@ make_non_git() {
   local bin_dir="$1"
   mkdir -p "$bin_dir"
   cat >"$bin_dir/git" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 exit 1
 EOF
   chmod +x "$bin_dir/git"
@@ -45,7 +45,7 @@ EOF
 make_gh() {
   local bin_dir="$1"
   cat >"$bin_dir/gh" <<'EOF'
-#!/usr/bin/env bash
+#!/bin/bash
 exit 0
 EOF
   chmod +x "$bin_dir/gh"
@@ -75,7 +75,7 @@ assert_failure() {
 solo_bin="$TMP/solo-bin"
 make_git "$solo_bin"
 assert_success "solo Git needs only git" \
-  env PATH="$solo_bin:/usr/bin:/bin" bash "$SCRIPT" --mode solo-git --action inspect
+  env PATH="$solo_bin" /bin/bash "$SCRIPT" --mode solo-git --action inspect
 if grep -q '"route":"solo-git"' "$TMP/stdout"; then
   report_pass "solo Git route is explicit"
 else
@@ -85,25 +85,25 @@ fi
 team_bin="$TMP/team-bin"
 make_git "$team_bin"
 assert_failure "team PR rejects a missing GitHub CLI" \
-  env PATH="$team_bin:/usr/bin:/bin" bash "$SCRIPT" --mode team-pr --action inspect
+  env PATH="$team_bin" /bin/bash "$SCRIPT" --mode team-pr --action inspect
 make_gh "$team_bin"
 assert_success "team PR accepts git and GitHub CLI" \
-  env PATH="$team_bin:/usr/bin:/bin" bash "$SCRIPT" --mode team-pr --action inspect
+  env PATH="$team_bin" /bin/bash "$SCRIPT" --mode team-pr --action inspect
 
 assert_failure "missing workflow mode fails closed" \
-  env PATH="$solo_bin:/usr/bin:/bin" bash "$SCRIPT" --action inspect
+  env PATH="$solo_bin" /bin/bash "$SCRIPT" --action inspect
 assert_failure "unknown workflow mode fails closed" \
-  env PATH="$solo_bin:/usr/bin:/bin" bash "$SCRIPT" --mode automatic --action inspect
+  env PATH="$solo_bin" /bin/bash "$SCRIPT" --mode automatic --action inspect
 non_git_bin="$TMP/non-git-bin"
 make_non_git "$non_git_bin"
 assert_failure "unsupported Jujutsu workflow fails closed" \
-  env PATH="$non_git_bin:/usr/bin:/bin" bash "$SCRIPT" --mode solo-git --action inspect
+  env PATH="$non_git_bin" /bin/bash "$SCRIPT" --mode solo-git --action inspect
 
 for action in merge tag publish cleanup; do
   assert_failure "$action requires explicit approval" \
-    env PATH="$solo_bin:/usr/bin:/bin" bash "$SCRIPT" --mode solo-git --action "$action"
+    env PATH="$solo_bin" /bin/bash "$SCRIPT" --mode solo-git --action "$action"
   assert_success "$action accepts explicit approval" \
-    env PATH="$solo_bin:/usr/bin:/bin" bash "$SCRIPT" --mode solo-git --action "$action" --approved
+    env PATH="$solo_bin" /bin/bash "$SCRIPT" --mode solo-git --action "$action" --approved
 done
 
 printf '%s passed, %s failed\n' "$pass" "$fail"
