@@ -28,10 +28,10 @@ env:
 jobs:
   check:
     name: fmt, clippy, test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Detect the crate
         id: crate
@@ -45,31 +45,32 @@ jobs:
 
       - name: Set up Node.js
         if: steps.crate.outputs.present == 'true'
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "22"
+          node-version-file: .node-version
 
       - name: Set up Python
         if: steps.crate.outputs.present == 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3"
 
       - name: Set up Go
         if: steps.crate.outputs.present == 'true'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
         with:
-          go-version: stable
+          go-version: "1.27.1"
 
-      - name: Install the stable Rust toolchain
+      - name: Install the pinned Rust toolchain
         if: steps.crate.outputs.present == 'true'
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
+          toolchain: "1.88.0"
           components: rustfmt, clippy
 
       - name: Cache cargo artifacts
         if: steps.crate.outputs.present == 'true'
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: runtime
 
@@ -79,14 +80,14 @@ jobs:
 
   wrapper:
     name: wrapper test (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         node: ["18", "20", "22", "24", "26"]
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Detect the wrapper
         id: wrapper
@@ -100,7 +101,7 @@ jobs:
 
       - name: Set up Node.js
         if: steps.wrapper.outputs.present == 'true'
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ matrix.node }}
 
@@ -110,28 +111,30 @@ jobs:
 
   artifact-smoke:
     name: artifact smoke
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Install the stable Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install the pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "22"
+          node-version-file: .node-version
 
       - name: Run the artifact-smoke preflight group
         run: bash scripts/preflight.sh artifact-smoke
 
   format:
     name: prettier check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Detect the tooling
         id: tooling
@@ -145,13 +148,13 @@ jobs:
 
       - name: Set up Node.js
         if: steps.tooling.outputs.present == 'true'
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "22"
+          node-version-file: .node-version
 
       - name: Install dev tooling
         if: steps.tooling.outputs.present == 'true'
-        run: npm install --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Run the format preflight group
         if: steps.tooling.outputs.present == 'true'
@@ -159,10 +162,10 @@ jobs:
 
   shell:
     name: shell lint and test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Detect the shell scripts
         id: shell
@@ -192,33 +195,67 @@ jobs:
         if: steps.shell.outputs.present == 'true'
         run: bash scripts/preflight.sh shell
 
+  action-pins:
+    name: workflow Action pins
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Reject mutable Action references
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@62574f011e0d1967d555a862bd28a7abba8684fe # v5.0.9
+
+  licenses:
+    name: dependency license policy
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install the pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
+
+      - name: Install pinned cargo-deny
+        run: cargo install cargo-deny --version 0.20.2 --locked
+
+      - name: Enforce dependency licenses
+        run: cargo deny --manifest-path runtime/Cargo.toml check licenses
+
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only
-  # when the Rust check, wrapper, artifact-smoke, format, and shell jobs passed.
+  # when the build, package, policy, formatting, and shell jobs passed.
   gate:
     name: CI Gate
-    runs-on: ubuntu-latest
-    needs: [check, wrapper, artifact-smoke, format, shell]
+    runs-on: ubuntu-24.04
+    needs: [check, wrapper, artifact-smoke, format, shell, action-pins, licenses]
     if: always()
     steps:
-      - name: Confirm the check, wrapper, artifact-smoke, format, and shell jobs passed
+      - name: Confirm every required CI job passed
         run: |
           check_result="${{ needs.check.result }}"
           wrapper_result="${{ needs.wrapper.result }}"
           artifact_smoke_result="${{ needs.artifact-smoke.result }}"
           format_result="${{ needs.format.result }}"
           shell_result="${{ needs.shell.result }}"
+          action_pins_result="${{ needs.action-pins.result }}"
+          licenses_result="${{ needs.licenses.result }}"
           echo "check job result: ${check_result}"
           echo "wrapper job result: ${wrapper_result}"
           echo "artifact smoke job result: ${artifact_smoke_result}"
           echo "format job result: ${format_result}"
           echo "shell job result: ${shell_result}"
+          echo "Action pin job result: ${action_pins_result}"
+          echo "license policy job result: ${licenses_result}"
           if [ "${check_result}" != "success" ] \
             || [ "${wrapper_result}" != "success" ] \
             || [ "${artifact_smoke_result}" != "success" ] \
             || [ "${format_result}" != "success" ] \
-            || [ "${shell_result}" != "success" ]; then
+            || [ "${shell_result}" != "success" ] \
+            || [ "${action_pins_result}" != "success" ] \
+            || [ "${licenses_result}" != "success" ]; then
             echo "A required job did not pass. Failing the gate."
             exit 1
           fi
-          echo "The check, wrapper, artifact-smoke, format, and shell jobs passed. The gate is green."
+          echo "Every required CI job passed. The gate is green."

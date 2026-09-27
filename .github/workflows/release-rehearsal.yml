@@ -5,11 +5,20 @@ on:
   pull_request:
     paths:
       - ".github/workflows/release-rehearsal.yml"
+      - ".github/workflows/release.yml"
+      - ".github/workflows/finalize-release.yml"
+      - ".node-version"
+      - ".npm-version"
+      - "rust-toolchain.toml"
+      - "deny.toml"
+      - "package-lock.json"
       - "runtime/**"
       - "npm/**"
       - "release-notes/**"
       - "scripts/check-release-version.js"
       - "scripts/smoke-mcp-artifact.js"
+      - "scripts/release-record.js"
+      - "scripts/release-record.test.js"
   workflow_dispatch:
 
 permissions:
@@ -22,17 +31,17 @@ concurrency:
 jobs:
   resolve-version:
     name: resolve rehearsal version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - name: Check out the selected ref
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "22"
+          node-version-file: .node-version
 
       - name: Resolve package version
         id: version
@@ -56,28 +65,41 @@ jobs:
             os: macos-15-intel
             platform: darwin-x64
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-24.04
             platform: linux-x64
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
             platform: linux-arm64
     steps:
       - name: Check out the selected ref
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Install the Rust toolchain for the target
-        uses: dtolnay/rust-toolchain@stable
+      - name: Install the pinned Rust toolchain for the target
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
+          toolchain: "1.88.0"
           targets: ${{ matrix.target }}
 
       - name: Cache cargo artifacts
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
         with:
           workspaces: runtime
 
       - name: Build the release binary
         working-directory: runtime
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --locked --release --target ${{ matrix.target }}
+
+      - name: Capture native builder evidence
+        run: |
+          node scripts/release-record.js capture-build-evidence \
+            --platform "${{ matrix.platform }}" \
+            --target "${{ matrix.target }}" \
+            --commit "${GITHUB_SHA}" \
+            --runner-label "${{ matrix.os }}" \
+            --runner-os "${{ runner.os }}" \
+            --runner-arch "${{ runner.arch }}" \
+            --cargo-lock runtime/Cargo.lock \
+            --output "build-${{ matrix.platform }}.json"
 
       - name: Stage and archive the platform package
         run: |
@@ -86,13 +108,123 @@ jobs:
           cp "runtime/target/${{ matrix.target }}/release/truenorth-mcp" "${package_dir}/truenorth-mcp"
           chmod +x "${package_dir}/truenorth-mcp"
           tar -C "${package_dir}" -cf "release-package-${{ matrix.platform }}.tar" .
+          tar -C "runtime/target/${{ matrix.target }}/release" \
+            -czf "truenorth-mcp-v${{ needs.resolve-version.outputs.version }}-${{ matrix.platform }}.tar.gz" \
+            truenorth-mcp
 
       - name: Upload the rehearsal package archive
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-package-${{ matrix.platform }}
           path: release-package-${{ matrix.platform }}.tar
           if-no-files-found: error
+
+      - name: Upload rehearsal native archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-binary-${{ matrix.platform }}
+          path: truenorth-mcp-v${{ needs.resolve-version.outputs.version }}-${{ matrix.platform }}.tar.gz
+          if-no-files-found: error
+
+      - name: Upload native builder evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-evidence-build-${{ matrix.platform }}
+          path: build-${{ matrix.platform }}.json
+          if-no-files-found: error
+
+  verify-publication-tooling:
+    name: verify pinned publication tooling
+    needs: resolve-version
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .node-version
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install and exercise pinned npm
+        run: |
+          npm_version="$(cat .npm-version)"
+          npm install -g "npm@${npm_version}"
+          test "$(npm --version)" = "${npm_version}"
+          (cd npm && npm pack --dry-run --json >/dev/null)
+
+      - name: Capture publication builder evidence
+        run: |
+          while IFS= read -r package; do
+            file="publication-$(printf '%s' "${package}" | tr '/@' '__').json"
+            node scripts/release-record.js capture-publication-evidence \
+              --package "${package}" \
+              --commit "${GITHUB_SHA}" \
+              --output "${file}"
+          done <<'PACKAGES'
+          truenorth-mcp
+          @truenorth-mcp/darwin-arm64
+          @truenorth-mcp/darwin-x64
+          @truenorth-mcp/linux-arm64
+          @truenorth-mcp/linux-x64
+          PACKAGES
+
+      - name: Upload publication builder evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-evidence-publication
+          path: publication-*.json
+          if-no-files-found: error
+
+  verify-release-record:
+    name: verify release audit record
+    needs: [resolve-version, build-platform, verify-publication-tooling]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the selected ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .node-version
+
+      - name: Download rehearsal native archives
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: release-binary-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Download rehearsal builder evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: release-evidence-*
+          path: release-evidence
+          merge-multiple: true
+
+      - name: Build and inspect the release audit record
+        run: |
+          version="${{ needs.resolve-version.outputs.version }}"
+          node scripts/release-record.js create-initial-record \
+            --version "${version}" \
+            --tag "v${version}" \
+            --commit "${GITHUB_SHA}" \
+            --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            --repository "${GITHUB_REPOSITORY}" \
+            --notes "release-notes/v${version}.md" \
+            --assets-dir release-assets \
+            --evidence-dir release-evidence \
+            --cargo-lock runtime/Cargo.lock \
+            --npm-lock package-lock.json \
+            --rust-toolchain rust-toolchain.toml \
+            --node-version-file .node-version \
+            --npm-version-file .npm-version \
+            --output-dir release-record
+          test "$(jq -r .schema_version release-record/RELEASE-VERIFICATION.json)" = "2"
+          test "$(jq '.builders.builds | length' release-record/RELEASE-VERIFICATION.json)" = "4"
+          test "$(jq '.builders.publications | length' release-record/RELEASE-VERIFICATION.json)" = "5"
 
   verify-handoff:
     name: verify ${{ matrix.platform }} on Node ${{ matrix.node }}
@@ -112,32 +244,32 @@ jobs:
             os: ubuntu-24.04-arm
             node: "22"
           - platform: linux-x64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             node: "18"
           - platform: linux-x64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             node: "20"
           - platform: linux-x64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             node: "22"
           - platform: linux-x64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             node: "24"
           - platform: linux-x64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             node: "26"
     steps:
       - name: Check out the selected ref
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: ${{ matrix.node }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Download and extract the platform package archive
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-package-${{ matrix.platform }}
           path: release-artifacts
