@@ -16,6 +16,19 @@ and creates a language-agnostic `.agent/`, `specs/`, and `skills/` workspace. It
 create a language manifest, source tree, CI workflow, or verify command. `init` refuses to
 overwrite an existing TrueNorth workspace.
 
+## Upgrade a project
+
+Preview the versioned workspace plan before applying it:
+
+```bash
+npx -y truenorth-mcp upgrade --check
+npx -y truenorth-mcp upgrade
+```
+
+Apply requires a clean Git worktree and index. TrueNorth updates unchanged managed files, removes
+only unchanged retired files, and preserves local edits or unowned collisions. The runtime does
+not mutate `specs/`. An interrupted apply resumes from its local transaction journal.
+
 ## Connect an MCP client
 
 Register the wrapper as a stdio MCP server:

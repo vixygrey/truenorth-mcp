@@ -17,6 +17,7 @@ function checkReleaseVersion(root, expectedVersion) {
   const cargoManifest = path.join(root, 'runtime', 'Cargo.toml');
   const cargoLock = path.join(root, 'runtime', 'Cargo.lock');
   const wrapperManifest = path.join(root, 'npm', 'package.json');
+  const bundleManifest = path.join(root, 'npm', 'bundle', 'current.json');
 
   expectVersion(
     errors,
@@ -42,6 +43,14 @@ function checkReleaseVersion(root, expectedVersion) {
     wrapperManifest,
     'package version',
     wrapper.version,
+    expectedVersion,
+  );
+  expectVersion(
+    errors,
+    displayPath,
+    bundleManifest,
+    'bundle version',
+    readJson(bundleManifest).bundle_version,
     expectedVersion,
   );
 

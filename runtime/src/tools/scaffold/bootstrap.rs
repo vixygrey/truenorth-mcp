@@ -1,38 +1,80 @@
 //! Fresh-project bootstrap built on the shared scaffold emission core.
-//!
-//! The MCP scaffold serves an existing governed repository. This module adds the pre-server
-//! bootstrap path: it validates a packaged skill bundle, seeds the language-agnostic workspace,
-//! and copies every bundle asset into a fresh project without overwriting user files.
 
+use std::collections::BTreeMap;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use super::{Emission, resolve_scaffold_profile, result_json, scaffold_project};
-use crate::engine::agent_ws::{write_repo_seed, write_repo_seed_bytes};
+use super::{Emission, resolve_scaffold_profile, result_json, scaffold_project, scaffold_sources};
+use crate::engine::agent_ws::{write_repo_seed, write_repo_seed_bytes, write_under_agent};
+use crate::engine::workspace_upgrade::bundle::PackageBundle;
+use crate::engine::workspace_upgrade::manifest::{
+    MANIFEST_VERSION, ManagedFile, WorkspaceManifest, sha256,
+};
 
-/// Seed a fresh project from `skills_source` and return the same summary shape as the MCP tool.
-///
-/// The target must not contain any bootstrap-owned path. Validating both the source bundle and
-/// every destination before the first write keeps a malformed bundle or an existing project file
-/// from producing a partial bootstrap.
+/// Seed a fresh project from an installed package bundle.
 pub fn bootstrap_project(
     repo_root: &Path,
     profile_name: Option<&str>,
-    skills_source: &Path,
+    bundle_root: &Path,
 ) -> Result<serde_json::Value, String> {
     let profile = resolve_scaffold_profile(profile_name).map_err(|error| error.to_string())?;
     validate_fresh_target(repo_root)?;
-    validate_skill_bundle(skills_source)?;
+    let bundle = PackageBundle::load(bundle_root).map_err(|error| error.to_string())?;
+    if !bundle.files.contains_key("skills/using-truenorth/SKILL.md") {
+        return Err(format!(
+            "bundle `{}` does not contain `skills/using-truenorth/SKILL.md`",
+            bundle_root.display()
+        ));
+    }
 
+    let generated = scaffold_sources(profile);
     let mut emissions = scaffold_project(repo_root, profile).map_err(|error| error.to_string())?;
     seed_specs_marker(repo_root, &mut emissions)?;
-    copy_skill_bundle(repo_root, skills_source, &mut emissions)?;
+    copy_bundle_files(repo_root, &bundle, &mut emissions)?;
+
+    let mut sources: BTreeMap<String, ManagedFile> = generated
+        .into_iter()
+        .map(|file| {
+            (
+                file.path,
+                ManagedFile {
+                    source_sha256: sha256(file.body.as_bytes()),
+                    mode: "0644".to_string(),
+                },
+            )
+        })
+        .collect();
+    sources.extend(bundle.files.values().map(|file| {
+        (
+            file.path.clone(),
+            ManagedFile {
+                source_sha256: file.source_hash(),
+                mode: file.mode.clone(),
+            },
+        )
+    }));
+    let managed = emissions
+        .iter()
+        .filter_map(|emission| match emission {
+            Emission::Wrote(path) => sources.get(path).cloned().map(|file| (path.clone(), file)),
+            Emission::Skipped(_) => None,
+        })
+        .collect();
+    let manifest = WorkspaceManifest {
+        manifest_version: MANIFEST_VERSION.to_string(),
+        bundle_version: bundle.manifest.bundle_version.clone(),
+        workspace_schema_version: bundle.manifest.workspace_schema_version.clone(),
+        profile: profile.name.to_string(),
+        managed,
+    };
+    let yaml = manifest.to_yaml().map_err(|error| error.to_string())?;
+    write_under_agent(repo_root, Path::new("workspace-manifest.yml"), &yaml)
+        .map_err(|error| format!("could not seed `.agent/workspace-manifest.yml`: {error}"))?;
+    emissions.push(Emission::Wrote(".agent/workspace-manifest.yml".to_string()));
 
     Ok(result_json(profile, &emissions))
 }
 
-/// Bootstrap owns these paths. Rejecting them up front prevents an init command from silently
-/// mixing generated workflow state with a user's existing state.
 const BOOTSTRAP_TARGETS: [&str; 7] = [
     ".agent",
     "specs",
@@ -58,57 +100,6 @@ fn validate_fresh_target(repo_root: &Path) -> Result<(), String> {
     ))
 }
 
-fn validate_skill_bundle(source: &Path) -> Result<(), String> {
-    let metadata = fs::symlink_metadata(source).map_err(|error| {
-        format!(
-            "skills source `{}` is not a readable directory: {error}",
-            source.display()
-        )
-    })?;
-    if metadata.file_type().is_symlink() || !metadata.is_dir() {
-        return Err(format!(
-            "skills source `{}` is not a readable directory",
-            source.display()
-        ));
-    }
-    if !source.join("using-truenorth").join("SKILL.md").is_file() {
-        return Err(format!(
-            "skills source `{}` does not contain `using-truenorth/SKILL.md`",
-            source.display()
-        ));
-    }
-    validate_tree(source, source)
-}
-
-fn validate_tree(root: &Path, dir: &Path) -> Result<(), String> {
-    for entry in fs::read_dir(dir)
-        .map_err(|error| format!("could not read skills source `{}`: {error}", dir.display()))?
-    {
-        let entry = entry.map_err(|error| format!("could not inspect skills source: {error}"))?;
-        let path = entry.path();
-        let file_type = entry
-            .file_type()
-            .map_err(|error| format!("could not inspect `{}`: {error}", path.display()))?;
-        if file_type.is_symlink() {
-            return Err(format!(
-                "skills source `{}` contains unsupported symlink `{}`",
-                root.display(),
-                path.display()
-            ));
-        }
-        if file_type.is_dir() {
-            validate_tree(root, &path)?;
-        } else if !file_type.is_file() {
-            return Err(format!(
-                "skills source `{}` contains unsupported entry `{}`",
-                root.display(),
-                path.display()
-            ));
-        }
-    }
-    Ok(())
-}
-
 fn seed_specs_marker(repo_root: &Path, out: &mut Vec<Emission>) -> Result<(), String> {
     const REL: &str = "specs/adr/.gitkeep";
     write_repo_seed(repo_root, Path::new(REL), "", true)
@@ -117,77 +108,35 @@ fn seed_specs_marker(repo_root: &Path, out: &mut Vec<Emission>) -> Result<(), St
     Ok(())
 }
 
-fn copy_skill_bundle(
+fn copy_bundle_files(
     repo_root: &Path,
-    source: &Path,
+    bundle: &PackageBundle,
     out: &mut Vec<Emission>,
 ) -> Result<(), String> {
-    copy_directory(repo_root, source, source, out)
-}
-
-fn copy_directory(
-    repo_root: &Path,
-    source_root: &Path,
-    source_dir: &Path,
-    out: &mut Vec<Emission>,
-) -> Result<(), String> {
-    for entry in fs::read_dir(source_dir).map_err(|error| {
-        format!(
-            "could not read skills source `{}`: {error}",
-            source_dir.display()
-        )
-    })? {
-        let entry = entry.map_err(|error| format!("could not inspect skills source: {error}"))?;
-        let source_path = entry.path();
-        let file_type = entry
-            .file_type()
-            .map_err(|error| format!("could not inspect `{}`: {error}", source_path.display()))?;
-        if file_type.is_dir() {
-            copy_directory(repo_root, source_root, &source_path, out)?;
-            continue;
-        }
-
-        let relative = source_path
-            .strip_prefix(source_root)
-            .map_err(|error| format!("could not resolve bundled skill path: {error}"))?;
-        let target_rel = PathBuf::from("skills").join(relative);
-        let target_display = target_rel.to_string_lossy().replace('\\', "/");
-        let body = fs::read(&source_path).map_err(|error| {
-            format!(
-                "could not read bundled skill `{}`: {error}",
-                source_path.display()
-            )
-        })?;
-        write_repo_seed_bytes(repo_root, &target_rel, &body, true)
-            .map_err(|error| format!("could not seed `{target_display}`: {error}"))?;
-        preserve_permissions(&source_path, &repo_root.join(&target_rel))?;
-        out.push(Emission::Wrote(target_display));
+    for file in bundle.files.values() {
+        let relative = Path::new(&file.path);
+        write_repo_seed_bytes(repo_root, relative, &file.bytes, true)
+            .map_err(|error| format!("could not seed `{}`: {error}", file.path))?;
+        set_mode(&repo_root.join(relative), &file.mode)?;
+        out.push(Emission::Wrote(file.path.clone()));
     }
     Ok(())
 }
 
 #[cfg(unix)]
-fn preserve_permissions(source: &Path, target: &Path) -> Result<(), String> {
+fn set_mode(target: &Path, mode: &str) -> Result<(), String> {
     use std::os::unix::fs::PermissionsExt;
 
-    let mode = fs::metadata(source)
-        .map_err(|error| {
-            format!(
-                "could not inspect bundled skill `{}`: {error}",
-                source.display()
-            )
-        })?
-        .permissions()
-        .mode();
-    fs::set_permissions(target, fs::Permissions::from_mode(mode)).map_err(|error| {
+    let value = if mode == "0755" { 0o755 } else { 0o644 };
+    fs::set_permissions(target, fs::Permissions::from_mode(value)).map_err(|error| {
         format!(
-            "could not preserve permissions for bundled skill `{}`: {error}",
+            "could not preserve permissions for bundled file `{}`: {error}",
             target.display()
         )
     })
 }
 
 #[cfg(not(unix))]
-fn preserve_permissions(_source: &Path, _target: &Path) -> Result<(), String> {
+fn set_mode(_target: &Path, _mode: &str) -> Result<(), String> {
     Ok(())
 }

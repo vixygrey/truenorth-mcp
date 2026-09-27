@@ -11,6 +11,7 @@ use rmcp::model::{CallToolRequestParams, ContentBlock};
 use serde_json::json;
 use tempfile::{TempDir, tempdir};
 use truenorth_mcp::config::VERIFY_CMD_ENV;
+use truenorth_mcp::engine::workspace_upgrade::manifest::sha256;
 use truenorth_mcp::server::TrueNorthServer;
 
 const PROFILE: &str = "issue-per-task";
@@ -152,16 +153,16 @@ const CASES: &[ProjectCase] = &[
 #[tokio::test]
 async fn cross_language_projects_complete_the_workflow_without_source_mutation()
 -> anyhow::Result<()> {
-    let skills = minimal_skill_bundle()?;
+    let bundle = minimal_package_bundle()?;
     let _verify_env = EnvironmentGuard::capture(VERIFY_CMD_ENV);
 
     for case in CASES {
-        exercise_project(case, skills.path()).await?;
+        exercise_project(case, bundle.path()).await?;
     }
     Ok(())
 }
 
-async fn exercise_project(case: &ProjectCase, skills: &Path) -> anyhow::Result<()> {
+async fn exercise_project(case: &ProjectCase, bundle: &Path) -> anyhow::Result<()> {
     let repo = tempdir()?;
     seed_project(repo.path(), case)?;
     let before = snapshot_paths(repo.path(), case.protected_paths)?;
@@ -170,8 +171,8 @@ async fn exercise_project(case: &ProjectCase, skills: &Path) -> anyhow::Result<(
         repo.path(),
         &[
             "init",
-            "--skills-dir",
-            path_text(skills)?,
+            "--bundle-dir",
+            path_text(bundle)?,
             "--profile",
             PROFILE,
         ],
@@ -289,11 +290,27 @@ async fn exercise_project(case: &ProjectCase, skills: &Path) -> anyhow::Result<(
     Ok(())
 }
 
-fn minimal_skill_bundle() -> anyhow::Result<TempDir> {
+fn minimal_package_bundle() -> anyhow::Result<TempDir> {
     let bundle = tempdir()?;
-    let path = bundle.path().join("using-truenorth/SKILL.md");
+    let relative = "skills/using-truenorth/SKILL.md";
+    let path = bundle.path().join(relative);
     fs::create_dir_all(path.parent().expect("skill parent"))?;
-    fs::write(path, "# Using TrueNorth\n")?;
+    let content = b"# Using TrueNorth\n";
+    fs::write(&path, content)?;
+    let manifest = json!({
+        "schema_version": 1,
+        "bundle_version": env!("CARGO_PKG_VERSION"),
+        "workspace_schema_version": "1",
+        "supported_from": [],
+        "files": [{
+            "path": relative,
+            "sha256": sha256(content),
+            "mode": "0644"
+        }]
+    });
+    let manifest_path = bundle.path().join("bundle/current.json");
+    fs::create_dir_all(manifest_path.parent().expect("manifest parent"))?;
+    fs::write(manifest_path, format!("{manifest}\n"))?;
     Ok(bundle)
 }
 

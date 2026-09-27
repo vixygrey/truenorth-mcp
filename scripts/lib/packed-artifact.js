@@ -35,6 +35,13 @@ function createPackedWrapperFixture(platformPackage, prefix = 'tn-packed-mcp-') 
     const wrapper = path.join(install, 'node_modules', 'truenorth-mcp', 'bin', 'truenorth.js');
     runWrapper(wrapper, ['init', '--profile', 'generic'], project);
     runWrapper(wrapper, ['--check-config'], project);
+    runGit(['init'], project);
+    runGit(['config', 'user.email', 'artifact-smoke@example.com'], project);
+    runGit(['config', 'user.name', 'Artifact Smoke'], project);
+    runGit(['add', '.'], project);
+    runGit(['commit', '-m', 'fixture'], project);
+    runWrapper(wrapper, ['upgrade', '--check'], project);
+    runWrapper(wrapper, ['upgrade'], project);
 
     return {
       work,
@@ -67,6 +74,10 @@ function runWrapper(wrapper, args, root) {
     env: { ...process.env, TRUENORTH_ROOT: root, TRUENORTH_VERIFY_CMD: 'true' },
     stdio: 'inherit',
   });
+}
+
+function runGit(args, root) {
+  execFileSync('git', args, { cwd: root, stdio: 'inherit' });
 }
 
 module.exports = { createPackedWrapperFixture };

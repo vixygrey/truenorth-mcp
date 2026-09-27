@@ -61,6 +61,8 @@ run_check() {
 
 run_wrapper() {
   require_command node "Install Node.js 18 or newer. Use a release that still receives upstream security fixes for production."
+  echo "preflight: [wrapper] bundle manifest"
+  node scripts/build-bundle-manifest.js --check
   echo "preflight: [wrapper] node tests"
   (cd npm && node --test test/*.test.js)
 }

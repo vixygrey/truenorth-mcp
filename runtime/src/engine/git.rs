@@ -77,6 +77,21 @@ pub fn status(repo_root: &Path) -> Result<String, GitError> {
     )
 }
 
+/// The complete staged, unstaged, and untracked worktree status.
+pub fn worktree_status(repo_root: &Path) -> Result<String, GitError> {
+    let output = Command::new("git")
+        .args(["status", "--porcelain=v1", "--untracked-files=all"])
+        .current_dir(repo_root)
+        .output()?;
+    if !output.status.success() {
+        return Err(GitError::Command {
+            action: "worktree status".to_string(),
+            stderr: String::from_utf8_lossy(&output.stderr).trim().to_string(),
+        });
+    }
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
 /// The commit log, scoped to the cockpit directories.
 pub fn log(repo_root: &Path) -> Result<String, GitError> {
     run(repo_root, "log", &["log", "--oneline", "-n", "20", "--"])

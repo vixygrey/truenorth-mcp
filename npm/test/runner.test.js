@@ -6,7 +6,6 @@
 
 const { test } = require('node:test');
 const assert = require('node:assert');
-const path = require('node:path');
 
 const runner = require('../lib/runner.js');
 
@@ -109,20 +108,25 @@ test('run maps a null spawn status to exit code 1', () => {
   assert.strictEqual(state.exitCode, 1);
 });
 
-test('init forwards the packaged skills bundle to the native runtime', () => {
+test('init forwards the packaged bundle root to the native runtime', () => {
   const { deps, state } = harness({ argv: ['init', '--profile', 'generic'] });
   runner.run(deps);
   assert.strictEqual(state.exitCode, 0);
   assert.deepStrictEqual(state.spawned, {
     binary: '/fake/node_modules/@truenorth-mcp/darwin-arm64/truenorth-mcp',
-    argv: [
-      'init',
-      '--profile',
-      'generic',
-      '--skills-dir',
-      path.join('/fake/truenorth-mcp', 'skills'),
-    ],
+    argv: ['init', '--profile', 'generic', '--bundle-dir', '/fake/truenorth-mcp'],
     opts: { stdio: 'inherit' },
   });
   assert.strictEqual(state.stderr, '');
+});
+
+test('upgrade forwards the packaged bundle root to the native runtime', () => {
+  const { deps, state } = harness({ argv: ['upgrade', '--check'] });
+  runner.run(deps);
+  assert.strictEqual(state.exitCode, 0);
+  assert.deepStrictEqual(state.spawned, {
+    binary: '/fake/node_modules/@truenorth-mcp/darwin-arm64/truenorth-mcp',
+    argv: ['upgrade', '--check', '--bundle-dir', '/fake/truenorth-mcp'],
+    opts: { stdio: 'inherit' },
+  });
 });

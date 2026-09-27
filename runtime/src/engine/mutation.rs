@@ -30,16 +30,16 @@ enum LeaseState {
     /// Deterministic test contexts serialize locally without touching disk.
     LocalOnly,
     /// This process owns the repository lease.
-    Held { _lease: WriterLease },
+    Held { _lease: WorktreeLease },
     /// Another process owned the lease at the last acquisition attempt.
     Contended(LeaseConflict),
     /// The lease could not be opened or locked.
     Unavailable(String),
 }
 
-/// The open file whose descriptor owns the advisory repository lock.
+/// An open descriptor that owns the advisory worktree writer lease.
 #[derive(Debug)]
-struct WriterLease {
+pub struct WorktreeLease {
     _file: File,
 }
 
@@ -80,6 +80,27 @@ pub enum MutationError {
         /// The underlying failure.
         detail: String,
     },
+}
+
+/// Acquire the same worktree writer lease used by mutating MCP tools.
+pub fn acquire_worktree_lease(repo_root: &Path) -> Result<WorktreeLease, MutationError> {
+    try_acquire_lease(repo_root).map_err(|error| match error {
+        AcquireError::Contended(conflict) => {
+            let holder_pid = conflict.holder_pid;
+            let holder = holder_pid
+                .map(|pid| format!(" (process {pid})"))
+                .unwrap_or_default();
+            MutationError::Contended {
+                lock_path: WRITER_LOCK_REL_PATH,
+                holder_pid,
+                holder,
+            }
+        }
+        AcquireError::Unavailable(detail) => MutationError::Unavailable {
+            lock_path: WRITER_LOCK_REL_PATH,
+            detail,
+        },
+    })
 }
 
 impl Default for MutationCoordinator {
@@ -167,7 +188,7 @@ enum AcquireError {
     Unavailable(String),
 }
 
-fn try_acquire_lease(repo_root: &Path) -> Result<WriterLease, AcquireError> {
+fn try_acquire_lease(repo_root: &Path) -> Result<WorktreeLease, AcquireError> {
     #[cfg(not(unix))]
     {
         let _ = repo_root;
@@ -215,7 +236,7 @@ fn try_acquire_lease(repo_root: &Path) -> Result<WriterLease, AcquireError> {
 
         // SAFETY: `file` owns a valid open descriptor for the lock file. `flock` does not
         // retain the raw descriptor beyond this call. The open `File` remains alive in
-        // `WriterLease` for the full lease lifetime.
+        // `WorktreeLease` for the full lease lifetime.
         let locked = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) };
         if locked != 0 {
             let error = std::io::Error::last_os_error();
@@ -240,7 +261,7 @@ fn try_acquire_lease(repo_root: &Path) -> Result<WriterLease, AcquireError> {
             .and_then(|()| file.sync_data())
             .map_err(|error| AcquireError::Unavailable(error.to_string()))?;
 
-        Ok(WriterLease { _file: file })
+        Ok(WorktreeLease { _file: file })
     }
 }
 

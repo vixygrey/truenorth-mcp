@@ -24,31 +24,31 @@ fn check_config_argument_selects_diagnostics_mode() {
 }
 
 #[test]
-fn init_requires_a_skill_bundle_and_accepts_profile_in_any_option_order() {
+fn init_requires_a_package_bundle_and_accepts_profile_in_any_option_order() {
     assert_eq!(
         parse_args([
             "init".to_string(),
             "--profile".to_string(),
             "generic".to_string(),
-            "--skills-dir".to_string(),
-            "/tmp/skills".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
         ])
         .expect("parse init"),
         Mode::Init {
             profile: Some("generic".to_string()),
-            skills_dir: PathBuf::from("/tmp/skills"),
+            bundle_dir: PathBuf::from("/tmp/package"),
         }
     );
     assert_eq!(
         parse_args([
             "init".to_string(),
-            "--skills-dir".to_string(),
-            "/tmp/skills".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
         ])
         .expect("parse init"),
         Mode::Init {
             profile: None,
-            skills_dir: PathBuf::from("/tmp/skills"),
+            bundle_dir: PathBuf::from("/tmp/package"),
         }
     );
 }
@@ -57,12 +57,12 @@ fn init_requires_a_skill_bundle_and_accepts_profile_in_any_option_order() {
 fn init_rejects_missing_duplicate_and_unknown_options() {
     for args in [
         vec!["init".to_string()],
-        vec!["init".to_string(), "--skills-dir".to_string()],
+        vec!["init".to_string(), "--bundle-dir".to_string()],
         vec![
             "init".to_string(),
-            "--skills-dir".to_string(),
+            "--bundle-dir".to_string(),
             "one".to_string(),
-            "--skills-dir".to_string(),
+            "--bundle-dir".to_string(),
             "two".to_string(),
         ],
         vec![
@@ -76,6 +76,36 @@ fn init_rejects_missing_duplicate_and_unknown_options() {
             USAGE
         );
     }
+}
+
+#[test]
+fn upgrade_accepts_check_and_requires_the_package_bundle() {
+    assert_eq!(
+        parse_args([
+            "upgrade".to_string(),
+            "--check".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
+        ])
+        .expect("parse upgrade"),
+        Mode::Upgrade {
+            check: true,
+            bundle_dir: PathBuf::from("/tmp/package"),
+        }
+    );
+    assert_eq!(
+        parse_args([
+            "upgrade".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
+        ])
+        .expect("parse upgrade"),
+        Mode::Upgrade {
+            check: false,
+            bundle_dir: PathBuf::from("/tmp/package"),
+        }
+    );
+    assert!(parse_args(["upgrade".to_string(), "--check".to_string()]).is_err());
 }
 
 #[test]
