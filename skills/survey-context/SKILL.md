@@ -40,16 +40,11 @@ exists, whether the keys are populated, and the `handoff.next_skill`.
 When the project agent guide exists at the root, read it for the stack, the
 commands, the architecture, and the conventions.
 
-### 4. Check the VCS state
+### 4. Check the Git state
 
-Read the `vcs.kind` value from `state.yaml`. Use the native identity through the
-git-context tool.
-
-- Git: status, the last few commits, the current branch.
-- Jujutsu: status and the recent change log.
-
-For Jujutsu, compare the stable change ids and bookmarks with the `vcs` block. Never
-interpret a colocated Git detached HEAD as branch state.
+Use the `get_git_context` tool for status, the recent commit log, and the current
+diff. Confirm the current branch separately when the workflow depends on branch
+identity. TrueNorth supports Git repositories only.
 
 ### 5. Map the lifecycle phase
 
@@ -98,8 +93,8 @@ At story start, write `metrics.story_start` with the current ISO-8601 timestamp 
 
 - **list-groups**: loop through the task groups and print a summary of the story
   counts per group.
-- **check-gates**: print the active flow, validate the state YAML, then show the git
-  or jj status through the git-context tool. Use it before a handoff.
+- **check-gates**: print the active flow, validate the state YAML, then show the
+  Git status through `get_git_context`. Use it before a handoff.
 
 ## Handoff
 

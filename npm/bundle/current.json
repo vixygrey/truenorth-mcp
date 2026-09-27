@@ -162,7 +162,7 @@
     },
     {
       "path": "skills/commit-message/SKILL.md",
-      "sha256": "4c3778b60e4cdf55e7cb0f2d2018d833dda5371c4a9c64be2b8806785007a7a7",
+      "sha256": "61866aeb73bf334d1e3ab133f2bde679a2cef265289fb0b0e6599a286d1d27b4",
       "mode": "0644"
     },
     {
@@ -532,7 +532,7 @@
     },
     {
       "path": "skills/kickoff-branch/SKILL.md",
-      "sha256": "681850a64312dc99b5eb7a110f24455c6d681cbcf41d7ef9299c19f2b138c6ae",
+      "sha256": "63784248d020f57d27b0ff1caf9d4780126898a936299cdf669d0e18c9a36859",
       "mode": "0644"
     },
     {
@@ -647,17 +647,17 @@
     },
     {
       "path": "skills/quick-fix/SKILL.md",
-      "sha256": "796fde9a5fec0b108da8585fb88694b826c405876927a49817d156a691869155",
+      "sha256": "c4ebea8c736065926dd8af269a84397ad358433213a59c0d7e75ac7d619d361d",
       "mode": "0644"
     },
     {
       "path": "skills/release-branch/REFERENCE.md",
-      "sha256": "b007560982685a24455f78f1fe0771df2be7e610a6cc1c1c7b09492b2ba76a54",
+      "sha256": "08075301eb54613f524f9bab4d522e38cc0e7058373d22f6f7ce627fddebced6",
       "mode": "0644"
     },
     {
       "path": "skills/release-branch/SKILL.md",
-      "sha256": "2a182a8445cf6365820dff4216f4b5330f8a04d6ca23368b9c13a9ebf797523e",
+      "sha256": "be1669390863f8bd0883035d28a7e33846b7201db65e99a5e4105ad1bbaf5530",
       "mode": "0644"
     },
     {
@@ -842,7 +842,7 @@
     },
     {
       "path": "skills/survey-context/SKILL.md",
-      "sha256": "aff0b99320d0b36e59fe7d5ad2e7cb4c3a6822965b6fae2d2ddb63e21c6ca226",
+      "sha256": "571361d18c8d6a738f8d606c8a74c459e05bdd12d6f630d6383ea386e6cb3ed7",
       "mode": "0644"
     },
     {

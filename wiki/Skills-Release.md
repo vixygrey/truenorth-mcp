@@ -13,10 +13,9 @@ alphabetical list, see [Skill index](Skill-index).
 Review the working-tree changes and draft a Conventional Commits message with the SemVer
 bump it implies.
 
-- **What it does**: reads the changes through the VCS (git or Jujutsu), inventories the
-  changed paths, decides the commit shape (one atomic commit, or several when concerns
-  mix), classifies the SemVer bump, writes a `type(scope): description` message, and notes
-  which defensive-code categories were touched.
+- **What it does**: reads the Git changes, inventories the changed paths, decides the
+  commit shape, classifies the SemVer bump, writes a `type(scope): description` message,
+  and notes which defensive-code categories were touched.
 - **When to use it**: when the user wants to commit recent work, or to prepare a
   Conventional Commits message before a git commit.
 - **Inputs**: the working-tree diff and the conversation intent.
@@ -29,23 +28,20 @@ bump it implies.
 
 ## release-branch
 
-Make the merge, PR, keep, or discard decision for a finished branch, verify the gates, and
-clean up.
+Validate and integrate a finished Git branch through the configured workflow mode.
 
-- **What it does**: runs final verification (tests, typecheck, lint through
-  `truenorth_verify_gate`, plus a Conventional Commits and AI-attribution check), the
-  coverage gate, the security gate (running `security-review` inline if stale), and the
-  traceability gate (`gate-trace`), then integrates per the workflow mode, archives the
-  completed capsule, and verifies CI.
-- **When to use it**: when a feature is done and ready to ship, or on "release", "merge", or
+- **What it does**: validates the Git route, runs final verification, reads coverage
+  thresholds from project configuration, applies the security and traceability gates,
+  integrates through `solo-git` or `team-pr`, verifies the landed change, and cleans up
+  only after approval.
+- **When to use it**: when a feature is ready to ship, or on "release", "merge", or
   "open a PR".
-- **Inputs**: the finished branch, `workflow_mode` and `vcs.kind` from the state.
-- **Outputs**: a merged change (or an open PR), a pruned worktree, CI confirmation.
-- **Modes**: default, `--hotfix` (cherry-pick and tag), `--squash-state` (squash the
-  `chore(state):` commits). Integrate mode is solo (fast-forward locally) or team-pr
-  (`gh pr create` then `gh pr merge --squash`), read from `workflow_mode`.
-- **Hard gates**: do not merge when tests fail or a coverage gate is not met. A `gate-trace`
-  FAIL blocks the merge. Do not declare success until CI confirms three independent facts:
-  the commit landed, the workflow is green, and the release is visible.
-- **Note on release**: the release itself is tag-driven. A `v*` tag triggers the release
-  workflow, which builds and publishes. The merge does not publish on its own.
+- **Inputs**: the finished Git branch and `workflow_mode` from state.
+- **Outputs**: a merged change or open PR, green checks, and approved cleanup.
+- **Modes**: `solo-git` fast-forwards locally. `team-pr` pushes and creates a GitHub PR.
+  The exact state value controls the route. Missing or invalid values block release.
+- **Hard gates**: Git only. Do not merge when verification or configured coverage gates
+  fail. Merge, tag, publish, and cleanup require separate explicit approval. A
+  `gate-trace` FAIL blocks integration.
+- **Release boundary**: a merge does not publish. A `v*` tag can trigger publication,
+  but tag creation and publication require their own approvals.
