@@ -6,7 +6,7 @@ kind: prose
 
 # Security Review
 
-> **HARD GATE**: requires git context (a branch with a merge-base or a diff). Writes only the security review report. A finding below confidence 8 of 10 is suppressed.
+> **HARD GATE**: requires git context (a branch with a merge-base or a diff). Writes only the security review report. Proven false positives may be excluded; an uncertain path with potentially HIGH or CRITICAL impact MUST be reported under `Needs investigation`.
 
 ## Parallel mode
 
@@ -16,13 +16,13 @@ still write only to the security review report.
 
 ## Five-phase scan
 
-| #   | Phase                        | What                                                                                                                                                  |
-| --- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Scope resolution**         | Detect the diff (the working tree versus the merge-base) through the git-context tool. Resolve the languages and frameworks from the dependency files |
-| 2   | **Context research**         | Identify the existing security patterns, sanitization, and auth model in the codebase                                                                 |
-| 3   | **Vulnerability assessment** | Trace user input to a sink. Check the auth boundaries, crypto, deserialization, and path operations                                                   |
-| 4   | **False-positive filtering** | Cross-check each finding against the exclusion rules. Reject a confidence below 8                                                                     |
-| 5   | **Report generation**        | Output structured markdown: file and line, severity, category, exploit scenario, fix                                                                  |
+| #   | Phase                        | What                                                                                                                                           |
+| --- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Scope resolution**         | Detect the diff through the git-context tool. Resolve languages and frameworks from dependency files.                                          |
+| 2   | **Context research**         | Identify existing security patterns, sanitization, trust boundaries, and the auth model.                                                       |
+| 3   | **Vulnerability assessment** | Trace user input to sinks. Check auth boundaries, crypto, deserialization, and path operations.                                                |
+| 4   | **Evidence classification**  | Apply proven exclusions. Classify supported vulnerabilities as confirmed and uncertain potentially high-impact paths as needing investigation. |
+| 5   | **Report generation**        | Report confirmed findings, needs-investigation items, and exclusions separately.                                                               |
 
 ## Categories
 
@@ -63,25 +63,32 @@ Formal rule for SQL injection classification:
 
 ## Integration points
 
-| Skill             | Touchpoint                                                                 |
-| ----------------- | -------------------------------------------------------------------------- |
-| `build-epic`      | Step 0 — threat-model group scope → the security review report             |
-| `plan-work`       | `security:` field (none/low/medium/high) on story tasks                    |
-| `plan-release`    | +2 WSJF risk boost for HIGH+ risk task groups                              |
-| `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                   |
-| `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt |
-| `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                          |
-| `validate-fix`    | Recurrence hardening check for security bugs                               |
-| `verify-work`     | Phase 5 — blocks on HIGH findings ≥ 8 confidence                           |
-| `release-branch`  | Hard gate — blocks merge if unresolved HIGH findings                       |
+| Skill             | Touchpoint                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `build-epic`      | Step 0 — threat-model group scope → the security review report                                                     |
+| `plan-work`       | `security:` field (none/low/medium/high) on story tasks                                                            |
+| `plan-release`    | +2 WSJF risk boost for HIGH+ risk task groups                                                                      |
+| `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                                                           |
+| `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt                                         |
+| `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                                                                  |
+| `validate-fix`    | Recurrence hardening check for security bugs                                                                       |
+| `verify-work`     | Phase 5 — blocks on unresolved confirmed HIGH/CRITICAL findings or undispositioned high-impact investigation items |
+| `release-branch`  | Hard gate — applies the same unresolved-finding rule                                                               |
 
 ## Report format
 
-Each finding: **`File:Line` — Severity — Category**
+Use three explicit sections:
 
-- Description: how the vulnerability manifests
-- Exploit scenario: concrete attack path
-- Recommendation: fix with code example
+1. **Confirmed findings**: `File:Line — Severity — Category — Confidence`,
+   followed by the exploit scenario, evidence, and recommended fix.
+2. **Needs investigation**: file and line, potential impact, category, and
+   confidence, followed by the suspected path, uncertainty, and exact evidence
+   needed to confirm or exclude it.
+3. **Excluded**: the candidate and the documented hard exclusion that proves it
+   is not a finding.
+
+Do not lower potential impact merely because confidence is low. Confidence
+describes evidence strength; severity describes impact if the path is real.
 
 ## Reference files
 
@@ -91,5 +98,7 @@ Each finding: **`File:Line` — Severity — Category**
 
 ## Verify
 
-Confirm the security review report exists, each detection rule has its positive
-and negative fixture pair, and the git context resolves.
+Confirm the security review report exists, every potentially HIGH or CRITICAL
+path appears under `Confirmed findings`, `Needs investigation`, or `Excluded`,
+each exclusion cites a hard rule, each detection rule has its positive and
+negative fixture pair, and the git context resolves.

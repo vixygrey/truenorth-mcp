@@ -70,25 +70,25 @@ verify, audit, commit, release.
 After step 5 (verify-work) completes, step 6 runs `audit-code` in gate mode.
 
 1. **Run the audit**: invoke `audit-code` in gate mode on the complete diff for the
-   story.
-2. **Pass**: every checklist section passes. Advance to step 7. Record the audit
-   result as pass in the state.
-3. **Fail**: one or more sections fail. Reset the current step to 4 (develop-tdd)
-   and record the failing section ids. Record the audit result as fail. Do NOT
-   advance past step 6 until the audit passes.
-4. **Audit artifact**: save the full audit report for the story regardless of the
-   result, for reviewer traceability.
-5. **Enforce F.I.R.S.T**: after the audit passes, run `enforce-first` on the new or
-   modified tests. Append any F.I.R.S.T violation to the audit report. A failing
-   criterion triggers the same loop-back to step 4.
+   story, using the story risk and active project conventions.
+2. **Pass**: no concrete blocking defect or explicit convention violation remains.
+   Advance to step 7 and record the audit result as pass.
+3. **Fail**: one or more blocking defects remain. Reset the current step to 4
+   (`develop-tdd`) and record each blocker with its evidence. Do NOT advance past
+   step 6 until every blocker is resolved.
+4. **Audit artifact**: save the full audit report and every non-blocking
+   disposition for reviewer traceability.
+5. **Test-quality evidence**: when the project adopts F.I.R.S.T, run
+   `enforce-first` on new or modified tests. Append concrete violations to the
+   audit report. A blocking violation triggers the same loop to step 4.
 
 ## --fast mode
 
 Coalesce the read-and-report steps to reduce token overhead. Activate with
-`build-epic --fast`. It combines survey and plan into one invocation, and audit and
-commit-message into one. It does NOT skip any checklist item. The kickoff, develop,
-verify, and release steps still run sequentially, since they need user interaction
-or branch state.
+`build-epic --fast`. It combines survey and plan into one invocation, and audit
+and commit-message into one. It does not weaken the risk-required evidence or
+permit an unresolved blocker. The kickoff, develop, verify, and release steps
+still run sequentially because they need user interaction or branch state.
 
 ## Handoff
 

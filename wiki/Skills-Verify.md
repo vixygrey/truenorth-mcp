@@ -16,23 +16,23 @@ what was promised". `verify-work` runs first, then the review chain.
 
 ### verify-work
 
-The multi-phase UAT gate. Cold-start smoke, mechanical gates, step-by-step manual
-verification, and optional fresh-context user simulation.
+The risk-scaled behavior and evidence gate.
 
-- **What it does**: reads the story risk (P0 to P3) and scales the rigor, runs a cold-start
-  smoke, the mechanical gates (build, typecheck, lint, tests) through
-  `truenorth_verify_gate`, a security scan, blind-spot and completeness checks, an NFR gate
-  for P0, and step-by-step UAT, then runs a gaps-closure loop. Its `--simulate-user` mode
-  follows the Verification Script from a fresh user perspective and records provisional
-  UX and behavior gaps. It persists structured verification evidence.
-- **When to use it**: after `execute-plan` or `develop-tdd`, before `audit-code`, or for a mock-user or user-observable simulation.
-- **Inputs**: the active story tasks and spec, the risk level.
-- **Outputs**: a persisted verification-evidence file.
-- **Hard gates**: not on `main`. No story is done until manual UAT is confirmed with
-  evidence. At least one mechanical gate must be a real terminal-verdict command, its
-  output captured from a single run.
-- **Modes**: default, `--smoke` (hotfix), `--cli` (a CLI tool with no server), and
-  `--simulate-user` (fresh-context gap discovery that does not replace manual UAT).
+- **What it does**: reads the story risk (P0 to P3), exercises at least one
+  story-specific observable behavior at every tier, runs the relevant mechanical
+  gates through `truenorth_verify_gate`, and records expected versus actual
+  results. Higher risk adds broader tests, UAT, security review, and P0 NFR
+  evidence. Its `--simulate-user` mode follows the Verification Script from a
+  fresh user perspective.
+- **When to use it**: after `execute-plan` or `develop-tdd`, before `audit-code`,
+  or for a mock-user or user-observable simulation.
+- **Inputs**: active story tasks and spec, risk level, and project gate commands.
+- **Outputs**: persisted verification evidence with a mandatory behavior smoke.
+- **Hard gates**: not on `main`; every tier exercises changed behavior; at least
+  one gate provides a contiguous terminal verdict. Manual confirmation is
+  required only when acceptance criteria need human judgment.
+- **Modes**: default risk-scaled verification, `--smoke` for a hotfix, `--cli`
+  for a CLI tool, and `--simulate-user` for fresh-context gap discovery.
 - **Handoff**: gate READY, next `audit-code`.
 
 ### enforce-first
@@ -68,42 +68,49 @@ Eval-driven development. Define capability and regression evals before building.
 A self-review checklist the coding agent runs on its own work before dispatching a
 reviewer.
 
-- **What it does**: ranks changed files by churn, then runs a checklist across supply chain
-  and security, Law of Demeter, convention compliance, scope, the Boy Scout rule, types,
-  test coverage, SOLID, and code style. It names any rationalization it caught.
-- **When to use it**: before `request-review`, before committing, or on a code-quality
-  request.
-- **Modes**: default, `--quick` (supply-chain and coverage only), `--gate`
-  (non-interactive CI gating, used by `build-epic`), `--parallel` (isolated worktrees).
-- **Hard gate**: the audit must check correctness, security, performance, and clarity. Do
-  not skip the security review when the code touches user data, auth, or an external API.
-- **Handoff**: gate READY, next `commit-message`. When it passes, suggest `request-review`.
+- **What it does**: reads active project conventions, ranks changed files by
+  churn, and reports concrete defects across correctness, security, performance,
+  clarity, scope, dependencies, and test evidence. A style or size preference
+  cannot block without a convention violation or demonstrated consequence.
+- **When to use it**: before `request-review`, before committing, or on a
+  code-quality request.
+- **Modes**: default risk-scaled audit, `--quick` for eligible P2/P3 changes,
+  `--gate` for a blocker-only CI verdict, and `--parallel` for isolated checks.
+- **Hard gate**: each failure names its location, consequence or violated
+  convention, evidence, and remediation. Pass means no concrete blocker remains.
+- **Handoff**: gate READY, next `commit-message`. When it passes, suggest
+  `request-review`.
 
 ### request-review
 
-Dispatch fresh reviewer agents with clean context to critique the code independently.
+Dispatch fresh reviewer agents with clean contexts. Reviewer count and focus
+follow story risk.
 
-- **What it does**: writes a self-contained brief, dispatches two blind reviewers (A and B)
-  in parallel, optionally fans out dimension-specific reviewers, collects both reports,
-  computes a quality score each, and applies a dual-blind AND gate.
-- **When to use it**: after `audit-code` passes, before committing, or for an independent auditor or pre-review critique.
-- **Inputs**: the diff, the feature description, the conventions, the verify command.
-- **Outputs**: two independent review reports and an AND-gate verdict.
-- **Hard gate**: a single-reviewer pass is insufficient. Both reviewers must pass
-  independently (zero must-fix, 94% or more each). Max five iterations, then stop for a
-  human decision.
-- **Handoff**: `respond-review` for the findings.
+- **What it does**: prepares a self-contained brief and dispatches two
+  independent reviewers for P0, one reviewer for P1 through P3, and an additional
+  security or domain specialist when the affected boundary requires it.
+- **When to use it**: after `audit-code` passes, before committing, or for an
+  independent audit.
+- **Inputs**: diff, feature behavior, active conventions, risk, verify command,
+  and behavior evidence.
+- **Outputs**: independent reports whose findings are blocking, non-blocking, or
+  advisory.
+- **Hard gate**: every risk-required reviewer completes, required verification
+  passes, and no blocking finding remains unresolved. No percentage score is
+  used. Five unsuccessful rounds require a human decision.
+- **Handoff**: `respond-review` for all findings.
 
 ### respond-review
 
 Act on reviewer feedback systematically.
 
-- **What it does**: reads every finding, categorizes each as must-fix, should-fix, or
-  consider, confirms the consider items with the user, applies the fixes in order, runs the
-  full suite, and reports what was applied and skipped.
+- **What it does**: reads every finding, preserves or assigns its blocking,
+  non-blocking, or advisory class, resolves blockers first, records every
+  disposition, and runs the required suite.
 - **When to use it**: after `request-review` returns a report.
-- **Hard gate**: every reviewer comment must be addressed: fix it, document a disagreement,
-  or ask for clarification. Do not ignore feedback and merge.
+- **Hard gate**: every reviewer comment must be addressed and no blocker may
+  remain open. Fix it, document evidence-backed disagreement, or ask for
+  clarification.
 - **Handoff**: `commit-message`.
 
 ---
@@ -170,16 +177,18 @@ Prove a fix works before declaring it done, and harden against recurrence.
 
 Security analysis of code changes, tracing data flow across files.
 
-- **What it does**: runs a five-phase scan (scope resolution, context research,
-  vulnerability assessment, false-positive filtering, report generation), maps each rule to
-  a CWE with positive and negative fixtures, and suppresses a finding below confidence 8.
-- **When to use it**: when reviewing pending changes, before `release-branch`, during
-  `verify-work`, during `build-epic` threat modeling, or on request.
-- **Hard gate**: requires git context. A finding below confidence 8 is suppressed.
-- **Integration**: it touches nine other skills (build-epic step 0, plan-work's `security:`
-  field, plan-release's WSJF boost, audit-code, request-review, investigate-bug,
-  validate-fix, verify-work phase 5, release-branch). See
-  [The skill workflow](The-skill-workflow).
+- **What it does**: resolves scope, researches trust boundaries, assesses
+  vulnerabilities, applies proven exclusions, and reports three sections:
+  `Confirmed findings`, `Needs investigation`, and `Excluded`.
+- **When to use it**: when reviewing pending changes, before `release-branch`,
+  during `verify-work`, during `build-epic` threat modeling, or on request.
+- **Hard gate**: requires git context. Confirmed unresolved HIGH/CRITICAL
+  findings block. An uncertain potentially HIGH/CRITICAL path remains visible
+  under `Needs investigation` and requires explicit disposition before release.
+  Confidence alone never suppresses either class.
+- **Integration**: it touches `build-epic`, `plan-work`, `plan-release`,
+  `audit-code`, `request-review`, `investigate-bug`, `validate-fix`,
+  `verify-work`, and `release-branch`.
 
 ### inspect-quality
 

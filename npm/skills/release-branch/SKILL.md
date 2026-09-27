@@ -49,18 +49,20 @@ Stop when verification fails. Do not land a branch with an empty commit range.
 
 ### 2. Coverage check
 
-Read the configured minimums from
-`quality_gates.coverage.{overall_minimum_percent,business_logic_minimum_percent}`
-in `.agent/config/rules.yml`. Missing thresholds block release. Run the project
+Read `quality_gates.coverage.{overall_minimum_percent,business_logic_minimum_percent}`
+from `.agent/config/rules.yml`. Missing thresholds block release. Run the project
 coverage command and compare observed values. Never use skill-level defaults.
 
 ### 2a. Security gate
 
 - [ ] A security review exists and is fresh, matching the current branch diff.
-- [ ] No unresolved HIGH finding with confidence 8 or more, or every one is documented with a sign-off rationale.
+- [ ] No confirmed unresolved HIGH or CRITICAL finding remains.
+- [ ] Every `Needs investigation` item with potentially HIGH or CRITICAL impact
+      has an explicit disposition.
 
-When the review is missing or stale, run `security-review` inline. A finding
-blocks the merge unless it is documented.
+When the review is missing or stale, run `security-review` inline. A confirmed
+blocker or undispositioned high-impact investigation item blocks the merge unless
+an explicit sign-off documents the decision.
 
 ### 2b. Traceability gate
 

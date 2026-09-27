@@ -56,7 +56,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `publish-package`     | Publish a package to npm, crates.io, PyPI, or Homebrew          | [Build](Skills-Build)       |
 | `quick-fix`           | A fast path for a trivial data-only fix                         | [Build](Skills-Build)       |
 | `release-branch`      | Verify the gates and land a finished branch                     | [Release](Skills-Release)   |
-| `request-review`      | Dispatch fresh reviewer agents with a dual-blind gate           | [Verify](Skills-Verify)     |
+| `request-review`      | Dispatch risk-scaled independent reviewers                      | [Verify](Skills-Verify)     |
 | `research-first`      | Search for prior art before implementing                        | [Discover](Skills-Discover) |
 | `reset-baseline`      | Restore the project to a known clean state                      | [Sustain](Skills-Sustain)   |
 | `respond-review`      | Act on reviewer feedback systematically                         | [Verify](Skills-Verify)     |

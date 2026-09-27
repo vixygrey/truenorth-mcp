@@ -16,7 +16,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 - **Goal**: Research solutions and lock architectural design.
 - **Deliverables**: Prior art in scope YAML, ADRs in `specs/adr/`.
 - **Skills**: `grill-me`, `model-domain`, `define-language`, `deepen-architecture`, `design-interface`.
-- **Gate**: Quality ≥94% (via `request-review`) + Confirm ("Are decisions locked?").
+- **Gate**: Risk-required review has no unresolved blocker + Confirm ("Are decisions locked?").
 
 ### PHASE 3: PLAN
 
@@ -28,7 +28,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 - **Skills**: `plan-release` owns the release index, `slice-tasks` owns group
   boundaries, `plan-tests` owns test architecture, and `plan-work` owns story
   detail.
-- **Gate**: Quality (request-review ≥94%) plus slopcheck [SUS]/[SLOP].
+- **Gate**: Risk-required review has no unresolved blocker plus slopcheck [SUS]/[SLOP].
 
 ### PHASE 4: BUILD
 
@@ -47,9 +47,9 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 ### PHASE 5: VERIFY
 
 - **Goal**: Validate success criteria and ensure production readiness.
-- **Deliverables**: UAT evidence, eval results.
-- **Skills**: `run-evals`, `verify-work`, `audit-code`, `request-review` (optional).
-- **Gate**: Verification Script confirmed; `verify-work` not on `main`/`master`.
+- **Deliverables**: Risk-scaled behavior evidence, eval results, and review findings.
+- **Skills**: `run-evals`, `verify-work`, `audit-code`, `request-review` when required by risk.
+- **Gate**: Every risk tier has an observable behavior smoke; no blocking finding remains unresolved; `verify-work` not on `main`/`master`.
 
 ### PHASE 6: RELEASE (Integrate)
 

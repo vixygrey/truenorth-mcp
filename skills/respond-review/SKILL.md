@@ -18,31 +18,34 @@ Read every finding before acting on any of them. Get the full picture first.
 
 ### 2. Categorize findings
 
-For each finding, assign a category:
+For each finding, preserve or assign a class:
 
-| Category       | Meaning                                                                     | Action                |
-| -------------- | --------------------------------------------------------------------------- | --------------------- |
-| **must-fix**   | A correctness bug, a security issue, a test failure, a convention violation | Fix before proceeding |
-| **should-fix** | Code quality issue, naming, clarity — worth fixing but not blocking         | Fix if time allows    |
-| **consider**   | Architectural suggestion, alternative approach — may or may not apply       | Discuss with user     |
+| Class            | Meaning                                                                                                | Action                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| **blocking**     | A correctness defect, security vulnerability, failing required check, or explicit convention violation | Resolve before proceeding          |
+| **non-blocking** | A concrete improvement whose current impact does not block delivery                                    | Apply or record a disposition      |
+| **advisory**     | A preference, alternative, or question without a demonstrated defect                                   | Consider with the user when needed |
 
-Create a numbered list of all findings with their categories.
+Create a numbered list of all findings with their classes.
 
-### 3. Confirm with user (for consider-category items)
+### 3. Confirm advisory decisions
 
-For each "consider" item, briefly describe the trade-off and ask: "Apply, skip, or discuss?"
+For an advisory item that requires a product or architecture choice, briefly
+describe the tradeoff and ask: `Apply, skip, or discuss?`
 
-### 4. Apply must-fix items first
+### 4. Resolve blocking items first
 
-Fix every must-fix item. For each one:
+Resolve every blocking item. For each one:
 
-- Describe what you're changing and why
-- Make the change
-- Run the verify command if one exists for this area
+- Describe what is changing and why.
+- Make the change or document evidence-backed disagreement.
+- Run the verify command for the affected area.
+- Record the resolution. An undocumented disagreement leaves the blocker open.
 
-### 5. Apply should-fix items
+### 5. Address non-blocking items
 
-Apply should-fix items. If any are large enough to warrant their own commit, note them separately.
+Apply each non-blocking item or record why it is deferred. If an item is large
+enough to warrant separate work, link that work in the disposition.
 
 ### 6. Run the full suite
 
@@ -60,13 +63,15 @@ After all changes are applied:
 
 ### 7. Report
 
-Summarize what was applied and what was skipped:
+Summarize every disposition:
 
-```
-Applied (must-fix): #1, #2, #3
-Applied (should-fix): #4
-Skipped (consider): #5 — agreed with user to defer
-All tests pass.
+```text
+Resolved (blocking): #1, #2, #3
+Applied (non-blocking): #4
+Deferred (non-blocking): #5, linked to #123
+Skipped (advisory): #6, agreed with user
+Open blockers: none
+All required checks pass.
 ```
 
 Suggest next skill: `commit-message`.

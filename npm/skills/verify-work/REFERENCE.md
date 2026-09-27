@@ -22,6 +22,38 @@ sleep 3 && curl -sf http://localhost:<port>/health || echo "BOOT FAIL"
 
 Feed gaps to `plan-work` as new steps with verify commands, then re-run verify-work.
 
+## Evidence template
+
+```yaml
+story_id: e01s01
+verified_at: "2026-06-11T14:30:00Z"
+risk: P1
+verifier: verify-work
+phases:
+  behavior_smoke:
+    command: "npm run smoke -- login"
+    expected: "Login form renders"
+    actual: "Login form rendered correctly"
+    passed: true
+  tests:
+    command: "npm test"
+    passed: true
+  terminal_verdict:
+    command: "npm test"
+    exit_code: 0
+    captured_at: "2026-06-11T14:25:00Z"
+  manual:
+    required: true
+    reason: "Acceptance criteria require visual judgment"
+    steps:
+      - step: "Open /login"
+        expected: "Login form renders"
+        actual: "Login form rendered correctly"
+        passed: true
+  gaps:
+    closed: true
+```
+
 ## CLI mode
 
 For CLI tools where cold-start smoke does not apply. Auto-detected when no server process; or use `--cli`.

@@ -52,7 +52,7 @@ flowchart TD
     TDD -.bug found.-> FixBug[fix-bug: investigate-bug, diagnose-root, validate-fix]
     FixBug -.-> Verify
     Audit -.audit fails.-> TDD
-    Review -.must-fix.-> TDD
+    Review -.blocking finding.-> TDD
 ```
 
 ## Where to start
@@ -97,8 +97,9 @@ investigate-bug  ->  diagnose-root  ->  develop-tdd  ->  validate-fix  ->  relea
 verify-work  ->  audit-code  ->  request-review  ->  respond-review  ->  commit-message  ->  release-branch
 ```
 
-`audit-code` is self-review, run first. `request-review` dispatches independent reviewers
-with a dual-blind AND gate. `security-review` and `gate-trace` gate the merge in
+`audit-code` is self-review, run first. `request-review` scales independent
+reviewer count and specialist focus from story risk; its pass rule is zero
+unresolved blockers. `security-review` and `gate-trace` gate the merge in
 `release-branch`.
 
 ## Orchestration

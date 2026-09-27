@@ -15,25 +15,25 @@ architecture, not hygiene.
 Distinct from `request-review`. This is the coding agent checking its own work. No
 second agent is involved. Run this first. Run `request-review` after this passes.
 
-## Look here first (a churn heuristic)
+## Look here first
 
-Before the checklist, rank the changed files by git churn and review the high-churn
-hotspots first. They carry the most latent risk regardless of diff size. Use the
-git-context tool or `git log` to rank the recently changed files. A file with zero
-recent commits but a large diff still gets reviewed. Churn sets the priority, not the
-scope.
+Read the active project conventions. They define the enforceable style, structure,
+and test rules. Then rank changed files by git churn and review high-churn
+hotspots first. Churn sets priority, not scope or verdict. A file with zero recent
+commits but a large diff still gets reviewed.
 
 ## Modes
 
-- Default: the full checklist.
-- `--quick`: run only the supply-chain and test-coverage sections. Use it for a
-  change under 50 lines.
+- Default: the full risk-scaled checklist.
+- `--quick`: use for P2 or P3 changes that do not cross a security, persistence,
+  compatibility, or public API boundary. Run focused correctness, convention,
+  and test-evidence checks.
 - `--gate`: non-interactive mode for automated CI gating (used by build-epic).
-  Exit non-zero on any checklist failure, exit 0 only when every item passes.
-  Produce a compact pass or fail summary. On failure, list every failed item with a
-  reason.
-- `--parallel`: run the checklist sections in isolated git worktrees, so concurrent
-  checks cannot corrupt each other's working tree.
+  Exit non-zero when any concrete blocking defect or explicit convention
+  violation remains unresolved. Produce a compact pass or fail summary and list
+  every blocker with evidence.
+- `--parallel`: run independent checklist sections in isolated git worktrees, so
+  concurrent checks cannot corrupt each other's working tree.
 
 ## Checklist
 
@@ -43,7 +43,7 @@ scope.
 - [ ] No `[SLOP]` package without a documented human approval.
 - [ ] No secret in the diff (`sk-`, `ghp_`, `AKIA`, an `.env` value). See the `guard-git` patterns.
 - [ ] OWASP Top 10 spot-check: injection, broken auth, sensitive-data exposure, misconfiguration.
-- [ ] The diff is scanned. No unaddressed HIGH finding, or a documented deviation.
+- [ ] The diff is scanned. No confirmed HIGH/CRITICAL blocker or undispositioned high-impact investigation item remains.
 
 ### Provenance and metadata
 
@@ -77,23 +77,27 @@ scope.
 
 ### Types and safety
 
-- [ ] No `any` type introduced, and no untyped public function.
-- [ ] No type-ignore or lint-disable added.
-- [ ] No cast that bypasses type safety.
+- [ ] Types and public boundaries follow the active project conventions.
+- [ ] No suppression, cast, or unchecked value hides a concrete safety defect.
 
-### Test coverage
+### Test evidence
 
-- [ ] Every new function has at least one test.
-- [ ] Every bug fix has a regression test.
-- [ ] The tests verify behavior through the public interface, not an implementation detail.
-- [ ] The tests are F.I.R.S.T compliant. Use `enforce-first` when unsure.
+- [ ] The changed behavior has the tests or smoke evidence required by the active
+      project conventions and risk tier.
+- [ ] Every bug fix has regression evidence.
+- [ ] Tests verify behavior through the public interface, not an implementation
+      detail.
+- [ ] Tests follow the project's quality rules. Use `enforce-first` when the
+      project adopts the F.I.R.S.T rubric.
 
-### SOLID and heuristics
+### Design and maintainability
 
-- [ ] Single responsibility: no function or module doing two unrelated things.
-- [ ] Open/closed: extended through an interface, not by modifying stable code.
-- [ ] Dependency inversion: a dependency is injected, not imported globally where avoidable.
-- [ ] The code is free of the smells documented in [HEURISTICS.md](HEURISTICS.md).
+- [ ] No concrete correctness, performance, security, or maintainability defect
+      is hidden by unnecessary complexity.
+- [ ] Public boundaries and dependency direction follow the active project
+      conventions.
+- [ ] The code is free of applicable smells documented in
+      [HEURISTICS.md](HEURISTICS.md).
 
 ### Refactoring smells
 
@@ -102,14 +106,13 @@ envy, a data clump, primitive obsession, a message chain, a middle man.
 
 ### Code style
 
-- [ ] Functions are 4 to 20 lines. Split a longer one.
-- [ ] A function descends exactly one level of abstraction.
-- [ ] Files are under 300 lines.
-- [ ] Names are specific and unique.
-- [ ] No duplication. Shared logic is extracted.
-- [ ] Early returns over nested ifs. At most two levels of indentation.
-- [ ] A conditional is expressed as a positive.
-- [ ] A comment explains why, not what.
+- [ ] Formatting, naming, file organization, abstraction, control flow, and
+      comments comply with the active project conventions.
+- [ ] A size or complexity concern is reported only when it violates an explicit
+      convention or causes a concrete defect. A heuristic alone does not fail the
+      audit.
+- [ ] Duplicated logic is reported when it creates a demonstrated consistency or
+      maintenance risk, not merely because similar text exists.
 
 ### Red flags
 
@@ -118,12 +121,16 @@ a checklist item. Silence is not acceptable. When you skip an item, state the re
 
 ## Output
 
-Report the checklist with a pass or fail mark per item. For each fail, describe what
-needs to change. When every item passes, suggest running `request-review`. When any
-item fails, fix it before proceeding.
+Report pass or fail for each applicable section. Every failure must include the
+file and location, the concrete consequence or violated project convention, the
+supporting evidence, and a remediation. A preference without a defect or
+convention violation is advisory and cannot block.
 
-In `--gate` mode, print one summary line per section, exit 0 only when all pass, and
-write the full report for the story.
+When no blocking defect remains, suggest running `request-review`. When a blocker
+exists, fix it before proceeding.
+
+In `--gate` mode, print one summary line per section, exit non-zero only while a
+blocking defect remains, and write the full report for the story.
 
 ## Verify
 
