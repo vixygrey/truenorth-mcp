@@ -1,8 +1,11 @@
 //! SKILL.md convention checks (ports `validate-skill.ts`).
 //!
-//! `validate_skill` runs the legacy convention checks over a parsed skill: verb-noun
-//! naming, required frontmatter, a verify command, a line-count cap, and resolvable
-//! `skills/` links. Each check reports pass or fail with a remediation hint.
+//! `validate_skill` enforces the two-tier skill schema. Every skill declares `name`,
+//! `description`, and `kind`, where `kind` is `prose` or `scripted`. Scripted skills
+//! also declare a nonempty `verify` command. A nonempty `name_exception` permits a
+//! documented exception to verb-noun naming. The validator also caps the complete
+//! `SKILL.md` source at 150 lines and checks resolvable `skills/` links. It does not
+//! execute scripted verification commands.
 //!
 //! Requirements: 7.1. Design: Part II §1.
 
@@ -15,10 +18,10 @@ use serde::Serialize;
 use crate::engine::regex_util::compile_static;
 use crate::engine::skill_parser::ParsedSkill;
 
-/// The line-count cap for a skill.
+/// The line-count cap for the complete `SKILL.md` source, including frontmatter.
 ///
-/// The legacy code always applied 150 through a dead-code ternary; the 120 branch never
-/// ran. This ports the effective behavior, a flat 150-line cap, without the dead branch.
+/// The legacy code always applied 150 through a dead-code ternary; the 120 branch
+/// never ran. This ports the effective behavior without the dead branch.
 const SIZE_CAP_LINES: usize = 150;
 
 /// A single convention check (ports `ValidationCheck`).

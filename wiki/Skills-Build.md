@@ -255,19 +255,19 @@ A streamlined fast path for a trivial data-only fix. No TDD, no branching ceremo
 Create a new skill with the correct structure, progressive disclosure, and bundled
 resources.
 
-- **What it does**: gathers requirements, verifies the skill principles (atomic verb-noun,
-  deep, gated, verifiable), drafts the SKILL.md and a reference file, reviews with the user,
-  and runs a completion-honesty gate that validates the name, description, body, and parse.
+- **What it does**: gathers requirements, selects the prose or scripted template, drafts
+  the SKILL.md and supporting files, reviews with the user, and validates the result.
 - **When to use it**: to create a new skill for the lifecycle.
 - **Frontmatter discipline**: every skill declares `name`, `description`, and `kind`.
-  `kind` is `prose` or `scripted`. A scripted skill also declares a runnable `verify`
+  `kind` is `prose` or `scripted`. A scripted skill also declares a nonempty `verify`
   command. A non-verb-noun name needs a concise `name_exception`. Do not add model or
   effort metadata.
 - **Description discipline**: 1024 characters max, third person, capability plus "Use it"
   triggers only. No workflow steps, phase chains, numbered lists, or HARD GATE prose in the
   description.
-- **Hard gate**: validate the skill before merge. Scripted skills must execute their declared
-  verify command; prose skills must pass structural validation.
+- **Size discipline**: the complete SKILL.md, including frontmatter, is 150 lines or fewer.
+- **Hard gate**: `validate_skill` must pass before merge. Scripted skills must also execute
+  their declared `verify` command; prose skills need no synthetic command.
 
 ### align-grid
 

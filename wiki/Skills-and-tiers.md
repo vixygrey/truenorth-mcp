@@ -41,8 +41,11 @@ The catalog tools read and search the library:
 - `index_skills`: list every skill and its phase.
 - `read_skill`: parse a `SKILL.md` into its frontmatter, headings, and sections.
 - `search_skills`: search skill metadata.
-- `validate_skill`: enforce the two-tier contract. Prose skills require structural metadata;
-  scripted skills also require a runnable frontmatter `verify` command.
+- `validate_skill`: enforce the two-tier structural contract. Every skill requires `name`,
+  `description`, and `kind`, where `kind` is `prose` or `scripted`. Scripted skills also
+  require a nonempty frontmatter `verify`; naming exceptions use `name_exception`. The
+  complete SKILL.md is limited to 150 lines. The tool reports command metadata but does not
+  execute it.
 
 ## The skill graph
 

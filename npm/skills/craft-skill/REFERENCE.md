@@ -1,18 +1,18 @@
 # Craft Skill — Reference
 
-## Naming Rules (full)
+## Naming rules
 
-Every skill name must be a **two-word verb-noun pair**:
+Every skill name must be a two-word verb-noun pair:
 
-- First word: a verb (survey, model, define, develop, audit…)
-- Second word: a noun from PMBOK 6 / Agile vocabulary (context, domain, language, tdd, code…)
-- Pronounceable in any language, searchable, no noise words, no encodings
-- Exception precedent: `grill-me` — kept for recognizability
+- First word: a verb, such as survey, model, define, develop, or audit.
+- Second word: a noun from the project domain.
+- Use kebab-case. Keep the name pronounceable and searchable.
 
 Good: `survey-context`, `audit-code`, `validate-fix`
 Bad: `context-surveyor`, `code-auditing-skill`, `fix-validator`
 
-Any new naming exception requires an entry in CONVENTIONS.md before the skill is published.
+When a justified name cannot follow this pattern, add a concise nonempty
+`name_exception` to its frontmatter.
 
 ## Skill Structure
 
@@ -25,28 +25,43 @@ skill-name/
     └── helper.sh
 ```
 
-## SKILL.md Template
+## SKILL.md templates
+
+Use this template for a prose skill:
 
 ```md
 ---
 name: skill-name
-description: Brief description of capability. Use when [specific triggers].
+description: Brief capability. Use it when specific triggers apply.
+kind: prose
 ---
 
 # Skill Name
 
-## Quick start
+## Process
 
-[Minimal working example]
-
-## Workflows
-
-[Step-by-step processes with checklists for complex tasks]
-
-## Advanced features
-
-[Link to separate files: See [REFERENCE.md](REFERENCE.md)]
+[Concise instructions]
 ```
+
+Use this template for a scripted skill:
+
+```md
+---
+name: skill-name
+description: Brief capability. Use it when specific triggers apply.
+kind: scripted
+verify: command that exits nonzero on failure
+---
+
+# Skill Name
+
+## Process
+
+[Instructions for the bundled executable content]
+```
+
+Add `name_exception: Concise reason.` only when the name does not follow the
+verb-noun rule. Do not add `model` or `effort`.
 
 ## Description Requirements
 
@@ -73,16 +88,15 @@ Add utility scripts when:
 - Same code would be generated repeatedly
 - Errors need explicit handling
 
-## When to Split Files
+## When to split files
 
-Split into separate files when:
+The complete `SKILL.md`, including frontmatter, must contain no more than 150 lines.
+Move supporting detail into a separate file before the skill reaches that limit.
+Split earlier when content has distinct domains or advanced features are rarely
+needed.
 
-- SKILL.md exceeds 100 lines
-- Content has distinct domains
-- Advanced features are rarely needed
+## Skill registration and validation
 
-## Skill registration
-
-After adding a new skill directory with SKILL.md, register it through the `index_skills` tool so the runtime can resolve it.
-
-verify: confirm the new skill resolves through the `index_skills` tool.
+After adding a skill directory with SKILL.md, confirm it appears through
+`index_skills`. Run `validate_skill` and require a passing structural report. For a
+scripted skill, also run the declared frontmatter `verify` command and require exit 0.

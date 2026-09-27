@@ -30,28 +30,26 @@ fn check<'a>(report: &'a ValidationReport, id: &str) -> &'a ValidationCheck {
 }
 
 #[test]
-fn valid_skill_passes_core_checks() {
+fn newly_crafted_scripted_skill_validates() {
     let dir = tempdir().expect("temp dir");
-    let skill = parsed(
-        "develop-tdd",
-        "---\nname: develop-tdd\ndescription: TDD loop.\nkind: scripted\nverify: cargo test\n---\n\n# TDD\n",
-    );
-    let report = validate_skill(&skill, dir.path(), 40);
+    let markdown = "---\nname: develop-tdd\ndescription: TDD loop. Use it to develop a tested change.\nkind: scripted\nverify: cargo test\n---\n\n# Develop TDD\n";
+    let skill = parsed("develop-tdd", markdown);
+    let report = validate_skill(&skill, dir.path(), markdown.lines().count());
     assert!(
         report.pass,
-        "a well-formed skill passes: {:?}",
+        "a newly crafted scripted skill passes: {:?}",
         report.checks
     );
+    assert!(check(&report, "skill-kind").pass);
+    assert!(check(&report, "verify-command").pass);
 }
 
 #[test]
-fn prose_skill_needs_kind_but_not_a_verify_command() {
+fn newly_crafted_prose_skill_validates_without_a_verify_command() {
     let dir = tempdir().expect("temp dir");
-    let skill = parsed(
-        "develop-tdd",
-        "---\nname: develop-tdd\ndescription: TDD loop.\nkind: prose\n---\n\n# TDD\n",
-    );
-    let report = validate_skill(&skill, dir.path(), 40);
+    let markdown = "---\nname: develop-tdd\ndescription: TDD guidance. Use it to develop a tested change.\nkind: prose\n---\n\n# Develop TDD\n";
+    let skill = parsed("develop-tdd", markdown);
+    let report = validate_skill(&skill, dir.path(), markdown.lines().count());
     assert!(report.pass, "prose skills do not require a shell command");
     assert!(check(&report, "skill-kind").pass);
     assert!(check(&report, "verify-command").pass);
@@ -105,15 +103,19 @@ fn flags_missing_frontmatter_and_verify() {
 }
 
 #[test]
-fn flags_size_cap_over_150() {
+fn size_cap_accepts_150_lines_and_rejects_151() {
     let dir = tempdir().expect("temp dir");
     let skill = parsed(
         "develop-tdd",
         "---\nname: develop-tdd\ndescription: y\nkind: prose\n---\n\n# X\n",
     );
-    let report = validate_skill(&skill, dir.path(), 200);
-    assert!(!check(&report, "size-cap").pass);
-    assert!(check(&report, "size-cap").message.contains("200/150"));
+
+    let at_cap = validate_skill(&skill, dir.path(), SIZE_CAP_LINES);
+    assert!(check(&at_cap, "size-cap").pass);
+
+    let over_cap = validate_skill(&skill, dir.path(), SIZE_CAP_LINES + 1);
+    assert!(!check(&over_cap, "size-cap").pass);
+    assert!(check(&over_cap, "size-cap").message.contains("151/150"));
 }
 
 #[test]
