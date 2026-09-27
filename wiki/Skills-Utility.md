@@ -99,17 +99,6 @@ cockpit.
 - **Hard gate**: the dashboard is read-only. Do not use a visualization to make a decision
   without consulting the source data.
 
-### generate-allure-report
-
-Generate Allure-ready reports from the project YAML metadata.
-
-- **What it does**: reads the execution status, release plan, task groups, task files, and
-  bug registry, then produces a JUnit results file (one test case per story), a categories
-  file, and an executor file in `allure-results/`.
-- **When to use it**: when preparing a progress dashboard, integrating with Allure TestOps,
-  or generating a CI report.
-- **Handoff**: none. This is a terminal skill with no downstream step.
-
 ### run-benchmark
 
 Run a skill quality benchmark with N-run, with-and-without-skill delta grading.
