@@ -207,6 +207,13 @@ fn issue_forms_include_the_id_field_only_when_the_profile_requires_it() {
     assert!(!bug_form(profile::GENERIC).contains("## Issue or ticket id"));
 }
 
+#[test]
+fn bug_form_does_not_request_its_own_external_link() {
+    let form = bug_form(profile::ISSUE_PER_TASK);
+
+    assert!(!form.contains("External tracker link"));
+}
+
 #[tokio::test]
 async fn scaffold_github_templates_carry_no_hardcoded_project_urls() {
     // Requirement 5.10: generic structure only, no copied domain content. The only URL is

@@ -1,6 +1,6 @@
 ---
 name: inspect-quality
-description: "An interactive QA session. The user reports bugs conversationally, and the agent logs them to the bug registry with a structured audit schema. Explores the codebase in the background for context and domain language. Use it to report bugs, do QA, or when the user mentions a QA session."
+description: "An interactive QA session. The user reports bugs conversationally, and the agent creates external issues plus lean local references. Explores the codebase in the background for context and domain language. Use it to report bugs, do QA, or when the user mentions a QA session."
 kind: prose
 ---
 
@@ -8,7 +8,7 @@ kind: prose
 
 > **HARD GATE** — Quality metrics (coverage, lint, cyclomatic complexity, security scans) must be monitored. If a metric degrades, surface it as a blocker. Do NOT accept regressions.
 
-Run an interactive QA session. The user describes problems they're encountering. You clarify, explore the codebase for context, and log each issue to the bug references under `.agent/tasks/bugs.yml` with a structured, durable format.
+Run an interactive QA session. The user describes problems they're encountering. You clarify, explore the codebase for context, create an issue in the configured external tracker, and record only its lean reference locally.
 
 ## For each issue the user raises
 
@@ -43,65 +43,35 @@ Keep as a single issue when:
 - It's one behavior that's wrong in one place
 - The symptoms are all caused by the same root behavior
 
-### 4. Log to the bug references
+### 4. Create or update the external issue
 
-Append the issue to the bug references under `.agent/tasks/bugs.yml`. The external tracker owns the full bug detail.
+Create one issue in the configured external tracker for each independent bug. The issue body carries:
 
-#### bug reference format
+- Actual and expected behavior
+- Reproduction steps
+- Severity and priority
+- Relevant domain context
 
-The file maintains a Markdown table with the following columns (derived from structured audit practice):
+The tracker-issued id and URL are canonical. Do not generate a second local bug id. Do not copy the issue body, reproduction steps, diagnosis, or implementation detail into `.agent/tasks/bugs.yml`.
 
-| Field                | Description                                                          |
-| -------------------- | -------------------------------------------------------------------- |
-| `bug_id`             | `BUG-YYYY-MM-DDTHHMMSS`                                              |
-| `date`               | `YYYY-MM-DD`                                                         |
-| `severity`           | `critical` / `high` / `medium` / `low`                               |
-| `priority`           | `p0` / `p1` / `p2` / `p3`                                            |
-| `scope`              | kebab-case area (e.g. `auth`, `checkout`)                            |
-| `what_happened`      | actual behavior (user-facing terms)                                  |
-| `what_expected`      | expected behavior                                                    |
-| `steps_to_reproduce` | numbered steps                                                       |
-| `root_cause`         | one-line hypothesis                                                  |
-| `files_changed`      | filled in after fix                                                  |
-| `approach`           | filled in after fix                                                  |
-| `risk_level`         | `low` / `medium` / `high`                                            |
-| `new_tests`          | count (filled in after fix)                                          |
-| `type_check`         | `pass` / `fail` (filled in after fix)                                |
-| `lint`               | `pass` / `fail` (filled in after fix)                                |
-| `commit_type`        | `fix` / `fix!` / `feat` (filled in after fix)                        |
-| `release_type`       | `patch` / `minor` / `major` (filled in after fix)                    |
-| `commit_message`     | Conventional Commits message (filled in after fix)                   |
-| `follow_ups`         | semicolon-separated follow-up items                                  |
-| `ref`                | tracker reference to the detailed bug (filled in by investigate-bug) |
-| `status`             | `open` / `in-progress` / `fixed` / `wont-fix`                        |
+When the report is a recurrence, update the original external issue with the new evidence instead of creating another narrative. Keep its canonical id and URL.
 
-When a bug is fixed (via `validate-fix`), update the relevant row with the resolution fields.
+### 5. Record the lean local reference
 
-#### Issue body (for context below the table)
+Call `truenorth_record_bug` after the external tracker returns the canonical id and URL:
 
-For each bug, also append a detail section:
-
-```markdown
-### BUG-YYYY-MM-DDTHHMMSS: [short title]
-
-**What happened:** [actual behavior, plain language]
-**What I expected:** [expected behavior]
-**Steps to reproduce:**
-
-1. [Step 1]
-2. [Step 2]
-
-**Additional context:** [domain-language observations, no file paths]
+```json
+{
+  "id": "<tracker issue id>",
+  "external_link": "<absolute issue URL>",
+  "status": "open",
+  "linked_ref": "<existing task or group id>",
+  "tags": ["<scope>", "<priority>"]
+}
 ```
 
-#### Rules for all entries
+Use an existing task or group as `linked_ref`. If none exists, create the corresponding planned task before recording the bug. Never edit `.agent/tasks/bugs.yml` directly.
 
-- **bug_id** uses full timestamp: `BUG-YYYY-MM-DDTHHMMSS`. It matches the bug id in the external tracker.
-- **No file paths or line numbers** — these go stale
-- **Use the project's domain language** (check the project glossary if it exists)
-- **Describe behaviors, not code** — "the sync service fails to apply the patch" not "applyPatch() throws"
-- **Reproduction steps are mandatory** — if you can't determine them, ask the user
-
-### 5. Continue the session
+### 6. Continue the session
 
 After logging, ask: "Next issue, or are we done?" Keep going until the user says done. Each issue is independent — don't batch them.

@@ -1,9 +1,10 @@
 //! External-tracker bug reference tool: `truenorth_record_bug`.
 //!
-//! The tool stores a lean bug reference into the cockpit file `.agent/tasks/bugs.yml`
-//! through the single write guard (Requirement 8.1). The external tracker is the source
-//! of truth: the runtime stores no bug narrative directory and no tracker credential,
-//! makes no network request, and integrates no tracker API (Requirements 8.2, 8.4).
+//! The tool inserts or updates a lean bug reference in `.agent/tasks/bugs.yml` through
+//! the single write guard (Requirement 8.1). An existing id keeps its external link while
+//! its lifecycle fields can change. The external tracker is the source of truth: the
+//! runtime stores no bug narrative directory or tracker credential, makes no network
+//! request, and integrates no tracker API (Requirements 8.2, 8.4).
 //!
 //! Validation runs before any write (Requirements 8.6, 8.7): the id is 1 to 200 chars,
 //! the external link is an absolute URL, the status is one of the enum, and the linked
@@ -79,9 +80,9 @@ pub struct RecordBugArgs {
 
 #[tool_router(router = bugref_router, vis = "pub")]
 impl TrueNorthServer {
-    /// Record a lean bug reference backed by an external tracker.
+    /// Record or update a lean bug reference backed by an external tracker.
     #[tool(
-        description = "Record a bug reference (id, external link, status, linked task or group, tags) in .agent/tasks/bugs.yml."
+        description = "Record or update a bug reference (id, external link, status, linked task or group, tags) in .agent/tasks/bugs.yml."
     )]
     pub async fn truenorth_record_bug(
         &self,
@@ -119,6 +120,11 @@ impl TrueNorthServer {
                 None,
             ));
         }
+        // Insert a new reference or update the lifecycle fields of the existing reference.
+        // The external link is the stable identity boundary: reusing an id for another
+        // external issue is rejected before the guarded write.
+        let (mut doc, precondition) = self.read_bugs_for_write()?;
+        upsert_bug(&mut doc, &args)?;
         let response = result::success(
             vec![ContentBlock::text(
                 serde_json::json!({
@@ -130,11 +136,6 @@ impl TrueNorthServer {
             )],
             self.ctx.token_caps,
         )?;
-
-        // Append the record to bugs.yml through the single write guard, preserving any
-        // existing bug references (Requirement 8.1).
-        let (mut doc, precondition) = self.read_bugs_for_write()?;
-        append_bug(&mut doc, &args);
         let yaml = serde_yaml::to_string(&doc).map_err(|e| {
             ErrorData::internal_error(format!("could not serialize the bug references: {e}"), None)
         })?;
@@ -242,30 +243,66 @@ fn empty_bugs_doc() -> Value {
     Value::Mapping(map)
 }
 
-/// Append a bug reference to the document's `bugs` sequence, creating it when absent.
-fn append_bug(doc: &mut Value, args: &RecordBugArgs) {
+/// Insert a bug reference or update its lifecycle fields when the id already exists.
+///
+/// Unknown document and entry fields survive an update. An id cannot be rebound to a
+/// different external issue because recurrence and resolution must target the original
+/// tracker record.
+fn upsert_bug(doc: &mut Value, args: &RecordBugArgs) -> Result<(), ErrorData> {
+    if !doc.is_mapping() {
+        *doc = empty_bugs_doc();
+    }
+    let key = Value::String("bugs".to_string());
+    let Some(mapping) = doc.as_mapping_mut() else {
+        return Ok(());
+    };
+    let bugs = mapping
+        .entry(key)
+        .or_insert_with(|| Value::Sequence(Vec::new()));
+    if !bugs.is_sequence() {
+        *bugs = Value::Sequence(Vec::new());
+    }
+    let Some(bugs) = bugs.as_sequence_mut() else {
+        return Ok(());
+    };
+
+    if let Some(existing) = bugs.iter_mut().find(|bug| field_eq(bug, "id", &args.id)) {
+        let existing_link = existing
+            .get("external_link")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
+        if existing_link != args.external_link {
+            return Err(ErrorData::invalid_params(
+                format!(
+                    "`external_link` `{}` conflicts with existing bug id `{}` linked to \
+                     `{existing_link}`. Use the existing link or record a new bug id.",
+                    args.external_link, args.id
+                ),
+                None,
+            ));
+        }
+        if let Some(entry) = existing.as_mapping_mut() {
+            entry.insert("status".into(), args.status.as_str().into());
+            entry.insert("linked_ref".into(), args.linked_ref.clone().into());
+            entry.insert(
+                "tags".into(),
+                Value::Sequence(args.tags.iter().cloned().map(Value::String).collect()),
+            );
+        }
+        return Ok(());
+    }
+
     let mut entry = serde_yaml::Mapping::new();
     entry.insert("id".into(), args.id.clone().into());
     entry.insert("external_link".into(), args.external_link.clone().into());
     entry.insert("status".into(), args.status.as_str().into());
     entry.insert("linked_ref".into(), args.linked_ref.clone().into());
-    let tags: Vec<Value> = args.tags.iter().map(|t| Value::String(t.clone())).collect();
-    entry.insert("tags".into(), Value::Sequence(tags));
-
-    // `read_bugs` guarantees a mapping, but reset a non-mapping doc here too, so the
-    // append never panics on an unexpected shape.
-    if !doc.is_mapping() {
-        *doc = empty_bugs_doc();
-    }
-    let key = Value::String("bugs".to_string());
-    if let Some(mapping) = doc.as_mapping_mut() {
-        match mapping.get_mut(&key).and_then(Value::as_sequence_mut) {
-            Some(bugs) => bugs.push(Value::Mapping(entry)),
-            None => {
-                mapping.insert(key, Value::Sequence(vec![Value::Mapping(entry)]));
-            }
-        }
-    }
+    entry.insert(
+        "tags".into(),
+        Value::Sequence(args.tags.iter().cloned().map(Value::String).collect()),
+    );
+    bugs.push(Value::Mapping(entry));
+    Ok(())
 }
 
 /// Whether a mapping value's string field equals `needle`.

@@ -105,6 +105,88 @@ async fn record_bug_appends_and_preserves_existing_references() {
 }
 
 #[tokio::test]
+async fn record_bug_updates_an_existing_reference_without_duplication() {
+    let repo = repo_with_task();
+    let srv = server(&repo);
+
+    srv.truenorth_record_bug(Parameters(valid_args()))
+        .await
+        .expect("insert");
+    let mut document: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(bugs_path(&repo)).expect("read bugs"))
+            .expect("parse bugs");
+    document["workspace_note"] = "preserve top level".into();
+    document["bugs"][0]["custom_field"] = "preserve entry".into();
+    fs::write(
+        bugs_path(&repo),
+        serde_yaml::to_string(&document).expect("serialize fixture"),
+    )
+    .expect("write fixture");
+
+    let mut update = valid_args();
+    update.status = BugStatus::Resolved;
+    update.linked_ref = "Wire the gate".to_string();
+    update.tags = vec!["fixed".to_string()];
+    srv.truenorth_record_bug(Parameters(update))
+        .await
+        .expect("update");
+
+    let text = fs::read_to_string(bugs_path(&repo)).expect("read updated bugs");
+    let document: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse updated bugs");
+    let bugs = document
+        .get("bugs")
+        .and_then(serde_yaml::Value::as_sequence)
+        .expect("bugs");
+    assert_eq!(bugs.len(), 1);
+    assert_eq!(
+        bugs[0].get("status").and_then(serde_yaml::Value::as_str),
+        Some("resolved")
+    );
+    assert_eq!(
+        bugs[0]
+            .get("linked_ref")
+            .and_then(serde_yaml::Value::as_str),
+        Some("Wire the gate")
+    );
+    assert_eq!(
+        bugs[0]
+            .get("custom_field")
+            .and_then(serde_yaml::Value::as_str),
+        Some("preserve entry")
+    );
+    assert_eq!(
+        document
+            .get("workspace_note")
+            .and_then(serde_yaml::Value::as_str),
+        Some("preserve top level")
+    );
+}
+
+#[tokio::test]
+async fn record_bug_rejects_an_existing_id_with_a_different_external_link() {
+    let repo = repo_with_task();
+    let srv = server(&repo);
+
+    srv.truenorth_record_bug(Parameters(valid_args()))
+        .await
+        .expect("insert");
+    let before = fs::read_to_string(bugs_path(&repo)).expect("read before");
+    let mut conflicting = valid_args();
+    conflicting.external_link = "https://tracker.example/issues/different".to_string();
+
+    let error = srv
+        .truenorth_record_bug(Parameters(conflicting))
+        .await
+        .expect_err("conflicting external link");
+
+    assert!(error.message.contains("external_link"));
+    assert_eq!(
+        fs::read_to_string(bugs_path(&repo)).expect("read after"),
+        before
+    );
+}
+
+#[tokio::test]
 async fn record_bug_rejects_an_empty_id_and_writes_nothing() {
     let repo = repo_with_task();
     let srv = server(&repo);

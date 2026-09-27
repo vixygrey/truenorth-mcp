@@ -1,12 +1,12 @@
 ---
 name: fix-bug
-description: "A bug-fix orchestrator. Sets the fix_bug flow, reads the BUG report, and chains investigate-bug, develop-tdd, and validate-fix. Use it when the user reports a defect."
+description: "A bug-fix orchestrator. Sets the fix_bug flow and chains external issue investigation, TDD implementation, behavioral validation, and release. Use it when the user reports a defect."
 kind: prose
 ---
 
 # Fix Bug
 
-**Boundary**: Orchestrator flow — chains `investigate-bug` (entry point + RCA via `diagnose-root`) → `develop-tdd` → `validate-fix`. Does not implement RCA or write bug files directly.
+**Boundary**: Orchestrator flow. Chains `investigate-bug` → `develop-tdd` → `validate-fix` → `release-branch`. It does not perform RCA, implement the fix, create issue content, or write bug references directly.
 
 Orchestrates **fix_bug** flow without mixing group build state.
 
@@ -20,16 +20,16 @@ Valid entry **without a user-reported bug** when:
 - The project baseline is red, per the `truenorth_verify_gate` tool
 - A reproducible gate failure during unrelated group work exceeds quick-fix guardrails
 
-Record the gate failure via `investigate-bug` (or inline in fix-bug step 1) in the external tracker, then run the standard fix_bug chain.
+Record the gate failure in the configured external tracker through `investigate-bug`, then run the standard fix_bug chain.
 
 ## Four steps (`bug_cycle` in state.yaml)
 
-| Step | Skill / action                                                     |
-| ---- | ------------------------------------------------------------------ |
-| 1    | `investigate-bug` — create BUG-\*.md with RCA (runs diagnose-root) |
-| 2    | `develop-tdd` — red-green against bug file verify steps            |
-| 3    | `validate-fix` — re-run failing test, full suite, lint             |
-| 4    | `release-branch` — PR or solo land the fix                         |
+| Step | Skill / action                                                               |
+| ---- | ---------------------------------------------------------------------------- |
+| 1    | `investigate-bug` — verify RCA and update the external issue                 |
+| 2    | `develop-tdd` — run RED-GREEN against the external issue's TDD plan          |
+| 3    | `validate-fix` — prove behavior and update the same issue and lean reference |
+| 4    | `release-branch` — PR or solo land the fix                                   |
 
 The 4-phase root-cause analysis is not a separate step. `investigate-bug` runs
 `diagnose-root` internally, so the chain does not invoke it twice.
@@ -45,26 +45,11 @@ Track progress via `.agent/tasks/state.yml` `bug_cycle`:
 
 ## Process
 
-1. **Step 1 — investigate-bug:** If no bug record exists, run `investigate-bug` first. It handles the history check, the 4-phase RCA (via `diagnose-root`), the fix approach, and records the bug in the external tracker. Increment `bug_cycle.current_step` to 2 on completion.
-2. **Step 2 — develop-tdd:** `develop-tdd` against the bug file's verify steps. Increment to step 3 on all-green.
-3. **Step 3 — validate-fix:** `validate-fix` — re-run failing test, full suite, typecheck, lint. Increment to step 4.
+1. **Step 1 — investigate-bug:** Run `investigate-bug`. It checks history, delegates the 4-phase RCA to `diagnose-root`, posts the fix approach and TDD plan to the external issue, and records or updates the lean reference through `truenorth_record_bug`. Increment `bug_cycle.current_step` to 2 on completion.
+2. **Step 2 — develop-tdd:** Run `develop-tdd` against the external issue's TDD plan and verify commands. Increment to step 3 on all-green.
+3. **Step 3 — validate-fix:** Run `validate-fix` to re-run the failing test, full suite, typecheck, lint, and behavioral proof. Update the same external issue and lean reference. Increment to step 4.
 4. **Step 4 — release-branch:** Land the fix via `release-branch`. Clear `bug_cycle` and `active_flow` when done.
-
-## Bug file SoT
-
-One markdown file per bug with frontmatter:
-
-```yaml
----
-bug_id: BUG-001
-status: open
-severity: high
-scope: api
-title: Short title
----
-```
 
 ## Verify
 
-Confirm the BUG report exists and the fix passes the project verification through
-the `truenorth_verify_gate` tool.
+Confirm the same external issue carries intake, RCA, the TDD plan, and resolution evidence. Confirm `.agent/tasks/bugs.yml` contains only one lean reference for its canonical id. The project verification must pass through `truenorth_verify_gate`.

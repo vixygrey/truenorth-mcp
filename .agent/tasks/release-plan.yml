@@ -195,3 +195,7 @@ tasks:
   group_kind: ticket
   task_name: 'Integrate Dependabot batch for issue #476'
   verify_command: npm run preflight
+- group_id: '453'
+  group_kind: ticket
+  task_name: Enforce external bug ownership across the bug workflow
+  verify_command: cargo test --locked --manifest-path runtime/Cargo.toml bugref && cargo test --locked --manifest-path runtime/Cargo.toml checked_in_skill_catalog_matches_the_two_tier_contract && diff -qr --exclude catalog.yml skills npm/skills && node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/verify-skills.sh && bash scripts/preflight.sh check format shell wrapper

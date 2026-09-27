@@ -59,26 +59,25 @@ Sweep the defect class across the codebase after the local hardening. See
 - [ ] A codebase sweep is run and the match count is recorded.
 - [ ] The generalize sweep passes on the artifact.
 
-### 6. Update the bug file and the registry
+### 6. Update the external issue and lean reference
 
-Find the most recent BUG report and append the resolution.
+Post the resolution to the same external issue used for investigation and implementation:
 
 ```markdown
 ## Resolution
 
 **Fixed:** [date]
 **Root cause confirmed:** [one sentence]
-**Fix applied:** [what changed]
+**Fix applied:** [behavioral change]
 **Hardening added:** [type guard / schema / assertion / lint rule]
-**Evidence:** all tests pass
+**Evidence:** [specific test and manual proof]
 **Commit:** `fix(<scope>): <description>`
 ```
 
-Update the corresponding row in the bug registry: set `status` to `fixed`, and
-fill in `files_changed`, `approach`, `risk_level`, and `commit_message`.
+Call `truenorth_record_bug` with the issue's existing canonical id and `external_link`, status `resolved`, its linked task or group, and current tags. The tool updates the lean reference without creating another row. Close the external issue only after its behavioral proof and release policy allow closure.
 
-- [ ] The BUG report is updated with the resolution.
-- [ ] The bug registry row is updated with the resolution fields.
+- [ ] The same external issue contains the resolution and evidence.
+- [ ] The lean local reference is `resolved` or `closed`.
 
 ### 7. Behavioral proof (HARD GATE)
 
@@ -86,7 +85,7 @@ Mechanical verification (the tests passing) is only half the fix. You must prove
 behavioral correctness.
 
 - [ ] Manually demonstrate the fixed behavior.
-- [ ] Compare the output or state against the expected behavior in the bug file.
+- [ ] Compare the output or state against the expected behavior in the external issue.
 - [ ] Show the user evidence of the behavior, not just the test logs.
 
 ## Rules
@@ -98,7 +97,7 @@ behavioral correctness.
 - **Never use a type-ignore, an `as any`, or a lint-disable to fix a bug.** These
   suppress the symptom without fixing the root cause.
 - **Never mark the task done while any test is failing.**
-- **The verify command from the BUG report or the active group task must pass.**
+- **The verify command from the external issue or active group task must pass.**
 
 Suggest the next skill: `audit-code`, then `commit-message`.
 
