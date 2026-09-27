@@ -30,14 +30,14 @@ Create an isolated worktree or branch and verify a clean baseline before code.
 Test-driven development with a red-green-refactor loop over vertical slices.
 
 - **What it does**: plans the behaviors, writes one failing test (RED), the minimal code to
-  pass (GREEN), then an optional REFACTOR, driving each transition through
-  `truenorth_tdd_cycle` and each verify through `truenorth_verify_gate`. It enforces a
-  two-commit red/green policy and a per-cycle checklist.
+  pass (GREEN), then an optional REFACTOR. It drives each transition through
+  `truenorth_tdd_cycle` and each verify through `truenorth_verify_gate`. RED evidence
+  stays local. Each verified test and implementation pair becomes one atomic green commit.
 - **When to use it**: for a feature from a group task or a bug planned in an external issue.
 - **Inputs**: the active group story tasks or the external issue's TDD plan.
-- **Outputs**: tested code, two commits per behavior, a passing verify.
+- **Outputs**: tested code, one atomic green commit per behavior, a passing verify.
 - **Hard gates**: not on `main`. No code before a plan. RED must fail before GREEN. Never
-  refactor while RED. Never combine a test and a fix in one commit.
+  commit or push a deliberately failing tree. Never refactor while RED.
 - **Handoff**: gate READY, next `verify-work`.
 
 ### build-epic

@@ -62,6 +62,51 @@ fn red_stage_fails_when_test_passes() {
     assert!(error.message.contains("did not fail as required"));
 }
 
+#[tokio::test]
+async fn public_red_step_records_only_an_observed_failure() {
+    use crate::engine::cockpit::read_tdd_step;
+    use crate::engine::tdd::TddStep;
+
+    let failed_test_dir = tempdir().expect("temp dir");
+    let failed_test_server = server_at(failed_test_dir.path());
+    let result = failed_test_server
+        .truenorth_tdd_cycle(Parameters(TddCycleArgs {
+            step: "red".to_string(),
+            failing_test_cmd: "false".to_string(),
+            files_to_modify: vec!["src/lib.rs".to_string()],
+        }))
+        .await
+        .expect("a failing test establishes red");
+    let response = result.content[0]
+        .as_text()
+        .expect("text content")
+        .text
+        .clone();
+    let response: serde_json::Value = serde_json::from_str(&response).expect("JSON response");
+    assert_eq!(response["step"], "red");
+    assert_eq!(response["step_ok"], true);
+    assert_eq!(
+        read_tdd_step(failed_test_dir.path()).expect("read red state"),
+        Some(TddStep::Red)
+    );
+
+    let passing_test_dir = tempdir().expect("temp dir");
+    let passing_test_server = server_at(passing_test_dir.path());
+    let error = passing_test_server
+        .truenorth_tdd_cycle(Parameters(TddCycleArgs {
+            step: "red".to_string(),
+            failing_test_cmd: "true".to_string(),
+            files_to_modify: vec!["src/lib.rs".to_string()],
+        }))
+        .await
+        .expect_err("a passing test cannot establish red");
+    assert!(error.message.contains("did not fail as required"));
+    assert_eq!(
+        read_tdd_step(passing_test_dir.path()).expect("read unchanged state"),
+        None
+    );
+}
+
 #[test]
 fn ordering_persists_and_invalid_transition_leaves_state_unchanged() {
     // Requirement 2.8: an invalid transition does not change the recorded step.

@@ -54,28 +54,32 @@ the `truenorth_tdd_cycle` tool, which enforces the red-green-refactor order and 
 red-stage exit-code semantics.
 
 ```text
-RED:      write a test for the first behavior, the test fails, commit test(<scope>): ...  (test-only, red in CI)
-GREEN:    write the minimal code to pass, the test passes, commit feat(<scope>): ...      (fix commit, green)
-REFACTOR: (optional) clean up, commit refactor(<scope>): ...
+RED:      write one behavior test, run it through truenorth_tdd_cycle, and keep the failure local
+GREEN:    write the minimum code, run the scoped verification, and advance the cycle
+REFACTOR: (optional) clean up while the scoped verification remains green
+COMMIT:   commit the test and implementation together as one verified behavior slice
 ```
 
-> **Two-commit red/green policy** (HARD GATE): each behavior cycle requires two separate commits. First a test-only commit that fails in CI (RED), then an implementation commit that makes it pass (GREEN). Never combine a test and a fix in one commit.
+> **Atomic green slice policy** (HARD GATE): RED evidence stays in the local
+> working tree. Do not commit or push a deliberately failing test. After GREEN
+> and any REFACTOR work, run the scoped verification and commit the behavior test
+> and implementation together. The shared commit must pass that verification.
 
 Run the RED stage through `truenorth_tdd_cycle`. It reports RED passed only when
-the failing test command exits non-zero. When the test-only commit passes in
-isolation, the RED gate is violated. Stop and fix it before GREEN. Show
-`git log -2 --oneline` and the tool result as evidence.
+the failing test command exits non-zero. Retain the tool result as local evidence
+before writing the implementation. If the command exits zero, the RED gate is
+violated. Stop and fix the test before GREEN.
 
 > **tasks ledger**: after each task's `verify:` exits 0, set that task's `status: passing`. The story-level status is `passing` only when every task passes.
 
 ### 3. Incremental loop
 
-Before each RED-to-GREEN or GREEN-to-REFACTOR transition, create a checkpoint, so
-a failed transition rolls back cleanly. Never refactor while RED.
+Before each RED-to-GREEN or GREEN-to-REFACTOR transition, create a local
+checkpoint so a failed transition rolls back cleanly. Never refactor while RED.
 
-For each remaining behavior: RED, then GREEN, then REFACTOR (optional). One test at
-a time. Two commits per behavior, test-only RED then fix GREEN. Commit after every
-GREEN phase.
+For each remaining behavior: RED, then GREEN, then REFACTOR (optional). One test
+at a time. After the scoped verification passes, commit the behavior test and its
+implementation as one atomic green slice.
 
 ### 4. Visual slices (UI alternate workflow)
 
@@ -114,8 +118,8 @@ correctness.
 [ ] The code is minimal for this test
 [ ] No speculative feature added
 [ ] Every new abstraction has an explicit reason-for-depth justification
-[ ] Progress committed (Conventional Commits)
-[ ] The verify command passes
+[ ] The verified behavior test and implementation are ready for one atomic Conventional Commit
+[ ] The scoped verify command passes
 ```
 
 ## Verify
