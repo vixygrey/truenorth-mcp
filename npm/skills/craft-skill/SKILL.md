@@ -36,13 +36,13 @@ The instructional prose in a skill body MUST follow the house writing rules: sho
 imperative sentences, active voice, approved modals (`can`, `will`, `must`), and no
 vendor model names.
 
-| Rule            | Limit                                                                    |
-| --------------- | ------------------------------------------------------------------------ |
-| Sentence length | 20 words or fewer per instruction sentence                               |
-| Voice           | Imperative, active                                                       |
-| Directive terms | MUST, MUST NOT, NEVER, ALWAYS, DO, DO NOT                                |
-| Banned modals   | should, might, could, may, consider, try, generally, typically           |
-| Scope           | The SKILL.md body only, not the `description`, not the terse-mode output |
+| Rule            | Limit                                                          |
+| --------------- | -------------------------------------------------------------- |
+| Sentence length | 20 words or fewer per instruction sentence                     |
+| Voice           | Imperative, active                                             |
+| Directive terms | MUST, MUST NOT, NEVER, ALWAYS, DO, DO NOT                      |
+| Banned modals   | should, might, could, may, consider, try, generally, typically |
+| Scope           | The SKILL.md body only, not the `description`                  |
 
 ## Process
 

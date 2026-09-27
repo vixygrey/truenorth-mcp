@@ -19,15 +19,14 @@ All skill directories use a two-word `verb-noun` kebab-case pair (e.g., `develop
 - A global `grep` for any skill name returns < 5 results (grep-ability mandate, Akita #3).
 - Skills self-document their intent: `investigate-bug` is unambiguous; `debug` is not.
 - Two-word constraint prevents sprawl — a skill that needs three words is probably two skills.
-- `terse-mode` and `visual-dashboard` are named exceptions (adjective-noun); noted in CONVENTIONS.md.
+- `visual-dashboard` is a named exception (adjective-noun); noted in `CONVENTIONS.md`.
 
 ## Fork reconciliation (TrueNorth)
 
 TrueNorth-MCP inherited this decision from bigpowers and keeps it. The skill sources
-under `skills/` are named verb-noun kebab-case, and the documented exceptions still hold:
-`terse-mode` and `visual-dashboard` are the adjective-noun cases named above. TrueNorth
-renamed the guide skill from `using-bigpowers` to `using-truenorth`, so the convention
-survived the rename.
+under `skills/` are named verb-noun kebab-case. `visual-dashboard` is the documented
+adjective-noun exception. TrueNorth renamed the guide skill from `using-bigpowers` to
+`using-truenorth`, so the convention survived the rename.
 
 The runtime does not enforce the naming; it is a source convention on the `skills/`
 directory. The runtime reads a skill by its directory name through the `get_skill`,

@@ -57,10 +57,9 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
 
         "release-branch" | "commit-message" => "Release",
 
-        "session-state" | "terse-mode" | "compose-workflow" | "delegate-task"
-        | "dispatch-agents" | "edit-document" | "evolve-skill" | "migrate-spec"
-        | "organize-workspace" | "reset-baseline" | "simulate-agents" | "stocktake-skills"
-        | "write-document" => "Sustain",
+        "session-state" | "compose-workflow" | "delegate-task" | "dispatch-agents"
+        | "edit-document" | "evolve-skill" | "migrate-spec" | "organize-workspace"
+        | "reset-baseline" | "simulate-agents" | "stocktake-skills" | "write-document" => "Sustain",
 
         _ => return None,
     };

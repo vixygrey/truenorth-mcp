@@ -1,8 +1,8 @@
 # Skills: Sustain
 
 The Sustain phase keeps the project and its own tooling healthy across sessions. The skills
-group into session and context management, agent delegation, document authoring, catalog
-maintenance, and communication mode.
+group into session and context management, agent delegation, document authoring, and
+catalog maintenance.
 
 For the full arc across phases, see [The skill workflow](The-skill-workflow). For the
 alphabetical list, see [Skill index](Skill-index).
@@ -23,9 +23,9 @@ Track decisions and progress in `.agent/tasks/state.yml` to prevent context rot.
   decision or milestone is reached.
 - **Hard gate**: the session state must stay synchronized with the git state. On a
   conflict, halt and ask.
-- **Context strategies**: it implements isolation (each agent gets exactly the context it
-  needs). It works with `terse-mode` (compression), `survey-context` (selection), and the
-  conventions (token-efficient writing).
+- **Context strategies**: it implements isolation and state compaction. Compaction archives
+  durable decisions and keeps only current handoff state. It does not change prose style.
+  `survey-context` handles selection, and the conventions ensure token-efficient writing.
 
 ### organize-workspace
 
@@ -49,21 +49,6 @@ Restore the project to a known clean state between runs or experiments.
   tree.
 - **Hard gate**: confirm with the user before any destructive git operation. Never
   `reset --hard` without explicit approval.
-
-### terse-mode
-
-A fallback ultra-compressed communication mode that cuts token usage while keeping full
-technical accuracy.
-
-- **What it does**: drops articles, filler, and pleasantries, uses fragments and short
-  synonyms, and stays active every response once triggered until the user says stop. It
-  keeps technical terms, code blocks, and errors exact.
-- **When to use it**: only when context is critically long, or on "terse mode" / "be
-  brief".
-- **Hard gate**: do not use it when clarity is critical (complex design, bug
-  investigations). Enable it only on explicit user request.
-- **Auto-clarity exception**: it drops terseness temporarily for a security warning, an
-  irreversible-action confirmation, or a multi-step sequence, then resumes.
 
 ---
 
