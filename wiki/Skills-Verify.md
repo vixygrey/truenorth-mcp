@@ -16,21 +16,23 @@ what was promised". `verify-work` runs first, then the review chain.
 
 ### verify-work
 
-The multi-phase UAT gate. Cold-start smoke, the mechanical gates, and step-by-step manual
-verification.
+The multi-phase UAT gate. Cold-start smoke, mechanical gates, step-by-step manual
+verification, and optional fresh-context user simulation.
 
 - **What it does**: reads the story risk (P0 to P3) and scales the rigor, runs a cold-start
   smoke, the mechanical gates (build, typecheck, lint, tests) through
   `truenorth_verify_gate`, a security scan, blind-spot and completeness checks, an NFR gate
-  for P0, and step-by-step UAT, then runs a gaps-closure loop. It persists structured
-  verification evidence.
-- **When to use it**: after `execute-plan` or `develop-tdd`, before `audit-code`.
+  for P0, and step-by-step UAT, then runs a gaps-closure loop. Its `--simulate-user` mode
+  follows the Verification Script from a fresh user perspective and records provisional
+  UX and behavior gaps. It persists structured verification evidence.
+- **When to use it**: after `execute-plan` or `develop-tdd`, before `audit-code`, or for a mock-user or user-observable simulation.
 - **Inputs**: the active story tasks and spec, the risk level.
 - **Outputs**: a persisted verification-evidence file.
 - **Hard gates**: not on `main`. No story is done until manual UAT is confirmed with
   evidence. At least one mechanical gate must be a real terminal-verdict command, its
   output captured from a single run.
-- **Modes**: default, `--smoke` (hotfix), `--cli` (a CLI tool with no server).
+- **Modes**: default, `--smoke` (hotfix), `--cli` (a CLI tool with no server), and
+  `--simulate-user` (fresh-context gap discovery that does not replace manual UAT).
 - **Handoff**: gate READY, next `audit-code`.
 
 ### enforce-first
@@ -84,7 +86,7 @@ Dispatch fresh reviewer agents with clean context to critique the code independe
 - **What it does**: writes a self-contained brief, dispatches two blind reviewers (A and B)
   in parallel, optionally fans out dimension-specific reviewers, collects both reports,
   computes a quality score each, and applies a dual-blind AND gate.
-- **When to use it**: after `audit-code` passes, before committing.
+- **When to use it**: after `audit-code` passes, before committing, or for an independent auditor or pre-review critique.
 - **Inputs**: the diff, the feature description, the conventions, the verify command.
 - **Outputs**: two independent review reports and an AND-gate verdict.
 - **Hard gate**: a single-reviewer pass is insufficient. Both reviewers must pass

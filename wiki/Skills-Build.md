@@ -70,8 +70,8 @@ Batch-execute the active group tasks sequentially, with a human checkpoint after
 - **Outputs**: executed tasks with evidence, an updated execution status.
 - **Hard gates**: not on `main`. The active group must exist with a runnable verify per
   task.
-- **Handoff**: `verify-work`, `run-evals`, `audit-code`, `simulate-agents`,
-  `commit-message`, `release-branch`.
+- **Handoff**: `verify-work`, `run-evals`, `audit-code`, `request-review`,
+  `respond-review`, `commit-message`, `release-branch`.
 
 ### orchestrate-project
 

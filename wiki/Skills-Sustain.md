@@ -166,19 +166,6 @@ Chain multiple skills into a custom workflow recipe.
 - **Hard gate**: a workflow is orchestration, not automation. Do not create one for a task
   that should be a single skill.
 
-### simulate-agents
-
-Run a mock-user agent and an auditor agent against a feature in fresh contexts before human
-review.
-
-- **What it does**: spawns a Mock User (steps through the verification script, reports UX
-  gaps) and an Auditor (runs the `audit-code` checklist cold), then writes a simulation
-  report and routes failures to `respond-review` or `plan-work`.
-- **When to use it**: after `verify-work` and before `request-review`, for a pre-review
-  simulation.
-- **Hard gate**: simulations are hypothetical. Do not use sim results for a production
-  decision without validation on real agents.
-
 ### migrate-spec
 
 Detect a foreign spec artifact and transform it into the project YAML layout.

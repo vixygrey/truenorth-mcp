@@ -24,7 +24,7 @@ EXECUTE     develop-tdd + enforce-first, execute-plan, build-epic, delegate-task
             dispatch-agents
 VERIFY      verify-work, run-evals, validate-contracts, smoke-test
 BUG?        investigate-bug, diagnose-root, fix-bug, validate-fix
-REVIEW      audit-code, request-review, respond-review, simulate-agents, security-review,
+REVIEW      audit-code, request-review, respond-review, security-review,
             trace-requirement, gate-trace
 INTEGRATE   commit-message, release-branch, deploy, publish-package
 SUSTAIN     session-state, organize-workspace, stocktake-skills (ongoing)
