@@ -20,12 +20,20 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
 
 ## The 6-Phase Core Loop
 
-1. **DISCOVER** (3-6 hours): Understand problem. Deliverables: `.agent/product/vision.yml`, `.agent/product/scope.yml`, the project tech-stack note.
-2. **DESIGN** (3-6 hours): Research solutions. Deliverables: Prior art in scope YAML, ADRs in `specs/adr/`.
-3. **PLAN** (2-4 hours): Write verifiable plan. Deliverables: `release-plan.yaml`, `epics/eNN-*.yaml` with `verify:` per task.
-4. **EXECUTE** (1-8 hours): Execute plan. Runs build-epic once per story in WSJF order. Deliverables: Code; update `execution-status.yaml`.
-5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables: UAT evidence, the review report if used.
-6. **INTEGRATE** (30 min - 2 hours): Ship to production. Deliverables: Release tag (vX.Y.Z), `state.yaml` `release.last_tag`.
+1. **DISCOVER** (3-6 hours): Understand the problem. Deliverables:
+   `.agent/product/vision.yml`, `.agent/product/scope.yml`, and the project
+   tech-stack note.
+2. **DESIGN** (3-6 hours): Research solutions. Deliverables: prior art in scope
+   YAML and ADRs in `specs/adr/`.
+3. **PLAN** (2-4 hours): Build the planning artifacts in owner order:
+   `release-plan.yml`, each capsule `group.yml`, optional `test-plan.md`, then
+   per-story specification and task ledger files.
+4. **EXECUTE** (1-8 hours): Run `build-epic` once per story and update
+   `.agent/tasks/execution-status.yml`.
+5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables: UAT evidence
+   and the review report when used.
+6. **INTEGRATE** (30 min - 2 hours): Ship to production. Deliverables: release tag
+   and `.agent/tasks/state.yml` `release.last_tag`.
 
 ### Checkpoint / resume
 

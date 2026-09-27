@@ -6,62 +6,83 @@ kind: prose
 
 # Slice Tasks
 
-> **Spine position:** Step 2 — scope-work → slice-tasks → plan-work.
+> **Spine position:** Step 2: `scope-work`, then `slice-tasks`, then
+> `plan-work`.
 
-Produce **task group story tasks** in the task group under `.agent/tasks/` — vertical slices, each independently deliverable and testable. Output: decoupled `eNNsYY-tasks.yaml` files with runnable verify commands. Use capsule dirs + `execution-status.yaml`.
+Create the group manifest and define independently deliverable story boundaries.
+This skill owns `.agent/tasks/<capsule>/group.yml`. It does not write detailed
+story specifications or runnable task ledgers.
 
-## Pre-flight
+## Artifact contract
 
-- [ ] Does `.agent/product/scope.yml` exist? If not, run `scope-work` first — you can't slice what you haven't bounded.
-- [ ] Is the `release-plan.yaml` populated with the task groups you're slicing? Group IDs (e01, e02…) should exist before you create stories.
-- [ ] Do you understand the difference between a horizontal layer and a vertical slice? (See anti-patterns below.)
+- **Writes**: `.agent/tasks/<capsule>/group.yml`.
+- **Reads**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, and
+  `.agent/tasks/planning-context.yml` when present.
+- **Readers**: `plan-tests`, `plan-work`, execution, verification, traceability,
+  and status views.
+- **Never writes**: `release-plan.yml`, `test-plan.md`, story specifications,
+  task ledgers, or `execution-status.yml`.
+
+The release index must already contain the selected group and capsule path. If it
+does not, return to `plan-release`. Do not create or reorder release-index entries.
 
 ## Process
 
-0. **Read planning-context.yaml** — If `.agent/tasks/planning-context.yml` exists, read it first:
+1. **Read context**: read the product scope, selected release-index entry, and
+   optional planning context. Use its constraints, exclusions, and decisions when
+   defining boundaries.
+2. **Cut tracer-bullet stories**: each story must be the thinnest vertical path
+   that provides demonstrable user value.
+3. **Assign BCPs**: estimate each story from 1 to 13. Split a story above 8 BCPs
+   unless its cohesion makes the larger boundary necessary.
+4. **Record boundaries**: write each story id, title, BCPs, status, requirement
+   delta, and reserved spec and task filenames to `group.yml`.
+5. **Validate slices**: reject horizontal-only layers and stories that depend on a
+   later story before they provide user value.
 
-   ```bash
-   test -f .agent/tasks/planning-context.yml && echo "Context found" || echo "No context — starting fresh"
-   ```
+Example:
 
-   Use `feature_name`, `constraints`, and `out_of_scope` to inform slice boundaries. `key_decisions` in the file may constrain how stories are cut (e.g., "no external deps" constrains slice 2). If absent, proceed normally.
+```yaml
+id: e01
+title: Auth System
+total_bcps: 8
+status: todo
+stories:
+  - id: e01s01
+    title: Login
+    bcps: 3
+    status: todo
+    delta: ADDED
+    spec: e01s01-login.md
+    tasks: e01s01-tasks.yaml
+  - id: e01s02
+    title: JWT Token Management
+    bcps: 5
+    status: todo
+    delta: ADDED
+    spec: e01s02-jwt.md
+    tasks: e01s02-tasks.yaml
+```
 
-1. **Read context** — Read `.agent/product/scope.yml` and/or `.agent/tasks/release-plan.yml`. Understand what the task group delivers end-to-end.
+The `spec` and `tasks` values reserve filenames. They do not authorize this skill
+to create those files. `plan-work` owns both.
 
-2. **Cut tracer-bullet slices** — Identify the thinnest possible vertical path through the stack that delivers user value. Start with this slice; it will catch integration issues first. For example:
-   - A search feature: first slice is "user types query → API returns results" (no filters, no pagination, no ranking — just the plumbing working end-to-end).
-   - A checkout flow: first slice is "user clicks buy → order created" (no payment, no inventory, no email).
+## Hard gates
 
-3. **Assign BCPs** — For each story, estimate Business Complexity Points (1–13). A 1-BCP story is a trivial change (one file, one concept). A 13-BCP story is a major feature across multiple modules. If a story exceeds 8 BCPs, consider splitting it.
-
-4. **Each story** writes:
-   - `eNNsYY-tasks.yaml` with `story_id`, `title`, `status`, `bcps`, `tasks[]` (each with `id`, `description`, `verify`, `status`)
-   - Story spec `.md` files are written by `plan-work` and follow countable-story-format.md
-   - The task group manifest (`group.yml`) is updated to list the story ID and BCPs
-   - **Requirement deltas (e45s29):** Stories that alter existing behavior MUST carry `delta:` in `group.yml` (`ADDED` | `MODIFIED` | `REMOVED` | `RENAMED`). `plan-work` expands deltas into full before/after requirement text.
-
-5. **Order by WSJF** in `release-plan.yaml` group list — highest WSJF first. Weight-shortest-job-first ensures the highest value arrives earliest.
-
-6. **Validate slices** — Every slice must answer: "If this story ships, does a user get new value?" If the answer is "no, they need a later story too", the slice is too horizontal — cut vertically deeper.
-
-> **HARD GATE** — No horizontal-only slices ("add all models") without a vertical path that proves integration. Every story must be independently demonstrable, even if it only handles the happy path.
-
-> **HARD GATE** — Each task's `verify:` field must contain a runnable command (not "manually check" or "review visually"). If verification requires manual steps, prefix with `verify-script:` and write the steps in the story file.
-
-## Anti-Patterns
-
-- **Layer cakes** — "Week 1: all models. Week 2: all controllers. Week 3: all views." This hides integration risk until the end. Every story must cut through all layers.
-- **Too-small slices** — If a slice takes < 30 minutes to implement, it's probably noise. Combine with adjacent slices.
-- **Too-large slices** — If a slice takes > 3 days, it's a task group, not a story. Split further.
-
-## Output
-
-- `.agent/tasks/<capsule>/eNNsYY-tasks.yaml` — per-story task breakdown with verify commands
-- `.agent/tasks/<capsule>/group.yml` — updated with story list and BCPs
-- `.agent/tasks/release-plan.yml` — updated WSJF ordering (if needed)
+- Every story id is unique within the group.
+- Every reserved filename stays within the active capsule.
+- Every story is independently demonstrable.
+- `MODIFIED`, `REMOVED`, and `RENAMED` deltas name the prior behavior that
+  `plan-work` must expand.
+- The selected group already exists in `.agent/tasks/release-plan.yml`.
 
 ## Verify
 
-→ verify: `[ "$(find .agent/tasks -name '*-tasks.yaml' 2>/dev/null | wc -l | tr -d ' ')" -gt 0 ]`
+Confirm `.agent/tasks/<capsule>/group.yml` exists, contains only unique story
+boundaries, and references the group id and capsule selected by the release index.
+Confirm no release index, story file, task ledger, or execution status changed.
 
-<!-- story: e03s01 -->
+## Handoff
+
+For a P0 or P1 group, hand off to `plan-tests`. Otherwise hand off to
+`plan-work`.

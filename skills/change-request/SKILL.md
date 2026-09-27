@@ -1,56 +1,63 @@
 ---
 name: change-request
-description: "Add a new requirement or reorder task groups by WSJF against the release plan and the task groups. Modes: add and reorder. Use it when a new requirement arrives mid-release or the plan needs re-prioritization."
+description: "Orchestrate a new requirement or release reprioritization through the skills that own the affected planning artifacts. Use it when requirements change mid-release."
 kind: prose
 ---
 
 # Change Request
 
-> **HARD GATE** — `.agent/tasks/release-plan.yml` must exist before running either mode. If it doesn't, run `plan-release` first.
->
-> → verify: `test -f .agent/tasks/release-plan.yml`
+> **HARD GATE**: `.agent/tasks/release-plan.yml` must exist. Run `plan-release`
+> first when it does not.
 
-Two modes. State which one you want or the skill will ask.
+Capture and route a mid-release change without taking ownership of planning
+artifacts. This skill reads the release index and capsule artifacts, presents the
+impact, and invokes the current owner for each required mutation.
 
-## Mode A — Add
+## Artifact contract
 
-Intake a new requirement mid-flight without disrupting work in progress.
+- **Writes**: no planning artifact directly.
+- **Reads**: the release index, affected group manifests, story specifications,
+  task ledgers, and execution status.
+- **Routes**: release ordering to `plan-release`, story boundaries to
+  `slice-tasks`, test architecture to `plan-tests`, and story detail to
+  `plan-work`.
 
-1. **Capture**: What is the change? What problem does it solve?
-2. **Locate**: Which existing stories in the task group does it affect or replace?
-3. **Draft**: Add story + `tasks[]` with Gherkin-style AC in group YAML (each task has `verify`). Tag requirement deltas: `ADDED` / `MODIFIED` / `REMOVED` / `RENAMED` with before/after for non-`ADDED` changes (e45s29).
-4. **Place**: Append story under an existing task group, or create a new group and register it in `.agent/tasks/release-plan.yml` `groups[]`.
-5. **Score**: Compute WSJF; note if it outranks in-progress work.
+## Mode A: Add or change a requirement
 
-→ verify: `grep -ci 'stor' .agent/tasks/release-plan.yml`
+1. **Capture**: state the requested change and the problem it solves.
+2. **Locate**: identify affected groups and stories without editing them.
+3. **Classify**: record `ADDED`, `MODIFIED`, `REMOVED`, or `RENAMED`, including
+   before and after behavior when applicable.
+4. **Route the index**: invoke `plan-release` when the change adds a group or
+   changes group priority.
+5. **Route boundaries**: invoke `slice-tasks` to add or change story boundaries in
+   `group.yml`.
+6. **Route detail**: invoke `plan-tests` when risk architecture changes, then
+   `plan-work` for each affected story specification and task ledger.
 
-## Mode B — Reorder
+## Mode B: Reorder groups
 
-Value-engineering pass over the full release using WSJF.
+1. Gather the changed Business Value, Time Criticality, Risk Reduction, and Job
+   Size inputs.
+2. Present the proposed WSJF delta and identify in-progress work that must not be
+   interrupted.
+3. Invoke `plan-release` to update group scores and ordering.
 
-See [REFERENCE.md](REFERENCE.md) for the full WSJF scoring rubric.
+See [REFERENCE.md](REFERENCE.md) for the scoring rubric.
 
-1. **Score** each group or story: BV + TC + RR / Job Size.
-2. **Re-sort** `.agent/tasks/release-plan.yml` `groups[]` and per-group `wsjf` fields.
-3. **Flag cut candidates**: WSJF < 1.5.
-4. **Update** `.agent/tasks/release-plan.yml` and group `wsjf` keys with rationale.
-5. **Report** the delta.
+## Conversational mode
 
-→ verify: `grep -c 'wsjf' .agent/tasks/release-plan.yml`
+When the request is incomplete, ask only for the missing change, reason, affected
+capability, and priority inputs. Present the resulting route before invoking an
+owner.
 
-## Conversational Mode
+## Verify
 
-If the user's request is in natural language and does not match the structured format of Mode A or Mode B, enter Conversational Mode to extract the change parameters through interactive dialogue.
+Confirm each changed artifact was written by its catalog owner. This orchestration
+must not directly modify the release index, group manifest, test plan, story files,
+task ledgers, or execution status.
 
-### 5-Step Flow
+## Handoff
 
-1. **Capture**: Parse the natural-language request for what, why, and where. Ask at most 3 clarifying questions before drafting.
-2. **Locate**: Identify which group or capability in the task group the request affects or replaces.
-3. **Draft**: Present a structured draft of the proposed story and tasks for user confirmation.
-4. **Score**: Estimate the WSJF score and explain the calculation so the user understands the priority.
-5. **Place**: Confirm the final group placement with the user before writing files.
-
-## After either mode
-
-Update `.agent/tasks/execution-status.yml` from the group manifests. Suggest `plan-work` or
-`build-epic` for the top-ranked unstarted story.
+Resume with `build-epic` only after every required owner has completed its update
+and cross-artifact consistency passes.

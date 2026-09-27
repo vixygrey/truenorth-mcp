@@ -5,7 +5,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
 
-const { buildManifest, serialized } = require('./build-bundle-manifest.js');
+const {
+  buildManifest,
+  parseCatalog,
+  serialized,
+  validatePlanningArtifacts,
+} = require('./build-bundle-manifest.js');
 
 const root = path.resolve(__dirname, '..');
 
@@ -26,6 +31,87 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
   );
   assert.strictEqual(manifest.skill_sets.find((set) => set.name === 'core').skills.length, 70);
   assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 76);
+});
+
+test('planning artifacts have one canonical writer and path', () => {
+  const catalog = parseCatalog(root);
+  const ownership = Object.fromEntries(
+    Object.entries(catalog.planning_artifacts).map(([name, artifact]) => [
+      name,
+      { path: artifact.path, writer: artifact.writer },
+    ]),
+  );
+  assert.deepStrictEqual(ownership, {
+    'release-index': {
+      path: '.agent/tasks/release-plan.yml',
+      writer: 'plan-release',
+    },
+    'group-manifest': {
+      path: '.agent/tasks/<capsule>/group.yml',
+      writer: 'slice-tasks',
+    },
+    'group-test-plan': {
+      path: '.agent/tasks/<capsule>/test-plan.md',
+      writer: 'plan-tests',
+    },
+    'story-specification': {
+      path: '.agent/tasks/<capsule>/eNNsYY-<slug>.md',
+      writer: 'plan-work',
+    },
+    'story-task-ledger': {
+      path: '.agent/tasks/<capsule>/eNNsYY-tasks.yaml',
+      writer: 'plan-work',
+    },
+  });
+});
+
+test('planning artifact validation rejects ownership conflicts', () => {
+  const catalog = parseCatalog(root);
+  const duplicatePath = structuredClone(catalog);
+  duplicatePath.planning_artifacts['group-test-plan'].path =
+    duplicatePath.planning_artifacts['group-manifest'].path;
+  assert.throws(
+    () => validatePlanningArtifacts(duplicatePath),
+    /planning artifacts group-manifest and group-test-plan share path/,
+  );
+
+  const missingWriter = structuredClone(catalog);
+  delete missingWriter.planning_artifacts['story-specification'].writer;
+  assert.throws(
+    () => validatePlanningArtifacts(missingWriter),
+    /planning artifact story-specification is missing writer/,
+  );
+
+  const missingArtifact = structuredClone(catalog);
+  delete missingArtifact.planning_artifacts['group-test-plan'];
+  assert.throws(
+    () => validatePlanningArtifacts(missingArtifact),
+    /planning artifacts must declare exactly the required ownership contract/,
+  );
+});
+
+test('planning artifact validation rejects unknown or duplicate readers', () => {
+  const catalog = parseCatalog(root);
+  const unknownReader = structuredClone(catalog);
+  unknownReader.planning_artifacts['release-index'].readers.push('missing-skill');
+  assert.throws(
+    () => validatePlanningArtifacts(unknownReader),
+    /planning artifact release-index names unknown reader missing-skill/,
+  );
+
+  const duplicateReader = structuredClone(catalog);
+  duplicateReader.planning_artifacts['group-manifest'].readers.push('plan-work');
+  assert.throws(
+    () => validatePlanningArtifacts(duplicateReader),
+    /planning artifact group-manifest repeats reader plan-work/,
+  );
+
+  const writerReader = structuredClone(catalog);
+  writerReader.planning_artifacts['story-task-ledger'].readers.push('plan-work');
+  assert.throws(
+    () => validatePlanningArtifacts(writerReader),
+    /planning artifact story-task-ledger lists its writer as a reader/,
+  );
 });
 
 test('checked-in current bundle manifest is current', async () => {

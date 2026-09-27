@@ -31,18 +31,18 @@ Define what is in and out of scope, and save the bounded PRD.
 
 ### slice-tasks (spine step 2 of 3)
 
-Break the scoped PRD into vertical-slice stories, each independently deliverable.
+Create the group manifest and define independently deliverable story boundaries.
 
-- **What it does**: cuts tracer-bullet slices (the thinnest end-to-end path that delivers
-  value), assigns Business Complexity Points (1 to 13), writes per-story
-  `eNNsYY-tasks.yaml` files with runnable verify commands, updates the group manifest, and
-  orders by WSJF.
-- **When to use it**: after `scope-work`, before `plan-work`.
-- **Inputs**: `.agent/product/scope.yml` and the release plan.
-- **Outputs**: per-story task files and updated group manifests.
-- **Hard gate**: no horizontal-only slices. Every story must be independently
-  demonstrable. Every task verify must be a runnable command, not "manually check".
-- **Handoff**: `plan-work`, or `plan-tests` first for a P0/P1 group.
+- **What it does**: cuts tracer-bullet slices, assigns BCPs, and records story ids,
+  titles, deltas, and reserved filenames in `.agent/tasks/<capsule>/group.yml`.
+- **When to use it**: after `plan-release`, before `plan-work`.
+- **Inputs**: `.agent/product/scope.yml`, the release-index entry, and optional
+  planning context.
+- **Outputs**: the group manifest only. Reserved specification and task filenames
+  are not created here.
+- **Hard gate**: the group must already exist in the release index. Every story
+  must be independently demonstrable.
+- **Handoff**: `plan-tests` for P0 or P1 risk, otherwise `plan-work`.
 
 ### plan-work (spine step 3 of 3)
 
@@ -52,9 +52,11 @@ Write the detailed implementation plan into the active task group.
   leaves the code working and has one verifiable command), and writes a countable-story
   spec plus a tasks file. It applies the zoom-out mandate, requirement delta tags, a
   slopcheck for external packages, and a cross-artifact consistency pass.
-- **When to use it**: after `slice-tasks`.
-- **Inputs**: the release plan, the scope, the active group, the tech stack, the glossary.
-- **Outputs**: a story spec and a tasks file, every task starting `status: failing`.
+- **When to use it**: after `slice-tasks` and optional `plan-tests`.
+- **Inputs**: the release index, scope, active `group.yml`, tech stack, glossary,
+  and `test-plan.md` when present.
+- **Outputs**: one story specification and its task ledger, every task starting
+  `status: failing`.
 - **Hard gate**: do not proceed until success criteria are clear. Every task ships a
   runnable verify. A CRITICAL or HIGH consistency finding blocks code generation.
 - **Modes**: default (full), or `--fast` (skip the zoom-out and impact assessment for a
@@ -68,39 +70,31 @@ Write the detailed implementation plan into the active task group.
 
 ### plan-release
 
-A release-index builder. Sequence elaborated task groups into the release plan with WSJF
-ordering.
+Create and order the release index.
 
-- **What it does**: synthesizes the conversation into `.agent/tasks/release-plan.yml`
-  (the WSJF-ordered group index) and shards detail into each task group (group manifest,
-  countable-story specs, decoupled task files, execution status). It boosts WSJF for a
-  HIGH or CRITICAL security group.
-- **When to use it**: after `elaborate-spec`, when the user wants a versioned release index
-  of task groups. It is not a planning-spine substitute: it does not scope work or write
-  story tasks.
-- **Inputs**: the elaborated spec and `.agent/product/scope.yml` (required).
-- **Outputs**: the release plan, group manifests, story specs, task files, execution
-  status.
-- **Hard gate**: do not run until `elaborate-spec` produced a clear spec and `scope.yml`
-  exists. Every task must have a runnable verify. The version label is a non-authoritative
-  mirror; the real version is tag-driven.
-- **Handoff**: `assess-impact` then `plan-work` per story, or `change-request` for a new
-  requirement.
+- **What it does**: writes release metadata and a WSJF-ordered list of groups to
+  `.agent/tasks/release-plan.yml`.
+- **When to use it**: after `elaborate-spec` and `scope-work`.
+- **Inputs**: the elaborated specification, product scope, and relevant risk reports.
+- **Outputs**: the release index only.
+- **Hard gate**: do not create capsule contents or execution status. Missing
+  downstream artifacts return to their catalog owner.
+- **Handoff**: `slice-tasks` for each indexed group.
 
 ### change-request
 
-Add a new requirement or reorder task groups by WSJF mid-release.
+Route a mid-release change through the skills that own the affected artifacts.
 
-- **What it does**: Mode A (add) intakes a new requirement, drafts the story and tasks with
-  delta tags, places it in a group, and scores its WSJF. Mode B (reorder) re-scores and
-  re-sorts the whole release and flags cut candidates below WSJF 1.5. A conversational mode
-  extracts the parameters through dialogue.
-- **When to use it**: when a new requirement arrives mid-release, or the plan needs
-  re-prioritization.
-- **Inputs**: the release plan (required) and the task groups.
-- **Outputs**: an updated release plan, group manifests, and execution status.
-- **Hard gate**: the release plan must exist first. Run `plan-release` if it does not.
-- **Handoff**: `plan-work` or `build-epic` for the top-ranked unstarted story.
+- **What it does**: captures and classifies the change, assesses affected groups
+  and stories, and invokes the required owner.
+- **When to use it**: when a requirement or group priority changes mid-release.
+- **Inputs**: the release index and affected capsule artifacts.
+- **Outputs**: no planning artifact directly.
+- **Routing**: group ordering to `plan-release`, story boundaries to
+  `slice-tasks`, test architecture to `plan-tests`, and story details to
+  `plan-work`.
+- **Hard gate**: every changed artifact must be written by its catalog owner.
+- **Handoff**: resume execution after all owner updates and consistency checks pass.
 
 ### run-planning
 
@@ -123,18 +117,15 @@ The discover-phase advancer. Drives the discover checklist and hands off to the 
 
 ### plan-tests
 
-Design a risk-scaled test architecture for a task group before implementation.
+Write the risk-scaled test architecture for one group.
 
-- **What it does**: reads the sliced stories, maps each behavior to a P0 to P3 risk tier,
-  classifies each scenario as unit, integration, or E2E, plans the fixtures, and publishes
-  the group test plan with scenario ids.
-- **When to use it**: between `slice-tasks` and `plan-work` for a P0 or P1 group. Optional
-  for P2 or P3.
-- **Inputs**: the story list for the active group.
-- **Outputs**: the group test plan, with `SC-eNNsYY-P{0-3}-NN` scenario ids that
-  `plan-work` references in its Gherkin.
-- **Hard gates**: do not write any test or production code here. Default a test to the
-  lowest possible level.
+- **What it does**: reads story boundaries from `group.yml`, maps behavior to P0
+  through P3, chooses test levels, plans fixtures, and assigns stable scenario ids.
+- **When to use it**: between `slice-tasks` and `plan-work` for P0 or P1 risk.
+- **Inputs**: `.agent/tasks/<capsule>/group.yml`.
+- **Outputs**: `.agent/tasks/<capsule>/test-plan.md`.
+- **Hard gates**: every scenario must reference an existing group story. The skill
+  cannot change boundaries or write implementation artifacts.
 - **Handoff**: gate READY, next `plan-work`.
 
 ### assess-impact

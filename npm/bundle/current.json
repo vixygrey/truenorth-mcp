@@ -152,7 +152,7 @@
     },
     {
       "path": "skills/change-request/SKILL.md",
-      "sha256": "00569811ec482a0150fcdecdb00582ae47c2c7406f3827f00b25c1f3d9fa8b4f",
+      "sha256": "1b7c1c3d77718e0f0f518f90363c11fbe505852d840f23c58861963c219f644c",
       "mode": "0644"
     },
     {
@@ -292,7 +292,7 @@
     },
     {
       "path": "skills/elaborate-spec/SKILL.md",
-      "sha256": "e9c2b02ecff9362594e0e7757d19e33b1655eb521e3e64df406b5352f46a2c9e",
+      "sha256": "5c7562374082ebeb952f632528740775c2ab227f4dc059e0a66463f724955429",
       "mode": "0644"
     },
     {
@@ -587,12 +587,12 @@
     },
     {
       "path": "skills/orchestrate-project/REFERENCE.md",
-      "sha256": "6e56f204935182be1757e9cec543c92fe9274e011b9ead3df8655fce7829f585",
+      "sha256": "61d58cf289d84dc28b48a272b7b3c6f9f792e3fd66573c3f4f89ed205d27d924",
       "mode": "0644"
     },
     {
       "path": "skills/orchestrate-project/SKILL.md",
-      "sha256": "ecc386a870e62c1fdba30cdfe281e301f67aabf00722b18e2bddc178b7ba44db",
+      "sha256": "6feb6a86c5c42a74034e17bcbc6f93d1e72c1455c60e4f299c694106618f4642",
       "mode": "0644"
     },
     {
@@ -612,27 +612,27 @@
     },
     {
       "path": "skills/plan-release/SKILL.md",
-      "sha256": "33528de390cb449b8b837bbb521cffa36ea100c27e78ec790a8b4297b833321e",
+      "sha256": "2f6b40803e4ff93cd8d290e5f6d54c3fca1c2c9f54cd495a5667923b4a1928aa",
       "mode": "0644"
     },
     {
       "path": "skills/plan-tests/REFERENCE.md",
-      "sha256": "db5d3b6185693929cc0818d0ff3b2972a4151eea1caa0445f72ef5b6883f70c7",
+      "sha256": "092bd97669f1095b3f2ad1ed79e0c364e2d363a552937882c957628333e94f7f",
       "mode": "0644"
     },
     {
       "path": "skills/plan-tests/SKILL.md",
-      "sha256": "93f0b875b9542e25c0d475ed9bda52659c7d9837c76dd2a5918cecb2b6bb6376",
+      "sha256": "c4d062a3d59c467966ebba06a4f1a314a0c0fe839334d9a74098c1c84f21f10a",
       "mode": "0644"
     },
     {
       "path": "skills/plan-work/REFERENCE.md",
-      "sha256": "5e1b56be3cd2558d92557e55607628e72157d6887ceee7bf691c8ed23742d247",
+      "sha256": "b030e042a86872e5947286dacdb0cc6f56dc236db4597fd8047fe8ab97d4663a",
       "mode": "0644"
     },
     {
       "path": "skills/plan-work/SKILL.md",
-      "sha256": "0d468b5339896c073b6be5dc87c91a5b1b3119460930d5da117f5599957304a5",
+      "sha256": "2fc35ec7195b6bdee8b5cfa69f6532646804f0c25fa57848feee7f9f7a6d0167",
       "mode": "0644"
     },
     {
@@ -812,7 +812,7 @@
     },
     {
       "path": "skills/slice-tasks/SKILL.md",
-      "sha256": "4ada0e74c3f975907da459aacf08a1da1e8216015a110bd6613021cf768332d9",
+      "sha256": "01ef30273b32cceb5d01bb2ea880771cfe32cda5742172e7208b35305e8b8342",
       "mode": "0644"
     },
     {

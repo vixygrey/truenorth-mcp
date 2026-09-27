@@ -1,21 +1,24 @@
 # Plan Tests — Reference
 
-## Test Plan Template (the test plan note)
+## Group test plan
+
+Write this template to `.agent/tasks/<capsule>/test-plan.md`. Copy story ids from
+`group.yml`. Never create a story id in the test plan.
 
 ```markdown
-# Test Design: [eNN-slug]
+# Test Design: [group id and title]
 
-## 1. Risk Matrix & Scenarios
+## 1. Risk Matrix and Scenarios
 
-| Scenario ID | Behavior Description | Risk | Test Level  | Target File/Module |
-| ----------- | -------------------- | ---- | ----------- | ------------------ |
-| SC-P0-01    | Primary checkout     | P0   | Integration | checkout.spec.ts   |
+| Scenario ID     | Behavior Description | Risk | Test Level  | Target File/Module |
+| --------------- | -------------------- | ---- | ----------- | ------------------ |
+| SC-e01s01-P0-01 | Primary checkout     | P0   | Integration | checkout.spec.ts   |
 
-## 2. Fixture Architecture & Isolation
+## 2. Fixture Architecture and Isolation
 
-- Data Factories: (e.g. UserFactory)
-- Network Intercepts: (e.g. MSW handlers)
-- Database State: (e.g. in-memory SQLite)
+- Data factories: for example, `UserFactory`
+- Network intercepts: for example, MSW handlers
+- Database state: for example, in-memory SQLite
 
 ## 3. NFR Verification
 
