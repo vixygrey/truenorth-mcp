@@ -252,10 +252,10 @@ Native Windows is unsupported; use
 The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
 upstream security fixes for production. Source builds require Rust 1.88 or newer.
 
-MCP Inspector CLI 2.5.0, Oh My Pi 18.2.11, OpenCode 2.0.16, and VS Code
-1.139.1 with bundled GitHub Copilot Chat 0.67.0 are certified against
-TrueNorth-MCP 1.0.1 over stdio. Kiro 1.1.70 is certified against
-TrueNorth-MCP 1.0.2. The certifications prove initialization, tool and resource
+MCP Inspector CLI 2.8.0 and Kiro 1.1.70 are certified against TrueNorth-MCP
+1.0.2. Oh My Pi 18.2.11, OpenCode 2.0.16, and VS Code 1.139.1 with bundled
+GitHub Copilot Chat 0.67.0 are certified against TrueNorth-MCP 1.0.1 over stdio.
+The certifications prove initialization, tool and resource
 discovery, a read operation, a task mutation confined to a disposable
 workspace, and clean client shutdown. See the
 [client matrix](compatibility/mcp-clients.json), the

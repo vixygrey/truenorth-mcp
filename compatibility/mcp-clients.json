@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "updated_on": "2026-09-26",
+  "updated_on": "2026-09-27",
   "clients": [
     {
       "name": "MCP Inspector CLI",
-      "version": "2.5.0",
+      "version": "2.8.0",
       "status": "certified",
       "evidence": "mcp-inspector.json"
     },
