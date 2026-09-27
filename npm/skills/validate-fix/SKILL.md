@@ -11,7 +11,11 @@ kind: prose
 Prove the fix works. "I think it works" is not evidence. Run the suite, show the
 output, then harden against recurrence.
 
-> **Two-commit red/green policy**: a bug fix follows the same two-commit discipline as `develop-tdd`. The first commit adds or adjusts the failing test (`test(<scope>): ...`). The second commit applies the fix (`fix(<scope>): ...`). Do not squash RED and GREEN before review.
+> **Atomic green slice policy**: record the failing regression test through
+> `truenorth_tdd_cycle` before implementation, but keep that RED state local. After
+> the fix and scoped verification pass, commit the regression test and implementation
+> together as one `fix(<scope>): ...` behavior slice. Never commit or push a
+> deliberately failing tree.
 
 ## Checklist
 

@@ -237,12 +237,12 @@
     },
     {
       "path": "skills/develop-tdd/REFERENCE.md",
-      "sha256": "01782dffabd8cd7933b5705d4ea2c11d0a5510bab1e0d70bd3f81de12903ea04",
+      "sha256": "96c84a0e9b9d06b58b0ec406f47c0d471bf18601630d075d26744ca8752d72ff",
       "mode": "0644"
     },
     {
       "path": "skills/develop-tdd/SKILL.md",
-      "sha256": "3e38551e6a24bf3aea8bf8a4b75daa1c3e5a2c94c5465bd02400873cc627b79f",
+      "sha256": "0ee6d1289c13115138156ebe8b64d49db299be9ceb9bd390d5d9b14439010d28",
       "mode": "0644"
     },
     {
@@ -632,7 +632,7 @@
     },
     {
       "path": "skills/plan-work/SKILL.md",
-      "sha256": "2fc35ec7195b6bdee8b5cfa69f6532646804f0c25fa57848feee7f9f7a6d0167",
+      "sha256": "d6bc212b6b0fe4a87e28a94dcff9d10cad8bf88c7795cae53a5a4c1c4b625d70",
       "mode": "0644"
     },
     {
@@ -872,7 +872,7 @@
     },
     {
       "path": "skills/validate-fix/SKILL.md",
-      "sha256": "13a4b53fef5d5334e6e828e124e443f0f22a6ae244cda11158d58ce30741fb0e",
+      "sha256": "b52969463d2a56607cfa1e70880b5bcd2a46251a967df3ec8f8118579399c89f",
       "mode": "0644"
     },
     {

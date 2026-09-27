@@ -93,11 +93,11 @@ the blast radius.
 
 ## Lifecycle gates
 
-| Gate                      | When                                          | Pass condition                                                                                              |
-| ------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Pre-implementation**    | Before kickoff-branch or the first RED commit | A root cause is stated for a bug, `assess-impact` is done for a module change, the consistency check passes |
-| **Validation**            | The story is marked done                      | Every task is `status: passing`, with verify evidence recorded                                              |
-| **Reopen, do not refile** | A regression on a shipped story               | Reopen the existing story or bug, do not create a duplicate capsule entry                                   |
+| Gate                      | When                                             | Pass condition                                                                                              |
+| ------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| **Pre-implementation**    | Before kickoff-branch or the first local RED run | A root cause is stated for a bug, `assess-impact` is done for a module change, the consistency check passes |
+| **Validation**            | The story is marked done                         | Every task is `status: passing`, with verify evidence recorded                                              |
+| **Reopen, do not refile** | A regression on a shipped story                  | Reopen the existing story or bug, do not create a duplicate capsule entry                                   |
 
 After writing the capsule tasks, suggest `kickoff-branch` (when not already on a
 feature branch), then `build-epic`, `execute-plan`, or `develop-tdd`.

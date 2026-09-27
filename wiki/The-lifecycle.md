@@ -48,6 +48,11 @@ order. It takes `step` (`red`, `green`, or `refactor`), a `failing_test_cmd`, an
 Run the `red` step first. The runtime checks that the test fails before you write the code,
 so a green result at the red step is itself a failure. Then run `green`, then `refactor`.
 
+Keep the RED test and its failure evidence in the local working tree. Do not commit or
+push a deliberately failing tree. After GREEN and optional refactoring, run the scoped
+verification and commit the behavior test and implementation together as one atomic green
+slice.
+
 ## Review
 
 Run the quality gate with `truenorth_verify_gate`. It takes only the `phase` and runs the

@@ -33,8 +33,9 @@ RIGHT (vertical):
 Write a failing test first:
 
 - Test describes the desired observable behavior through the public interface
-- Run the test to confirm it fails for the right reason (not a syntax error, not a typo)
-- Commit: `git commit -m "test(<scope>): <description>"`
+- Run the test through `truenorth_tdd_cycle` to confirm it fails for the right reason
+- Retain the tool result as local evidence
+- Do not commit or push the failing working tree
 
 ### Green Phase
 
@@ -42,7 +43,7 @@ Write the minimum code to make the test pass:
 
 - No extra logic, no anticipated future cases, no premature optimization
 - Focus only on making the current test pass
-- Commit: `git commit -m "feat(<scope>): <description>"` or `"fix(<scope>): <description>"`
+- Run the scoped verification before REFACTOR or COMMIT
 
 ### Refactor Phase
 
@@ -50,8 +51,10 @@ Improve structure without changing behavior:
 
 - Extract duplication, apply SOLID principles where natural, deepen modules
 - Run tests after each refactor step to ensure behavior is preserved
-- Commit: `git commit -m "refactor(<scope>): <description>"`
 - Apply the Boy Scout Rule: leave the code cleaner than you found it
+- Commit the behavior test and implementation together after scoped verification passes:
+  `git commit -m "feat(<scope>): <description>"` or
+  `git commit -m "fix(<scope>): <description>"`
 
 ## Visual Slices (UI Alternate Workflow)
 
