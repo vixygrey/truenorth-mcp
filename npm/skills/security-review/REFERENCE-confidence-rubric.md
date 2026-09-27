@@ -1,93 +1,106 @@
 # Confidence Scoring Rubric
 
-Every finding that survives Phase 4 false-positive filtering receives a confidence
-score from 1 (speculative) to 10 (certain). Only findings ≥ 8 are reported.
+Every candidate that survives initial tracing receives a confidence score from 1
+(speculative) to 10 (certain). Confidence measures evidence strength. It does not
+replace impact severity and does not by itself decide whether a potentially
+high-impact path is visible.
 
-## Score 9–10: Certain Exploit Path
-
-**Criteria:**
-
-- Concrete, testable exploit with clear reproduction steps
-- No assumptions about uncommon configurations
-- No chain of multiple unlikely conditions
-- Attacker has full control over the input vector
-
-**Examples:**
-
-- User-supplied SQL in a `SELECT` statement with no parameterization
-- `os.system(f"rm {user_path}")` where user controls the path
-- Pickle deserialization of user-supplied data without any wrapping
-
-**Severity:** HIGH
-
-## Score 8: Clear Vulnerability Pattern
+## Score 9–10: Certain exploit path
 
 **Criteria:**
 
-- Well-known vulnerability pattern with standard exploitation method
-- Requires specific conditions but conditions are commonly met
-- Exploitability is well-documented in OWASP / CVE databases
+- Concrete, testable exploit with clear reproduction steps.
+- No assumptions about uncommon configurations.
+- No chain of multiple unlikely conditions.
+- Attacker has control over the input vector.
 
 **Examples:**
 
-- JWT without signature verification in authentication middleware
-- SSRF where attacker controls the full URL including host
-- Hardcoded AWS secret key in source code
+- User-supplied SQL reaches a query with no parameterization.
+- `os.system(f"rm {user_path}")` receives an attacker-controlled path.
+- Pickle deserialization receives user-supplied data.
 
-**Severity:** HIGH or MEDIUM
+**Action:** report under `Confirmed findings`.
 
-## Score 7: Suspicious Pattern
+## Score 8: Clear vulnerability pattern
 
 **Criteria:**
 
-- Unusual code that may indicate a vulnerability
-- Requires specific conditions that may not be present
-- Alternative secure interpretation is equally likely
-- Defense-in-depth concern rather than direct exploit
+- Well-known vulnerability pattern with a standard exploitation method.
+- Requires specific conditions that are commonly met.
+- Exploitability is documented in established security guidance.
 
 **Examples:**
 
-- A function accepting user input that passes through multiple layers before reaching a sink (unclear if sanitized)
-- Custom encryption implementation (likely weak, but may not process sensitive data)
-- Path construction that looks safe but has a subtle bypass
+- JWT without signature verification in authentication middleware.
+- SSRF where an attacker controls the full URL including host.
+- A hardcoded production credential in source code.
 
-**Severity:** LOW or suppress
+**Action:** report under `Confirmed findings` when the required conditions are
+present. Otherwise use `Needs investigation` and name the missing evidence.
 
-## Score < 7: Do Not Report
+## Score 6–7: Suspicious path
 
 **Criteria:**
 
-- Theoretical concern without exploit path
-- Requires unrealistic attacker capabilities
-- Violates one or more hard exclusion rules
-- Better handled by separate tooling (dependency scanner, SAST, secret scanner)
-- Purely stylistic or best-practice concern without security impact
+- Code may cross a security boundary, but a condition or sanitization step is
+  unresolved.
+- A secure interpretation remains plausible.
+- Additional repository or runtime evidence can decide the path.
 
 **Examples:**
 
-- "This function doesn't validate all inputs" without proving the validated input is the attack surface
-- "This uses MD5" where the hash is not used for security (e.g., cache key)
-- "This function could consume too much memory" (DOS exclusion)
+- User input passes through several layers before a sink and sanitization is
+  unclear.
+- Custom cryptography may protect sensitive data, but the data classification is
+  unknown.
+- Path construction may permit traversal, but canonicalization behavior is not
+  established.
 
-**Action:** Suppress entirely. Do not include in report.
+**Action:** when potential impact is HIGH or CRITICAL, report under `Needs
+investigation`. State the uncertainty and the evidence needed to confirm or
+exclude the path. For lower potential impact, report only when actionable under
+the active project conventions.
 
-## Severity Mapping
+## Score 1–5: Weak evidence
 
-Once confidence ≥ 8 is confirmed, map to severity:
+Weak evidence does not prove a vulnerability. Exclude a candidate only when a
+documented hard exclusion or repository evidence disproves the security path.
 
-| Severity     | Impact                                 | Examples                                                                         |
-| ------------ | -------------------------------------- | -------------------------------------------------------------------------------- |
-| **CRITICAL** | Remote compromise, full data breach    | RCE, auth bypass with admin escalation, SQLi with data exfiltration              |
-| **HIGH**     | Significant security boundary crossed  | SSRF to internal services, hardcoded cloud credentials, insecure deserialization |
-| **MEDIUM**   | Limited impact or requires conditions  | Stored XSS behind auth, IDOR on non-sensitive data, weak but not broken crypto   |
-| **LOW**      | Defense-in-depth, minimal blast radius | Missing security header, verbose error messages in non-production                |
+When the potential impact is HIGH or CRITICAL and the path remains plausible,
+report it under `Needs investigation` even at low confidence. Do not silently
+discard it.
 
-## Quality Gate
+## Classification decision
 
-The confidence rubric double-checks each finding against three lenses:
+| Evidence                                    | Potential impact | Classification                                   |
+| ------------------------------------------- | ---------------- | ------------------------------------------------ |
+| Supported exploit path                      | Any              | `Confirmed findings`                             |
+| Unresolved plausible path                   | HIGH or CRITICAL | `Needs investigation`                            |
+| Unresolved plausible path                   | MEDIUM or LOW    | Report when actionable under project conventions |
+| Disproved path or documented hard exclusion | Any              | `Excluded`                                       |
 
-| Lens               | Question                                                        |
-| ------------------ | --------------------------------------------------------------- |
-| **Exploitability** | Can a real attacker trigger this from a trust boundary?         |
-| **Actionability**  | Would a security engineer accept a fix recommendation for this? |
-| **Precedent**      | Has this type of finding passed/failed human review before?     |
+## Severity mapping
+
+Map severity from impact after tracing the security boundary:
+
+| Severity     | Impact                                          | Examples                                                              |
+| ------------ | ----------------------------------------------- | --------------------------------------------------------------------- |
+| **CRITICAL** | Remote compromise or full data breach           | RCE, admin auth bypass, SQLi with broad exfiltration                  |
+| **HIGH**     | Significant security boundary crossed           | Internal SSRF, production credential exposure, unsafe deserialization |
+| **MEDIUM**   | Limited impact or conditional boundary crossing | Stored XSS behind auth, IDOR on non-sensitive data                    |
+| **LOW**      | Defense in depth with minimal blast radius      | Missing security header, verbose non-production errors                |
+
+## Quality gate
+
+Assess every candidate through three lenses:
+
+| Lens               | Question                                                                    |
+| ------------------ | --------------------------------------------------------------------------- |
+| **Exploitability** | Can a real attacker trigger this from a trust boundary?                     |
+| **Actionability**  | What evidence or fix would resolve the candidate?                           |
+| **Precedent**      | Has repository evidence or prior review confirmed or excluded this pattern? |
+
+A confirmed unresolved HIGH or CRITICAL finding blocks. A `Needs investigation`
+item with potentially HIGH or CRITICAL impact requires explicit disposition
+before release. Confidence alone never suppresses either class.

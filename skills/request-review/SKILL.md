@@ -1,110 +1,99 @@
 ---
 name: request-review
-description: "Dispatch fresh reviewer agents with clean contexts to critique code after audit-code passes. The reviewers give a genuine independent second opinion. Use it before committing or for an independent auditor, code review, or pre-review critique."
+description: "Dispatch fresh reviewer agents with clean contexts to critique code after audit-code passes. Reviewer count and focus follow change risk. Use it before committing or for an independent auditor, code review, or pre-review critique."
 kind: prose
 ---
 
 # Request Review
 
-Dispatch a fresh reviewer agent with a clean context. A reviewer has no shared
-state, so it finds what the coding agent missed.
+Dispatch independent reviewer agents with clean contexts. A reviewer has no shared
+state, so it can find what the coding agent missed.
 
-Distinct from `audit-code`. `audit-code` is self-review. This skill dispatches
-external agents for a genuine second opinion, including auditor-style critique.
+Distinct from `audit-code`. `audit-code` is self-review. Run it first so
+independent reviewers can focus on correctness, risk, and design rather than
+routine hygiene.
 
-Run `audit-code` first. Do not waste reviewer attention on a hygiene issue you could
-have caught yourself.
+## Risk-based reviewer policy
 
-## Dual-blind AND gate
+Read the active story `risk:` field, defaulting to P1 when absent:
 
-Use two independent reviewers, A and B, with no shared context between them or the
-coding agent.
+| Risk | Reviewer policy                                                                                                  |
+| ---- | ---------------------------------------------------------------------------------------------------------------- |
+| P0   | Two independent reviewers. Add a security or domain specialist when the affected boundary requires it.           |
+| P1   | One independent reviewer. Add a specialist for security-sensitive or cross-boundary changes.                     |
+| P2   | One focused reviewer for the changed behavior and its evidence.                                                  |
+| P3   | One lightweight reviewer when this skill is invoked. Independent review may remain optional in the orchestrator. |
 
-| Parameter             | Value                                                        |
-| --------------------- | ------------------------------------------------------------ |
-| Reviewers             | 2 (mandatory)                                                |
-| Max review iterations | 5 (a hard cap, iteration 6 is forbidden)                     |
-| Pass rule             | An AND gate. Both reviewers must pass independently          |
-| Blindness             | Neither reviewer sees the other's report until both complete |
+When multiple reviewers run, keep their contexts independent until all reports
+arrive. Reviewer count controls depth, not the pass rule.
 
-Iteration loop (at most 5):
+> **HARD GATE**: review passes only when no blocking finding remains unresolved. Reviewer count and percentage scores do not determine the verdict.
 
-1. Dispatch reviewer A and reviewer B in parallel with identical briefs but separate
-   contexts.
-2. Collect both reports. Each categorizes findings: must-fix, should-fix, consider.
-3. AND gate: when either reviewer has a must-fix finding, the round fails. Run
-   `respond-review`, fix, and re-dispatch both reviewers.
-4. When both pass (zero must-fix, a score of 94% or more each), the review is
-   complete.
-5. After 5 iterations without a dual pass, stop and report "Review cap exhausted.
-   Human decision required.". Do not merge.
+## Finding classes
 
-> **HARD GATE**: a single-reviewer pass is insufficient. Partial agreement does not satisfy the AND gate.
+| Class            | Meaning                                                                                                | Effect                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| **blocking**     | A correctness defect, security vulnerability, failing required check, or explicit convention violation | Must be resolved before pass      |
+| **non-blocking** | A concrete improvement whose current impact does not block delivery                                    | Record and address or disposition |
+| **advisory**     | A preference, alternative, or question without a demonstrated defect                                   | Record for consideration          |
 
 ## Process
 
 ### 1. Prepare the review brief
 
-Write a self-contained brief for each reviewer. Include what was built (the feature,
-not the implementation), which files changed, the relevant planning artifacts, what
-the conventions require, the verify command, and what you are most uncertain about.
+Write a self-contained brief. Include the feature behavior, changed files,
+relevant planning artifacts, active project conventions, risk tier, verify
+command, behavior-smoke evidence, and the uncertain areas.
 
-Security focus: when the task group has a threat model, include the relevant vulnerability
-categories as reviewer focal points, plus the false-positive exclusion rules. Tag
-the review as security-sensitive when the threat-model risk is HIGH or more.
+When the task group has a threat model, include the relevant vulnerability
+categories and false-positive exclusions. Tag the review as security-sensitive
+when the threat-model risk is HIGH or greater.
 
-### 2. Fan out parallel reviewers
+### 2. Dispatch the required reviewers
 
-Beyond the mandatory dual-blind pair, optionally dispatch several
-dimension-specific subagents in one message, one check per agent, for broader
-coverage.
-
-| Agent       | Focus                                              |
-| ----------- | -------------------------------------------------- |
-| Correctness | Logic, edge cases, the verify-command result       |
-| Conventions | The project conventions, test quality (F.I.R.S.T)  |
-| Security    | Injection, auth, secrets (when security-sensitive) |
-| Design      | A simpler alternative, the API shape               |
-
-The dual-blind method still applies. Each agent is blind. The AND gate uses the A
-and B scores. A fan-out agent feeds findings into `respond-review`, but does not
-replace the dual-blind pair.
-
-### 2b. Dispatch both reviewer agents
-
-Dispatch two agents with completely fresh contexts. Each prompt is self-contained,
-with no reference to the current conversation.
+Dispatch the risk-required reviewer set in one parallel batch when more than one
+reviewer is needed. Give each the same core brief and a fresh context. Add
+specialist focus without narrowing the core correctness review.
 
 ```text
-You are code reviewer [A|B]. Review the following changes independently.
+You are an independent code reviewer.
 
-Context: [the feature description]
-Conventions: [the relevant rules]
-Active group: [the relevant capsule]
+Context: [the feature behavior]
+Conventions: [the active project rules]
+Risk: [P0|P1|P2|P3]
 Diff: [the changed files]
 Verify command: [a runnable command]
+Behavior evidence: [the observed smoke result]
 
-Review for correctness, convention compliance, test quality, design, edge cases,
-security, and refactoring smells. For each finding, categorize it as must-fix,
-should-fix, or consider. Run the verify command and report the result.
+Review correctness, edge cases, convention compliance, test quality, design,
+security, and the supplied evidence. For each finding, provide its location,
+consequence, evidence, remediation, and class: blocking, non-blocking, or
+advisory. Run the verify command and report the result.
 ```
 
-### 3. Collect both reports
+### 3. Collect and decide
 
-When the reviewers return, read every finding from both reports before acting.
-Note each verify result. Compute a quality score per reviewer:
-`100 * (total - must_fix - should_fix) / total`. Then check the AND gate: both
-scores 94% or more and zero must-fix from both.
+Read every report before acting. Merge duplicate findings without losing
+independent evidence. The round passes when:
 
-> **HARD GATE**: when either score is below 94% or either has a must-fix, the round fails. Run `respond-review` first.
+- every required reviewer completed;
+- every required verify command passed; and
+- no blocking finding remains unresolved.
 
-### 4. Hand off to respond-review
+Non-blocking and advisory findings never become blockers through a score or
+count. Record their disposition.
 
-Pass the combined findings to `respond-review` to categorize and apply the fixes.
-Increment the iteration counter. Re-dispatch both reviewers until the AND gate passes
-or the cap is exhausted. Report the round number and the two scores.
+### 4. Respond and iterate
+
+Pass all findings to `respond-review`. Fix or explicitly resolve every blocking
+finding, then re-dispatch only the reviewers needed to verify affected areas.
+Preserve independent contexts for any multi-reviewer rerun.
+
+Stop after five unsuccessful rounds and report `Review cap exhausted. Human
+decision required.` Do not merge with an unresolved blocker. The cap limits
+operation cost; it is not a quality score.
 
 ## Verify
 
-Confirm both reviewers passed the AND gate for the current round, or that the
-iteration cap was reached.
+Confirm the risk-required reviewers completed, required verification passed, all
+findings have a disposition, and no blocking finding remains unresolved.

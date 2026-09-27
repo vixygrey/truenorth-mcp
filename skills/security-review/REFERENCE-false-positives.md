@@ -1,7 +1,9 @@
 # False-Positive Exclusion Rules
 
-Applied during Phase 4 of the scan. Findings matching any hard exclusion are
-automatically suppressed. Precedents from prior reviews guide borderline cases.
+Apply these rules during evidence classification. A candidate may enter
+`Excluded` only when a hard exclusion or repository evidence disproves the
+security path. Precedents guide investigation but do not silently suppress an
+uncertain potentially high-impact path.
 
 ## Hard Exclusions
 
@@ -47,18 +49,19 @@ These guide borderline cases based on prior human review decisions:
 | 10  | **Logging non-PII data** — not a vuln even if sensitive. Only PII/secrets/passwords.                           | Intent: operational logging vs credential exposure          |
 | 11  | **Shell script command injection** — only report if concrete untrusted-input path                              | Most shell scripts don't process untrusted input            |
 
-## Confidence Scoring
+## Confidence and exclusions
 
-Findings that survive exclusions get a confidence score (1–10):
+Confidence measures evidence strength; it is not an exclusion rule. Classify a
+candidate as follows:
 
-| Range | Meaning                        | Action                    |
-| ----- | ------------------------------ | ------------------------- |
-| 9–10  | Certain exploit path, testable | Report as HIGH            |
-| 8     | Clear vulnerability pattern    | Report as HIGH/MEDIUM     |
-| 7     | Suspicious, needs conditions   | Report as LOW or suppress |
-| <7    | Too speculative                | **Do not report**         |
+| State                                                          | Action                                                         |
+| -------------------------------------------------------------- | -------------------------------------------------------------- |
+| Exploit path supported                                         | Report under `Confirmed findings` with confidence and severity |
+| Plausible path with potentially HIGH or CRITICAL impact        | Report under `Needs investigation`, regardless of confidence   |
+| Candidate disproved by a hard exclusion or repository evidence | Record under `Excluded` with the cited rule                    |
+| Uncertain MEDIUM or LOW path                                   | Report when actionable under active project conventions        |
 
-**Hard threshold:** Only report findings with confidence ≥ 8.
+Never cite a numeric confidence threshold as the reason for exclusion.
 
 ## Signal Quality Criteria
 

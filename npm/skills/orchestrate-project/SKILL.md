@@ -30,8 +30,8 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
    per-story specification and task ledger files.
 4. **EXECUTE** (1-8 hours): Run `build-epic` once per story and update
    `.agent/tasks/execution-status.yml`.
-5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables: UAT evidence
-   and the review report when used.
+5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables:
+   risk-scaled behavior evidence and the review report when used.
 6. **INTEGRATE** (30 min - 2 hours): Ship to production. Deliverables: release tag
    and `.agent/tasks/state.yml` `release.last_tag`.
 

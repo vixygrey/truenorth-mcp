@@ -36,7 +36,7 @@ For each task in the active story:
 
 **e. Checkpoint** — ask to proceed unless autonomous mode requested.
 
-**f. Story UAT** — after last task, run manual verification script from story notes or `verify-work`.
+**f. Story verification** — after the last task, run `verify-work`; every risk tier must produce observable behavior evidence.
 
 On verify failure: fix and re-run; never advance on red.
 
