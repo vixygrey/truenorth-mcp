@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-78 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+77 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -76,7 +76,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `spike-prototype`     | A throw-away prototype for an unknown problem space             | [Build](Skills-Build)       |
 | `stocktake-skills`    | A batch audit of the skill catalog                              | [Sustain](Skills-Sustain)   |
 | `survey-context`      | Read the current state, map the phase, suggest the next skill   | [Discover](Skills-Discover) |
-| `terse-mode`          | An ultra-compressed communication mode                          | [Sustain](Skills-Sustain)   |
 | `trace-requirement`   | Link story ids to the implementing code and tests               | [Verify](Skills-Verify)     |
 | `using-truenorth`     | The one-time bootstrap and routing entry point                  | [Discover](Skills-Discover) |
 | `validate-contracts`  | Assert data-shape consistency across boundaries                 | [Build](Skills-Build)       |

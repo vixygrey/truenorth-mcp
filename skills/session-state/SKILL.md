@@ -12,11 +12,10 @@ Track the current state of implementation, the decisions made, the pending tasks
 and the open questions, so continuity holds across a session boundary and context
 rot does not set in.
 
-Session-state implements the isolate strategy: each agent gets exactly the context
-it needs, no more, by recording decisions so the next agent can cold-start without
-replaying history. The strategies work together: session-state handles isolation,
-terse-mode handles compression, survey-context handles selection, and the
-conventions ensure token-efficient writing.
+Session-state implements isolation and state compaction. It records decisions so the
+next agent can cold-start without replaying history. Compaction archives durable
+decisions and keeps only current handoff state. It does not change prose style.
+`survey-context` handles selection, and conventions ensure token-efficient writing.
 
 ## Goal
 
@@ -42,11 +41,11 @@ handoff:
 
 ## Strategic compaction
 
-| Trigger                       | Action                                                      |
-| ----------------------------- | ----------------------------------------------------------- |
-| A phase transition            | Compact the handoff, archive a verbose decision to an ADR   |
-| Context over 70% estimated    | Run terse-mode for status only, move the detail to `specs/` |
-| Before a dispatch-agents wave | `state.yaml` is the only channel between spawns             |
+| Trigger                       | Action                                                    |
+| ----------------------------- | --------------------------------------------------------- |
+| A phase transition            | Compact the handoff, archive a verbose decision to an ADR |
+| Context over 70% estimated    | Run `compact-state`; keep only current handoff state      |
+| Before a dispatch-agents wave | `state.yaml` is the only channel between spawns           |
 
 ## Workflow
 
@@ -102,7 +101,8 @@ context.
 
 Archive a verbose decision before a context transition. Move a system-wide decision
 to a global ADR, and a group-scoped decision to a group-local ADR. After archiving,
-reset `handoff.open_decisions` to an empty list.
+remove resolved entries from `handoff.open_decisions` and retain only information
+needed for the next step. Do not shorten prose or reduce grammar during compaction.
 
 ## File format: .agent/tasks/state.yml
 

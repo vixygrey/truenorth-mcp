@@ -18,12 +18,12 @@ or prose improvement.
 
 ## The BMAD principles
 
-| Principle      | Execution                                                                                                                                                                             |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **B**old       | Make a strong assertion. Define a clear boundary and a "never" rule. No "it might" or "usually".                                                                                      |
-| **M**inimal    | High density, low filler. When the file exceeds 300 lines or the session exceeds 20 turns, run `terse-mode` and compact the state before saving.                                      |
-| **A**ctionable | Link every doc to a verifiable outcome. For an architectural doc, verify through a behavioral feature or a grep-based structure check that proves the design constraints are present. |
-| **D**urable    | Design for the long term. Use nested indexing: a root file links to a module-level index, it does not list the individual sub-files.                                                  |
+| Principle      | Execution                                                                                                                                                                                                    |
+| :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **B**old       | Make a strong assertion. Define a clear boundary and a "never" rule. No "it might" or "usually".                                                                                                             |
+| **M**inimal    | Keep high density and low filler. Split a file over 300 lines by concern. For a long session, archive durable decisions and compact the handoff through `session-state`. Keep the document's grammar intact. |
+| **A**ctionable | Link every doc to a verifiable outcome. For an architectural doc, verify through a behavioral feature or a grep-based structure check that proves the design constraints are present.                        |
+| **D**urable    | Design for the long term. Use nested indexing: a root file links to a module-level index, it does not list the individual sub-files.                                                                         |
 
 ## Process
 
