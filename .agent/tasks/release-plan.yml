@@ -165,3 +165,7 @@ tasks:
   group_kind: ticket
   task_name: Pin release inputs and make GitHub releases immutable
   verify_command: npm ci --ignore-scripts --no-audit --no-fund && cargo metadata --locked --manifest-path runtime/Cargo.toml && cargo deny check licenses --manifest-path runtime/Cargo.toml && node --test scripts/release-record.test.js && bash scripts/preflight.sh
+- group_id: '439'
+  group_kind: ticket
+  task_name: Remove unused Allure reporting workflow
+  verify_command: test ! -e skills/generate-allure-report && test ! -e npm/skills/generate-allure-report && ! git grep -qiE 'allure|generate-allure-report' -- skills npm/skills wiki && diff -qr skills npm/skills && cargo test --locked --manifest-path runtime/Cargo.toml checked_in_skill_catalog_matches_the_two_tier_contract && bash scripts/preflight.sh check format shell

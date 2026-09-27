@@ -8,20 +8,20 @@
 | 3–25    | Navigation                                  |
 | 26–27   | Output file formats                         |
 | 28–31   | Story spec (task group directory)           |
-| 32–61   | Task checklist (task group directory)       |
-| 62–64   | Plan template                               |
-| 65–71   | Story [X.Y]: [title] — Implementation Steps |
-| 72–77   | Steps                                       |
-| 78–85   | Verification Script (Step-by-Step)          |
-| 86–89   | Out of scope                                |
-| 90–94   | Risks                                       |
-| 95–114  | Verify step format rules                    |
-| 115–116 | Sub-operations                              |
-| 117–127 | Risk Assignment Heuristics                  |
-| 128–143 | Requirement delta tags (e45s29)             |
-| 144–152 | Define Success                              |
-| 153–161 | Zoom-Out Check                              |
-| 162–169 | Slopcheck                                   |
+| 32–48   | Task checklist (task group directory)       |
+| 49–51   | Plan template                               |
+| 52–58   | Story [X.Y]: [title] — Implementation Steps |
+| 59–64   | Steps                                       |
+| 65–72   | Verification Script (Step-by-Step)          |
+| 73–76   | Out of scope                                |
+| 77–81   | Risks                                       |
+| 82–104  | Verify step format rules                    |
+| 105–106 | Sub-operations                              |
+| 107–117 | Risk Assignment Heuristics                  |
+| 118–135 | Requirement delta tags (e45s29)             |
+| 136–145 | Define Success                              |
+| 146–155 | Zoom-Out Check                              |
+| 156–164 | Slopcheck                                   |
 
 ## Output file formats
 
@@ -42,21 +42,7 @@ tasks:
     verify: "npm test -- login-form.test.tsx"
     risk: P1
     status: failing # flip to passing only after verify exits 0 (e45s06)
-    allure:
-      severity: high # P0→critical, P1→high, P2→normal, P3→minor
-      categories:
-        - "Auth"
-        - "Security Review"
 ```
-
-**Allure severity mapping:**
-
-- `P0` → `critical`
-- `P1` → `high`
-- `P2` → `normal`
-- `P3` → `minor`
-
-`categories` is a list of relevant tags — wave names, test categories (e.g. `"unit"`, `"integration"`), or thematic groupings (e.g. `"Security Review"`).
 
 Update the `.agent/tasks/<capsule>/group.yml` manifest to list the story and its BCPs. Update `.agent/tasks/execution-status.yml` after structural changes.
 

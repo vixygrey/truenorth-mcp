@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run the documented verify command for each script-bearing skill (issue #250, part 2).
 #
-# Most of the 79 skills are prose an agent follows, with no runnable surface. Four ship
+# Most of the 78 skills are prose an agent follows, with no runnable surface. Four ship
 # executable scripts: align-grid, extract-design, guard-git, visual-dashboard. This runner
 # executes each one's documented verify and confirms it exits 0. A verify that needs a
 # browser or a live HTTP server is skipped when that dependency is absent, so the runner
