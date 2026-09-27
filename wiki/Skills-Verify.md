@@ -112,12 +112,12 @@ Act on reviewer feedback systematically.
 
 ### investigate-bug
 
-The end-to-end bug entry point: history check, RCA, fix approach, TDD plan, bug record.
+The end-to-end bug entry point: history check, RCA, fix approach, TDD plan, and tracker update.
 
-- **What it does**: reads prior bug history, captures the problem with a security-impact
-  assessment, runs the 4-phase RCA by delegating to `diagnose-root`, identifies the fix
-  approach, designs a TDD fix plan of RED-GREEN cycles, and records the bug in the external
-  tracker plus a reference in `.agent/tasks/bugs.yml`.
+- **What it does**: reads lean local references and prior external issue history, captures
+  the problem with a security-impact assessment, runs the 4-phase RCA by delegating to
+  `diagnose-root`, and posts the verified RCA and TDD plan to the same external issue. It
+  records or updates the lean local reference through `truenorth_record_bug`.
 - **When to use it**: when the user reports a bug, mentions triage, or wants to plan a fix.
 - **Hard gate**: do not proceed to the fix approach until `diagnose-root` phase 4 produces
   a verified root cause.
@@ -153,8 +153,8 @@ Prove a fix works before declaring it done, and harden against recurrence.
 
 - **What it does**: re-runs the originally failing test, the full suite, typecheck, and
   lint through `truenorth_verify_gate`, adds at least one hardening mechanism, generalizes
-  the fix across the defect class, updates the bug file and registry, and proves the
-  behavior.
+  the fix across the defect class, posts resolution and behavioral evidence to the same
+  external issue, and updates its lean local reference through `truenorth_record_bug`.
 - **When to use it**: after implementing a bug fix, when the user asks "is this fixed?", or
   before closing an investigation.
 - **Hard gates**: the fix must not regress. Never use a type-ignore or lint-disable to fix
@@ -183,12 +183,12 @@ Security analysis of code changes, tracing data flow across files.
 
 ### inspect-quality
 
-An interactive QA session that logs conversational bug reports to the registry.
+An interactive QA session that creates external issues and lean local references.
 
 - **What it does**: listens to the user's problem, clarifies lightly, explores the codebase
   in the background for context and domain language, decides single-issue versus breakdown,
-  and appends a structured entry to `.agent/tasks/bugs.yml` with a durable, no-file-paths
-  format.
+  creates or updates the external issue, and records only its canonical id, URL, status,
+  linked task or group, and tags through `truenorth_record_bug`.
 - **When to use it**: to report bugs, do QA, or run a QA session.
 - **Hard gate**: quality metrics must be monitored. Surface a degrading metric as a
   blocker; do not accept a regression.

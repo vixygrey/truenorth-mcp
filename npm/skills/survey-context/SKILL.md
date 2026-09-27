@@ -63,7 +63,7 @@ Identify the current phase from what you found.
 | **Initiate**  | On a feature branch, no code change yet               |
 | **Execute**   | `active_flow: build_group`, a task group in progress  |
 | **Verify**    | Implementation done, run `verify-work` or `run-evals` |
-| **Bug**       | `active_flow: fix_bug`, or an open bug report         |
+| **Bug**       | `active_flow: fix_bug`, or an open external bug issue |
 | **Review**    | All code written, no PR yet                           |
 | **Integrate** | PR open, tests passing                                |
 | **Sustain**   | Ongoing, no active task                               |
@@ -85,8 +85,8 @@ priority order.
 
 ### 7. Surface the blockers
 
-Report a blocker before a recommendation: a broken baseline test, an open bug report
-with no active fix branch, a group task with no verify command, or a git hash in
+Report a blocker before a recommendation: a broken baseline test, an open external bug
+issue with no active fix branch, a group task with no verify command, or a git hash in
 `state.yaml` that is stale versus the working tree.
 
 ### 8. Record the story-start timestamp

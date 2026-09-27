@@ -124,8 +124,7 @@ contact_links:
 pub(super) fn bug_form(profile: Profile) -> String {
     let mut form = String::from(
         "---\nname: Bug report\nabout: Report a bug\nlabels: bug\n---\n\n\
-         ## What happened\n\n## Steps to reproduce\n\n## Expected behavior\n\n\
-         ## External tracker link\n\n",
+         ## What happened\n\n## Steps to reproduce\n\n## Expected behavior\n\n",
     );
     push_grouping_and_id_fields(&mut form, profile);
     form

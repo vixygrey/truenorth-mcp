@@ -411,8 +411,8 @@ async fn reads_the_adr_resource_over_the_client() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
-async fn records_a_bug_over_the_client() -> anyhow::Result<()> {
-    // Requirement 8.1: the bug tool stores a reference under .agent/tasks/bugs.yml.
+async fn records_and_updates_a_bug_over_the_client() -> anyhow::Result<()> {
+    // Requirement 8.1: the bug tool stores one lifecycle-aware reference.
     let dir = tempdir().expect("temp dir");
     let root = dir.path().to_path_buf();
     seed_repo(&root);
@@ -437,9 +437,30 @@ async fn records_a_bug_over_the_client() -> anyhow::Result<()> {
     )
     .await?;
 
-    let bugs = fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?;
-    assert!(bugs.contains("BUG-1"), "the bug reference is stored");
-    assert!(bugs.contains("regression"), "the tag is stored");
+    call_tool(
+        &client,
+        "truenorth_record_bug",
+        serde_json::json!({
+            "id": "BUG-1",
+            "external_link": "https://tracker.example/issues/1",
+            "status": "resolved",
+            "linked_ref": "e01",
+            "tags": ["regression", "fixed"]
+        }),
+    )
+    .await?;
+
+    let bugs: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?)?;
+    let entries = bugs
+        .get("bugs")
+        .and_then(serde_yaml::Value::as_sequence)
+        .expect("bug references");
+    assert_eq!(entries.len(), 1, "the update does not duplicate the issue");
+    assert_eq!(
+        entries[0].get("status").and_then(serde_yaml::Value::as_str),
+        Some("resolved")
+    );
 
     client.cancel().await?;
     handle.abort();

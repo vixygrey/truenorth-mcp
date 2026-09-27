@@ -1,6 +1,6 @@
 ---
 name: develop-tdd
-description: Test-driven development with a red-green-refactor loop using vertical slices. Use it for a feature (a group task) or a bug (a BUG report).
+description: Test-driven development with a red-green-refactor loop using vertical slices. Use it for a feature from a group task or a bug planned in an external tracker issue.
 kind: prose
 ---
 
@@ -8,7 +8,7 @@ kind: prose
 
 > **HARD GATE**: Do NOT proceed on `main` or `master`. Run `kickoff-branch` first to create a feature branch or worktree.
 >
-> **HARD GATE**: Do NOT write code before you have a plan. New feature: `plan-work` to task group tasks. Bug: `investigate-bug` to a BUG report, or use the `fix-bug` orchestrator.
+> **HARD GATE**: Do NOT write code before you have a plan. New feature: use `plan-work` for task-group tasks. Bug: use the TDD plan in the external issue prepared by `investigate-bug`, or use the `fix-bug` orchestrator.
 >
 > **RECURSIVE DISCIPLINE**: this lifecycle applies to every task, including updating these skills. Never skip planning because a task is meta or documentation.
 
@@ -38,7 +38,7 @@ deviating from production-grade craft.
 
 ### 1. Planning
 
-- [ ] Read the active group story tasks or the BUG report. Understand the verify steps.
+- [ ] Read the active group story tasks or the external bug issue. Understand the verify steps.
 - [ ] When a test plan exists for the active group, read it before the first test. Implement the P0 scenarios before P1. P2 and P3 are optional per the time budget.
 - [ ] Confirm the interface changes and the behaviors to test. Prioritize them.
 - [ ] Design the interfaces for testability. Identify deep-module opportunities.
@@ -90,9 +90,7 @@ principles. Never refactor while RED.
 
 ### 6. Verify
 
-After every behavior cycle, run the verify command from the active group task
-through the `truenorth_verify_gate` tool. Show the evidence before you declare the
-step done.
+After every behavior cycle, run the verify command from the active group task or external bug issue through the `truenorth_verify_gate` tool. Show the evidence before you declare the step done.
 
 ### 6a. CI dry-run sub-step
 
@@ -122,8 +120,7 @@ correctness.
 
 ## Verify
 
-Run the verify command from the active group task through the `truenorth_verify_gate`
-tool. A pass returns exit 0.
+Run the verify command from the active group task or external bug issue through the `truenorth_verify_gate` tool. A pass returns exit 0.
 
 ## Handoff
 

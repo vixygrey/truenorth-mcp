@@ -106,6 +106,51 @@ proptest! {
             prop_assert!(!bugs_path(&repo).exists());
         }
     }
+
+    /// Re-recording one external issue updates one lean reference for every valid status
+    /// and tag set.
+    #[test]
+    fn record_bug_update_is_idempotent(
+        status_idx in 0usize..5,
+        tags in prop::collection::vec("[a-z][a-z0-9-]{0,10}", 0..4),
+    ) {
+        let repo = repo_with_task();
+        let srv = TrueNorthServer::test_server(repo.path().to_path_buf());
+        let initial = RecordBugArgs {
+            id: "BUG-1".to_string(),
+            external_link: "https://tracker.example/issues/1".to_string(),
+            status: BugStatus::Open,
+            linked_ref: KNOWN_REF.to_string(),
+            tags: Vec::new(),
+        };
+        tokio_test_block(srv.truenorth_record_bug(Parameters(initial))).expect("insert");
+
+        let update = RecordBugArgs {
+            id: "BUG-1".to_string(),
+            external_link: "https://tracker.example/issues/1".to_string(),
+            status: status_of(status_idx),
+            linked_ref: KNOWN_REF.to_string(),
+            tags: tags.clone(),
+        };
+        tokio_test_block(srv.truenorth_record_bug(Parameters(update))).expect("update");
+
+        let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
+        let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse");
+        let bugs = doc.get("bugs").and_then(serde_yaml::Value::as_sequence).expect("bugs");
+        prop_assert_eq!(bugs.len(), 1);
+        prop_assert_eq!(
+            bugs[0].get("status").and_then(serde_yaml::Value::as_str),
+            Some(status_of(status_idx).as_str())
+        );
+        let stored: Vec<String> = bugs[0]
+            .get("tags")
+            .and_then(serde_yaml::Value::as_sequence)
+            .expect("tags")
+            .iter()
+            .filter_map(|value| value.as_str().map(str::to_string))
+            .collect();
+        prop_assert_eq!(stored, tags);
+    }
 }
 
 /// Block on a future in a synchronous proptest body.

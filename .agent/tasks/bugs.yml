@@ -39,3 +39,11 @@ bugs:
   - vscode
   - copilot
   - json-schema
+- id: '453'
+  external_link: https://github.com/vixygrey/truenorth-mcp/issues/453
+  status: resolved
+  linked_ref: '453'
+  tags:
+  - skills
+  - bug-workflow
+  - external-ownership

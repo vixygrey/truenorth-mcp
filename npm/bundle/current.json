@@ -242,7 +242,7 @@
     },
     {
       "path": "skills/develop-tdd/SKILL.md",
-      "sha256": "dac4625c505a2385448419abf4eeebdae7f6bad01a15760c1921dc420c7a7ee8",
+      "sha256": "3e38551e6a24bf3aea8bf8a4b75daa1c3e5a2c94c5465bd02400873cc627b79f",
       "mode": "0644"
     },
     {
@@ -457,7 +457,7 @@
     },
     {
       "path": "skills/fix-bug/SKILL.md",
-      "sha256": "340cac82c99e87c1d7debc3fba7e77b1f6afcf0824219b410a4a4fa310a4fe5e",
+      "sha256": "5546bfd9f15ff8b95b626a41f24fdff5e1911bf0b52b7aa66a96df9651e056e6",
       "mode": "0644"
     },
     {
@@ -522,12 +522,12 @@
     },
     {
       "path": "skills/inspect-quality/SKILL.md",
-      "sha256": "1b858aa635beeefa6420a9ed93da9ea6a73cb5a41f812f265c866baaf6730448",
+      "sha256": "8b31ff29f6443bfbbe8f5852a0dbf219891c1eafc6a6917ef5a50abf886775f9",
       "mode": "0644"
     },
     {
       "path": "skills/investigate-bug/SKILL.md",
-      "sha256": "0f478481ee927a7b425a916dabd369a711b785610a9a4cd59dfd674917cc6759",
+      "sha256": "d09678d6de33bdc0b5ea24de97f2fcfe28f45cb8b141e01b1c5375c2549457c8",
       "mode": "0644"
     },
     {
@@ -842,7 +842,7 @@
     },
     {
       "path": "skills/survey-context/SKILL.md",
-      "sha256": "65634f29d7b938d857d595b34a2596510581f839b4c9d62c87565b29dbe7cd1d",
+      "sha256": "aff0b99320d0b36e59fe7d5ad2e7cb4c3a6822965b6fae2d2ddb63e21c6ca226",
       "mode": "0644"
     },
     {
@@ -872,7 +872,7 @@
     },
     {
       "path": "skills/validate-fix/SKILL.md",
-      "sha256": "d008951825a793f1694347b120e04df7aed9e585eb19f707763da9a62d942376",
+      "sha256": "13a4b53fef5d5334e6e828e124e443f0f22a6ae244cda11158d58ce30741fb0e",
       "mode": "0644"
     },
     {

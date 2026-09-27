@@ -1,6 +1,6 @@
 ---
 name: investigate-bug
-description: "Investigate a bug or issue by exploring the codebase to find the root cause, then write a TDD-based fix plan to a BUG report. Use it when the user reports a bug, wants to investigate a problem, mentions triage, or wants to plan a fix."
+description: "Investigate an external bug issue, verify its root cause, and post an evidence-backed TDD fix plan to the same tracker issue. Use it when the user reports a bug, wants to investigate a problem, mentions triage, or wants to plan a fix."
 kind: prose
 ---
 
@@ -26,7 +26,7 @@ Get a brief description of the issue from the user. If they haven't provided one
 
 Do NOT ask follow-up questions yet. Start investigating immediately.
 
-> **Security-impact assessment** — After capturing the problem, assess and document: `Security impact: NONE / LOW / MEDIUM / HIGH / CRITICAL`. If HIGH or CRITICAL, assign bug severity HIGH and document the exploit path in findings. If MEDIUM+, include exploit path in the bug file. Document "no security exploit path identified" for NONE/LOW.
+> **Security-impact assessment** — After capturing the problem, assess and document: `Security impact: NONE / LOW / MEDIUM / HIGH / CRITICAL`. If HIGH or CRITICAL, assign bug severity HIGH and document the exploit path in the external issue. If MEDIUM+, include the exploit path in the findings. Document "no security exploit path identified" for NONE/LOW.
 
 ### 2. Explore and diagnose (4-phase RCA)
 
@@ -65,63 +65,40 @@ Rules:
 - Include a final refactor step if needed
 - **Durability**: Only suggest fixes that would survive radical codebase changes. Tests assert on observable outcomes (API responses, UI state, user-visible effects), not internal state.
 
-### 5. Record the bug
+### 5. Update the external issue and local reference
 
-Save the investigation and fix plan in the external tracker. The external tracker owns bug detail.
+Post the investigation and fix plan to the same external issue. The external tracker owns all bug detail.
 
-After recording, append a bug reference to `.agent/tasks/bugs.yml` with: bug_id (same timestamp), date, severity, priority, scope, and summary.
+For a recurrence, update the original issue with the new evidence and note that the defect recurred. Do not create a second issue or local narrative for the same defect.
 
-<diagnosis-template>
+Use this as an external tracker comment or issue-body template:
 
-# BUG-YYYY-MM-DDTHHMMSS: [short title]
-
-## Problem
-
-A clear description of the bug or issue, including:
-
-- What happens (actual behavior)
-- What should happen (expected behavior)
-- How to reproduce (if applicable)
+<external-tracker-update>
 
 ## Root Cause Analysis
 
-Describe what you found during investigation:
-
-- The code path involved
-- Why the current code fails
-- Any contributing factors
-- Risk level: Low / Medium / High
-
-Do NOT include specific file paths, line numbers, or implementation details that couple to current code layout. Describe modules, behaviors, and contracts instead.
+- Actual and expected behavior
+- Reproduction evidence
+- Verified root cause
+- Contributing factors
+- Security impact
+- Risk level
 
 ## TDD Fix Plan
 
-A numbered list of RED-GREEN cycles:
+For each vertical slice:
 
-1. **RED**: Write a test that [describes expected behavior]
-   **GREEN**: [Minimal change to make it pass]
-   **verify**: [runnable command]
+1. **RED**: the public behavior the regression test must expose
+2. **GREEN**: the minimal implementation change
+3. **Verify**: the runnable command
 
-2. **RED**: Write a test that [describes next behavior]
-   **GREEN**: [Minimal change to make it pass]
-   **verify**: [runnable command]
+Add the final refactor step and acceptance criteria. Avoid file paths and line numbers that will become stale.
 
-**REFACTOR**: [Any cleanup needed after all tests pass]
+</external-tracker-update>
 
-## Acceptance Criteria
+Call `truenorth_record_bug` with the same canonical id and `external_link`, status `in-progress`, the linked task or group, and the current tags. The tool updates the existing lean reference. Never edit `.agent/tasks/bugs.yml` directly.
 
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] All new tests pass
-- [ ] Existing tests still pass
-
-## Resolution
-
-<!-- filled in by validate-fix -->
-
-</diagnosis-template>
-
-After recording the bug, print a one-line summary of the root cause and suggest running `kickoff-branch` next to create a fix branch.
+After updating the issue, print a one-line summary of the root cause and suggest running `kickoff-branch` next to create a fix branch.
 
 ## References
 
