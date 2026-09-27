@@ -128,16 +128,16 @@ tooling with the same discipline it applies to a target project.
 A batch audit of the skill catalog for drift, stale triggers, missing gates, and
 frontmatter problems.
 
-- **What it does**: enumerates the catalog with `index_skills` (the source of truth), checks
-  each skill against the structural contract: name or documented exception, size cap, valid
-  links and handoffs, lifecycle and cockpit-path rules, and `name`, `description`, and
-  `kind` frontmatter. Scripted skills also need an executable `verify` command.
+- **What it does**: enumerates the catalog with `index_skills`, then delegates naming,
+  frontmatter, kind, the 150-line source cap, and link checks to `validate_skill`. It
+  separately audits description quality, gates, handoffs, lifecycle placement, cockpit
+  paths, and writing rules.
 - **When to use it**: during a sustain phase, before a major release, or when catalog drift
   is suspected.
 - **Modes**: quick scan (changed skills), full (every skill plus a catalog audit), `--verify`
-  (run scripted-skill verify commands).
-- **Hard gate**: a missing HARD GATE, stale description, broken structural contract, or broken
-  scripted verification command is a defect, not cosmetic.
+  (run commands declared by scripted skills only).
+- **Hard gate**: a failed structural report, stale description, missing necessary gate, or
+  failed scripted verification command is a defect, not cosmetic.
 
 ### evolve-skill
 

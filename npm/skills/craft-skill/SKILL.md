@@ -10,10 +10,12 @@ kind: prose
 
 ## Frontmatter discipline
 
-A skill frontmatter has two fields only: `name` and `description`. Do NOT add a
-`model:` field or an `effort:` field. The runtime is model-agnostic. It never routes
-on a vendor model tier. Leanness comes from the server render tiers, not the
-frontmatter.
+Every skill declares `name`, `description`, and `kind`. Set `kind` to `prose` or
+`scripted`. A scripted skill also declares a nonempty `verify` command. A name that
+does not follow the verb-noun rule declares a nonempty `name_exception`.
+
+Do NOT add `model:` or `effort:`. The runtime is model-agnostic and does not route on
+a vendor model tier.
 
 ## CSO description discipline
 
@@ -53,23 +55,23 @@ vendor model names.
 2. **Verify the principles**: the skill is atomic (verb-noun), deep (a simple
    interface over complex internal logic), has hard gates where needed, and is
    verifiable.
-3. **Draft the skill**: create the SKILL.md with concise instructions (see
-   [REFERENCE.md](REFERENCE.md) for the template), plus a reference file when the
-   content exceeds 100 lines. When the user provides a library README or API docs,
-   extract the triggers and the hard gates. Do NOT invent an API that is not in the
-   source.
+3. **Draft the skill**: create the SKILL.md from the matching prose or scripted
+   template in [REFERENCE.md](REFERENCE.md). Keep the complete file at 150 lines or
+   fewer. Move detail into a reference file before the skill exceeds that cap. When
+   the user provides a library README or API docs, extract the triggers and hard
+   gates. Do NOT invent an API that is not in the source.
 4. **Review with the user**: present the draft, and ask whether it covers the use
    cases, whether anything is missing, and whether any section needs more or less
    detail.
-5. **Completion-honesty gate** (HARD GATE): before you declare the skill done,
-   validate that the name is a verb-noun pair, the description is 1024 characters or
-   fewer with triggers only, the body follows the writing rules, and the skill
-   parses. Show the evidence. Narration without evidence is rejected.
+5. **Completion-honesty gate** (HARD GATE): run `validate_skill` on the new skill.
+   Fix every failed structural check. For a scripted skill, also run its declared
+   `verify` command and record the result. Narration without evidence is rejected.
 
 ## Naming rules
 
-Every skill name MUST be a two-word verb-noun pair. See [REFERENCE.md](REFERENCE.md)
-for the full rules, examples, and the documented exceptions.
+Every skill name MUST be a two-word verb-noun pair. A justified exception MUST set a
+nonempty `name_exception` in frontmatter. See [REFERENCE.md](REFERENCE.md) for the
+full rules and examples.
 
 ## The skill output
 
@@ -78,11 +80,13 @@ narrative goes under `specs/`. Document the output-file path in the skill body.
 
 ## Review checklist
 
-- [ ] The name is a two-word verb-noun pair (or a documented exception).
-- [ ] The frontmatter is `name` and `description` only.
+- [ ] The name is a two-word verb-noun pair or has a nonempty `name_exception`.
+- [ ] Frontmatter declares `name`, `description`, and `kind`.
+- [ ] `kind` is `prose` or `scripted`.
+- [ ] A scripted skill declares a nonempty runnable `verify` command.
 - [ ] The description is under 1024 characters, triggers only, no workflow summary.
 - [ ] The description includes the "Use it ..." triggers.
-- [ ] The SKILL.md body is under 100 lines.
+- [ ] The complete SKILL.md is 150 lines or fewer.
 - [ ] No time-sensitive information.
 - [ ] Consistent terminology with the project conventions.
 - [ ] The output path is documented when applicable.
@@ -90,5 +94,5 @@ narrative goes under `specs/`. Document the output-file path in the skill body.
 
 ## Verify
 
-Confirm the new skill parses, its name is a verb-noun pair, its description is
-within the limit, and its body follows the writing rules.
+Run `validate_skill` for the new skill and require a passing report. For a scripted
+skill, also run the declared frontmatter `verify` command and require exit 0.
