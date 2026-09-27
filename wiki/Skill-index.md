@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-80 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+78 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
