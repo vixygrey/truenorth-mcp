@@ -27,6 +27,7 @@ fn resume_is_idempotent_and_rollback_restores_the_preimage() {
         bundle_version: "old".to_string(),
         workspace_schema_version: "1".to_string(),
         profile: "generic".to_string(),
+        skill_sets: Vec::new(),
         managed: BTreeMap::from([(
             "managed.txt".to_string(),
             crate::engine::workspace_upgrade::manifest::ManagedFile {
@@ -40,8 +41,9 @@ fn resume_is_idempotent_and_rollback_restores_the_preimage() {
         &desired,
         Some(&installed),
         "new",
-        "1",
+        "2",
         "generic",
+        vec!["core".to_string()],
     )
     .expect("plan");
 

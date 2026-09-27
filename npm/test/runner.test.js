@@ -130,3 +130,14 @@ test('upgrade forwards the packaged bundle root to the native runtime', () => {
     opts: { stdio: 'inherit' },
   });
 });
+
+test('skills list forwards the packaged bundle root to the native runtime', () => {
+  const { deps, state } = harness({ argv: ['skills', 'list'] });
+  runner.run(deps);
+  assert.strictEqual(state.exitCode, 0);
+  assert.deepStrictEqual(state.spawned, {
+    binary: '/fake/node_modules/@truenorth-mcp/darwin-arm64/truenorth-mcp',
+    argv: ['skills', 'list', '--bundle-dir', '/fake/truenorth-mcp'],
+    opts: { stdio: 'inherit' },
+  });
+});

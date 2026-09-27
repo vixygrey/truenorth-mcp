@@ -298,10 +298,17 @@ fn minimal_package_bundle() -> anyhow::Result<TempDir> {
     let content = b"# Using TrueNorth\n";
     fs::write(&path, content)?;
     let manifest = json!({
-        "schema_version": 1,
+        "schema_version": 2,
         "bundle_version": env!("CARGO_PKG_VERSION"),
-        "workspace_schema_version": "1",
+        "workspace_schema_version": "2",
         "supported_from": [],
+        "skill_sets": [{
+            "name": "core",
+            "support": "supported",
+            "description": "Core test skills.",
+            "prerequisites": "none",
+            "skills": ["using-truenorth"]
+        }],
         "files": [{
             "path": relative,
             "sha256": sha256(content),

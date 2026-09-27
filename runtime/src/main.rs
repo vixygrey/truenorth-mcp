@@ -44,8 +44,15 @@ fn main() -> ExitCode {
         Ok(cli::Mode::Init {
             profile,
             bundle_dir,
-        }) => cli::init(profile, bundle_dir),
-        Ok(cli::Mode::Upgrade { check, bundle_dir }) => cli::upgrade(check, bundle_dir),
+            skill_sets,
+        }) => cli::init(profile, skill_sets, bundle_dir),
+        Ok(cli::Mode::Upgrade {
+            check,
+            bundle_dir,
+            add_skill_sets,
+            remove_skill_sets,
+        }) => cli::upgrade(check, bundle_dir, add_skill_sets, remove_skill_sets),
+        Ok(cli::Mode::SkillsList { bundle_dir }) => cli::list_skills(bundle_dir),
         Err(usage) => {
             eprintln!("truenorth-mcp: {usage}");
             ExitCode::FAILURE

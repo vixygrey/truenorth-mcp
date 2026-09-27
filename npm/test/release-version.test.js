@@ -27,10 +27,11 @@ function fixture() {
     ),
   });
   writeJson(root, 'npm/bundle/current.json', {
-    schema_version: 1,
+    schema_version: 2,
     bundle_version: VERSION,
-    workspace_schema_version: '1',
+    workspace_schema_version: '2',
     supported_from: [],
+    skill_sets: [],
     files: [],
   });
   for (const platform of PLATFORMS) {

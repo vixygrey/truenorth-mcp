@@ -7,7 +7,7 @@ use tempfile::TempDir;
 
 use super::bootstrap_project;
 use crate::engine::workspace_upgrade::manifest::{
-    BUNDLE_SCHEMA_VERSION, BundleFile, BundleManifest, sha256,
+    BUNDLE_SCHEMA_VERSION, BundleFile, BundleManifest, SkillSet, sha256,
 };
 
 fn skill_bundle() -> TempDir {
@@ -60,9 +60,25 @@ fn skill_bundle() -> TempDir {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "1".to_string(),
+        workspace_schema_version: "2".to_string(),
         supported_from: Vec::new(),
         files,
+        skill_sets: vec![
+            SkillSet {
+                name: "core".to_string(),
+                support: "supported".to_string(),
+                description: "Core test skills.".to_string(),
+                prerequisites: "none".to_string(),
+                skills: vec!["using-truenorth".to_string()],
+            },
+            SkillSet {
+                name: "visual".to_string(),
+                support: "optional".to_string(),
+                description: "Visual test skills.".to_string(),
+                prerequisites: "none".to_string(),
+                skills: vec!["guard".to_string()],
+            },
+        ],
     };
     fs::create_dir_all(root.join("bundle")).expect("bundle dir");
     fs::write(
@@ -78,7 +94,13 @@ fn bootstrap_creates_language_agnostic_workspace_and_copies_assets() {
     let repo = TempDir::new().expect("project");
     let bundle = skill_bundle();
 
-    let result = bootstrap_project(repo.path(), Some("generic"), bundle.path()).expect("bootstrap");
+    let result = bootstrap_project(
+        repo.path(),
+        Some("generic"),
+        bundle.path(),
+        &["visual".to_string()],
+    )
+    .expect("bootstrap");
 
     assert_eq!(result["profile"], "generic");
     assert!(repo.path().join(".agent/layout.yml").is_file());
@@ -123,13 +145,31 @@ fn bootstrap_creates_language_agnostic_workspace_and_copies_assets() {
 }
 
 #[test]
+fn bootstrap_defaults_to_core_skills_only() {
+    let repo = TempDir::new().expect("project");
+    let bundle = skill_bundle();
+
+    bootstrap_project(repo.path(), Some("generic"), bundle.path(), &[]).expect("bootstrap");
+
+    assert!(
+        repo.path()
+            .join("skills/using-truenorth/SKILL.md")
+            .is_file()
+    );
+    assert!(!repo.path().join("skills/guard").exists());
+    let manifest = fs::read_to_string(repo.path().join(".agent/workspace-manifest.yml"))
+        .expect("workspace manifest");
+    assert!(manifest.contains("skill_sets:\n- core\n"));
+}
+
+#[test]
 fn bootstrap_rejects_an_owned_target_without_writing() {
     let repo = TempDir::new().expect("project");
     let bundle = skill_bundle();
     fs::write(repo.path().join("AGENTS.md"), "human owned\n").expect("existing target");
 
     let error =
-        bootstrap_project(repo.path(), None, bundle.path()).expect_err("must reject conflict");
+        bootstrap_project(repo.path(), None, bundle.path(), &[]).expect_err("must reject conflict");
 
     assert!(error.contains("AGENTS.md"));
     assert_eq!(
@@ -147,7 +187,7 @@ fn bootstrap_rejects_invalid_skill_source_without_writing() {
     fs::create_dir(source.path().join("other")).expect("source dir");
 
     let error =
-        bootstrap_project(repo.path(), None, source.path()).expect_err("must reject source");
+        bootstrap_project(repo.path(), None, source.path(), &[]).expect_err("must reject source");
 
     assert!(error.contains("bundle/current.json"));
     assert!(!repo.path().join(".agent").exists());
@@ -167,7 +207,7 @@ fn bootstrap_rejects_symlinked_skill_source_without_writing() {
     symlink(Path::new("/tmp"), &linked).expect("symlink");
 
     let error =
-        bootstrap_project(repo.path(), None, bundle.path()).expect_err("must reject symlink");
+        bootstrap_project(repo.path(), None, bundle.path(), &[]).expect_err("must reject symlink");
 
     assert!(error.contains("regular file"));
     assert!(!repo.path().join(".agent").exists());

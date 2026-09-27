@@ -98,6 +98,17 @@ versioned skill bundle, and creates the language-agnostic TrueNorth workspace:
 npx -y truenorth-mcp init --profile generic
 ```
 
+New workspaces install the `core` set by default. Inspect the catalog or add optional sets:
+
+```bash
+npx -y truenorth-mcp skills list
+npx -y truenorth-mcp init --profile generic --skill-set integrations --skill-set visual
+```
+
+The `integrations` set needs configured external MCP or issue tracker services. The `visual`
+set may need Node.js, Python, Chrome, or Puppeteer. The `maintainer` set is for work on the
+TrueNorth repository and needs its versioned wiki sources. `core` is always selected.
+
 `init` refuses to overwrite `.agent/`, `specs/`, `skills/`, or its workflow files. It does
 not create a language manifest, source tree, CI workflow, or verify command.
 
@@ -108,12 +119,19 @@ npx -y truenorth-mcp upgrade --check
 npx -y truenorth-mcp upgrade
 ```
 
+Change the selection through the same transactional upgrade path:
+
+```bash
+npx -y truenorth-mcp upgrade --add-skill-set visual
+npx -y truenorth-mcp upgrade --remove-skill-set visual
+```
+
 The check command prints a deterministic JSON plan and does not write. Apply requires a clean Git
 worktree and index. Managed files that still match their installed source are updated or removed;
 local edits and unowned path collisions are preserved. Interrupted upgrades resume from the
-journal under `.agent/runtime/upgrade`. TrueNorth-MCP 1.0.2 workspaces without a workspace
-manifest are adopted only where content and file mode match the packaged historical baseline.
-Neither command mutates `specs/`.
+journal under `.agent/runtime/upgrade`. Selection is committed only after the transaction
+succeeds. Existing 1.0.2 and v1 manifest workspaces migrate with every set selected, preserving
+their installed catalog. Neither command mutates `specs/`.
 
 Then register the wrapper as an MCP server in your client:
 

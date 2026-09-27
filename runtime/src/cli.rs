@@ -14,11 +14,12 @@ use truenorth_mcp::config;
 use truenorth_mcp::engine::agent_ws::read_layout;
 use truenorth_mcp::engine::backlog;
 use truenorth_mcp::engine::features;
+use truenorth_mcp::engine::workspace_upgrade::bundle::PackageBundle;
 use truenorth_mcp::tools::scaffold::{
     apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
 };
 
-const USAGE: &str = "usage: truenorth-mcp [--version | --check-config | init --bundle-dir <path> [--profile <name>] | upgrade [--check] --bundle-dir <path>]";
+const USAGE: &str = "usage: truenorth-mcp [--version | --check-config | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | skills list --bundle-dir <path>]";
 
 /// The operation requested by the process arguments.
 #[derive(Debug, PartialEq, Eq)]
@@ -35,11 +36,22 @@ pub enum Mode {
         profile: Option<String>,
         /// Root of the installed package, containing `bundle/` and `skills/`.
         bundle_dir: PathBuf,
+        /// Optional skill sets. Core is always selected.
+        skill_sets: Vec<String>,
     },
     /// Plan or apply a workspace upgrade from the installed package bundle.
     Upgrade {
         /// Report the plan without mutation.
         check: bool,
+        /// Root of the installed package, containing `bundle/` and `skills/`.
+        bundle_dir: PathBuf,
+        /// Skill sets to select.
+        add_skill_sets: Vec<String>,
+        /// Skill sets to deselect.
+        remove_skill_sets: Vec<String>,
+    },
+    /// Print the package skill-set catalog.
+    SkillsList {
         /// Root of the installed package, containing `bundle/` and `skills/`.
         bundle_dir: PathBuf,
     },
@@ -54,6 +66,9 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
         [flag] if flag == "--check-config" => Ok(Mode::CheckConfig),
         [command, rest @ ..] if command == "init" => parse_init(rest),
         [command, rest @ ..] if command == "upgrade" => parse_upgrade(rest),
+        [skills, list, rest @ ..] if skills == "skills" && list == "list" => {
+            parse_skills_list(rest)
+        }
         _ => Err(USAGE.to_string()),
     }
 }
@@ -64,7 +79,7 @@ pub fn print_version() {
 }
 
 /// Seed the current directory from a versioned package bundle without starting MCP.
-pub fn init(profile: Option<String>, bundle_dir: PathBuf) -> ExitCode {
+pub fn init(profile: Option<String>, skill_sets: Vec<String>, bundle_dir: PathBuf) -> ExitCode {
     let repo_root = match std::env::current_dir() {
         Ok(path) => path,
         Err(error) => {
@@ -73,7 +88,7 @@ pub fn init(profile: Option<String>, bundle_dir: PathBuf) -> ExitCode {
         }
     };
 
-    match bootstrap_project(&repo_root, profile.as_deref(), &bundle_dir) {
+    match bootstrap_project(&repo_root, profile.as_deref(), &bundle_dir, &skill_sets) {
         Ok(result) => {
             println!("{result}");
             ExitCode::SUCCESS
@@ -89,6 +104,7 @@ pub fn init(profile: Option<String>, bundle_dir: PathBuf) -> ExitCode {
 fn parse_init(args: &[String]) -> Result<Mode, String> {
     let mut profile = None;
     let mut bundle_dir = None;
+    let mut skill_sets = Vec::new();
     let mut index = 0;
     while index < args.len() {
         let Some(value) = args.get(index + 1) else {
@@ -97,6 +113,7 @@ fn parse_init(args: &[String]) -> Result<Mode, String> {
         match args[index].as_str() {
             "--profile" if profile.is_none() => profile = Some(value.clone()),
             "--bundle-dir" if bundle_dir.is_none() => bundle_dir = Some(PathBuf::from(value)),
+            "--skill-set" => skill_sets.push(value.clone()),
             _ => return Err(USAGE.to_string()),
         }
         index += 2;
@@ -107,12 +124,15 @@ fn parse_init(args: &[String]) -> Result<Mode, String> {
     Ok(Mode::Init {
         profile,
         bundle_dir,
+        skill_sets,
     })
 }
 
 fn parse_upgrade(args: &[String]) -> Result<Mode, String> {
     let mut check = false;
     let mut bundle_dir = None;
+    let mut add_skill_sets = Vec::new();
+    let mut remove_skill_sets = Vec::new();
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
@@ -127,16 +147,37 @@ fn parse_upgrade(args: &[String]) -> Result<Mode, String> {
                 bundle_dir = Some(PathBuf::from(value));
                 index += 2;
             }
+            "--add-skill-set" | "--remove-skill-set" => {
+                let Some(value) = args.get(index + 1) else {
+                    return Err(USAGE.to_string());
+                };
+                if args[index] == "--add-skill-set" {
+                    add_skill_sets.push(value.clone());
+                } else {
+                    remove_skill_sets.push(value.clone());
+                }
+                index += 2;
+            }
             _ => return Err(USAGE.to_string()),
         }
     }
     let Some(bundle_dir) = bundle_dir else {
         return Err(USAGE.to_string());
     };
-    Ok(Mode::Upgrade { check, bundle_dir })
+    Ok(Mode::Upgrade {
+        check,
+        bundle_dir,
+        add_skill_sets,
+        remove_skill_sets,
+    })
 }
 
-pub fn upgrade(check: bool, bundle_dir: PathBuf) -> ExitCode {
+pub fn upgrade(
+    check: bool,
+    bundle_dir: PathBuf,
+    add_skill_sets: Vec<String>,
+    remove_skill_sets: Vec<String>,
+) -> ExitCode {
     let repo_root = match std::env::current_dir() {
         Ok(path) => path,
         Err(error) => {
@@ -145,9 +186,9 @@ pub fn upgrade(check: bool, bundle_dir: PathBuf) -> ExitCode {
         }
     };
     let result = if check {
-        plan_workspace_upgrade(&repo_root, &bundle_dir)
+        plan_workspace_upgrade(&repo_root, &bundle_dir, &add_skill_sets, &remove_skill_sets)
     } else {
-        apply_workspace_upgrade(&repo_root, &bundle_dir)
+        apply_workspace_upgrade(&repo_root, &bundle_dir, &add_skill_sets, &remove_skill_sets)
     };
     match result {
         Ok(plan) => match serde_json::to_string(&plan) {
@@ -157,6 +198,34 @@ pub fn upgrade(check: bool, bundle_dir: PathBuf) -> ExitCode {
             }
             Err(error) => {
                 eprintln!("truenorth-mcp: could not serialize the upgrade plan: {error}");
+                ExitCode::FAILURE
+            }
+        },
+        Err(error) => {
+            eprintln!("truenorth-mcp: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn parse_skills_list(args: &[String]) -> Result<Mode, String> {
+    match args {
+        [flag, path] if flag == "--bundle-dir" => Ok(Mode::SkillsList {
+            bundle_dir: PathBuf::from(path),
+        }),
+        _ => Err(USAGE.to_string()),
+    }
+}
+
+pub fn list_skills(bundle_dir: PathBuf) -> ExitCode {
+    match PackageBundle::load(&bundle_dir) {
+        Ok(bundle) => match serde_json::to_string(&bundle.manifest.skill_sets) {
+            Ok(json) => {
+                println!("{json}");
+                ExitCode::SUCCESS
+            }
+            Err(error) => {
+                eprintln!("truenorth-mcp: could not serialize the skill catalog: {error}");
                 ExitCode::FAILURE
             }
         },

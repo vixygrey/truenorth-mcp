@@ -11,6 +11,17 @@ From an empty project directory, run:
 npx -y truenorth-mcp init --profile generic
 ```
 
+`core` is always installed. List the catalog and select independent optional sets with:
+
+```bash
+npx -y truenorth-mcp skills list
+npx -y truenorth-mcp init --profile generic --skill-set integrations --skill-set visual
+```
+
+`integrations` requires configured external services. `visual` may require Node.js, Python,
+Chrome, or Puppeteer. `maintainer` is only for TrueNorth repository maintenance and requires
+the versioned wiki sources.
+
 The wrapper selects the matching native package, forwards the bundled skills to the runtime,
 and creates a language-agnostic `.agent/`, `specs/`, and `skills/` workspace. It does not
 create a language manifest, source tree, CI workflow, or verify command. `init` refuses to
@@ -23,6 +34,13 @@ Preview the versioned workspace plan before applying it:
 ```bash
 npx -y truenorth-mcp upgrade --check
 npx -y truenorth-mcp upgrade
+```
+
+Add or remove optional sets through the transactional upgrade:
+
+```bash
+npx -y truenorth-mcp upgrade --add-skill-set visual
+npx -y truenorth-mcp upgrade --remove-skill-set visual
 ```
 
 Apply requires a clean Git worktree and index. TrueNorth updates unchanged managed files, removes

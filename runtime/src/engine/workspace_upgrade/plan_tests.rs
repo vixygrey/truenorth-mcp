@@ -18,8 +18,9 @@ fn installed(entries: &[(&str, &str)]) -> WorkspaceManifest {
     WorkspaceManifest {
         manifest_version: MANIFEST_VERSION.to_string(),
         bundle_version: "old".to_string(),
-        workspace_schema_version: "1".to_string(),
+        workspace_schema_version: "2".to_string(),
         profile: "generic".to_string(),
+        skill_sets: vec!["core".to_string()],
         managed: entries
             .iter()
             .map(|(path, body)| {
@@ -64,7 +65,16 @@ fn planner_reports_every_action_and_preserves_local_content() {
         ("remove.txt", "old"),
     ]);
 
-    let plan = build_plan(repo.path(), &desired, Some(&old), "new", "1", "generic").expect("plan");
+    let plan = build_plan(
+        repo.path(),
+        &desired,
+        Some(&old),
+        "new",
+        "2",
+        "generic",
+        vec!["core".to_string()],
+    )
+    .expect("plan");
     let actions: BTreeMap<_, _> = plan
         .actions
         .iter()
@@ -93,7 +103,16 @@ fn planner_preserves_local_deletion_and_flags_divergent_deletion() {
             .into_iter()
             .map(|file| (file.path.clone(), file))
             .collect();
-    let plan = build_plan(repo.path(), &desired, Some(&old), "new", "1", "generic").expect("plan");
+    let plan = build_plan(
+        repo.path(),
+        &desired,
+        Some(&old),
+        "new",
+        "2",
+        "generic",
+        vec!["core".to_string()],
+    )
+    .expect("plan");
     assert_eq!(plan.actions[0].action, PlanAction::Conflict);
     assert_eq!(plan.actions[1].action, PlanAction::Preserve);
 }

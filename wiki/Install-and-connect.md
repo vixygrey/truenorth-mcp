@@ -17,9 +17,21 @@ From an empty project directory, bootstrap the language-agnostic TrueNorth works
 npx -y truenorth-mcp init --profile generic
 ```
 
-`init` copies the versioned skills bundle and creates `.agent/`, `specs/`, and `skills/`.
-It refuses to overwrite an existing TrueNorth workspace. It does not create a language
-manifest, source tree, CI workflow, or verify command.
+The default installation contains the always-selected `core` set. Inspect the catalog and
+select optional sets independently of the methodology profile:
+
+```bash
+npx -y truenorth-mcp skills list
+npx -y truenorth-mcp init --profile generic --skill-set integrations --skill-set visual
+```
+
+`integrations` requires configured external MCP or issue tracker services. `visual` may
+require Node.js, Python, Chrome, or Puppeteer. `maintainer` is for TrueNorth repository
+maintenance and requires the versioned wiki sources.
+
+`init` creates `.agent/`, `specs/`, and `skills/` from the selected catalog. It refuses to
+overwrite an existing TrueNorth workspace. It does not create a language manifest, source
+tree, CI workflow, or verify command.
 
 ## Windows
 

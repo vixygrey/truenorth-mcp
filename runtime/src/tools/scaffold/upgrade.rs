@@ -8,13 +8,16 @@ use crate::engine::git;
 use crate::engine::mutation::acquire_worktree_lease;
 use crate::engine::profile;
 use crate::engine::workspace_upgrade::bundle::{DesiredFile, PackageBundle};
-use crate::engine::workspace_upgrade::manifest::{
-    MANIFEST_VERSION, ManagedFile, WorkspaceManifest, sha256,
-};
+use crate::engine::workspace_upgrade::manifest::{ManagedFile, WorkspaceManifest, sha256};
 use crate::engine::workspace_upgrade::plan::{UpgradePlan, build_plan};
 use crate::engine::workspace_upgrade::transaction;
 
-pub fn plan_workspace_upgrade(repo_root: &Path, bundle_root: &Path) -> Result<UpgradePlan, String> {
+pub fn plan_workspace_upgrade(
+    repo_root: &Path,
+    bundle_root: &Path,
+    add_skill_sets: &[String],
+    remove_skill_sets: &[String],
+) -> Result<UpgradePlan, String> {
     let bundle = PackageBundle::load(bundle_root).map_err(|error| error.to_string())?;
     let profile = profile::resolve_active(repo_root).map_err(|error| error.to_string())?;
     let installed = match WorkspaceManifest::read_optional(repo_root).map_err(|e| e.to_string())? {
@@ -35,7 +38,8 @@ pub fn plan_workspace_upgrade(repo_root: &Path, bundle_root: &Path) -> Result<Up
         }
         None => adopt_legacy(repo_root, &bundle, profile)?,
     };
-    let desired = desired_files(&bundle, profile);
+    let skill_sets = target_skill_sets(&bundle, &installed, add_skill_sets, remove_skill_sets)?;
+    let desired = desired_files(&bundle, profile, &skill_sets)?;
     build_plan(
         repo_root,
         &desired,
@@ -43,6 +47,7 @@ pub fn plan_workspace_upgrade(repo_root: &Path, bundle_root: &Path) -> Result<Up
         &bundle.manifest.bundle_version,
         &bundle.manifest.workspace_schema_version,
         profile.name,
+        skill_sets,
     )
     .map_err(|error| error.to_string())
 }
@@ -50,6 +55,8 @@ pub fn plan_workspace_upgrade(repo_root: &Path, bundle_root: &Path) -> Result<Up
 pub fn apply_workspace_upgrade(
     repo_root: &Path,
     bundle_root: &Path,
+    add_skill_sets: &[String],
+    remove_skill_sets: &[String],
 ) -> Result<UpgradePlan, String> {
     if transaction::transaction_exists(repo_root) {
         let _lease = acquire_worktree_lease(repo_root).map_err(|error| error.to_string())?;
@@ -61,7 +68,7 @@ pub fn apply_workspace_upgrade(
             return Err(error);
         }
         transaction::cleanup(repo_root).map_err(|error| error.to_string())?;
-        return plan_workspace_upgrade(repo_root, bundle_root);
+        return plan_workspace_upgrade(repo_root, bundle_root, add_skill_sets, remove_skill_sets);
     }
 
     let status = git::worktree_status(repo_root).map_err(|error| error.to_string())?;
@@ -72,8 +79,8 @@ pub fn apply_workspace_upgrade(
 
     let bundle = PackageBundle::load(bundle_root).map_err(|error| error.to_string())?;
     let profile = profile::resolve_active(repo_root).map_err(|error| error.to_string())?;
-    let desired = desired_files(&bundle, profile);
-    let plan = plan_workspace_upgrade(repo_root, bundle_root)?;
+    let plan = plan_workspace_upgrade(repo_root, bundle_root, add_skill_sets, remove_skill_sets)?;
+    let desired = desired_files(&bundle, profile, &plan.next_manifest.skill_sets)?;
     transaction::prepare(repo_root, &plan, &desired).map_err(|error| error.to_string())?;
     if let Err(error) = transaction::resume(repo_root).map_err(|error| error.to_string()) {
         if let Err(rollback) = transaction::rollback(repo_root) {
@@ -102,8 +109,11 @@ fn validate_result(repo_root: &Path) -> Result<(), String> {
 pub fn desired_files(
     bundle: &PackageBundle,
     profile: profile::Profile,
-) -> BTreeMap<String, DesiredFile> {
-    let mut desired = bundle.files.clone();
+    skill_sets: &[String],
+) -> Result<BTreeMap<String, DesiredFile>, String> {
+    let mut desired = bundle
+        .files_for_skill_sets(skill_sets)
+        .map_err(|error| error.to_string())?;
     desired.extend(scaffold_sources(profile).into_iter().map(|source| {
         let path = source.path;
         (
@@ -115,7 +125,33 @@ pub fn desired_files(
             },
         )
     }));
-    desired
+    Ok(desired)
+}
+
+fn target_skill_sets(
+    bundle: &PackageBundle,
+    installed: &WorkspaceManifest,
+    add: &[String],
+    remove: &[String],
+) -> Result<Vec<String>, String> {
+    for name in add.iter().chain(remove) {
+        if bundle.manifest.skill_set(name).is_none() {
+            return Err(format!("unknown skill set `{name}`"));
+        }
+    }
+    if remove.iter().any(|name| name == "core") {
+        return Err("the `core` skill set cannot be removed".to_string());
+    }
+    let mut selected = if installed.manifest_version == "1" || installed.skill_sets.is_empty() {
+        bundle.manifest.all_skill_sets()
+    } else {
+        installed.skill_sets.clone()
+    };
+    selected.retain(|name| !remove.contains(name));
+    selected.extend(add.iter().cloned());
+    bundle
+        .resolve_skill_sets(&selected)
+        .map_err(|error| error.to_string())
 }
 
 fn adopt_legacy(
@@ -162,10 +198,11 @@ fn adopt_legacy(
         adopt_exact(repo_root, &source.path, record, &mut managed)?;
     }
     Ok(WorkspaceManifest {
-        manifest_version: MANIFEST_VERSION.to_string(),
+        manifest_version: "1".to_string(),
         bundle_version: version.clone(),
         workspace_schema_version: history.workspace_schema_version,
         profile: profile.name.to_string(),
+        skill_sets: Vec::new(),
         managed,
     })
 }

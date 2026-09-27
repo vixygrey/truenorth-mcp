@@ -3,8 +3,17 @@ use std::fs;
 use tempfile::tempdir;
 
 use super::*;
-use crate::engine::workspace_upgrade::manifest::{BUNDLE_SCHEMA_VERSION, BundleFile};
+use crate::engine::workspace_upgrade::manifest::{BUNDLE_SCHEMA_VERSION, BundleFile, SkillSet};
 
+fn core_set() -> SkillSet {
+    SkillSet {
+        name: "core".to_string(),
+        support: "supported".to_string(),
+        description: "Core test skills.".to_string(),
+        prerequisites: "none".to_string(),
+        skills: vec!["a".to_string()],
+    }
+}
 #[test]
 fn package_bundle_loads_only_verified_manifest_files() {
     let dir = tempdir().expect("bundle root");
@@ -15,13 +24,14 @@ fn package_bundle_loads_only_verified_manifest_files() {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "1".to_string(),
+        workspace_schema_version: "2".to_string(),
         supported_from: Vec::new(),
         files: vec![BundleFile {
             path: "skills/a/SKILL.md".to_string(),
             sha256: sha256(body),
             mode: "0644".to_string(),
         }],
+        skill_sets: vec![core_set()],
     };
     fs::write(
         dir.path().join("bundle/current.json"),
@@ -43,13 +53,14 @@ fn package_bundle_rejects_source_drift() {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "1".to_string(),
+        workspace_schema_version: "2".to_string(),
         supported_from: Vec::new(),
         files: vec![BundleFile {
             path: "skills/a/SKILL.md".to_string(),
             sha256: sha256(b"expected\n"),
             mode: "0644".to_string(),
         }],
+        skill_sets: vec![core_set()],
     };
     fs::write(
         dir.path().join("bundle/current.json"),
