@@ -1,10 +1,13 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;
 
-use super::manifest::{BundleManifest, ManifestError, sha256, validate_relative_path};
+use super::manifest::{
+    BUNDLE_SCHEMA_VERSION, BundleManifest, CORE_SKILL_SET, ManifestError, sha256,
+    validate_relative_path,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DesiredFile {
@@ -37,12 +40,23 @@ pub enum BundleError {
         path: String,
         source: std::io::Error,
     },
+    #[error("unknown skill set `{0}`")]
+    UnknownSkillSet(String),
 }
 
 impl PackageBundle {
     pub fn load(root: &Path) -> Result<Self, BundleError> {
         let manifest_path = root.join("bundle/current.json");
         let manifest = BundleManifest::read(&manifest_path)?;
+        if manifest.schema_version != BUNDLE_SCHEMA_VERSION {
+            return Err(BundleError::InvalidFile {
+                path: manifest_path.display().to_string(),
+                detail: format!(
+                    "current bundle schema must be `{BUNDLE_SCHEMA_VERSION}`, found `{}`",
+                    manifest.schema_version
+                ),
+            });
+        }
         if manifest.bundle_version != env!("CARGO_PKG_VERSION") {
             return Err(BundleError::InvalidFile {
                 path: manifest_path.display().to_string(),
@@ -75,6 +89,41 @@ impl PackageBundle {
             .join("bundle/history")
             .join(format!("{version}.json"));
         Ok(Some(BundleManifest::read(&path)?))
+    }
+
+    pub fn resolve_skill_sets(&self, requested: &[String]) -> Result<Vec<String>, BundleError> {
+        let mut selected: BTreeSet<String> = requested.iter().cloned().collect();
+        selected.insert(CORE_SKILL_SET.to_string());
+        for name in &selected {
+            if self.manifest.skill_set(name).is_none() {
+                return Err(BundleError::UnknownSkillSet(name.clone()));
+            }
+        }
+        Ok(selected.into_iter().collect())
+    }
+
+    pub fn files_for_skill_sets(
+        &self,
+        selected: &[String],
+    ) -> Result<BTreeMap<String, DesiredFile>, BundleError> {
+        let selected: BTreeSet<String> = self.resolve_skill_sets(selected)?.into_iter().collect();
+        Ok(self
+            .files
+            .iter()
+            .filter(|(path, _)| {
+                let Some(skill) = path
+                    .strip_prefix("skills/")
+                    .and_then(|rest| rest.split_once('/'))
+                    .map(|(skill, _)| skill)
+                else {
+                    return true;
+                };
+                self.manifest
+                    .set_for_skill(skill)
+                    .is_some_and(|set| selected.contains(set))
+            })
+            .map(|(path, file)| (path.clone(), file.clone()))
+            .collect())
     }
 }
 

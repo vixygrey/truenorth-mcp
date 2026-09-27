@@ -1,0 +1,95 @@
+schema_version: 1
+sets:
+  core:
+    support: supported
+    description: Core spec-driven engineering workflow and runtime operations.
+    prerequisites: none
+  integrations:
+    support: conditional
+    description: Workflows that depend on externally configured documentation or issue-tracker services.
+    prerequisites: External MCP or issue-tracker tools must be available to the agent.
+  visual:
+    support: optional
+    description: Browser, design extraction, grid construction, and project visualization workflows.
+    prerequisites: Individual skills may require Node.js, Python, Chrome, or Puppeteer.
+  maintainer:
+    support: internal
+    description: TrueNorth repository maintenance workflows not required by normal target projects.
+    prerequisites: A checkout containing the versioned TrueNorth wiki sources.
+skills:
+  align-grid: visual
+  assess-impact: core
+  audit-code: core
+  audit-plan: core
+  build-epic: core
+  change-request: core
+  commit-message: core
+  compose-workflow: core
+  context7-mcp: integrations
+  craft-skill: core
+  deepen-architecture: core
+  define-language: core
+  delegate-task: core
+  deploy: core
+  design-interface: core
+  develop-tdd: core
+  diagnose-root: core
+  diagnose-stall: core
+  dispatch-agents: core
+  edit-document: core
+  elaborate-spec: core
+  enforce-first: core
+  evolve-skill: core
+  execute-plan: core
+  extract-design: visual
+  find-way: integrations
+  fix-bug: core
+  gate-trace: core
+  grill-me: core
+  grill-with-docs: core
+  guard-git: core
+  hook-commits: core
+  inspect-quality: core
+  investigate-bug: core
+  kickoff-branch: core
+  maintain-wiki: maintainer
+  map-codebase: core
+  migrate-spec: core
+  model-domain: core
+  orchestrate-project: core
+  organize-workspace: core
+  plan-refactor: core
+  plan-release: core
+  plan-tests: core
+  plan-work: core
+  publish-package: core
+  quick-fix: core
+  release-branch: core
+  request-review: core
+  research-first: core
+  reset-baseline: core
+  respond-review: core
+  run-benchmark: core
+  run-evals: core
+  run-planning: core
+  scope-work: core
+  search-skills: core
+  security-review: core
+  seed-conventions: core
+  session-state: core
+  setup-environment: core
+  simple-english: core
+  slice-tasks: core
+  smoke-test: core
+  spike-prototype: core
+  stocktake-skills: core
+  survey-context: core
+  trace-requirement: core
+  using-truenorth: core
+  validate-contracts: core
+  validate-fix: core
+  verify-work: core
+  visual-dashboard: visual
+  wire-ci: core
+  wire-observability: core
+  write-document: core

@@ -6,7 +6,7 @@ use serde::Serialize;
 use thiserror::Error;
 
 use super::bundle::DesiredFile;
-use super::manifest::{ManagedFile, WorkspaceManifest, sha256};
+use super::manifest::{MANIFEST_VERSION, ManagedFile, WorkspaceManifest, sha256};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -69,6 +69,7 @@ pub fn build_plan(
     target_bundle_version: &str,
     workspace_schema_version: &str,
     profile: &str,
+    skill_sets: Vec<String>,
 ) -> Result<UpgradePlan, PlanError> {
     let old_managed = installed
         .map(|manifest| &manifest.managed)
@@ -115,10 +116,11 @@ pub fn build_plan(
         actions,
         counts,
         next_manifest: WorkspaceManifest {
-            manifest_version: "1".to_string(),
+            manifest_version: MANIFEST_VERSION.to_string(),
             bundle_version: target_bundle_version.to_string(),
             workspace_schema_version: workspace_schema_version.to_string(),
             profile: profile.to_string(),
+            skill_sets,
             managed: next_managed,
         },
     })

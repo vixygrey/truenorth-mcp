@@ -37,6 +37,7 @@ fn init_requires_a_package_bundle_and_accepts_profile_in_any_option_order() {
         Mode::Init {
             profile: Some("generic".to_string()),
             bundle_dir: PathBuf::from("/tmp/package"),
+            skill_sets: Vec::new(),
         }
     );
     assert_eq!(
@@ -49,6 +50,7 @@ fn init_requires_a_package_bundle_and_accepts_profile_in_any_option_order() {
         Mode::Init {
             profile: None,
             bundle_dir: PathBuf::from("/tmp/package"),
+            skill_sets: Vec::new(),
         }
     );
 }
@@ -91,6 +93,8 @@ fn upgrade_accepts_check_and_requires_the_package_bundle() {
         Mode::Upgrade {
             check: true,
             bundle_dir: PathBuf::from("/tmp/package"),
+            add_skill_sets: Vec::new(),
+            remove_skill_sets: Vec::new(),
         }
     );
     assert_eq!(
@@ -103,9 +107,62 @@ fn upgrade_accepts_check_and_requires_the_package_bundle() {
         Mode::Upgrade {
             check: false,
             bundle_dir: PathBuf::from("/tmp/package"),
+            add_skill_sets: Vec::new(),
+            remove_skill_sets: Vec::new(),
         }
     );
     assert!(parse_args(["upgrade".to_string(), "--check".to_string()]).is_err());
+}
+
+#[test]
+fn skill_set_options_are_repeatable_and_catalog_is_read_only() {
+    assert_eq!(
+        parse_args([
+            "init".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
+            "--skill-set".to_string(),
+            "visual".to_string(),
+            "--skill-set".to_string(),
+            "integrations".to_string(),
+        ])
+        .expect("parse init skill sets"),
+        Mode::Init {
+            profile: None,
+            bundle_dir: PathBuf::from("/tmp/package"),
+            skill_sets: vec!["visual".to_string(), "integrations".to_string()],
+        }
+    );
+    assert_eq!(
+        parse_args([
+            "upgrade".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
+            "--add-skill-set".to_string(),
+            "visual".to_string(),
+            "--remove-skill-set".to_string(),
+            "integrations".to_string(),
+        ])
+        .expect("parse upgrade skill sets"),
+        Mode::Upgrade {
+            check: false,
+            bundle_dir: PathBuf::from("/tmp/package"),
+            add_skill_sets: vec!["visual".to_string()],
+            remove_skill_sets: vec!["integrations".to_string()],
+        }
+    );
+    assert_eq!(
+        parse_args([
+            "skills".to_string(),
+            "list".to_string(),
+            "--bundle-dir".to_string(),
+            "/tmp/package".to_string(),
+        ])
+        .expect("parse skills list"),
+        Mode::SkillsList {
+            bundle_dir: PathBuf::from("/tmp/package"),
+        }
+    );
 }
 
 #[test]

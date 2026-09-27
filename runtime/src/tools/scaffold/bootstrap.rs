@@ -6,7 +6,7 @@ use std::path::Path;
 
 use super::{Emission, resolve_scaffold_profile, result_json, scaffold_project, scaffold_sources};
 use crate::engine::agent_ws::{write_repo_seed, write_repo_seed_bytes, write_under_agent};
-use crate::engine::workspace_upgrade::bundle::PackageBundle;
+use crate::engine::workspace_upgrade::bundle::{DesiredFile, PackageBundle};
 use crate::engine::workspace_upgrade::manifest::{
     MANIFEST_VERSION, ManagedFile, WorkspaceManifest, sha256,
 };
@@ -16,11 +16,18 @@ pub fn bootstrap_project(
     repo_root: &Path,
     profile_name: Option<&str>,
     bundle_root: &Path,
+    requested_skill_sets: &[String],
 ) -> Result<serde_json::Value, String> {
     let profile = resolve_scaffold_profile(profile_name).map_err(|error| error.to_string())?;
     validate_fresh_target(repo_root)?;
     let bundle = PackageBundle::load(bundle_root).map_err(|error| error.to_string())?;
-    if !bundle.files.contains_key("skills/using-truenorth/SKILL.md") {
+    let skill_sets = bundle
+        .resolve_skill_sets(requested_skill_sets)
+        .map_err(|error| error.to_string())?;
+    let bundle_files = bundle
+        .files_for_skill_sets(&skill_sets)
+        .map_err(|error| error.to_string())?;
+    if !bundle_files.contains_key("skills/using-truenorth/SKILL.md") {
         return Err(format!(
             "bundle `{}` does not contain `skills/using-truenorth/SKILL.md`",
             bundle_root.display()
@@ -30,7 +37,7 @@ pub fn bootstrap_project(
     let generated = scaffold_sources(profile);
     let mut emissions = scaffold_project(repo_root, profile).map_err(|error| error.to_string())?;
     seed_specs_marker(repo_root, &mut emissions)?;
-    copy_bundle_files(repo_root, &bundle, &mut emissions)?;
+    copy_bundle_files(repo_root, &bundle_files, &mut emissions)?;
 
     let mut sources: BTreeMap<String, ManagedFile> = generated
         .into_iter()
@@ -44,7 +51,7 @@ pub fn bootstrap_project(
             )
         })
         .collect();
-    sources.extend(bundle.files.values().map(|file| {
+    sources.extend(bundle_files.values().map(|file| {
         (
             file.path.clone(),
             ManagedFile {
@@ -65,6 +72,7 @@ pub fn bootstrap_project(
         bundle_version: bundle.manifest.bundle_version.clone(),
         workspace_schema_version: bundle.manifest.workspace_schema_version.clone(),
         profile: profile.name.to_string(),
+        skill_sets,
         managed,
     };
     let yaml = manifest.to_yaml().map_err(|error| error.to_string())?;
@@ -110,10 +118,10 @@ fn seed_specs_marker(repo_root: &Path, out: &mut Vec<Emission>) -> Result<(), St
 
 fn copy_bundle_files(
     repo_root: &Path,
-    bundle: &PackageBundle,
+    bundle_files: &BTreeMap<String, DesiredFile>,
     out: &mut Vec<Emission>,
 ) -> Result<(), String> {
-    for file in bundle.files.values() {
+    for file in bundle_files.values() {
         let relative = Path::new(&file.path);
         write_repo_seed_bytes(repo_root, relative, &file.bytes, true)
             .map_err(|error| format!("could not seed `{}`: {error}", file.path))?;

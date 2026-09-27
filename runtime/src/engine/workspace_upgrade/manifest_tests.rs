@@ -19,6 +19,7 @@ fn bundle_manifest_accepts_sorted_safe_files() {
             sha256: hash(),
             mode: "0644".to_string(),
         }],
+        skill_sets: Vec::new(),
     };
     manifest.validate(Path::new("bundle.json")).expect("valid");
 }
@@ -43,6 +44,7 @@ fn manifests_reject_escape_duplicate_hash_and_mode() {
                 sha256: hash(),
                 mode: "0644".to_string(),
             }],
+            skill_sets: Vec::new(),
         };
         assert!(
             manifest.validate(Path::new("bundle.json")).is_err(),
@@ -61,6 +63,7 @@ fn manifests_reject_escape_duplicate_hash_and_mode() {
         workspace_schema_version: "1".to_string(),
         supported_from: Vec::new(),
         files: vec![duplicate.clone(), duplicate],
+        skill_sets: Vec::new(),
     };
     assert!(manifest.validate(Path::new("bundle.json")).is_err());
 
@@ -77,6 +80,7 @@ fn manifests_reject_escape_duplicate_hash_and_mode() {
         bundle_version: "1".to_string(),
         workspace_schema_version: "1".to_string(),
         profile: "generic".to_string(),
+        skill_sets: Vec::new(),
         managed,
     };
     assert!(workspace.validate(Path::new(MANIFEST_REL_PATH)).is_err());
