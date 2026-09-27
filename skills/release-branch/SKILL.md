@@ -1,56 +1,58 @@
 ---
 name: release-branch
-description: Make the merge, PR, keep, or discard decision for a feature branch, verify the coverage gates, create the PR, and clean up the worktree. Use it when a feature is done and ready to ship, or when the user says "release", "merge", or "open a PR".
-kind: prose
+description: Validate and integrate a finished Git branch through the configured solo or pull-request workflow. Use it when a feature is ready to ship, or when the user says "release", "merge", or "open a PR".
+kind: scripted
+verify: bash skills/release-branch/scripts/tests/run.sh
 ---
 
 # Release Branch
 
 > **HARD GATE**: Do NOT merge or release when tests fail or a coverage gate is not met. When the branch is red, return to `develop-tdd` to fix a regression or add a missing test before you proceed.
 
-Finalize a completed feature branch: verify the coverage gates, integrate onto
-`main`, and clean up the worktree.
+Finalize a completed Git branch through the configured mode. Clean up only after approval.
 
-## Additional modes
+## Integration mode
 
-- `--hotfix`: cherry-pick to main and tag. Skip the PR in solo mode.
-- `--squash-state`: squash the `chore(state):` commits before the merge.
+Read `workflow_mode` from `.agent/tasks/state.yml`. The only valid values are
+`solo-git` and `team-pr`. A missing or unknown value blocks release. Never infer
+or silently change the mode.
 
-## Integrate mode
+| Mode       | Ship path                                   |
+| ---------- | ------------------------------------------- |
+| `solo-git` | Fast-forward the default branch locally     |
+| `team-pr`  | Push, create a PR, then squash-merge the PR |
 
-Read the `workflow_mode` key from `.agent/tasks/state.yml` (`team-pr` or `solo-git`).
+TrueNorth release workflows support Git only. Run the side-effect-free route
+check before any integration command:
 
-| Mode         | When                               | Ship path                                   |
-| ------------ | ---------------------------------- | ------------------------------------------- |
-| **solo-git** | `workflow_mode: solo-git`          | Fast-forward the default branch locally     |
-| **team-pr**  | `workflow_mode: team-pr` (default) | `gh pr create`, then `gh pr merge --squash` |
-
-When unsure, prefer solo-git. Also read the `vcs.kind` value. Git follows the
-procedures below. Jujutsu uses workspaces and bookmarks, and must not call a
-Git-only landing step.
+```bash
+bash skills/release-branch/scripts/check-route.sh \
+  --mode "$WORKFLOW_MODE" --action inspect
+```
 
 ## Process
 
 ### 1. Final verification
 
-Run the full test, typecheck, and lint through the `truenorth_verify_gate` tool.
-Then confirm the commits.
-
-- [ ] All tests pass, no type error, no lint violation.
-- [ ] Every commit follows Conventional Commits.
-- [ ] No `Co-authored-by` footer in any commit body. The human author owns the commit.
-
-Check the commit range against the Conventional Commits format and reject an
-AI-attribution footer:
+Run the full test, typecheck, and lint through `truenorth_verify_gate`. Confirm
+that the current Git branch is not the default branch, the worktree is clean,
+the commit range is nonempty, and every commit follows Conventional Commits.
+Reject an AI-attribution footer.
 
 ```bash
-git log main...HEAD --oneline | grep -vE "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?!?: .+$" && echo "Non-conventional commit found" || echo "Commits verified"
-git log main...HEAD --format="%B" | grep -qiE 'co[- ]authored[- ]by' && echo "Co-authored-by footer found, blocked" || echo "No AI attribution"
+git status --short --branch
+git log <default-branch>..HEAD --oneline
+git log <default-branch>..HEAD --format="%B"
 ```
+
+Stop when verification fails. Do not land a branch with an empty commit range.
 
 ### 2. Coverage check
 
-- [ ] Overall coverage 80% or more. Business-logic coverage 95% or more.
+Read the configured minimums from
+`quality_gates.coverage.{overall_minimum_percent,business_logic_minimum_percent}`
+in `.agent/config/rules.yml`. Missing thresholds block release. Run the project
+coverage command and compare observed values. Never use skill-level defaults.
 
 ### 2a. Security gate
 
@@ -72,66 +74,75 @@ available.
 
 - [ ] Every commit is intentional, no secret, convention-compliant.
 
-### 4. Decision
+### 4. Select the configured route
 
-Options: release (solo-git), open PR, keep the branch, or discard.
+Do not offer or select a different integration mode. `workflow_mode` is the
+decision. If the user wants another route, update the state only after explicit
+confirmation, then rerun every gate.
 
 ### 5. Integrate
 
-Run `commit-message` first. Git solo-git fast-forwards the default branch.
-Jujutsu team mode advances and pushes a bookmark. The `-m` flag is mandatory for a
-commit or describe operation.
+Run `commit-message` first.
+
+For `solo-git`, fetch the default branch and confirm that it can fast-forward to
+the feature branch. Ask for explicit merge approval. Immediately before the
+fast-forward or push, validate that approval:
 
 ```bash
-# Jujutsu team PR
-jj describe -m "feat(scope): description"
-jj bookmark set <task-slug> -r @
-jj git push -b <task-slug>
+bash skills/release-branch/scripts/check-route.sh \
+  --mode solo-git --action merge --approved
 ```
 
-### 6. Create the PR (team-pr only)
-
-Create the pull request, then squash-merge it, so each PR becomes one commit on
-`main`.
+For `team-pr`, push the feature branch and create the pull request with `gh`.
+Wait for every required check to pass. Ask for explicit merge approval, then
+validate it immediately before squash merge:
 
 ```bash
-gh pr create --title "..." --body "$(cat <<'EOF'
-## Summary
-
-- ...
-
-## Test plan
-- [ ] ...
-EOF
-)"
-gh pr merge --squash --delete-branch
+bash skills/release-branch/scripts/check-route.sh \
+  --mode team-pr --action merge --approved
+gh pr merge --squash
 ```
 
-The release itself is tag-driven. A `v*` tag triggers the release workflow, which
-builds and publishes. The merge does not publish on its own.
+Approval to create a PR does not approve its merge.
 
-### 7a. Archive the completed task group
+### 6. Hotfix tag and publication
 
-> **HARD GATE**: when every group story is done, archive the capsule.
+`--hotfix` does not imply approval to tag or publish. Ask separately before
+each action, then run the corresponding guard:
 
-Move the completed capsule to the archive under the task group directory.
+```bash
+bash skills/release-branch/scripts/check-route.sh \
+  --mode "$WORKFLOW_MODE" --action tag --approved
+bash skills/release-branch/scripts/check-route.sh \
+  --mode "$WORKFLOW_MODE" --action publish --approved
+```
 
-### 7b. CI verification
+A `v*` tag triggers the release workflow. Confirm the exact tag before creation.
 
-> **HARD GATE**: Do NOT declare success until CI completes. Confirm three independent facts: the commit landed, the workflow is green, and the release is visible. See [REFERENCE.md](REFERENCE.md#three-independent-facts-release).
+### 7. Archive the completed task group
 
-- [ ] CI passes. Set `release.ci_verified: true` in `state.yaml`.
-- On failure: set `handoff.next_skill = fix-bug`.
+When every group story is done, archive the capsule under the task group
+directory.
 
-### 8. Clean up and return
+### 8. Verify the landed change
 
-Git: prune the worktree, delete the branch, return to main. Jujutsu:
-`jj workspace forget <workspace>` only after integration. Do not delete its
-bookmark implicitly.
+Confirm the expected commit landed and all required workflows are green. Set
+`release.ci_verified: true` only after both facts are observed. On failure, set
+`handoff.next_skill = fix-bug`.
 
-Report: "Branch released.".
+### 9. Clean up and return
+
+List every branch and worktree path that cleanup will remove. Ask for explicit
+approval, then validate it immediately before deletion:
+
+```bash
+bash skills/release-branch/scripts/check-route.sh \
+  --mode "$WORKFLOW_MODE" --action cleanup --approved
+```
+
+Prune the worktree, delete the feature branch, and return to the default branch.
+Do not use force deletion without separate explicit approval.
 
 ## Verify
 
-Confirm `gh` is available, `.agent/tasks/state.yml` exists, and the verify-work skill is
-present. Run the final verification through the `truenorth_verify_gate` tool.
+Verify with `bash skills/release-branch/scripts/tests/run.sh`. Then run `truenorth_verify_gate`.

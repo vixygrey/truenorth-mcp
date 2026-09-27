@@ -1,17 +1,20 @@
 ---
 name: kickoff-branch
-description: Create an isolated Git worktree or branch, or a Jujutsu workspace, then verify a clean test baseline before code. Use it when starting a feature or task.
+description: Create an isolated Git worktree or branch, then verify a clean test baseline before code. Use it when starting a feature or task.
 kind: prose
 ---
 
 # Kickoff Branch
 
-> **HARD GATE**: direct Git work on `main` or `master`, or reuse of an unrelated Jujutsu change, is prohibited. Create a feature branch or worktree, or a Jujutsu workspace or change.
+> **HARD GATE**: direct work on `main`, `master`, or another default branch is
+> prohibited. Create a Git feature branch or worktree.
 >
-> **HARD GATE**: Do NOT proceed with development until preflight passes on the default branch. A red preflight blocks branch creation and all forward work. Invoke `quick-fix` or `fix-bug`.
+> **HARD GATE**: Do NOT proceed with development until preflight passes on the
+> default branch. A red preflight blocks branch creation and all forward work.
+> Invoke `quick-fix` or `fix-bug`.
 
-Create an isolated Git worktree or Jujutsu workspace before code. Preflight must be
-green first.
+Create an isolated Git worktree or branch before code. Preflight must be green
+first. TrueNorth does not support Jujutsu workflows.
 
 ## Process
 
@@ -20,15 +23,7 @@ green first.
 Ask when it is not known: "What is the name of this feature or task?". Use it as
 the branch-name slug (kebab-case, at most 40 characters).
 
-### 2. Select the VCS procedure
-
-Read the `vcs.kind` value from `state.yaml`. For `jj`, do not run the Git blocks
-below. Verify with `jj status` and `jj log -r '::@' -n 5`, create isolation with
-`jj workspace add ../<task-slug> -r @`, then run
-`jj -R ../<task-slug> describe -m "feat: <task>"`. Record the new stable change id.
-For `git`, continue below.
-
-### 2a. Anchor Git on the default branch
+### 2. Anchor Git on the default branch
 
 > **HARD GATE**: Git kickoff MUST start from an updated, clean default branch in the primary repository root, not a linked worktree.
 

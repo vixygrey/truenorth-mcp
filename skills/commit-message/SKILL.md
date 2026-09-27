@@ -15,9 +15,9 @@ kind: prose
 
 ## What "recent work" means
 
-- **Primary source of truth**: read the `vcs.kind` value from `state.yaml`. Git
-  uses `git status`, `git diff`, and `git diff --cached`. Jujutsu uses
-  `jj status`, `jj diff`, and `jj log -r @`. Run in the repo root.
+- **Primary source of truth**: run `git status`, `git diff`, and
+  `git diff --cached` from the repository root. TrueNorth supports Git workflows
+  only.
 - **Context**: use the current conversation to summarize the intent and to spot a
   breaking API or behavior change that the diff alone may not show.
 - When the user tracks a session baseline, you can diff from it plus the
@@ -40,7 +40,7 @@ kind: prose
 6. **Deliver**:
    - The proposed full commit message (title, optional body, footers).
    - The release bump this commit would drive: patch, minor, major, or none.
-   - The optional native command: Git `git commit -m`, Jujutsu `jj commit -m`.
+   - The optional native command: `git commit -m`.
      Never omit `-m`, and never run a destructive command unless asked.
 
 ## Checklist before finalizing

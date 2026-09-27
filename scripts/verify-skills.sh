@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Run the documented verify command for each script-bearing skill (issue #250, part 2).
 #
-# Most of the 76 skills are prose an agent follows, with no runnable surface. Four ship
-# executable scripts: align-grid, extract-design, guard-git, visual-dashboard. This runner
-# executes each one's documented verify and confirms it exits 0. A verify that needs a
-# browser or a live HTTP server is skipped when that dependency is absent, so the runner
-# stays green in a headless CI without pulling a browser into the job.
+# Most skills are prose an agent follows, with no runnable surface. Five ship
+# executable scripts: align-grid, extract-design, guard-git, release-branch, and
+# visual-dashboard. This runner executes each documented verify and confirms it
+# exits 0. A verify that needs a browser or live HTTP server is skipped when that
+# dependency is absent, so the runner stays green in headless CI.
 #
 # Exit 0 when every runnable verify passed. Exit 1 when a runnable verify failed. A skip
 # is not a failure. The prose-skill quality question stays with run-benchmark and
@@ -41,6 +41,13 @@ if bash skills/guard-git/scripts/tests/run.sh >/dev/null 2>&1; then
   report_pass "guard-git (scripts/tests/run.sh)"
 else
   report_fail "guard-git (scripts/tests/run.sh)"
+fi
+
+# --- release-branch: route and approval checks use fake command shims. ---
+if bash skills/release-branch/scripts/tests/run.sh >/dev/null 2>&1; then
+  report_pass "release-branch (scripts/tests/run.sh)"
+else
+  report_fail "release-branch (scripts/tests/run.sh)"
 fi
 
 # --- extract-design: the JS test file is the documented verify. ---

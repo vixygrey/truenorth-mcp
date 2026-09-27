@@ -27,6 +27,11 @@ token_caps:
   tool_payload_tokens: 4000
   skill_lean_tokens: 1200
 
+quality_gates:
+  coverage:
+    overall_minimum_percent: 80
+    business_logic_minimum_percent: 95
+
 approval_gates:
   # Human-facing approval policy. This list is not enforced by the runtime.
   - destructive_git

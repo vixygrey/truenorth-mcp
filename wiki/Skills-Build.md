@@ -15,11 +15,11 @@ alphabetical list, see [Skill index](Skill-index).
 
 Create an isolated worktree or branch and verify a clean baseline before code.
 
-- **What it does**: confirms the task name, selects the VCS procedure (git or Jujutsu),
-  anchors on an updated clean default branch, creates an isolated worktree or branch, and
-  runs preflight through `truenorth_verify_gate` to confirm green before any code.
+- **What it does**: confirms the task name, anchors on an updated clean Git default
+  branch, creates an isolated worktree or branch, and runs preflight through
+  `truenorth_verify_gate` before any code.
 - **When to use it**: when starting a feature or task.
-- **Inputs**: the task name and the `vcs.kind` from the state.
+- **Inputs**: the task name and Git repository state.
 - **Outputs**: a feature branch or worktree, a confirmed green baseline.
 - **Hard gate**: no direct work on `main` or `master`. A red preflight blocks kickoff;
   route to `quick-fix` or `fix-bug`.
@@ -239,15 +239,17 @@ code.
 
 ### quick-fix
 
-A streamlined fast path for a trivial data-only fix. No TDD, no branching ceremony.
+A streamlined path for a trivial data-only fix on a small isolated Git branch.
 
-- **What it does**: evaluates strict entry criteria (purely data, no logic, one file, five
-  lines or fewer, single-assertion verify), applies the change, verifies, and commits with a
-  `fix:` message that documents the skipped skills. It aborts to `investigate-bug` or
-  `fix-bug` if any guardrail triggers.
-- **When to use it**: for a trivial data-only fix (a missing key, a typo, a config value).
-- **Hard gate**: all entry criteria must pass. Any guardrail (more than one file, more than
-  five lines, a logic change, a complex verify, a test break) aborts immediately.
+- **What it does**: runs `kickoff-branch`, evaluates strict entry criteria (purely data,
+  no logic, one file, five lines or fewer, single-assertion verify), applies the change,
+  verifies, and commits with a `fix:` message that documents the skipped analysis skills.
+- **When to use it**: for a trivial data-only fix such as a missing key, typo, or config
+  value.
+- **Hard gate**: never mutate the default branch directly. Every entry criterion must
+  pass. A larger diff, logic change, complex verify, or test break aborts to the full bug
+  workflow.
+
 - **Handoff**: `release-branch`.
 
 ### craft-skill

@@ -1,3 +1,4 @@
+workflow_mode: team-pr
 active_flow: null
 active_group: null
 active_task: null

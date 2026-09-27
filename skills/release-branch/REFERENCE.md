@@ -35,7 +35,7 @@ gh pr create \
 
 ## Verify
 - [ ] All tests pass
-- [ ] Coverage gates met (≥80% overall, ≥95% business logic)
+- [ ] Coverage gates meet the minimums in `.agent/config/rules.yml`
 - [ ] CONVENTIONS.md compliance verified
 - [ ] PR Title follows Conventional Commits (for automated release)
 
@@ -48,13 +48,16 @@ EOF
 ## Worktree cleanup details
 
 ```bash
-# From the main repo root
+# Run only after explicit cleanup approval.
+bash skills/release-branch/scripts/check-route.sh \
+  --mode "$WORKFLOW_MODE" --action cleanup --approved
 git worktree prune
-git worktree remove ../<branch-name> 2>/dev/null || true
+git worktree remove ../<branch-name>
 git branch -d <branch-name>
 ```
 
-If `git worktree remove` fails due to uncommitted changes, ask: "There are uncommitted changes in the worktree. Force remove? (y/n)". If yes: `git worktree remove -f ../<branch-name>`.
+If cleanup finds uncommitted changes, stop. Force removal requires a new,
+separate approval that names the dirty worktree.
 
 ## Cycle-time recording
 
@@ -96,27 +99,26 @@ additivity self-check.
 
 ## CI verification
 
-After pushing, wait for CI to complete. Poll every 30 seconds with a 600-second
-timeout. Confirm the branch/commit workflows before you land.
+For `team-pr`, wait for every required GitHub check before asking for merge
+approval. For `solo-git`, run the configured local gate before asking for
+integration approval. A missing `gh` command blocks only `team-pr`.
 
-**Exit codes:**
+The expected outcomes are:
 
-- **0** — all workflows green. Set `release.ci_verified: true` in state.yaml.
-- **1** — at least one workflow failed. Prints failure URLs. Set `handoff.next_skill = fix-bug`.
-- **2** — timeout. CI did not complete. Retry or investigate.
-- **0 with warning** — `gh` CLI not available, git-only fallback confirmed push landed but CI status unverified.
+- all required checks green: request merge approval;
+- any check failed: set `handoff.next_skill = fix-bug`;
+- timeout: retry or investigate without merging.
 
-The CI-verification step covers: auto-discovery of all workflows for the current
-branch/commit, polling until completion, success/failure/timeout exit codes,
-and git-only fallback when `gh` CLI is unavailable.
+Set `release.ci_verified: true` only after the configured checks are green.
 
 ---
 
-## Solo-local fallback detail
+## Solo Git integration
 
-The fallback sequence (Path B above) handles the "remote has moved" case with `git pull --rebase`. Use when no automated branch-landing path is available.
-
-**Acceptance:** When fallback runs, main is updated, feature branch is deleted locally, and output states that the fallback merge was used.
+Use this route only when `workflow_mode: solo-git`. Confirm a fast-forward is
+possible, ask for explicit merge approval, and run the route guard immediately
+before changing the default branch. Do not silently fall back to this route
+from `team-pr`.
 
 ## Handoff
 
@@ -125,28 +127,22 @@ Writes: state.yaml handoff.next_skill = survey-context
 
 ---
 
-## Reference block 1
+## Solo Git command sequence
 
 ```bash
-# Fallback: manual squash-merge when land-branch.sh is absent
 FEATURE_BRANCH=<task-slug>
-DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo main)
+DEFAULT_BRANCH=<configured-default-branch>
 
-# Ensure we're on the feature branch
-if [ "$(git branch --show-current)" != "$FEATURE_BRANCH" ]; then
-  git checkout "$FEATURE_BRANCH"
-fi
+git fetch origin "$DEFAULT_BRANCH"
+git merge-base --is-ancestor "origin/$DEFAULT_BRANCH" "$FEATURE_BRANCH"
 
-# Checkout default branch and update
-git checkout "$DEFAULT_BRANCH"
-git pull --rebase origin "$DEFAULT_BRANCH" 2>/dev/null || git pull origin "$DEFAULT_BRANCH"
-
-# Squash-merge the feature branch
-git merge --no-ff "$FEATURE_BRANCH" -m "<conventional-commit-message>"
-
-# Push
+# Continue only after explicit merge approval.
+bash skills/release-branch/scripts/check-route.sh \
+  --mode solo-git --action merge --approved
+git switch "$DEFAULT_BRANCH"
+git merge --ff-only "$FEATURE_BRANCH"
 git push origin "$DEFAULT_BRANCH"
-
-# Clean up local feature branch
-git branch -d "$FEATURE_BRANCH"
 ```
+
+Cleanup is a separate action with separate approval. Follow
+[Worktree cleanup details](#worktree-cleanup-details).

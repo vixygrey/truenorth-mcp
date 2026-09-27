@@ -1,16 +1,19 @@
 ---
 name: quick-fix
-description: "A streamlined fast path for a trivial data-only fix. No TDD, no branching ceremony. Collapses the flow for a change that is purely data with no logic risk. Aborts with a fallback to investigate-bug when a guardrail triggers."
+description: "A streamlined path for a trivial data-only fix on a small isolated Git branch. Skips TDD for a change that is purely data with no logic risk. Aborts with a fallback to investigate-bug when a guardrail triggers."
 kind: prose
 ---
 
 # Quick Fix
 
-> **HARD GATE** — ALL entry criteria must pass before invoking quick-fix. If any guardrail triggers during execution, abort immediately and fall back to `investigate-bug`. Do NOT use quick-fix for logic changes, multi-file edits, or diffs > 5 lines.
+> **HARD GATE**: ALL entry criteria must pass before invoking quick-fix. Never
+> mutate `main`, `master`, or another default branch directly. Run
+> `kickoff-branch` first. If any guardrail triggers, abort and fall back to
+> `investigate-bug`. Do not use quick-fix for logic changes, multi-file edits,
+> or diffs greater than five lines.
 
-Fast-track for trivial data-only fixes that do not require the full bug-fix chain.
-
-When a bug fix is purely data — an add-missing-key, a typo correction, a config value update — the standard 6-skill chain (investigate-bug → diagnose-root → develop-tdd → kickoff-branch → verify-work → release-branch) is wasteful overhead. Quick-fix collapses it to 2 skills: **quick-fix** then **release-branch**.
+Fast-track trivial data-only fixes without skipping branch isolation or release
+safety.
 
 ## Discovered gate failures (e51s04)
 
@@ -42,61 +45,65 @@ If ANY guardrail triggers, **abort immediately** and suggest `investigate-bug` i
 
 > **Fallback:** If any guardrail triggers, tell the user: _"This fix exceeds quick-fix guardrails. Use `investigate-bug` for the full TDD bug-fix chain instead."_
 
-## Fast-Path Workflow
+## Fast-path workflow
 
-Only 2 skills needed for eligible fixes:
+Only three skills are needed for an eligible fix:
 
+```text
+kickoff-branch -> create a small isolated Git branch
+quick-fix      -> apply the data change, verify, and commit
+release-branch -> integrate through the configured workflow mode
 ```
-quick-fix  →  apply change, run one-line verify, commit with fix:
-release-branch  →  merge and ship (existing skill)
-```
 
-**Skipped skills (with justification):**
+**Skipped skills with justification:**
 
-| Skipped skill     | Why skipped                                                |
-| ----------------- | ---------------------------------------------------------- |
-| `investigate-bug` | Root cause is obvious (data gap, not logic error)          |
-| `diagnose-root`   | No isolation needed — the data point is the root cause     |
-| `develop-tdd`     | No logic to test — single assertion proves correctness     |
-| `kickoff-branch`  | Change is so small it does not warrant a separate worktree |
+| Skipped skill     | Why skipped                                      |
+| ----------------- | ------------------------------------------------ |
+| `investigate-bug` | Root cause is an obvious data gap                |
+| `diagnose-root`   | The missing or incorrect data is the root cause  |
+| `develop-tdd`     | One focused assertion proves the data correction |
 
-> Justification is included in the `fix:` commit body so the audit trail is preserved.
+Include the justification in the `fix:` commit body for the audit trail.
 
 ## Process
 
 ### 1. Evaluate entry criteria
 
-Run the entry criteria checklist above. If any criterion fails → abort, suggest `investigate-bug`.
+Run the entry criteria checklist above. If any criterion fails, abort and
+suggest `investigate-bug`.
 
-### 2. Apply the fix
+### 2. Create the branch
 
-Make the data change — add the missing key, fix the typo, update the value. Keep it to ≤5 lines in 1 file.
+Run `kickoff-branch` and confirm that the current branch is not the default
+branch. TrueNorth supports Git release workflows only. Stop with an actionable
+error when the repository is not a Git working tree.
 
-### 3. Verify
+### 3. Apply the fix
+
+Make the data change. Keep it to five changed lines or fewer in one file.
+
+### 4. Verify
 
 Run the single-assertion verify command. Example:
 
 ```bash
-grep -q "Bosnia" src/flags.js && echo "FIX VERIFIED" || echo "FIX FAILED"
+grep -q "Bosnia" src/flags.js
 ```
 
-### 4. Commit
+### 5. Commit
 
 ```bash
 git add <file>
-git commit -m "fix(<scope>): <description>"
-git commit --amend -m "fix(<scope>): <description>
-
-Skipped skills (justified for data-only change):
-- investigate-bug: root cause is a data gap, not a logic error
+git commit -m "fix(<scope>): <description>" -m "Skipped skills:
+- investigate-bug: root cause is an obvious data gap
 - diagnose-root: the missing data point is the root cause
-- develop-tdd: single assertion proves correctness
-- kickoff-branch: change is too small for a separate worktree"
+- develop-tdd: one focused assertion proves correctness"
 ```
 
-### 5. Release
+### 6. Release
 
-Invoke `release-branch` to merge and ship.
+Invoke `release-branch`. It reads `workflow_mode`, validates the Git route, and
+asks for approval before merge or cleanup.
 
 ## Example
 
