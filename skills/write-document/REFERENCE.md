@@ -49,7 +49,7 @@ Combined from dbader/readme-template and jehna/readme-best-practices. No TOC.
 ![npm version](https://img.shields.io/npm/v/your-package.svg)
 ```
 
-Fill badges from the project agent guide stack info if available. Default to license + version badges.
+Fill badges from repository metadata and project guidance. Use only badges whose values can be verified.
 
 ### 2. Tagline
 
@@ -70,7 +70,7 @@ Fill badges from the project agent guide stack info if available. Default to lic
 - **Package manager**: npm (or pnpm/yarn)
 ```
 
-Auto-fill from the project agent guide commands section when possible.
+Read prerequisites from project guidance, manifests, and supported-runtime configuration.
 
 ### 5. Installation
 
@@ -123,7 +123,7 @@ Include the most common 1-2 commands. Link to full docs if they exist.
 | `VAR_NAME` | `value` | What it controls |
 ```
 
-Use `TODO` markers if unknown.
+Read configuration names and defaults from the implementation. Omit an optional row when no authoritative value exists; identify a required unresolved value explicitly.
 
 ### 9. Development Setup
 
@@ -139,7 +139,7 @@ npm install
 
 ````
 
-Auto-fill from the project agent guide `Run` and `Build` commands.
+Read setup commands from project guidance, manifests, and CI configuration.
 
 ### 10. Running Tests
 
@@ -153,7 +153,7 @@ npm run lint
 
 ````
 
-Auto-fill from the project agent guide `Test` and `Lint` commands.
+Read test and lint commands from project guidance, manifests, and CI configuration.
 
 ### 11. Contributing
 
@@ -192,7 +192,7 @@ See [CHANGELOG.md](../../CHANGELOG.md) or [Releases](https://github.com/user/rep
 MIT — see [LICENSE](../../LICENSE) for details.
 ```
 
-Detect from the project agent guide or project LICENSE file.
+Read the license from the project license file or package metadata.
 
 ### 15. Credits (optional)
 

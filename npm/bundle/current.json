@@ -27,7 +27,6 @@
         "diagnose-root",
         "diagnose-stall",
         "dispatch-agents",
-        "edit-document",
         "elaborate-spec",
         "enforce-first",
         "evolve-skill",
@@ -287,11 +286,6 @@
     {
       "path": "skills/dispatch-agents/SKILL.md",
       "sha256": "c4d80fcd7c0f79f0adefeb547a296e03a60bac1d08429a58ced024bd65c9f0b1",
-      "mode": "0644"
-    },
-    {
-      "path": "skills/edit-document/SKILL.md",
-      "sha256": "d798d18ef958897ad6008f5bb559ad03799ec76b0753d02aae2fef29ab9f31b5",
       "mode": "0644"
     },
     {
@@ -861,7 +855,7 @@
     },
     {
       "path": "skills/using-truenorth/SKILL.md",
-      "sha256": "24bffa5695dd51b4f4b676bf88a75b7d4037cc7706131901855631553f42b751",
+      "sha256": "47ba69d31e73ef1a7286697e4fb8173b869479ed8be5feea445188add712bf38",
       "mode": "0644"
     },
     {
@@ -961,12 +955,12 @@
     },
     {
       "path": "skills/write-document/REFERENCE.md",
-      "sha256": "77b6224dcec906f630ba3e27feb23a7ecbf47927990160351eb2e0f1841dc1d1",
+      "sha256": "342fd3504491c31066505a0c1eefa5ed060b3200e0b7b6dcdb8eb65bbf76fce1",
       "mode": "0644"
     },
     {
       "path": "skills/write-document/SKILL.md",
-      "sha256": "60a60857654d5a9b7b7d068ace045625553a3ed84cd8e6083f4c043ac4691975",
+      "sha256": "ddcbd81fb291408ea665220cdf2a26144a973636ba3faa7099ad709881e8cd03",
       "mode": "0644"
     }
   ]

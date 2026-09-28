@@ -62,7 +62,7 @@ BUG?        investigate-bug, diagnose-root, validate-fix
 REVIEW      audit-code, request-review, respond-review
 INTEGRATE   commit-message, release-branch
 SUSTAIN     inspect-quality, organize-workspace (ongoing)
-UTILITY     craft-skill, edit-document (any phase)
+UTILITY     craft-skill, write-document (any phase)
 ```
 
 ## Where to start

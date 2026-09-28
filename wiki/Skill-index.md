@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-75 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+74 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -27,7 +27,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `diagnose-root`       | Four-phase root-cause analysis                                  | [Verify](Skills-Verify)     |
 | `diagnose-stall`      | Diagnose why agent orchestration stopped                        | [Utility](Skills-Utility)   |
 | `dispatch-agents`     | Dispatch multiple subagents in parallel                         | [Sustain](Skills-Sustain)   |
-| `edit-document`       | Edit and improve an existing document                           | [Sustain](Skills-Sustain)   |
 | `elaborate-spec`      | Refine a rough idea into a clear specification                  | [Discover](Skills-Discover) |
 | `enforce-first`       | Apply the F.I.R.S.T test-quality rubric                         | [Verify](Skills-Verify)     |
 | `evolve-skill`        | Benchmark-gated skill evolution                                 | [Sustain](Skills-Sustain)   |
@@ -82,4 +81,4 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `visual-dashboard`    | A read-only browser dashboard of the project status             | [Utility](Skills-Utility)   |
 | `wire-ci`             | Set up a CI workflow with forge-neutral guidance                | [Build](Skills-Build)       |
 | `wire-observability`  | Add structured logging and observability commands               | [Build](Skills-Build)       |
-| `write-document`      | Write a high-integrity document using BMAD                      | [Sustain](Skills-Sustain)   |
+| `write-document`      | Create or revise a high-integrity technical document            | [Sustain](Skills-Sustain)   |

@@ -1,90 +1,87 @@
 ---
 name: write-document
-description: "Write, organize, and sync a high-integrity technical document using the BMAD methodology. Makes every document Bold, Minimal, Actionable, and Durable. Use it to create an architectural doc, a technical guide, or to organize the narrative docs under the specs directory."
+description: "Create or revise a high-integrity technical document. Use it to write, edit, restructure, or improve an architectural document, technical guide, README, article, or narrative document under specs/."
 kind: prose
 ---
 
-# Write Document (BMAD)
+# Write Document
 
-Create high-signal technical documentation that serves as an expert collaborator for
-both a human and an agent. This skill enforces the BMAD principles to prevent context
-rot and keep the architecture durable.
+Create or revise technical documentation that is accurate, useful, and durable. Select
+the mode from the requested operation and target state:
 
-Distinct from `edit-document`. Use this skill to create a document that does not yet
-exist. Use `edit-document` when a document exists and needs restructuring, clarity,
-or prose improvement.
+- **Create mode**: the target document does not exist.
+- **Revise mode**: the target document exists.
 
-> **HARD GATE**: every document MUST have a clear reason for existence. When a document does not provide actionable leverage for a caller or a test, do not create it.
+File existence, current headings, repository conventions, and Git history are facts.
+Inspect them directly. Ask the user only for unresolved decisions such as audience,
+intended semantic change, policy, or priority.
 
-## The BMAD principles
+## Common process
 
-| Principle      | Execution                                                                                                                                                                                                    |
-| :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **B**old       | Make a strong assertion. Define a clear boundary and a "never" rule. No "it might" or "usually".                                                                                                             |
-| **M**inimal    | Keep high density and low filler. Split a file over 300 lines by concern. For a long session, archive durable decisions and compact the handoff through `session-state`. Keep the document's grammar intact. |
-| **A**ctionable | Link every doc to a verifiable outcome. For an architectural doc, verify through a behavioral feature or a grep-based structure check that proves the design constraints are present.                        |
-| **D**urable    | Design for the long term. Use nested indexing: a root file links to a module-level index, it does not list the individual sub-files.                                                                         |
+1. Read the request, target document when present, related repository documentation,
+   project conventions, and relevant Git history.
+2. Determine the mode from the target state and requested operation.
+3. Establish the document's purpose, audience, authority, and correct repository
+   location.
+4. Separate discoverable facts from decisions that require user judgment.
+5. Create or revise the document through the applicable process below.
+6. Verify claims, structure, links, commands, and stated outcomes against repository
+   evidence.
+7. Use `simple-english` when deterministic style validation is required.
 
-## Process
+## Create mode
 
-### 1. Identify the artifact type and scope
+> **HARD GATE**: Do not create a document unless it provides actionable value to a
+> caller, operator, maintainer, or verification path.
 
-Choose the correct artifact.
+### 1. Choose the artifact and location
 
-- **Decision record (ADR)**: for a "why" decision, saved to `specs/adr/`.
-- **Context map**: for system-wide architectural mapping.
-- **Technical guide**: for a "how-to" with verification, saved to a module
+- **Decision record (ADR)**: a "why" decision under `specs/adr/`.
+- **Context map**: system-wide architectural relationships.
+- **Technical guide**: operational guidance with verification, commonly a module
   `REFERENCE.md`.
-- **Behavioral feature**: a Gherkin-style compliance spec.
-- **Project README**: project-facing documentation, saved to `README.md` at the
-  project root.
+- **Behavioral feature**: an intentional compliance specification.
+- **Project README**: project-facing documentation at the repository root.
 
-When a doc affects multiple modules, place the authoritative source in the lowest
-common ancestor directory, and use a one-line pointer in each sub-directory to
-maintain a single source of truth.
+Place cross-cutting information at the lowest common authoritative location. Link to it
+from narrower documents instead of duplicating the content.
 
-### 2. Draft with semantic velocity
+### 2. Draft from evidence
 
-Write the document for expert collaboration.
+- Prefer instructions over descriptions for operational material.
+- Link to an ADR, issue, commit, or contract when provenance matters.
+- Keep each section at one useful abstraction level.
+- Inspect project metadata, commands, configuration, license, and existing guidance
+  before declaring information unavailable.
+- Use the project README template in [REFERENCE.md](REFERENCE.md) when applicable.
 
-- Instructions over descriptions: tell the reader exactly how to interact with the
-  system.
-- Provenance links: link to an ADR, an issue, or a commit to preserve the intent.
-- The stepdown rule: information descends exactly one level of abstraction. When a
-  root doc needs a leaf-level detail, it points to a sub-index first.
+Do not document behavior that does not exist unless the caller is intentionally writing
+a specification through the relevant planning workflow.
 
-### Quick README (a project README only)
+## Revise mode
 
-1. Ask for the project name and a one-sentence description.
-2. Generate `README.md` at the project root using the template in
-   [REFERENCE.md](REFERENCE.md).
-3. Fill gaps from the project agent guide when available. Use `TODO` markers
-   otherwise.
-4. Output, then suggest `edit-document` for polish.
+> **HARD GATE**: Preserve intent and accuracy. Do not remove, contradict, or materially
+> change existing content without understanding why it exists. Read the document,
+> relevant repository evidence, and Git history first.
 
-### 3. Apply the quality gate
+1. Partition the document by its headings and identify each section's purpose.
+2. Treat information dependencies as a directed acyclic graph. Order prerequisites
+   before the material that depends on them.
+3. Improve clarity, coherence, structure, and flow without changing established
+   meaning.
+4. Preserve identifiers, commands, paths, quoted errors, and external contract text
+   unless the requested change explicitly includes them.
+5. Resolve stale claims from authoritative repository evidence. Ask only when the
+   remaining conflict requires user judgment.
 
-Before finalizing, audit against these red flags.
+## Shared quality gate
 
-- [ ] Filler language: a pleasantry or "I hope this helps". Delete it.
-- [ ] Ambiguity: "usually", "often", or "it depends" without a specific condition.
-- [ ] Dead end: the document ends with no next step or verification.
-- [ ] Shallow content: it restates the code without explaining the intent or the
-      contracts.
+- State boundaries, conditions, and invariants precisely.
+- Remove filler, unsupported certainty, and ambiguity without a named condition.
+- Explain intent and contracts instead of restating source code.
+- Keep one authoritative source and update its indexes or inbound links when needed.
+- End operational guidance with an observable next step or verification path.
+- Include a verify command only when it proves a meaningful outcome for the document.
 
-### 4. Organize
-
-- Place the document in the correct tier: global, then project, then sub-directory.
-  A project README is the exception. It goes to the project root.
-- Nested indexing: when adding a module-level doc, update the module index doc, and
-  add a new module index to the root index.
-
-## Rules
-
-- Minimalism is a requirement. When a document can be a 5-line table, do not make it
-  a 5-line essay.
-- Verifiable outcomes. Every technical document includes at least one verify command.
-- No speculative doc. Do not document a feature that does not exist yet, unless you
-  are doing `elaborate-spec`.
-
-Suggest the next skill: `audit-code`.
+Use `audit-code` as a follow-on only when the documentation change exposes or accompanies
+implementation risk.
