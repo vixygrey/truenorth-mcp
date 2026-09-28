@@ -6,7 +6,7 @@ kind: prose
 
 # Investigate Bug
 
-**Boundary**: End-to-end bug entry point — history check → RCA (via `diagnose-root`) → fix approach → TDD plan → bug record. Delegates the 4-phase RCA to `diagnose-root`; does not re-implement it.
+**Boundary**: End-to-end bug entry point — history check → four-phase RCA → fix approach → TDD plan → bug record. Owns the RCA directly and keeps detailed bug information in the external tracker.
 
 Investigate a reported problem, find its root cause, and record a TDD fix plan in the external tracker. This is a mostly hands-off workflow — minimize questions to the user.
 
@@ -30,15 +30,24 @@ Do NOT ask follow-up questions yet. Start investigating immediately.
 
 ### 2. Explore and diagnose (4-phase RCA)
 
-Run the 4-phase root-cause analysis via the `diagnose-root` skill (Reproduce → Isolate → Hypothesize → Verify). That skill is the canonical RCA engine — do not re-implement the phases here.
+Run all four phases in order. Record the evidence from each phase in the same
+external tracker issue:
 
-Also look at:
+1. **Reproduce** — Establish minimal deterministic steps. Capture expected and
+   actual behavior, environment, logs, and the command or interaction that
+   demonstrates the failure.
+2. **Isolate** — Narrow the failure to the smallest responsible module, function,
+   configuration, or boundary. Inspect recent changes, existing test coverage,
+   and equivalent working patterns. Bisect commits or configuration when useful.
+3. **Hypothesize** — Rank plausible root causes. Define a falsification test for
+   each and separate contributing factors from the actual cause.
+4. **Verify** — Run the falsification tests and confirm one root cause with
+   reproducible evidence. If evidence is insufficient, remain in diagnosis rather
+   than selecting the most plausible explanation.
 
-- Recent changes to affected files (`git log --oneline <file>`)
-- Existing tests (what's tested, what's missing)
-- Similar patterns elsewhere in the codebase that work correctly
-
-> **HARD GATE** — Do NOT proceed to Step 3 (Fix Approach) until `diagnose-root` Phase 4 produces a verified root cause. "It probably is X" is not verified.
+> **HARD GATE** — Do NOT proceed to Step 3, propose a fix or implementation
+> change, or design a TDD plan until Verify confirms one root cause with evidence.
+> "It probably is X" is not verified.
 
 ### 3. Identify the fix approach
 
@@ -79,6 +88,8 @@ Use this as an external tracker comment or issue-body template:
 
 - Actual and expected behavior
 - Reproduction evidence
+- Isolation evidence
+- Ranked hypotheses and falsification results
 - Verified root cause
 - Contributing factors
 - Security impact

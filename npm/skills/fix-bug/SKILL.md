@@ -31,8 +31,8 @@ Record the gate failure in the configured external tracker through `investigate-
 | 3    | `validate-fix` — prove behavior and update the same issue and lean reference |
 | 4    | `release-branch` — PR or solo land the fix                                   |
 
-The 4-phase root-cause analysis is not a separate step. `investigate-bug` runs
-`diagnose-root` internally, so the chain does not invoke it twice.
+The 4-phase root-cause analysis is not a separate step. `investigate-bug` owns
+and runs it directly before producing the TDD plan.
 
 ### Checkpoint / resume
 
@@ -45,7 +45,7 @@ Track progress via `.agent/tasks/state.yml` `bug_cycle`:
 
 ## Process
 
-1. **Step 1 — investigate-bug:** Run `investigate-bug`. It checks history, delegates the 4-phase RCA to `diagnose-root`, posts the fix approach and TDD plan to the external issue, and records or updates the lean reference through `truenorth_record_bug`. Increment `bug_cycle.current_step` to 2 on completion.
+1. **Step 1 — investigate-bug:** Run `investigate-bug`. It checks history, completes the four-phase RCA, posts the fix approach and TDD plan to the external issue, and records or updates the lean reference through `truenorth_record_bug`. Increment `bug_cycle.current_step` to 2 on completion.
 2. **Step 2 — develop-tdd:** Run `develop-tdd` against the external issue's TDD plan and verify commands. Increment to step 3 on all-green.
 3. **Step 3 — validate-fix:** Run `validate-fix` to re-run the failing test, full suite, typecheck, lint, and behavioral proof. Update the same external issue and lean reference. Increment to step 4.
 4. **Step 4 — release-branch:** Land the fix via `release-branch`. Clear `bug_cycle` and `active_flow` when done.

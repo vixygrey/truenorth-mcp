@@ -38,16 +38,16 @@ Record terminal state in `.agent/tasks/state.yml` `handoff.last_terminal_state` 
 Pre-built workflow recipes map agentic stack commands to skill chains.
 Reference them in AGENTS.md so `/command` directly invokes the matching recipe.
 
-| Command        | Workflow    | Skill chain                                                  |
-| -------------- | ----------- | ------------------------------------------------------------ |
-| `/check-stack` | check-stack | survey-context → assess-impact → setup-environment           |
-| `/ship`        | ship        | audit-code → commit-message → release-branch                 |
-| `/tdd`         | tdd         | develop-tdd → enforce-first                                  |
-| `/code-review` | code-review | audit-code → request-review → respond-review                 |
-| `/security`    | security    | audit-code → request-review                                  |
-| `/plan`        | plan        | survey-context → research-first → plan-work                  |
-| `/build-fix`   | build-fix   | investigate-bug → diagnose-root → develop-tdd → validate-fix |
-| `/e2e`         | e2e         | smoke-test → verify-work                                     |
+| Command        | Workflow    | Skill chain                                        |
+| -------------- | ----------- | -------------------------------------------------- |
+| `/check-stack` | check-stack | survey-context → assess-impact → setup-environment |
+| `/ship`        | ship        | audit-code → commit-message → release-branch       |
+| `/tdd`         | tdd         | develop-tdd → enforce-first                        |
+| `/code-review` | code-review | audit-code → request-review → respond-review       |
+| `/security`    | security    | audit-code → request-review                        |
+| `/plan`        | plan        | survey-context → research-first → plan-work        |
+| `/build-fix`   | build-fix   | investigate-bug → develop-tdd → validate-fix       |
+| `/e2e`         | e2e         | smoke-test → verify-work                           |
 
 Add to `AGENTS.md`:
 

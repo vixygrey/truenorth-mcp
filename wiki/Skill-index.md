@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-73 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+72 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -24,7 +24,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `deploy`              | Build, verify, deploy, wait, then smoke the deployment          | [Build](Skills-Build)       |
 | `design-interface`    | Generate several interface designs, then compare                | [Design](Skills-Design)     |
 | `develop-tdd`         | Test-driven development with a red-green-refactor loop          | [Build](Skills-Build)       |
-| `diagnose-root`       | Four-phase root-cause analysis                                  | [Verify](Skills-Verify)     |
 | `diagnose-stall`      | Diagnose why agent orchestration stopped                        | [Utility](Skills-Utility)   |
 | `dispatch-agents`     | Dispatch multiple subagents in parallel                         | [Sustain](Skills-Sustain)   |
 | `elaborate-spec`      | Refine a rough idea into a clear specification                  | [Discover](Skills-Discover) |

@@ -24,7 +24,6 @@
         "deploy",
         "design-interface",
         "develop-tdd",
-        "diagnose-root",
         "diagnose-stall",
         "dispatch-agents",
         "elaborate-spec",
@@ -174,7 +173,7 @@
     },
     {
       "path": "skills/compose-workflow/SKILL.md",
-      "sha256": "fabfe18fb2897cf7f6667a66ce538d1a7edefdb7f74af8de66c7e6e1892165df",
+      "sha256": "1fccc166b59531289dc4c79eb7ff0a057a63a8aa215fced3afa33225e16c61dc",
       "mode": "0644"
     },
     {
@@ -270,11 +269,6 @@
     {
       "path": "skills/develop-tdd/tests.md",
       "sha256": "b281bc8329b2a25138fea4d985a5a331707318168b588db48d5a79d0cd58a909",
-      "mode": "0644"
-    },
-    {
-      "path": "skills/diagnose-root/SKILL.md",
-      "sha256": "e3a413ffc7f3ec27f422368e72f8e44b37ecffc6b8fb5132b2c9c1467d41fd48",
       "mode": "0644"
     },
     {
@@ -459,7 +453,7 @@
     },
     {
       "path": "skills/fix-bug/SKILL.md",
-      "sha256": "88dfdd908ea5900095bd5bb4107b23d19336d7182a948fbddf013066d34470d5",
+      "sha256": "348c74c1dcfd0feeae483daba482d7c3cd90e0661104de6c0d1a6709f9b93d5f",
       "mode": "0644"
     },
     {
@@ -519,7 +513,7 @@
     },
     {
       "path": "skills/investigate-bug/SKILL.md",
-      "sha256": "d09678d6de33bdc0b5ea24de97f2fcfe28f45cb8b141e01b1c5375c2549457c8",
+      "sha256": "c6c3d57fbe6f9b151012c89036c23b5e45e66c79aaf9e8044f75a715da3e178a",
       "mode": "0644"
     },
     {
@@ -639,7 +633,7 @@
     },
     {
       "path": "skills/quick-fix/SKILL.md",
-      "sha256": "c4ebea8c736065926dd8af269a84397ad358433213a59c0d7e75ac7d619d361d",
+      "sha256": "552b3182a7576538b46ba2da06c3a5fc69a0a2447e3ba5b7c0ae65c313283930",
       "mode": "0644"
     },
     {
@@ -849,7 +843,7 @@
     },
     {
       "path": "skills/using-truenorth/SKILL.md",
-      "sha256": "7596079d5e3ef8b32e198612b40beb7885c5c6e556071f9b2db2d2ce34970f03",
+      "sha256": "005eb39d788b2e9008e6e71bb987a356ce1f1a0291cc533cbab63b23cff5bc01",
       "mode": "0644"
     },
     {

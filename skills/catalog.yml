@@ -85,7 +85,6 @@ skills:
   deploy: core
   design-interface: core
   develop-tdd: core
-  diagnose-root: core
   diagnose-stall: core
   dispatch-agents: core
   elaborate-spec: core
