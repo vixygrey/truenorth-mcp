@@ -43,9 +43,11 @@ npx -y truenorth-mcp upgrade --add-skill-set visual
 npx -y truenorth-mcp upgrade --remove-skill-set visual
 ```
 
-Apply requires a clean Git worktree and index. TrueNorth updates unchanged managed files, removes
-only unchanged retired files, and preserves local edits or unowned collisions. The runtime does
-not mutate `specs/`. An interrupted apply resumes from its local transaction journal.
+Apply acquires the writer lease, validates repository-owned configuration, then requires a clean
+Git worktree and index. TrueNorth updates unchanged managed files, removes only unchanged retired
+files, and preserves local edits or unowned collisions. Configuration is validated again before
+transaction cleanup; failure restores every preimage. The runtime does not mutate `specs/`. An
+interrupted apply resumes from its local transaction journal.
 
 ## Connect an MCP client
 

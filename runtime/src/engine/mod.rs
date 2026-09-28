@@ -27,3 +27,4 @@ pub mod tier;
 pub mod validate;
 pub mod watcher;
 pub mod workspace_upgrade;
+pub mod workspace_validation;

@@ -126,12 +126,14 @@ npx -y truenorth-mcp upgrade --add-skill-set visual
 npx -y truenorth-mcp upgrade --remove-skill-set visual
 ```
 
-The check command prints a deterministic JSON plan and does not write. Apply requires a clean Git
-worktree and index. Managed files that still match their installed source are updated or removed;
-local edits and unowned path collisions are preserved. Interrupted upgrades resume from the
-journal under `.agent/runtime/upgrade`. Selection is committed only after the transaction
-succeeds. Existing 1.0.2 and v1 manifest workspaces migrate with every set selected, preserving
-their installed catalog. Neither command mutates `specs/`.
+The check command prints a deterministic JSON plan and does not write. Apply acquires the writer
+lease, validates repository-owned configuration, then requires a clean Git worktree and index.
+Managed files that still match their installed source are updated or removed; local edits and
+unowned path collisions are preserved. Configuration is validated again before the transaction
+journal is removed, and a failed post-apply validation restores every preimage. Interrupted
+upgrades resume from the journal under `.agent/runtime/upgrade`. Selection is committed only after
+the transaction succeeds. Existing 1.0.2 and v1 manifest workspaces migrate with every set
+selected, preserving their installed catalog. Neither command mutates `specs/`.
 
 Then register the wrapper as an MCP server in your client:
 
