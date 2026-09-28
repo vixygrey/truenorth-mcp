@@ -936,6 +936,11 @@
       "mode": "0755"
     },
     {
+      "path": "skills/visual-dashboard/tests/read-specs-status.test.cjs",
+      "sha256": "f49daf2f9963412c7641f88c0026aecff1f57d4c074e5b9c08329aca5bf60f9b",
+      "mode": "0644"
+    },
+    {
       "path": "skills/wire-ci/REFERENCE.md",
       "sha256": "1f1250b72a4ae26b4aff804b023dfa83d128968e7ea972080dc3f73bd641df21",
       "mode": "0644"
