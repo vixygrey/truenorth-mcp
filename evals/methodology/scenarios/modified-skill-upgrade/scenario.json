@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "modified-skill-upgrade",
+  "description": "Upgrade a clean workspace while preserving a committed local skill edit.",
+  "modes": ["deterministic"],
+  "fixture": "fixture",
+  "driver": "run.js",
+  "grader": "grade.js",
+  "timeout_ms": 90000,
+  "grader_timeout_ms": 10000,
+  "declared_mutations": [
+    "project/.agent/workspace-manifest.yml",
+    "project/skills/using-truenorth/SKILL.md",
+    "project/specs/contract.md"
+  ],
+  "expected_assertions": {
+    "deterministic": [
+      "upgrade-check-conflict",
+      "upgrade-check-read-only",
+      "upgrade-configuration-valid",
+      "upgrade-local-skill-preserved",
+      "upgrade-manifest-advanced",
+      "upgrade-specs-unchanged",
+      "upgrade-stable-skill-updated",
+      "upgrade-transaction-cleaned"
+    ]
+  }
+}

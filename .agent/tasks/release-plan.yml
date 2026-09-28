@@ -223,3 +223,7 @@ tasks:
   group_kind: ticket
   task_name: Complete workspace upgrade validation and recovery coverage
   verify_command: cargo test --locked --manifest-path runtime/Cargo.toml --test workspace_upgrade && cargo test --locked --manifest-path runtime/Cargo.toml workspace_upgrade && npm run preflight
+- group_id: '435'
+  group_kind: ticket
+  task_name: Add compact methodology regression suite
+  verify_command: bash scripts/preflight.sh evals

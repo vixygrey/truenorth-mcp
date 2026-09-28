@@ -8,6 +8,14 @@ kind: prose
 
 > **HARD GATE**: define the evals before implementation. A code grader is a runnable verify command. A model grader is an explicit rubric with pass and fail criteria.
 
+## Repository regression suites
+
+When a repository provides a versioned methodology suite, run its documented code
+graders before relying on an ad hoc eval report. In TrueNorth-MCP, run
+`node scripts/run-methodology-evals.js --mode deterministic --check-baseline`.
+Use `--mode model` only when a model provider is configured. A model result never
+overrides a failed code grader.
+
 ## Process
 
 1. Name the capability under test in one sentence.

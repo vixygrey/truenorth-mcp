@@ -33,20 +33,26 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm run preflight
 ```
 
-`npm run preflight` runs the same five ownership groups as the required CI gate:
-`check`, `wrapper`, `artifact-smoke`, `format`, and `shell`. Run one or more
-groups directly for a focused rerun:
+`npm run preflight` runs the same six ownership groups as the required CI gate:
+`check`, `wrapper`, `artifact-smoke`, `format`, `shell`, and `evals`. Run one or
+more groups directly for a focused rerun:
 
 ```bash
 bash scripts/preflight.sh check
 bash scripts/preflight.sh wrapper artifact-smoke
+bash scripts/preflight.sh evals
 ```
 
 The command checks the default and `tree-sitter` Rust builds, wrapper tests,
 native and packed artifacts, formatting, documentation, shell scripts, skill
-paths, handoffs, and script-bearing skills. It reports missing prerequisites and
-unsupported artifact platforms with remediation. Browser-bound skill checks are
-reported as skips when their optional dependencies are unavailable.
+paths, handoffs, script-bearing skills, and deterministic methodology scenarios.
+It reports missing prerequisites and unsupported artifact platforms with
+remediation. Browser-bound skill checks are reported as skips when their optional
+dependencies are unavailable.
+
+The methodology suite and baseline workflow are documented in
+[`evals/methodology/README.md`](evals/methodology/README.md). Model scenarios are
+opt-in and are not part of preflight.
 
 The preflight never publishes, tags, or uses production credentials. Release
 rehearsal and cross-platform publication remain CI release responsibilities.

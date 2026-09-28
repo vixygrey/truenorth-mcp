@@ -1,0 +1,3 @@
+tasks:
+- task_name: normalize-display-name
+  verify_command: node verify.js

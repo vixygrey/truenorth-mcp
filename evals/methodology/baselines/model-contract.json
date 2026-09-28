@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "scenarios": [
+    {
+      "id": "bug-fix",
+      "assertion_ids": [
+        "bug-fix-model-bug-cycle",
+        "bug-fix-model-resolution",
+        "bug-fix-model-verification"
+      ]
+    },
+    {
+      "id": "requirement-change",
+      "assertion_ids": [
+        "requirement-change-active-execution-preserved",
+        "requirement-change-owner-routing",
+        "requirement-change-revised-verification",
+        "requirement-change-unrelated-identical"
+      ]
+    },
+    {
+      "id": "small-feature",
+      "assertion_ids": [
+        "small-feature-model-execution-status",
+        "small-feature-model-handoff",
+        "small-feature-model-verification"
+      ]
+    }
+  ]
+}

@@ -10,6 +10,11 @@ kind: prose
 
 Reads benchmark definitions, executes each scenario's grader with and without the skill loaded, and writes a structured `pass@k` benchmark report with delta grading that `evolve-skill` consumes.
 
+Repository methodology regression suites are a separate contract. They exercise
+fixed workflow scenarios and compare versioned code-grader baselines. Do not
+replace them with with-and-without skill scoring. In TrueNorth-MCP, use
+`node scripts/run-methodology-evals.js --mode deterministic --check-baseline`.
+
 ## With/Without-Skill Delta Grading
 
 Every scenario runs N times (default 3) in two modes: with the skill loaded and

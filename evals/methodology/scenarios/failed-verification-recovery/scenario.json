@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "failed-verification-recovery",
+  "description": "Preserve a failed real gate and prove a later pass after correction.",
+  "modes": ["deterministic"],
+  "fixture": "fixture",
+  "driver": "run.js",
+  "grader": "grade.js",
+  "timeout_ms": 60000,
+  "grader_timeout_ms": 10000,
+  "declared_mutations": ["status.txt"],
+  "expected_assertions": {
+    "deterministic": [
+      "recovery-correction-between-gates",
+      "recovery-first-gate-failed",
+      "recovery-failure-preserved",
+      "recovery-second-gate-passed"
+    ]
+  }
+}

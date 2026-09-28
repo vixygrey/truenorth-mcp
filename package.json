@@ -7,6 +7,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:verify-gate-docs": "node scripts/lint-verify-gate-docs.js",
+    "eval:methodology": "node scripts/run-methodology-evals.js",
+    "eval:methodology:model": "node scripts/run-methodology-evals.js --mode model",
     "preflight": "bash scripts/preflight.sh"
   },
   "devDependencies": {

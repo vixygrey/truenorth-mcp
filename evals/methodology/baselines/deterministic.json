@@ -1,0 +1,165 @@
+{
+  "expected_scenario_count": 5,
+  "scenarios": [
+    {
+      "assertions": [
+        {
+          "id": "bug-fix-bug-reference",
+          "passed": true
+        },
+        {
+          "id": "bug-fix-gate-pass",
+          "passed": true
+        },
+        {
+          "id": "bug-fix-original-failure",
+          "passed": true
+        },
+        {
+          "id": "bug-fix-regression-pass",
+          "passed": true
+        },
+        {
+          "id": "bug-fix-tdd-order",
+          "passed": true
+        }
+      ],
+      "definition_digests": {
+        "driver": "efd48c62a7907e501f543e16225dd98f65b22fd1007a3a014cecc90e82fe6168",
+        "fixture": "74d63e2a2eb2d0dc0b5adf851bbf38fb988782c014830ec7ac964d2499e0054a",
+        "grader": "62347e054b7b7f25e836641c712d80a6d78a64b863119a61ab8aec94c66b85da",
+        "scenario": "60f6f82f20b56b4c88461ca2c3956bedadcea1d998eb86395783f5447f31f26a"
+      },
+      "id": "bug-fix"
+    },
+    {
+      "assertions": [
+        {
+          "id": "recovery-correction-between-gates",
+          "passed": true
+        },
+        {
+          "id": "recovery-failure-preserved",
+          "passed": true
+        },
+        {
+          "id": "recovery-first-gate-failed",
+          "passed": true
+        },
+        {
+          "id": "recovery-second-gate-passed",
+          "passed": true
+        }
+      ],
+      "definition_digests": {
+        "driver": "21fe8c858cd43198de6f3aed7596047595e6a88d232820d60a8cf665edda6ec7",
+        "fixture": "09cee657cc2a317fcc7bfb553cd44888a72233a038e49a8dd8936dfe63ff386c",
+        "grader": "5d22d86d4676e1a472267ad0eae2355ac1db7806f820c06cc1eb30170621b90f",
+        "scenario": "aeb7ccd915ff5bdd9c8b2c85a565d851bd6e49f1375d2508f9c734316749ae82"
+      },
+      "id": "failed-verification-recovery"
+    },
+    {
+      "assertions": [
+        {
+          "id": "upgrade-check-conflict",
+          "passed": true
+        },
+        {
+          "id": "upgrade-check-read-only",
+          "passed": true
+        },
+        {
+          "id": "upgrade-configuration-valid",
+          "passed": true
+        },
+        {
+          "id": "upgrade-local-skill-preserved",
+          "passed": true
+        },
+        {
+          "id": "upgrade-manifest-advanced",
+          "passed": true
+        },
+        {
+          "id": "upgrade-specs-unchanged",
+          "passed": true
+        },
+        {
+          "id": "upgrade-stable-skill-updated",
+          "passed": true
+        },
+        {
+          "id": "upgrade-transaction-cleaned",
+          "passed": true
+        }
+      ],
+      "definition_digests": {
+        "driver": "b698ae2155678c634676059beaec007b3b1de422d8d1412fee57f3724ac4ef9b",
+        "fixture": "f875fd2dc4f218f0f789de712faa8d77ec85b9c48262890687056a8d3bc5f04d",
+        "grader": "752cd3b8fbe26f65d9e445b4a84f2fd63eef4ddd874e82a6b11739068a7fc5c3",
+        "scenario": "c6c3dc4b223f436029e1e026446988a2c536f8875e733f7b68b03525bdc9abb8"
+      },
+      "id": "modified-skill-upgrade"
+    },
+    {
+      "assertions": [
+        {
+          "id": "worktrees-branches-distinct",
+          "passed": true
+        },
+        {
+          "id": "worktrees-independent-state",
+          "passed": true
+        },
+        {
+          "id": "worktrees-lease-recovery",
+          "passed": true
+        },
+        {
+          "id": "worktrees-same-root-conflict",
+          "passed": true
+        }
+      ],
+      "definition_digests": {
+        "driver": "cd64faa4616019242923042632ffcf277985b9a825ef5e467b158ae43533b828",
+        "fixture": "3c8c06afac2dd6fd657b7fd2c4b287d47bc69afeadcf0b5ea6f6ed4b76601ce8",
+        "grader": "4e7ce373850e8b4671ec09bbdd010599eeea2b63d3c49495376dba5d7cccde4e",
+        "scenario": "c17c8723a82b72e6c42063524bd06c5d934c96df8c10fddcf9896dc9176b9186"
+      },
+      "id": "separate-worktrees"
+    },
+    {
+      "assertions": [
+        {
+          "id": "small-feature-gate-pass",
+          "passed": true
+        },
+        {
+          "id": "small-feature-phase-order",
+          "passed": true
+        },
+        {
+          "id": "small-feature-red-observed",
+          "passed": true
+        },
+        {
+          "id": "small-feature-task-record",
+          "passed": true
+        },
+        {
+          "id": "small-feature-tdd-order",
+          "passed": true
+        }
+      ],
+      "definition_digests": {
+        "driver": "b6fecb9204416e9ffc63d8d73d671492771c654e4d83497d3925e5bacdae4c3a",
+        "fixture": "b87dbfc6a7f9c850ebb3d721c89e5befe0079db00af26ce557adad39385dae61",
+        "grader": "e76b32b886f5e9da1d2709e699fe6336ed0b371fb7b9b48e143fa0a5af8201b8",
+        "scenario": "46c56e6f5ed1825be1eb39fd8fa217d986fa229fa22171613aa0d48af631d422"
+      },
+      "id": "small-feature"
+    }
+  ],
+  "schema_version": 1
+}

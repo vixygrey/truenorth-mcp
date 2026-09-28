@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "requirement-change",
+  "description": "Route a fixed requirement change while execution is active.",
+  "modes": ["model"],
+  "fixture": "fixture",
+  "driver": "run.js",
+  "grader": "grade.js",
+  "timeout_ms": 120000,
+  "grader_timeout_ms": 10000,
+  "declared_mutations": [],
+  "model_prompt": "The active requirement changes from returning a display name to returning a trimmed lowercase display name. Follow the bundled change-request workflow. Preserve active execution, route each planning artifact through its declared owner, leave unrelated.md byte-identical, and record final verification against the revised requirement.",
+  "expected_assertions": {
+    "model": [
+      "requirement-change-active-execution-preserved",
+      "requirement-change-owner-routing",
+      "requirement-change-revised-verification",
+      "requirement-change-unrelated-identical"
+    ]
+  }
+}
