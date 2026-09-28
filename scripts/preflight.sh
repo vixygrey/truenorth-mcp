@@ -156,6 +156,16 @@ run_shell() {
   bash scripts/verify-skills.sh
 }
 
+run_evals() {
+  require_command cargo "Install the stable Rust toolchain."
+  require_command node "Install Node.js 18 or newer. Use a supported release."
+
+  echo "preflight: [evals] methodology runner tests"
+  node --test scripts/run-methodology-evals.test.js
+  echo "preflight: [evals] deterministic methodology scenarios"
+  node scripts/run-methodology-evals.js --mode deterministic --check-baseline
+}
+
 run_group() {
   case "$1" in
     check) run_check ;;
@@ -163,13 +173,14 @@ run_group() {
     artifact-smoke) run_artifact_smoke ;;
     format) run_format ;;
     shell) run_shell ;;
-    *) fail "unknown group '$1'. Expected check, wrapper, artifact-smoke, format, or shell." ;;
+    evals) run_evals ;;
+    *) fail "unknown group '$1'. Expected check, wrapper, artifact-smoke, format, shell, or evals." ;;
   esac
 }
 
 require_bash_four
 if (($# == 0)); then
-  groups=(check wrapper artifact-smoke format shell)
+  groups=(check wrapper artifact-smoke format shell evals)
 else
   groups=("$@")
 fi

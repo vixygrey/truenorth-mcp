@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "bundle_version": "1.0.2",
+  "workspace_schema_version": "2",
+  "supported_from": [],
+  "skill_sets": [
+    {
+      "name": "core",
+      "support": "supported",
+      "description": "Prior fixture skills.",
+      "prerequisites": "none",
+      "skills": ["stable-skill", "using-truenorth"]
+    }
+  ],
+  "files": [
+    {
+      "path": "skills/stable-skill/SKILL.md",
+      "sha256": "44c6596d1ed77f9b4620330a45133ad0b2c5bef9590721448472351b9291aa7a",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/using-truenorth/SKILL.md",
+      "sha256": "ed408a0a89b58bec65563280cb54cf03eaeb57b88438504225809fbbd4b37c05",
+      "mode": "0644"
+    }
+  ]
+}

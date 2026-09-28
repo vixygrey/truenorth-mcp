@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "separate-worktrees",
+  "description": "Prove independent writers in separate Git worktrees and contention in one worktree.",
+  "modes": ["deterministic"],
+  "fixture": "fixture",
+  "driver": "run.js",
+  "grader": "grade.js",
+  "timeout_ms": 90000,
+  "grader_timeout_ms": 10000,
+  "declared_mutations": [],
+  "expected_assertions": {
+    "deterministic": [
+      "worktrees-branches-distinct",
+      "worktrees-independent-state",
+      "worktrees-lease-recovery",
+      "worktrees-same-root-conflict"
+    ]
+  }
+}

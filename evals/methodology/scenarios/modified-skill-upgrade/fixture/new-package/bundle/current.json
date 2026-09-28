@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "bundle_version": "1.0.2",
+  "workspace_schema_version": "2",
+  "supported_from": ["0.9.0"],
+  "skill_sets": [
+    {
+      "name": "core",
+      "support": "supported",
+      "description": "Target fixture skills.",
+      "prerequisites": "none",
+      "skills": ["stable-skill", "using-truenorth"]
+    }
+  ],
+  "files": [
+    {
+      "path": "skills/stable-skill/SKILL.md",
+      "sha256": "38ed037789844cbd7307fffd13267aa125927429ef70f7589514239c38d0f8b2",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/using-truenorth/SKILL.md",
+      "sha256": "2b6b1bb928d32f17d7bba6e11eb0be690cf4cc9a67a5549749f654c64fc44a21",
+      "mode": "0644"
+    }
+  ]
+}

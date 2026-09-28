@@ -697,7 +697,7 @@
     },
     {
       "path": "skills/run-benchmark/SKILL.md",
-      "sha256": "24246aee911b2f5cc9ec89d07fd389ea4867fec8056afb1c0f4e400075e078c0",
+      "sha256": "96728118c59087469a7c24891cecbccda8e03bc4170ab7c8f90288b3ee324909",
       "mode": "0644"
     },
     {
@@ -707,7 +707,7 @@
     },
     {
       "path": "skills/run-evals/SKILL.md",
-      "sha256": "47a1e802970ccc2d91f95a9f46531e76dc939251dfd3f0b5abdaa98170da53e5",
+      "sha256": "7c44627d0283beaa0236e40dbfc313928e6e3020f65e591690753fe091caea7c",
       "mode": "0644"
     },
     {

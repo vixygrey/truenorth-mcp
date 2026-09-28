@@ -7,6 +7,16 @@ const readline = require('node:readline');
 const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
 const DEFAULT_EXIT_TIMEOUT_MS = 5_000;
 
+class McpError extends Error {
+  constructor(method, response, stderr) {
+    super(withStderr(`MCP ${method} failed: ${response.message}`, stderr));
+    this.name = 'McpError';
+    this.method = method;
+    this.code = response.code;
+    this.data = response.data;
+  }
+}
+
 function startSession(command, args, root, options = {}) {
   const executable = command.includes(path.sep) ? path.resolve(command) : command;
   const requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
@@ -21,17 +31,11 @@ function startSession(command, args, root, options = {}) {
   const stderr = [];
   let nextId = 1;
   let processError;
-  let exited = false;
+  let exitResult;
 
-  child.stderr.setEncoding('utf8');
-  child.stderr.on('data', (chunk) => stderr.push(chunk));
-  child.on('error', (error) => {
-    processError = error;
-    rejectPending(pending, formatFailure(`could not start ${command}: ${error.message}`, stderr));
-  });
-  child.on('exit', (code, signal) => {
-    exited = true;
-    if (code !== 0) {
+  const exited = new Promise((resolve) => {
+    child.once('exit', (code, signal) => {
+      exitResult = { code, signal };
       rejectPending(
         pending,
         formatFailure(
@@ -39,7 +43,15 @@ function startSession(command, args, root, options = {}) {
           stderr,
         ),
       );
-    }
+      resolve(exitResult);
+    });
+  });
+
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (chunk) => stderr.push(chunk));
+  child.on('error', (error) => {
+    processError = error;
+    rejectPending(pending, formatFailure(`could not start ${command}: ${error.message}`, stderr));
   });
 
   const lines = readline.createInterface({ input: child.stdout });
@@ -65,18 +77,31 @@ function startSession(command, args, root, options = {}) {
     const request = pending.get(message.id);
     pending.delete(message.id);
     if (message.error) {
-      request.reject(
-        formatFailure(`MCP ${request.method} failed: ${message.error.message}`, stderr),
-      );
+      request.reject(new McpError(request.method, message.error, stderr));
       return;
     }
     request.resolve(message.result);
   });
 
+  async function terminateProcess() {
+    if (exitResult) {
+      return exitResult;
+    }
+    child.kill('SIGTERM');
+    try {
+      return await withTimeout(exited, exitTimeoutMs, 'MCP process did not exit after SIGTERM');
+    } catch {
+      if (!exitResult) {
+        child.kill('SIGKILL');
+      }
+      return withTimeout(exited, exitTimeoutMs, 'MCP process did not exit after SIGKILL');
+    }
+  }
+
   return {
     pid: child.pid,
     request(method, params) {
-      if (processError || exited) {
+      if (processError || exitResult) {
         return Promise.reject(
           formatFailure(`cannot send ${method}: process is not running`, stderr),
         );
@@ -86,7 +111,11 @@ function startSession(command, args, root, options = {}) {
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
           pending.delete(id);
-          reject(formatFailure(`timed out waiting for MCP ${method}`, stderr));
+          const failure = formatFailure(`timed out waiting for MCP ${method}`, stderr);
+          terminateProcess().then(
+            () => reject(failure),
+            (error) => reject(error),
+          );
         }, requestTimeoutMs);
         pending.set(id, {
           method,
@@ -103,6 +132,9 @@ function startSession(command, args, root, options = {}) {
       });
     },
     notify(method, params) {
+      if (processError || exitResult) {
+        throw formatFailure(`cannot send ${method}: process is not running`, stderr);
+      }
       child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method, params })}\n`);
     },
     waitForNotification(predicate, timeoutMs = requestTimeoutMs) {
@@ -123,38 +155,38 @@ function startSession(command, args, root, options = {}) {
       });
     },
     async close() {
-      if (exited) {
-        return;
+      if (!exitResult) {
+        child.stdin.end();
       }
-      child.stdin.end();
-      await waitForExit(child, stderr, exitTimeoutMs);
-    },
-    async terminate() {
-      if (!exited) {
-        child.kill();
+      const result =
+        exitResult ??
+        (await withTimeout(exited, exitTimeoutMs, 'MCP process did not exit after stdin closed'));
+      if (result.code !== 0) {
+        throw formatFailure(
+          `MCP process exited with code ${result.code ?? 'none'}${
+            result.signal ? ` (${result.signal})` : ''
+          }`,
+          stderr,
+        );
       }
     },
+    terminate: terminateProcess,
   };
 }
 
-function waitForExit(child, stderr, timeoutMs) {
+function withTimeout(promise, timeoutMs, message) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(formatFailure('MCP process did not exit after stdin closed', stderr));
-    }, timeoutMs);
-    child.once('exit', (code, signal) => {
-      clearTimeout(timer);
-      if (code === 0) {
-        resolve();
-        return;
-      }
-      reject(
-        formatFailure(
-          `MCP process exited with code ${code ?? 'none'}${signal ? ` (${signal})` : ''}`,
-          stderr,
-        ),
-      );
-    });
+    const timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
   });
 }
 
@@ -165,9 +197,13 @@ function rejectPending(pending, error) {
   pending.clear();
 }
 
-function formatFailure(message, stderr) {
+function withStderr(message, stderr) {
   const output = stderr.join('').trim();
-  return new Error(output ? `${message}\nstderr:\n${output}` : message);
+  return output ? `${message}\nstderr:\n${output}` : message;
 }
 
-module.exports = { startSession };
+function formatFailure(message, stderr) {
+  return new Error(withStderr(message, stderr));
+}
+
+module.exports = { McpError, startSession };

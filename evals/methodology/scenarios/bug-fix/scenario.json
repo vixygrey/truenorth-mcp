@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "bug-fix",
+  "description": "Prove a regression, record its bug reference, fix it, and verify recovery.",
+  "modes": ["deterministic", "model"],
+  "fixture": "fixture",
+  "driver": "run.js",
+  "grader": "grade.js",
+  "timeout_ms": 60000,
+  "grader_timeout_ms": 10000,
+  "declared_mutations": ["src/normalize.js"],
+  "model_prompt": "Fix the normalization regression by following the bundled TrueNorth bug workflow. Preserve the original failure evidence, use TDD, and complete the workflow artifacts.",
+  "expected_assertions": {
+    "deterministic": [
+      "bug-fix-bug-reference",
+      "bug-fix-gate-pass",
+      "bug-fix-original-failure",
+      "bug-fix-regression-pass",
+      "bug-fix-tdd-order"
+    ],
+    "model": ["bug-fix-model-bug-cycle", "bug-fix-model-resolution", "bug-fix-model-verification"]
+  }
+}

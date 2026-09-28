@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "small-feature",
+  "description": "Drive a small feature through lifecycle, TDD, and verification.",
+  "modes": ["deterministic", "model"],
+  "fixture": "fixture",
+  "driver": "run.js",
+  "grader": "grade.js",
+  "timeout_ms": 60000,
+  "grader_timeout_ms": 10000,
+  "declared_mutations": ["src/add.js"],
+  "model_prompt": "Implement the small add feature in this repository by following the bundled TrueNorth methodology. Preserve objective verification evidence and complete the task status and handoff artifacts.",
+  "expected_assertions": {
+    "deterministic": [
+      "small-feature-gate-pass",
+      "small-feature-phase-order",
+      "small-feature-red-observed",
+      "small-feature-task-record",
+      "small-feature-tdd-order"
+    ],
+    "model": [
+      "small-feature-model-execution-status",
+      "small-feature-model-handoff",
+      "small-feature-model-verification"
+    ]
+  }
+}

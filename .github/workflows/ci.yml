@@ -195,6 +195,31 @@ jobs:
         if: steps.shell.outputs.present == 'true'
         run: bash scripts/preflight.sh shell
 
+  evals:
+    name: deterministic methodology evals
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .node-version
+
+      - name: Install the pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
+
+      - name: Cache cargo artifacts
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
+        with:
+          workspaces: runtime
+
+      - name: Run deterministic methodology evaluations
+        run: bash scripts/preflight.sh evals
+
   action-pins:
     name: workflow Action pins
     runs-on: ubuntu-24.04
@@ -225,11 +250,11 @@ jobs:
 
   # A single, stable status to require in branch protection. It always runs, so every PR
   # reports it, including docs-only changes that skip the per-area steps. It passes only
-  # when the build, package, policy, formatting, and shell jobs passed.
+  # when the build, package, policy, formatting, shell, and methodology eval jobs passed.
   gate:
     name: CI Gate
     runs-on: ubuntu-24.04
-    needs: [check, wrapper, artifact-smoke, format, shell, action-pins, licenses]
+    needs: [check, wrapper, artifact-smoke, format, shell, evals, action-pins, licenses]
     if: always()
     steps:
       - name: Confirm every required CI job passed
@@ -239,6 +264,7 @@ jobs:
           artifact_smoke_result="${{ needs.artifact-smoke.result }}"
           format_result="${{ needs.format.result }}"
           shell_result="${{ needs.shell.result }}"
+          evals_result="${{ needs.evals.result }}"
           action_pins_result="${{ needs.action-pins.result }}"
           licenses_result="${{ needs.licenses.result }}"
           echo "check job result: ${check_result}"
@@ -246,6 +272,7 @@ jobs:
           echo "artifact smoke job result: ${artifact_smoke_result}"
           echo "format job result: ${format_result}"
           echo "shell job result: ${shell_result}"
+          echo "methodology eval job result: ${evals_result}"
           echo "Action pin job result: ${action_pins_result}"
           echo "license policy job result: ${licenses_result}"
           if [ "${check_result}" != "success" ] \
@@ -253,6 +280,7 @@ jobs:
             || [ "${artifact_smoke_result}" != "success" ] \
             || [ "${format_result}" != "success" ] \
             || [ "${shell_result}" != "success" ] \
+            || [ "${evals_result}" != "success" ] \
             || [ "${action_pins_result}" != "success" ] \
             || [ "${licenses_result}" != "success" ]; then
             echo "A required job did not pass. Failing the gate."
