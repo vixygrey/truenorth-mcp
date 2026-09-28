@@ -23,7 +23,6 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
         "model-domain"
         | "define-language"
         | "grill-me"
-        | "grill-with-docs"
         | "deepen-architecture"
         | "design-interface" => "Design",
 

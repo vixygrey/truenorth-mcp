@@ -35,7 +35,6 @@
         "fix-bug",
         "gate-trace",
         "grill-me",
-        "grill-with-docs",
         "guard-git",
         "hook-commits",
         "inspect-quality",
@@ -477,22 +476,12 @@
     },
     {
       "path": "skills/grill-me/REFERENCE.md",
-      "sha256": "e6de148eaee50db4c3499db84c7527952e2035111db839862ab9d9be497a9099",
+      "sha256": "c8bcda606fd4c96677a2512748746356f386a6892a3562e399113c7faa3486ea",
       "mode": "0644"
     },
     {
       "path": "skills/grill-me/SKILL.md",
-      "sha256": "1c1676d56a05966636f7ca8e96d48ff0504c1979e7e7b0021bba84d36ce47c2b",
-      "mode": "0644"
-    },
-    {
-      "path": "skills/grill-with-docs/REFERENCE.md",
-      "sha256": "0895c8a66888d5ca3379d0729fe60d0a14dbba0326befa6e001dd79b2a01bd78",
-      "mode": "0644"
-    },
-    {
-      "path": "skills/grill-with-docs/SKILL.md",
-      "sha256": "88e9c68af8bfa7def802d2130ed8b148841252538ea4e9f6619e4f231cb0a2f9",
+      "sha256": "0962af118ec0f1539d26eab552c3f06256e866ffface08c7e8357658196c5dd4",
       "mode": "0644"
     },
     {

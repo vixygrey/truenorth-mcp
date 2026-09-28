@@ -243,3 +243,7 @@ tasks:
   group_kind: ticket
   task_name: Define the solo and small-team operating model
   verify_command: cargo test --locked --manifest-path runtime/Cargo.toml tools::scaffold::tests::scaffold_emits_the_agent_tree_and_root_docs && cargo test --locked --manifest-path runtime/Cargo.toml --test writer_lease && npx prettier --check README.md npm/README.md wiki/Compatibility.md wiki/Install-and-connect.md wiki/Troubleshooting.md release-notes/v1.0.3.md && node scripts/build-bundle-manifest.js --check && npm run preflight
+- group_id: '443'
+  group_kind: ticket
+  task_name: Merge grill-with-docs into grill-me docs mode
+  verify_command: diff -u skills/grill-me/SKILL.md npm/skills/grill-me/SKILL.md && diff -u skills/grill-me/REFERENCE.md npm/skills/grill-me/REFERENCE.md && node scripts/build-bundle-manifest.js --check && node --test scripts/build-bundle-manifest.test.js && bash scripts/lint-skill-paths.sh && bash scripts/lint-skill-handoffs.sh && bash scripts/lint-skill-artifacts.sh && bash scripts/verify-skills.sh && cargo test --locked --manifest-path runtime/Cargo.toml engine::phase && npm run preflight

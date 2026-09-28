@@ -14,8 +14,8 @@ phase hands off to the next.
 ```text
 BOOTSTRAP   using-truenorth (first time only)
 DISCOVER    survey-context, research-first, elaborate-spec, map-codebase, search-skills
-DESIGN      model-domain, define-language, grill-me, grill-with-docs, deepen-architecture,
-            design-interface
+DESIGN      model-domain, define-language, grill-me (context-only or docs mode),
+            deepen-architecture, design-interface
 PLAN        scope-work, slice-tasks, plan-work, plan-tests, plan-release, plan-refactor,
             assess-impact, run-planning, change-request, seed-conventions
 INITIATE    kickoff-branch, guard-git, hook-commits, setup-environment
