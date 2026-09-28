@@ -16,3 +16,11 @@
 - [ ] The body follows the house writing rules.
 - [ ] `--verify` mode ran every scripted command and recorded its exit result.
 - [ ] The source skill and packaged mirror match.
+
+## Usage evidence
+
+- [ ] A full report has a usage section separate from structural and semantic findings.
+- [ ] Disabled collection is recorded as `status: unavailable`, with the reason,
+      source, observation window, and retention set explicitly.
+- [ ] Missing or legacy metrics are not converted into zero-use, ranking, or timing claims.
+- [ ] The report stores no raw prompts, repository file contents, secrets, or user identifiers.

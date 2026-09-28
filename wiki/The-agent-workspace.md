@@ -45,6 +45,12 @@ is enabled, the runtime also reads `ontology.yml`. Product docs live under
 - `.agent/telemetry/` remains an optional local diagnostics location. It is excluded
   from agent reads, and the runtime does not create or append a telemetry journal.
 
+TrueNorth does not collect or retain aggregate skill invocation counts or timings.
+Operation receipts are returned for individual calls and are not a retained usage
+source. Stocktake usage analysis stores no raw prompts, repository file contents,
+secrets, or user identifiers. This follows the receipt and no-journal decision in
+[issue #436](https://github.com/vixygrey/truenorth-mcp/issues/436).
+
 ## The single write guard
 
 Every runtime write funnels through one guarded path. It normalizes the target, rejects any

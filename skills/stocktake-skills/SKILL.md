@@ -32,12 +32,15 @@ frontmatter problem.
    rules, handoffs, lifecycle placement, and cockpit paths. These checks supplement
    `validate_skill`; they do not redefine its schema. Record repeated writing debt
    for `evolve-skill`. Do NOT rewrite the whole catalog in one pass.
-4. **Write the report**: write a findings table (skill, issue, severity) to a dated
-   stocktake file. Keep structural and semantic findings distinct.
-5. **Effectiveness report** (full mode only): read the skill-usage metrics from
-   `.agent/tasks/state.yml` and report the most-used skills, the skills with zero
-   calls (potential dead weight), and the skills with a high average time
-   (candidates for `evolve-skill`).
+4. **Write the report**: write a dated stocktake file with distinct structural,
+   semantic, usage, and optional verify-health sections. Structural and semantic
+   findings use a table with skill, issue, and severity columns.
+5. **Report usage evidence** (full mode only): report `status: unavailable`,
+   `reason: skill-usage collection is disabled`, `source: none`, `observation
+window: none`, and `retention: none`. The runtime does not collect or retain
+   skill invocation counts or timings. Never infer zero calls from missing data,
+   and do not treat a preserved legacy `metrics.skill_timings` field as current
+   evidence.
 6. **Route the findings**: a critical finding becomes a `plan-work` story, a
    cosmetic one becomes an `evolve-skill` candidate.
 7. **--verify mode**: for each `kind: scripted` skill, run its declared frontmatter
@@ -47,7 +50,9 @@ frontmatter problem.
 ## Verify
 
 Confirm the dated report covers every skill returned by `index_skills`, includes a
-`validate_skill` result for each in-scope skill, and separates structural findings
-from semantic and scripted-command findings.
+`validate_skill` result for each in-scope skill, and keeps structural, semantic,
+usage, and scripted-command findings distinct. In full mode, confirm the usage
+section reports unavailable evidence without rankings, timing conclusions, or
+zero-call classifications.
 
 See [REFERENCE.md](REFERENCE.md) for the checklist.

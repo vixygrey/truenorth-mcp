@@ -139,6 +139,12 @@ frontmatter problems.
 - **Hard gate**: a failed structural report, stale description, missing necessary gate, or
   failed scripted verification command is a defect, not cosmetic.
 
+A full report keeps structural, semantic, usage, and optional verify-health findings
+separate. TrueNorth does not collect skill invocation counts or timings, so the usage
+section reports evidence as unavailable, with no source, observation window, or
+retention. Unavailable evidence is not zero usage. This follows the no-journal decision
+in [issue #436](https://github.com/vixygrey/truenorth-mcp/issues/436).
+
 ### evolve-skill
 
 Benchmark-gated skill evolution.
