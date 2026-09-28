@@ -235,3 +235,7 @@ tasks:
   group_kind: ticket
   task_name: Emit bounded mutation receipts and remove the telemetry placeholder
   verify_command: 'cargo test --locked --manifest-path runtime/Cargo.toml receipt && cargo test --locked --manifest-path runtime/Cargo.toml tools::gates && cargo test --locked --manifest-path runtime/Cargo.toml tools::tdd && cargo test --locked --manifest-path runtime/Cargo.toml tools::scaffold && cargo test --locked --manifest-path runtime/Cargo.toml engine::agent_ws::layout && cargo test --locked --manifest-path runtime/Cargo.toml integration_tests:: && cargo test --locked --manifest-path runtime/Cargo.toml --test cli_diagnostics && npm run preflight'
+- group_id: '463'
+  group_kind: ticket
+  task_name: Correct stocktake effectiveness reporting for unavailable usage metrics
+  verify_command: diff -u skills/stocktake-skills/SKILL.md npm/skills/stocktake-skills/SKILL.md && diff -u skills/stocktake-skills/REFERENCE.md npm/skills/stocktake-skills/REFERENCE.md && node scripts/build-bundle-manifest.js --check && node --test scripts/build-bundle-manifest.test.js && bash scripts/lint-skill-paths.sh && bash scripts/lint-skill-handoffs.sh && bash scripts/lint-skill-artifacts.sh && bash scripts/verify-skills.sh && npm run preflight
