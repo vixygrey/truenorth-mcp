@@ -12,8 +12,8 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `assess-impact`       | Analyze the blast radius of a change before code                | [Plan](Skills-Plan)         |
 | `audit-code`          | Self-review checklist before dispatching a reviewer             | [Verify](Skills-Verify)     |
 | `audit-plan`          | Evaluate an incoming plan, produce a READY verdict              | [Utility](Skills-Utility)   |
-| `build-epic`          | The task-group build cycle, one step per invocation             | [Build](Skills-Build)       |
-| `change-request`      | Add a requirement or reorder task groups by WSJF                | [Plan](Skills-Plan)         |
+| `build-group`         | The profile-aware build cycle, one step per invocation          | [Build](Skills-Build)       |
+| `change-request`      | Add a requirement or reorder work by selected project policy    | [Plan](Skills-Plan)         |
 | `commit-message`      | Draft a Conventional Commits message and its SemVer bump        | [Release](Skills-Release)   |
 | `compose-workflow`    | Chain multiple skills into a custom workflow recipe             | [Sustain](Skills-Sustain)   |
 | `context7-mcp`        | Fetch current library docs through the Context7 server          | [Utility](Skills-Utility)   |
@@ -50,7 +50,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `orchestrate-project` | Coordinate a multi-phase project with hard gates                | [Build](Skills-Build)       |
 | `organize-workspace`  | Scan for disposable artifacts, propose a safe tidy              | [Sustain](Skills-Sustain)   |
 | `plan-refactor`       | Create a refactor plan of tiny commits                          | [Plan](Skills-Plan)         |
-| `plan-release`        | Sequence task groups into the release plan by WSJF              | [Plan](Skills-Plan)         |
+| `plan-release`        | Sequence tasks and optional groups by project policy            | [Plan](Skills-Plan)         |
 | `plan-tests`          | Design a risk-scaled test architecture for a group              | [Plan](Skills-Plan)         |
 | `plan-work`           | Write detailed, verifiable implementation tasks                 | [Plan](Skills-Plan)         |
 | `publish-package`     | Publish a package to npm, crates.io, PyPI, or Homebrew          | [Build](Skills-Build)       |
@@ -75,7 +75,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `spike-prototype`     | A throw-away prototype for an unknown problem space             | [Build](Skills-Build)       |
 | `stocktake-skills`    | A batch audit of the skill catalog                              | [Sustain](Skills-Sustain)   |
 | `survey-context`      | Read the current state, map the phase, suggest the next skill   | [Discover](Skills-Discover) |
-| `trace-requirement`   | Link story ids to the implementing code and tests               | [Verify](Skills-Verify)     |
+| `trace-requirement`   | Link task ids to implementing code and tests                    | [Verify](Skills-Verify)     |
 | `using-truenorth`     | The one-time bootstrap and routing entry point                  | [Discover](Skills-Discover) |
 | `validate-contracts`  | Assert data-shape consistency across boundaries                 | [Build](Skills-Build)       |
 | `validate-fix`        | Prove a fix works and harden against recurrence                 | [Verify](Skills-Verify)     |

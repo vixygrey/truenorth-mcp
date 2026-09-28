@@ -1,88 +1,84 @@
 ---
 name: slice-tasks
-description: "Planning spine step 2 of 3. Slice the work: break a scoped PRD into vertical-slice stories in the task groups. Use it after scope-work, before plan-work. Not a substitute for scope-work or plan-work."
+description: "Planning spine step 2 of 3. Split scoped work into independently deliverable work items. Use it after scope-work and before plan-work. Group artifacts are conditional on the active methodology profile."
 kind: prose
 ---
 
 # Slice Tasks
 
-> **Spine position:** Step 2: `scope-work`, then `slice-tasks`, then
-> `plan-work`.
+> **Spine position:** `scope-work`, then `slice-tasks`, then `plan-work`.
 
-Create the group manifest and define independently deliverable story boundaries.
-This skill owns `.agent/tasks/<capsule>/group.yml`. It does not write detailed
-story specifications or runnable task ledgers.
+Read `.agent/profile.yml` first. Under a grouped profile, create the selected
+group's manifest at `.agent/tasks/<capsule>/group.yml`. Under `kanban`, `generic`,
+or an ungrouped `issue-per-task` workflow, update task boundaries directly in
+`.agent/tasks/release-plan.yml` through `truenorth_record_task`.
 
 ## Artifact contract
 
-- **Writes**: `.agent/tasks/<capsule>/group.yml`.
+- **Grouped write**: `.agent/tasks/<capsule>/group.yml`.
+- **Ungrouped write**: task records through `truenorth_record_task`.
 - **Reads**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, and
   `.agent/tasks/planning-context.yml` when present.
-- **Readers**: `plan-tests`, `plan-work`, execution, verification, traceability,
-  and status views.
-- **Never writes**: `release-plan.yml`, `test-plan.md`, story specifications,
-  task ledgers, or `execution-status.yml`.
+- **Never writes**: test plans, detailed work-item specifications, task ledgers,
+  or `.agent/tasks/execution-status.yml`.
 
-The release index must already contain the selected group and capsule path. If it
-does not, return to `plan-release`. Do not create or reorder release-index entries.
+For grouped work, the release index must already contain the selected `group_id`,
+matching `group_kind`, and capsule path.
 
 ## Process
 
-1. **Read context**: read the product scope, selected release-index entry, and
-   optional planning context. Use its constraints, exclusions, and decisions when
-   defining boundaries.
-2. **Cut tracer-bullet stories**: each story must be the thinnest vertical path
-   that provides demonstrable user value.
-3. **Assign BCPs**: estimate each story from 1 to 13. Split a story above 8 BCPs
-   unless its cohesion makes the larger boundary necessary.
-4. **Record boundaries**: write each story id, title, BCPs, status, requirement
-   delta, and reserved spec and task filenames to `group.yml`.
-5. **Validate slices**: reject horizontal-only layers and stories that depend on a
-   later story before they provide user value.
+1. Read scope, profile, release-plan records, and optional planning context.
+2. Cut the thinnest vertical work items that provide demonstrable user value.
+3. Use `story` only when existing project artifacts explicitly select story
+   decomposition.
+4. Estimate BCP only when project policy or the user explicitly selects BCP.
+   Otherwise omit it.
+5. Reserve detailed specification and task filenames without creating them.
+6. Reject horizontal-only layers and a work item that depends on a later item
+   before it provides value.
 
-Example:
+Grouped example:
 
 ```yaml
-id: e01
-title: Auth System
-total_bcps: 8
+group_id: m01
+group_kind: milestone
+title: Authentication
 status: todo
-stories:
-  - id: e01s01
+work_items:
+  - task_id: login
     title: Login
-    bcps: 3
     status: todo
     delta: ADDED
-    spec: e01s01-login.md
-    tasks: e01s01-tasks.yaml
-  - id: e01s02
-    title: JWT Token Management
-    bcps: 5
+    spec: login.md
+    tasks: login-tasks.yaml
+  - task_id: token-management
+    title: Token management
     status: todo
     delta: ADDED
-    spec: e01s02-jwt.md
-    tasks: e01s02-tasks.yaml
+    spec: token-management.md
+    tasks: token-management-tasks.yaml
 ```
 
-The `spec` and `tasks` values reserve filenames. They do not authorize this skill
-to create those files. `plan-work` owns both.
+An `epic-based` project can call `work_items` stories in prose and preserve an
+existing `stories` key. Shared tooling must consume both as selected project
+conventions, not assume stories universally.
 
 ## Hard gates
 
-- Every story id is unique within the group.
-- Every reserved filename stays within the active capsule.
-- Every story is independently demonstrable.
-- `MODIFIED`, `REMOVED`, and `RENAMED` deltas name the prior behavior that
-  `plan-work` must expand.
-- The selected group already exists in `.agent/tasks/release-plan.yml`.
+- Every task id is unique in its scope.
+- Every reserved filename stays within the selected capsule.
+- Every work item is independently demonstrable.
+- `MODIFIED`, `REMOVED`, and `RENAMED` deltas name prior behavior.
+- A grouped manifest's `group_kind` matches `.agent/profile.yml`.
+- WSJF and BCP fields name the policy that selected them.
 
 ## Verify
 
-Confirm `.agent/tasks/<capsule>/group.yml` exists, contains only unique story
-boundaries, and references the group id and capsule selected by the release index.
-Confirm no release index, story file, task ledger, or execution status changed.
+For grouped work, confirm `group.yml` exists, uses the profile-derived grouping,
+contains unique work-item ids, and references the release-plan group. For
+ungrouped work, confirm each task was recorded through `truenorth_record_task`.
+Confirm no detailed specification, task ledger, or execution status changed.
 
 ## Handoff
 
-For a P0 or P1 group, hand off to `plan-tests`. Otherwise hand off to
-`plan-work`.
+For P0 or P1 risk, hand off to `plan-tests`. Otherwise hand off to `plan-work`.

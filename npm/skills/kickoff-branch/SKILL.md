@@ -87,4 +87,4 @@ Report the green preflight, the branch, and the worktree. Suggest the next skill
 ## Handoff
 
 Gate: READY. Next: develop-tdd.
-Writes: `state.yaml` `handoff.next_skill = develop-tdd`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = develop-tdd`.

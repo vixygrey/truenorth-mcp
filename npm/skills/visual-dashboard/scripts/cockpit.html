@@ -70,9 +70,9 @@
 
     section { padding: var(--lh) 0; border-top: 1px solid #ddd; }
     section h2 { margin: 0 0 var(--lh) 0; font-size: 16px; line-height: var(--lh); text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); }
-    .epic { padding: 0 0 calc(var(--lh) - 1px) 0; margin-bottom: var(--lh); border-bottom: 1px solid #eee; }
-    .epic:last-child { margin-bottom: 0; border-bottom: none; }
-    .epic strong { color: var(--ink); }
+    .item { padding: 0 0 calc(var(--lh) - 1px) 0; margin-bottom: var(--lh); border-bottom: 1px solid #eee; }
+    .item:last-child { margin-bottom: 0; border-bottom: none; }
+    .item strong { color: var(--ink); }
     /* Status is signaled by a symbol and a word, not by color alone (WCAG 1.4.1).
        The color is redundant emphasis on top of the text marker. */
     .done { color: #0a7; }
@@ -103,7 +103,7 @@
         <div class="band">
           <div id="err" hidden style="grid-column: 1 / -1;"></div>
           <section id="planning" style="grid-column: 1 / 7;"><h2 class="opt-align">Planning</h2><div id="planning-body"></div></section>
-          <section id="build" style="grid-column: 7 / 13;"><h2 class="opt-align">Epics &amp; status</h2><div id="build-body"></div></section>
+          <section id="build" style="grid-column: 7 / 13;"><h2 class="opt-align">Work groups &amp; status</h2><div id="build-body"></div></section>
         </div>
     <!-- GRID GUIDES -->
     <div class="guides" aria-hidden="true">
@@ -139,13 +139,15 @@
       const pw = data.planning_status || {};
       document.getElementById('planning-body').innerHTML = Object.entries(pw).map(([k, v]) => {
         const st = (v && v.status) || v || 'unknown';
-        return '<div class="epic"><strong>' + k + '</strong> — <span class="' + st + '">' + st + '</span></div>';
+        return '<div class="item"><strong>' + k + '</strong> — <span class="' + st + '">' + st + '</span></div>';
       }).join('') || '<p>No planning status tracked.</p>';
 
-      document.getElementById('build-body').innerHTML = (data.groups || []).map(e =>
-        '<div class="epic"><strong>' + e.id + '</strong> ' + e.title +
-        ' <span class="' + e.status + '">(' + e.status + ')</span> WSJF ' + e.wsjf + '</div>'
-      ).join('');
+      const buildItems = (data.groups || []).length ? data.groups : (data.tasks || []);
+      document.getElementById('build-body').innerHTML = buildItems.map(item => {
+        const priority = item.priority == null ? '' : ' priority ' + item.priority;
+        return '<div class="item"><strong>' + item.id + '</strong> ' + item.title +
+          ' <span class="' + item.status + '">(' + item.status + ')</span>' + priority + '</div>';
+      }).join('') || '<p>No work items tracked.</p>';
     }
     load().catch(e => {
       document.getElementById('err').hidden = false;

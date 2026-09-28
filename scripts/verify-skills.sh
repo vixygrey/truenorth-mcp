@@ -93,6 +93,11 @@ if command -v node >/dev/null 2>&1; then
   else
     report_fail "visual-dashboard (server.cjs syntax check)"
   fi
+  if node --test skills/visual-dashboard/tests/read-specs-status.test.cjs >/dev/null 2>&1; then
+    report_pass "visual-dashboard (profile-aware cockpit parser)"
+  else
+    report_fail "visual-dashboard (profile-aware cockpit parser)"
+  fi
   report_skip "visual-dashboard (live server verify)" "starts an HTTP server; not run in CI"
 else
   report_skip "visual-dashboard (server.cjs)" "node not found"

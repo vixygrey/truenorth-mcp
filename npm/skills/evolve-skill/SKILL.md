@@ -16,7 +16,7 @@ kind: prose
    prerequisite for any capability improvement.
 2. **Establish the baseline**: run the benchmark for the skill in baseline mode.
    When no definition exists, create one first. Save the report path in
-   `state.yaml`. When a baseline report already exists, skip this step.
+   `.agent/tasks/state.yml`. When a baseline report already exists, skip this step.
 3. **Identify the gap**: read the baseline report. Find the scenarios with a FAIL
    result or a low pass-at-k. This is the measurable gap.
 4. **Plan the change**: use `plan-work` to write a minimal change proposal that

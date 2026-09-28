@@ -9,8 +9,8 @@ const REQUIRED_PLANNING_ARTIFACTS = [
   'group-manifest',
   'group-test-plan',
   'release-index',
-  'story-specification',
-  'story-task-ledger',
+  'work-item-specification',
+  'work-item-task-ledger',
 ];
 
 function trackedPaths(repoRoot, prefix) {

@@ -34,7 +34,7 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
         "develop-tdd"
         | "kickoff-branch"
         | "execute-plan"
-        | "build-epic"
+        | "build-group"
         | "spike-prototype"
         | "craft-skill"
         | "quick-fix"

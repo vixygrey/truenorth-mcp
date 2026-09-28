@@ -133,8 +133,22 @@ fn assert_scaffold(root: &Path, case: ProfileCase) {
     );
     assert_eq!(
         fs::read_to_string(root.join(".agent/tasks/state.yml")).expect("read state"),
-        "phase: discover\n",
-        "profile={} rule=initial-phase",
+        concat!(
+            "phase: discover\n",
+            "active_flow: null\n",
+            "active_task: null\n",
+            "active_group: null\n",
+            "handoff:\n",
+            "  next_skill: null\n",
+            "  last_step_completed: null\n",
+            "  context: null\n",
+            "  open_decisions: []\n",
+            "  required_reading: []\n",
+            "  group_id: null\n",
+            "  artifacts_summary: null\n",
+            "  git_context: null\n",
+        ),
+        "profile={} rule=initial-state",
         case.profile.name
     );
 

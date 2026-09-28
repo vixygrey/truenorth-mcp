@@ -25,7 +25,7 @@ Feed gaps to `plan-work` as new steps with verify commands, then re-run verify-w
 ## Evidence template
 
 ```yaml
-story_id: e01s01
+task_id: task-17
 verified_at: "2026-06-11T14:30:00Z"
 risk: P1
 verifier: verify-work

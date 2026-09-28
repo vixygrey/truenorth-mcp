@@ -1,54 +1,51 @@
 ---
 name: plan-tests
-description: "Design a risk-scaled test architecture for a task group before implementation begins. Produces prioritized scenarios, a test-level distribution, and fixture plans."
+description: "Design a risk-scaled test architecture for a declared task group without writing implementation tests. Use after slice-tasks when planned behavior needs explicit scenario coverage."
 kind: prose
 ---
 
 # Plan Tests
 
-> **Spine position**: after `slice-tasks` and before `plan-work` for a task group
-> with P0 or P1 risk. Optional for P2 or P3.
-
-Design the risk-scaled test architecture for one group and write it to
-`.agent/tasks/<capsule>/test-plan.md`.
+Design the test architecture for an existing task group. This skill plans
+scenarios and ownership. It does not write test code.
 
 ## Artifact contract
 
-- **Writes**: `.agent/tasks/<capsule>/test-plan.md`.
-- **Reads**: `.agent/tasks/<capsule>/group.yml` and relevant product and
-  architecture context.
+- **Writes**: `.agent/tasks/<capsule>/test-plan.md` only.
+- **Reads**: `.agent/profile.yml`, the release index, active task manifest,
+  architecture, product scope, conventions, and ontology when present.
 - **Readers**: `plan-work`, `verify-work`, and lifecycle gate orchestration.
-- **Never writes**: the release index, group manifest, story specifications, task
-  ledgers, test code, production code, or execution status.
+- **Never writes**: the release index, task manifest, work-item specifications,
+  task ledgers, test code, production code, or execution status.
 
-`group.yml` must exist and contain the story boundaries. If it is missing or a
-requested story is unknown, return to `slice-tasks`. Do not synthesize stories.
+The active task manifest must exist and contain the work-item boundaries. If it is
+missing or the requested task is unknown, return to `slice-tasks`. Do not
+synthesize tasks or profile-specific ids.
 
-## Core workflow
+## Profile rules
 
-1. **Read the group**: use the exact story ids and boundaries from `group.yml`.
-2. **Assess risk**: map each behavior to P0 through P3.
-3. **Choose levels**: place each scenario at the lowest effective unit,
-   integration, or end-to-end level.
-4. **Design fixtures**: specify factories, network intercepts, and database state.
-5. **Plan NFR checks**: define runnable commands for applicable non-functional
-   requirements. Skip this step in `--lite` mode.
-6. **Publish**: write `.agent/tasks/<capsule>/test-plan.md` using the template in
-   [REFERENCE.md](REFERENCE.md).
+Use neutral task ids in shared scenario keys. A project may retain an existing
+profile-specific id convention, such as epic work-item ids, but plan-tests must
+not require that convention in `issue-per-task`, `kanban`, or `generic` projects.
 
-## Hard gates
+## Process
 
-- Scenario ids use `SC-eNNsYY-P{0|1|2|3}-NN`.
-- Every scenario names a story present in `group.yml`.
-- Every P0 and P1 behavior has a verification level and runnable command.
-- No scenario changes a story boundary.
-- `plan-work` must preserve scenario ids and risk classifications.
+1. Read the active task manifest and copy its exact task or work-item ids.
+2. Map each observable behavior to P0 through P3 risk.
+3. Place each scenario at the lowest effective unit, integration, or end-to-end
+   level.
+4. Define fixtures, boundaries, failure cases, and ownership.
+5. Write `.agent/tasks/<capsule>/test-plan.md` using
+   [REFERENCE.md](./REFERENCE.md).
+6. Verify that every P0 and P1 behavior has an owner and runnable evidence path.
 
 ## Verify
 
-Confirm `.agent/tasks/<capsule>/test-plan.md` exists, every scenario references a
-story in `group.yml`, and no upstream or implementation artifact changed.
+Confirm that every scenario references a declared task id, every P0 and P1
+behavior has coverage, and the plan does not create implementation files or
+modify upstream planning artifacts.
 
 ## Handoff
 
-Gate: READY. Next: `plan-work`.
+Write the canonical `.agent/tasks/state.yml` handoff with
+`next_skill: plan-work`.

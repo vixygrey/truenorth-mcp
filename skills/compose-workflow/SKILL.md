@@ -14,7 +14,7 @@ kind: prose
 2. Write the workflow recipe:
    - `name`, `command`, `description`, `skills[]`, `verify`
    - Optional: `args` for skill-specific arguments
-3. Register in state.yaml Active Decisions.
+3. Register in `.agent/tasks/state.yml` Active Decisions.
 4. Optional: reference from `orchestrate-project` Ad-Hoc mode.
 
 > **Prefer the YAML recipe format** over the legacy workflow markdown format.

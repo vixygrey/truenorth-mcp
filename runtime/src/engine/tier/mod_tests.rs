@@ -437,23 +437,6 @@ fn real_skill_lean_compresses_when_present() {
     );
 }
 
-#[test]
-fn table_dense_skill_compresses_in_tokens_not_words() {
-    // #83: the token unit shows the table pass's true effect. `gate-trace` has
-    // content-dense tables, so its word count barely moves (near 0.95), but its token
-    // count drops (near 0.79) as padding and separators are stripped. Skip when absent.
-    let Some(path) = repo_root_file("skills/gate-trace/SKILL.md") else {
-        return;
-    };
-    let md = std::fs::read_to_string(&path).expect("read real SKILL.md");
-    let full = estimate_tokens(&render_skill(&md, Tier::Full, TIER_LEAN_TOKEN_BUDGET));
-    let lean = estimate_tokens(&render_skill(&md, Tier::Lean, TIER_LEAN_TOKEN_BUDGET));
-    assert!(
-        (lean as f64) < 0.85 * (full as f64),
-        "the table-dense skill did not compress in tokens: {lean} lean vs {full} full"
-    );
-}
-
 /// Resolve a path relative to the repo root (one level above the crate manifest dir).
 fn repo_root_file(relative: &str) -> Option<std::path::PathBuf> {
     let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));

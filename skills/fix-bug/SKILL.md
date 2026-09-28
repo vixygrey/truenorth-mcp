@@ -22,7 +22,7 @@ Valid entry **without a user-reported bug** when:
 
 Record the gate failure in the configured external tracker through `investigate-bug`, then run the standard fix_bug chain.
 
-## Four steps (`bug_cycle` in state.yaml)
+## Four steps (`bug_cycle` in `.agent/tasks/state.yml`)
 
 | Step | Skill / action                                                               |
 | ---- | ---------------------------------------------------------------------------- |

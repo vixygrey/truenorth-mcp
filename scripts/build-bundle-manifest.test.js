@@ -54,12 +54,12 @@ test('planning artifacts have one canonical writer and path', () => {
       path: '.agent/tasks/<capsule>/test-plan.md',
       writer: 'plan-tests',
     },
-    'story-specification': {
-      path: '.agent/tasks/<capsule>/eNNsYY-<slug>.md',
+    'work-item-specification': {
+      path: '.agent/tasks/<capsule>/<task-id>-spec.md',
       writer: 'plan-work',
     },
-    'story-task-ledger': {
-      path: '.agent/tasks/<capsule>/eNNsYY-tasks.yaml',
+    'work-item-task-ledger': {
+      path: '.agent/tasks/<capsule>/<task-id>-tasks.yml',
       writer: 'plan-work',
     },
   });
@@ -76,10 +76,10 @@ test('planning artifact validation rejects ownership conflicts', () => {
   );
 
   const missingWriter = structuredClone(catalog);
-  delete missingWriter.planning_artifacts['story-specification'].writer;
+  delete missingWriter.planning_artifacts['work-item-specification'].writer;
   assert.throws(
     () => validatePlanningArtifacts(missingWriter),
-    /planning artifact story-specification is missing writer/,
+    /planning artifact work-item-specification is missing writer/,
   );
 
   const missingArtifact = structuredClone(catalog);
@@ -107,10 +107,10 @@ test('planning artifact validation rejects unknown or duplicate readers', () => 
   );
 
   const writerReader = structuredClone(catalog);
-  writerReader.planning_artifacts['story-task-ledger'].readers.push('plan-work');
+  writerReader.planning_artifacts['work-item-task-ledger'].readers.push('plan-work');
   assert.throws(
     () => validatePlanningArtifacts(writerReader),
-    /planning artifact story-task-ledger lists its writer as a reader/,
+    /planning artifact work-item-task-ledger lists its writer as a reader/,
   );
 });
 

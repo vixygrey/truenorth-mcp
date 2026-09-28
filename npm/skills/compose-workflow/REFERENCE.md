@@ -7,7 +7,7 @@
 
 | Step | Skill          | Output                                | verify |
 | ---- | -------------- | ------------------------------------- | ------ |
-| 1    | survey-context | state.yaml handoff                    | ...    |
+| 1    | survey-context | `.agent/tasks/state.yml` handoff      | ...    |
 | 2    | research-first | Prior Art in .agent/product/scope.yml | ...    |
 | 3    | plan-work      | epics/eNN-\*.yaml tasks               | ...    |
 ```

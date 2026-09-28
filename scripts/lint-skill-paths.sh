@@ -1,28 +1,40 @@
 #!/usr/bin/env bash
-# Lint the cockpit paths a skill names against the `.agent/` layout (issue #250).
+# Lint skill and wiki cockpit paths against the `.agent/` layout (issues #250, #452).
 #
-# A skill document names `.agent/` paths in its prose and its worked examples. The
-# runtime relocated the cockpit under `.agent/` (ADR-0011), and the write guard confines
-# every runtime write to `.agent/` (ADR-0008). A skill that still names a retired path,
-# for example a `specs/` cockpit file or a `.bigpowers/` dir, or that names a `.agent/`
-# path under an area the layout does not define, is drift (the #165 to #168 class).
+# A skill document names `.agent/` paths in its prose and worked examples. The runtime
+# relocated the cockpit under `.agent/` (ADR-0011), and the write guard confines every
+# runtime write to `.agent/` (ADR-0008). A document that names a retired path, an
+# unqualified cockpit filename, or an unknown `.agent/` area is drift.
 #
-# The lint validates by AREA MEMBERSHIP, not by exact file existence. A worked example
-# names a fictional path, for example `.agent/tasks/e02-auth-ui/story.yml`, so a
-# file-exists check would flag every tutorial. Instead the lint confirms the first path
-# segment under `.agent/` is a known area, and rejects a retired cockpit path outright.
+# The lint validates by area membership, not by exact file existence. A worked example
+# can name a fictional path under a valid area. A relative layout entry or legacy
+# migration-source example can name a bare cockpit filename only when its line carries
+# one of these explicit markers:
+#   truenorth-lint: allow-relative-layout-path
+#   truenorth-lint: allow-legacy-cockpit-path
 #
-# Usage: bash scripts/lint-skill-paths.sh
+# Usage: bash scripts/lint-skill-paths.sh [--root REPOSITORY]
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$SCRIPT_ROOT"
+if [ "${1:-}" = "--root" ]; then
+  if [ "$#" -ne 2 ] || [ ! -d "$2" ]; then
+    echo "lint-skill-paths: --root requires an existing repository directory." >&2
+    exit 2
+  fi
+  REPO_ROOT="$(cd "$2" && pwd)"
+elif [ "$#" -ne 0 ]; then
+  echo "lint-skill-paths: usage: bash scripts/lint-skill-paths.sh [--root REPOSITORY]" >&2
+  exit 2
+fi
 cd "$REPO_ROOT"
 
 # The known top-level areas under `.agent/`, from the agent-workspace-profiles design §1
 # and ADR-0011. A path directly under `.agent/` names one of these areas, or the
 # `ontology.yml` file at the `.agent/` root.
-KNOWN_AREAS="config spec tasks product memories telemetry"
+KNOWN_AREAS="config spec tasks product memories telemetry runtime"
 ROOT_FILES="ontology.yml layout.yml profile.yml"
 
 # A retired cockpit path a skill must no longer name. These are the drift the lint exists
@@ -30,10 +42,16 @@ ROOT_FILES="ontology.yml layout.yml profile.yml"
 # dir. `specs/adr/` stays legal, because the ADR resource reads it (ADR-0011).
 RETIRED_RE='(^|[^A-Za-z0-9_./-])(specs/(state|release-plan|ontology|tasks|product|backlog|active-feature)|\.bigpowers)([/.]|$)'
 
-# The tracked skill documents. A git glob, not a shell glob, so detection matches CI.
-mapfile -t FILES < <(git ls-files 'skills/**/*.md')
+# Current cockpit filenames must include `.agent/tasks/`. The explicit markers are narrow
+# by design: they permit one labeled exception line, not a whole file or directory.
+BARE_COCKPIT_RE='(^|[^A-Za-z0-9_./-])(state|release-plan|execution-status)\.ya?ml([^A-Za-z0-9_.-]|$)'
+ALLOW_MARKER_RE='truenorth-lint: allow-(legacy-cockpit|relative-layout)-path'
+
+# The source skill documents and in-repo wiki. The packaged mirror is checked separately
+# for byte identity with `skills/`, so scanning it here would only duplicate diagnostics.
+mapfile -t FILES < <(git ls-files 'skills/**/*.md' 'wiki/*.md')
 if [ "${#FILES[@]}" -eq 0 ]; then
-  echo "lint-skill-paths: no skill documents to lint."
+  echo "lint-skill-paths: no skill or wiki documents to lint."
   exit 0
 fi
 
@@ -55,14 +73,36 @@ is_known_agent_path() {
 violations=0
 
 for f in "${FILES[@]}"; do
+  [ -f "$f" ] || continue
   # Check retired cockpit paths line by line, so the report names the line.
   while IFS= read -r hit; do
     lineno="${hit%%:*}"
     text="${hit#*:}"
+    if printf '%s\n' "$text" | grep -Eq "$ALLOW_MARKER_RE"; then
+      continue
+    fi
     echo "lint-skill-paths: $f:$lineno names a retired cockpit path: ${text#"${text%%[![:space:]]*}"}" >&2
     echo "  The cockpit lives under .agent/ (ADR-0011); specs/ cockpit files and .bigpowers/ are retired." >&2
     violations=$((violations + 1))
   done < <(grep -nE "$RETIRED_RE" "$f" || true)
+
+  # Remove canonical qualified names, then reject any cockpit filename that remains.
+  while IFS= read -r hit; do
+    lineno="${hit%%:*}"
+    line="${hit#*:}"
+    if printf '%s\n' "$line" | grep -Eq "$ALLOW_MARKER_RE"; then
+      continue
+    fi
+    unqualified=$(
+      printf '%s\n' "$line" |
+        sed -E 's#\.agent/tasks/(state|release-plan|execution-status)\.ya?ml##g'
+    )
+    if printf '%s\n' "$unqualified" | grep -Eq "$BARE_COCKPIT_RE"; then
+      echo "lint-skill-paths: $f:$lineno names a bare cockpit filename: ${line#"${line%%[![:space:]]*}"}" >&2
+      echo "  Use .agent/tasks/<name>.yml, or mark one clearly labeled layout or migration-source line." >&2
+      violations=$((violations + 1))
+    fi
+  done < <(grep -nE '(state|release-plan|execution-status)\.ya?ml' "$f" || true)
 
   # Check every `.agent/` path token for a known area.
   while IFS= read -r hit; do
@@ -89,5 +129,5 @@ if [ "$violations" -gt 0 ]; then
   exit 1
 fi
 
-echo "lint-skill-paths: every skill names cockpit paths under a known .agent/ area."
+echo "lint-skill-paths: every skill and wiki cockpit path uses a known .agent/ area."
 exit 0

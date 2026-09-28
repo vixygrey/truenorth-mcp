@@ -23,7 +23,7 @@ Tracks the planning progress as discover-phase skills complete. This is NOT a du
 
 - [ ] Does the planning progress record exist? If not, create it with the default workflow keys.
 - [ ] Does `.agent/tasks/state.yml` have `active_flow: planning`? Set it if not already.
-- [ ] Is the task group identified in `release-plan.yaml`? The group must exist before discovery begins.
+- [ ] Is the task group identified in `.agent/tasks/release-plan.yml`? The group must exist before discovery begins.
 
 ## Workflows (default keys)
 
@@ -59,12 +59,12 @@ if written:
    - `scope-work` — what's in and out?
    - `research-first` — what already exists?
    - `elaborate-spec` — refine the idea (optional)
-   - `plan-release` — sequence task groups by WSJF
    - `slice-tasks` — cut vertical slices
+   - `plan-release` — sequence tasks and optional groups using the selected project policy and dependencies
 
 4. **Update status** — On successful completion, set `status: done` for that workflow key in the planning progress.
 
-5. **Advance** — Set `state.yaml` `active_flow: planning` while in this chain. When all required keys are done, set `handoff.next_skill` to `plan-work`.
+5. **Advance** — Set `.agent/tasks/state.yml` `active_flow: planning` while in this chain. When all required keys are done, set `handoff.next_skill` to `plan-work`.
 
 ## Workflow Keys Schema
 

@@ -42,8 +42,8 @@ count.
 
 Transform:
 
-- Each GSD phase becomes one task-group entry in `release-plan.yml` (`group_id`,
-  `group_kind: epic`, `title`, `wsjf`, `file`). A GSD phase is genuinely
+- Each GSD phase becomes one task-group entry in `.agent/tasks/release-plan.yml` (`group_id`,
+  `group_kind: epic`, `title`, optional source priority, `file`). A GSD phase is genuinely
   epic-shaped, so it maps to `group_kind: epic` under the neutral grouping model.
 - Phase detail becomes the matching task group under `.agent/tasks/<group>/`
   (stories, tasks, `verify:`).
@@ -121,12 +121,16 @@ Transform — populate `handoff` in `.agent/tasks/state.yml`:
 
 ```yaml
 handoff:
+  next_skill: survey-context
   last_step_completed: "<phase/plan from HANDOFF>"
+  context: "Migrated from a GSD workspace."
   open_decisions:
     - "<blocking reason if any>"
   required_reading:
     - "<required_reading list>"
-  next_skill: survey-context
+  group_id: null
+  artifacts_summary: null
+  git_context: null
 ```
 
 ---

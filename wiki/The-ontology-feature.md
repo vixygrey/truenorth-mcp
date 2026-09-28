@@ -44,5 +44,5 @@ omits `truenorth://ontology`.
 ## The backing path
 
 The ontology tools and the resource read and write one backing path, `.agent/ontology.yml`,
-through the write guard. A legacy `specs/ontology.yaml` is read as a fallback when the
+through the write guard. A legacy `specs/ontology.yaml` is read as a fallback when the <!-- truenorth-lint: allow-legacy-cockpit-path -->
 primary file is absent, but a write never mutates the legacy file (ADR-0013).

@@ -8,7 +8,7 @@ kind: prose
 
 > **Spine position:** Step 1 — scope-work → slice-tasks → plan-work.
 
-Turn the current conversation into a bounded PRD at `.agent/product/scope.yml`. Without a scope boundary, implementation drifts — stories expand, estimates blow up, and "done" becomes undefined.
+Turn the conversation into a bounded PRD at `.agent/product/scope.yml`. Without a scope boundary, work items expand, estimates drift, and done becomes undefined.
 
 ## Pre-flight
 
@@ -43,7 +43,7 @@ Turn the current conversation into a bounded PRD at `.agent/product/scope.yml`. 
 
 5. **Run `research-first`** if external dependencies are proposed — verify the dependency exists, is maintained, and fits the scope before committing to it.
 
-> **HARD GATE** — Every `in_scope` item must map to a future group or story ID or explicit deferred note in `out_of_scope`. If an item can't be mapped, the scope is too vague — refine before proceeding.
+> **HARD GATE**: Every `in_scope` item must map to a future task or optional group id, or to an explicit deferred note in `out_of_scope`. If it cannot be mapped, refine the scope.
 
 > **HARD GATE** — Do NOT include implementation details in `.agent/product/scope.yml`. Scope is the what and the why, not the how. Implementation detail belongs in task groups and slice-tasks.
 

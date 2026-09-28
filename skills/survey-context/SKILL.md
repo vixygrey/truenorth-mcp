@@ -29,11 +29,11 @@ Scan the runtime state under `.agent/` and the narrative under `specs/`. Read th
 `truenorth://cockpit` resources when available. For each YAML file, note whether it
 exists, whether the keys are populated, and the `handoff.next_skill`.
 
-- `.agent/tasks/state.yml`: the session, the active flow, the active group, the git state, the
-  handoff.
-- `.agent/tasks/release-plan.yml`: the target version, the WSJF group index.
-- `.agent/tasks/execution-status.yml`: the flat story and group status.
-- `.agent/product/`, the task group under `.agent/tasks/`, the bug references under `.agent/tasks/bugs.yml`: scope, task groups, bug references.
+Read the declared methodology profile before interpreting grouping or priority:
+
+- `epic-based` and `milestone-based` profiles group tasks under their declared unit.
+- `issue-per-task`, `kanban`, and `generic` profiles may omit grouping.
+- WSJF is used only when the project explicitly selects it as its prioritization policy.
 
 ### 3. Read the project agent guide
 
@@ -63,7 +63,7 @@ Identify the current phase from what you found.
 | **Integrate** | PR open, tests passing                                |
 | **Sustain**   | Ongoing, no active task                               |
 
-Prefer the `active_flow` and `handoff.next_skill` from `state.yaml` when present.
+Prefer the `active_flow` and `handoff.next_skill` from `.agent/tasks/state.yml` when present.
 
 ### 6. Suggest the next skill
 
@@ -71,8 +71,8 @@ Recommend the most useful next step for the phase and state.
 
 - In the plan or bug phase and on `main`: suggest `kickoff-branch`.
 - In the initiate phase: suggest `develop-tdd` or `execute-plan`.
-- In the execute phase: suggest `build-epic` to resume, or `develop-tdd` for the
-  active story.
+- In the execute phase: suggest `build-group` to resume, or `develop-tdd` for the
+  active task.
 - In the verify phase: suggest `verify-work` or `run-evals`.
 
 Be specific. Name the exact skill and why. When several options exist, list them in
@@ -82,7 +82,7 @@ priority order.
 
 Report a blocker before a recommendation: a broken baseline test, an open external bug
 issue with no active fix branch, a group task with no verify command, or a git hash in
-`state.yaml` that is stale versus the working tree.
+`.agent/tasks/state.yml` that is stale versus the working tree.
 
 ### 8. Record the story-start timestamp
 
@@ -99,4 +99,4 @@ At story start, write `metrics.story_start` with the current ISO-8601 timestamp 
 ## Handoff
 
 Gate: READY. Next: plan-work.
-Writes: `state.yaml` `handoff.next_skill = plan-work`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = plan-work`.

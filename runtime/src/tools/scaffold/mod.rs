@@ -37,8 +37,8 @@ pub use upgrade::{apply_workspace_upgrade, plan_workspace_upgrade};
 
 use templates::{
     COMMIT_TEMPLATE, EXECUTION_STATUS_SEED, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK,
-    PULL_REQUEST_TEMPLATE, agents_md, bug_form, conventions_md, feature_form, layout_contract,
-    starter_seed,
+    PULL_REQUEST_TEMPLATE, STATE_SEED, agents_md, bug_form, conventions_md, feature_form,
+    layout_contract, starter_seed,
 };
 
 /// The command the scaffold prints for the human to run. The scaffold never runs it
@@ -137,7 +137,7 @@ pub fn scaffold_sources(profile: Profile) -> Vec<ScaffoldSource> {
             "# Runtime configuration.\n# Token estimates use ceil(characters / 4). Oversized tool responses fail without truncation.\ntoken_caps:\n  skill_lean_tokens: 1500\n  tool_payload_tokens: 4000\n",
         ),
         source(".agent/spec/requirements.md", "# Requirements\n"),
-        source(".agent/tasks/state.yml", "phase: discover\n"),
+        source(".agent/tasks/state.yml", STATE_SEED),
         source(".agent/tasks/execution-status.yml", EXECUTION_STATUS_SEED),
         source(".agent/memories/lessons.md", "# Lessons\n"),
         source(".agent/memories/glossary.md", "# Glossary\n"),

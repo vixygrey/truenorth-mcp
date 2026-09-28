@@ -16,11 +16,11 @@ Delegate a single complex task to a subagent with a two-stage review gate before
 
 Select brief depth from the task `risk:` before spawning:
 
-| Tier               | When                                            | Brief includes                                                   |
-| ------------------ | ----------------------------------------------- | ---------------------------------------------------------------- |
-| `full_maturity`    | P0 stories, multi-file refactors, security work | Full template + CONVENTIONS excerpts + threat model if present   |
-| `standard`         | Default implementation tasks                    | Goal, scope, out-of-bounds, constraints, verify, prior decisions |
-| `minimal_decisive` | Light probes, read-only audits                  | Goal, verify, explicit file list (≤15 lines total)               |
+| Tier               | When                                               | Brief includes                                                   |
+| ------------------ | -------------------------------------------------- | ---------------------------------------------------------------- |
+| `full_maturity`    | P0 work items, multi-file refactors, security work | Full template + CONVENTIONS excerpts + threat model if present   |
+| `standard`         | Default implementation tasks                       | Goal, scope, out-of-bounds, constraints, verify, prior decisions |
+| `minimal_decisive` | Light probes, read-only audits                     | Goal, verify, explicit file list (≤15 lines total)               |
 
 State `depth: <tier>` in the Agent tool description field.
 

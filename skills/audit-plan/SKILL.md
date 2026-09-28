@@ -14,7 +14,7 @@ Assess an incoming project plan for alignment with the project principles, ident
 
 ### 1. Principles alignment
 
-- Are stories vertical slices (not horizontal layers)?
+- Are work items vertical slices rather than horizontal layers?
 - Is scope bounded — explicit in_scope + out_of_scope?
 - Are success criteria defined (how do we know we're done)?
 - Are HARD GATE candidates identifiable (critical decision points)?
@@ -62,7 +62,7 @@ Assess an incoming project plan for alignment with the project principles, ident
 ## Principles Alignment
 
 | Check | Status | Note |
-| Vertical slices | ✅ | 4 stories, each shippable |
+| Vertical slices | ✅ | 4 work items, each shippable |
 | Scope bounded | ⚠️ | in_scope present; out_of_scope missing |
 
 ## Conventions Completeness

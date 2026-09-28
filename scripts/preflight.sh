@@ -140,11 +140,14 @@ run_format() {
 run_shell() {
   require_bash_four
   require_command git "Install Git."
+  require_command node "Install Node.js 18 or newer. Use a supported release."
 
   echo "preflight: [shell] shellcheck"
   bash scripts/lint-shell.sh
   echo "preflight: [shell] skill artifact paths"
   bash scripts/lint-skill-artifacts.sh
+  echo "preflight: [shell] skill cockpit path regressions"
+  node --test scripts/lint-skill-paths.test.js
   echo "preflight: [shell] skill cockpit paths"
   bash scripts/lint-skill-paths.sh
   echo "preflight: [shell] skill handoffs"

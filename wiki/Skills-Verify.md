@@ -45,7 +45,7 @@ Apply the F.I.R.S.T test-quality rubric to a test suite.
 - **When to use it**: when `develop-tdd` is writing tests, or when test quality needs a
   check. It is typically invoked internally by `develop-tdd`, and can run standalone.
 - **Modes**: default (all five criteria), or `--quick` (Fast, Independent, Self-Validating
-  only, used by `build-epic` step 6).
+  only, used by `build-group` step 6).
 - **Hard gate**: all enforcement checks (lint, typecheck, tests, coverage) must pass. Do
   not disable a check to reach green.
 
@@ -181,12 +181,12 @@ Security analysis of code changes, tracing data flow across files.
   vulnerabilities, applies proven exclusions, and reports three sections:
   `Confirmed findings`, `Needs investigation`, and `Excluded`.
 - **When to use it**: when reviewing pending changes, before `release-branch`,
-  during `verify-work`, during `build-epic` threat modeling, or on request.
+  during `verify-work`, during `build-group` threat modeling, or on request.
 - **Hard gate**: requires git context. Confirmed unresolved HIGH/CRITICAL
   findings block. An uncertain potentially HIGH/CRITICAL path remains visible
   under `Needs investigation` and requires explicit disposition before release.
   Confidence alone never suppresses either class.
-- **Integration**: it touches `build-epic`, `plan-work`, `plan-release`,
+- **Integration**: it touches `build-group`, `plan-work`, `plan-release`,
   `audit-code`, `request-review`, `investigate-bug`, `validate-fix`,
   `verify-work`, and `release-branch`.
 

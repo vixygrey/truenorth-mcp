@@ -40,6 +40,17 @@ Whether the grouping key is required depends on the active profile. `epic-based`
 `milestone-based` require it. `issue-per-task`, `kanban`, and `generic` accept a task
 without it.
 
+## Priority and estimation policies
+
+Profiles define workflow shape, not prioritization or estimation. WSJF and BCP are
+optional policies. Apply either only when project conventions, an existing
+artifact, or the user explicitly selects it. Otherwise preserve dependency or
+declared order and omit WSJF and BCP fields.
+
+Shared instructions use `task`, `work item`, and `group`. User-facing output may
+use the active profile's grouping word. Do not invent an epic, milestone, ticket,
+or story when the profile does not require one.
+
 ## Scaffold a profile
 
 `truenorth_scaffold_project` takes a profile name and seeds the `.agent/` tree, the git
