@@ -4,6 +4,7 @@
 
 import { existsSync, renameSync, copyFileSync, unlinkSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { log } from './lib/logging.js';
 import { BrowserExtractor } from './lib/browser.js';
 import { DesignValidator } from './lib/validator.js';
@@ -340,8 +341,10 @@ function formatDiff(dr) {
   return lines.length ? lines.join('\n') : '  No token-level changes detected.';
 }
 
-main().catch((err) => {
-  log.user(`\nFATAL — Unexpected error:\n  ${err.message}`);
-  log.error('unhandled', { error: err.message, stack: err.stack });
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main().catch((err) => {
+    log.user(`\nFATAL — Unexpected error:\n  ${err.message}`);
+    log.error('unhandled', { error: err.message, stack: err.stack });
+    process.exit(1);
+  });
+}

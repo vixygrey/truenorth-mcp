@@ -41,7 +41,7 @@ export function classifySpacing(styles) {
     if (c >= 3) freq.set(v, c);
   }
   if (freq.size < 3) u.push('Fewer than 3 spacing values.');
-  const nums = [...freq.keys()].map(toPx).filter((v) => v > 0);
+  const nums = [...freq.keys()].filter((v) => v > 0);
   const g = tGcd(nums, 0.5);
   if (!g || g < 2) {
     const sorted = [...freq.entries()].sort((a, b) => b[1] - a[1]);

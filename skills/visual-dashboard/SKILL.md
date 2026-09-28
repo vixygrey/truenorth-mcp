@@ -2,7 +2,7 @@
 name: visual-dashboard
 description: "Start a browser-based dashboard that visualizes the architecture, the implementation plans, and the project status. Reads the cockpit files (state, release plan, task groups, planning status) and serves a read-only view."
 kind: scripted
-verify: node --check skills/visual-dashboard/scripts/server.cjs
+verify: node --test skills/visual-dashboard/tests/*.test.cjs
 ---
 
 # Visual Dashboard
@@ -35,5 +35,5 @@ the MCP server.
 
 ## Verify
 
-Run `node --test skills/visual-dashboard/tests/read-specs-status.test.cjs`, then confirm
-the status endpoint returns current tasks for the project.
+Run `node --test skills/visual-dashboard/tests/*.test.cjs`. The tests start the real
+HTTP server against disposable cockpit data and validate `/api/status`.

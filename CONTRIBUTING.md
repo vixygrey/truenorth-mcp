@@ -30,6 +30,7 @@ verification:
 
 ```bash
 npm ci --ignore-scripts --no-audit --no-fund
+node_modules/.bin/puppeteer browsers install chrome
 npm run preflight
 ```
 
@@ -47,8 +48,8 @@ The command checks the default and `tree-sitter` Rust builds, wrapper tests,
 native and packed artifacts, formatting, documentation, shell scripts, skill
 paths, handoffs, script-bearing skills, and deterministic methodology scenarios.
 It reports missing prerequisites and unsupported artifact platforms with
-remediation. Browser-bound skill checks are reported as skips when their optional
-dependencies are unavailable.
+remediation. Browser-bound scripted verification reports `UNAVAILABLE` and fails
+the hard gate until the Puppeteer-pinned Chrome build is installed.
 
 The methodology suite and baseline workflow are documented in
 [`evals/methodology/README.md`](evals/methodology/README.md). Model scenarios are

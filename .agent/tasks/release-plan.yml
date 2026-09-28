@@ -227,3 +227,7 @@ tasks:
   group_kind: ticket
   task_name: Add compact methodology regression suite
   verify_command: bash scripts/preflight.sh evals
+- group_id: '457'
+  group_kind: ticket
+  task_name: Make scripted skill verification prove core behavior
+  verify_command: bash scripts/preflight.sh shell && npm run preflight

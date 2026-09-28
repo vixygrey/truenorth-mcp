@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // test-extraction.js — verify command for extract-design
-// Unit tests (all classifiers) + integration tests (Puppeteer, if available)
+// Unit tests plus browser integration tests. Pass --require-browser for the hard gate.
 
 import { readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -12,16 +12,20 @@ const FIXTURES = resolve(__dirname, 'fixtures');
 let p = 0,
   f = 0,
   s = 0;
+let chain = Promise.resolve();
+const requireBrowser = process.argv.includes('--require-browser');
 
 function t(name, fn) {
-  try {
-    fn();
-    p++;
-    console.log(`  ✓ ${name}`);
-  } catch (e) {
-    f++;
-    console.log(`  ✗ ${name}: ${e.message}`);
-  }
+  chain = chain.then(async () => {
+    try {
+      await fn();
+      p++;
+      console.log(`  ✓ ${name}`);
+    } catch (e) {
+      f++;
+      console.log(`  ✗ ${name}: ${e.message}`);
+    }
+  });
 }
 function skip(name, reason) {
   s++;
@@ -49,6 +53,13 @@ function checkPuppeteer() {
   }
 }
 const puppeteerPkg = checkPuppeteer();
+
+function browserOptions(puppeteer) {
+  return {
+    puppeteer,
+    chromePath: process.env.TRUENORTH_CHROME_PATH || process.env.CHROME_PATH,
+  };
+}
 
 // ================================================================
 // Unit tests
@@ -372,7 +383,7 @@ if (puppeteerPkg) {
   t('BrowserExtractor launches and extracts', async () => {
     const pm = await import(puppeteerPkg);
     const { BrowserExtractor } = await import('../scripts/lib/browser.js');
-    const ex = new BrowserExtractor({ puppeteer: pm.default || pm });
+    const ex = new BrowserExtractor(browserOptions(pm.default || pm));
     const fixture = resolve(FIXTURES, 'swiss-grid/prototype.html');
     const result = await ex.extract(fixture);
     assert(result.light, 'Should have light mode extraction');
@@ -383,12 +394,13 @@ if (puppeteerPkg) {
   t('BrowserExtractor extracts glassmorphism fixture', async () => {
     const pm = await import(puppeteerPkg);
     const { BrowserExtractor } = await import('../scripts/lib/browser.js');
-    const ex = new BrowserExtractor({ puppeteer: pm.default || pm });
+    const ex = new BrowserExtractor(browserOptions(pm.default || pm));
     const fixture = resolve(FIXTURES, 'glassmorphism-dark/prototype.html');
     const result = await ex.extract(fixture);
     const styles = result.light.styles;
     assert(styles.length > 0);
     const hasGlass = styles.some((s) => s.backdropFilter && s.backdropFilter !== 'none');
+    assert(hasGlass, 'Should observe a computed backdrop filter');
     // Note: file:// may not load Google Fonts CDN — expected
     assert(
       result.light.declaredFonts !== undefined,
@@ -399,7 +411,7 @@ if (puppeteerPkg) {
   t('BrowserExtractor handles minimal-no-styles fixture (degraded)', async () => {
     const pm = await import(puppeteerPkg);
     const { BrowserExtractor } = await import('../scripts/lib/browser.js');
-    const ex = new BrowserExtractor({ puppeteer: pm.default || pm });
+    const ex = new BrowserExtractor(browserOptions(pm.default || pm));
     const fixture = resolve(FIXTURES, 'minimal-no-styles/prototype.html');
     const result = await ex.extract(fixture);
     const styles = result.light.styles;
@@ -410,12 +422,17 @@ if (puppeteerPkg) {
   t('Dark mode pass runs without error', async () => {
     const pm = await import(puppeteerPkg);
     const { BrowserExtractor } = await import('../scripts/lib/browser.js');
-    const ex = new BrowserExtractor({ puppeteer: pm.default || pm });
+    const ex = new BrowserExtractor(browserOptions(pm.default || pm));
     const fixture = resolve(FIXTURES, 'swiss-grid/prototype.html');
     const result = await ex.extract(fixture);
     // Swiss grid is light-only — dark should be null or have styles
     assert(result.dark === null || result.dark.styles !== undefined, 'Dark pass should complete');
   });
+} else if (requireBrowser) {
+  console.error(
+    'TRUENORTH_VERIFY_UNAVAILABLE: Puppeteer is not installed; run npm ci --ignore-scripts',
+  );
+  f++;
 } else {
   console.log('\nIntegration tests (Puppeteer)\n');
   skip('Puppeteer tests', 'Puppeteer not installed. Install with: npm install puppeteer');
@@ -934,6 +951,8 @@ t('writeGrillMeHandoff appends the handoff, preserving existing state content', 
 // ================================================================
 // Summary
 // ================================================================
+await chain;
+
 console.log(`\n${'='.repeat(40)}`);
 console.log(`${p} passed, ${f} failed, ${s} skipped`);
 if (p === 0 && f === 0 && s > 0) {
