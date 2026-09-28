@@ -64,4 +64,4 @@ triggers the release workflow. The commit message does not publish on its own. S
 ## Handoff
 
 Gate: READY. Next: release-branch.
-Writes: `state.yaml` `handoff.next_skill = release-branch`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = release-branch`.

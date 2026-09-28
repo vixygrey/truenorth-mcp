@@ -23,7 +23,7 @@ Before proceeding, check for these rationalization traps:
 - **Partial artifact set** — only one fingerprint file found (e.g. just `spec.md` with no `plan.md`). Don't assume it's a complete project. Ask: "I found only X — is this the full set of your spec artifacts?"
 - **Wrong trigger** — user said "migrate my code" or "migrate the database", not "migrate my specs". Confirm before running.
 - **Stale source** — source artifacts have commit dates older than 6 months with no recent activity. Flag: "These specs appear inactive since <date>. Are they still the source of truth?"
-- **Active divergence** — source `state.yaml` or `sprint-status.yaml` shows in-progress work. Flag: "There is active work in flight. Migrating now may lose in-progress context. Proceed?"
+- **Active divergence** — source `state.yaml` or `sprint-status.yaml` shows in-progress work. Flag: "There is active work in flight. Migrating now may lose in-progress context. Proceed?" <!-- truenorth-lint: allow-legacy-cockpit-path -->
 
 If any red flag fires: surface it, wait for explicit user confirmation before continuing.
 
@@ -81,7 +81,7 @@ See [REFERENCE.md](REFERENCE.md) — `trace:...`
 
 **Existing trace file:** If `REQUIREMENTS_TRACE.yaml` already exists, prompt: "REQUIREMENTS_TRACE.yaml exists. [overwrite / merge / skip]"
 
-**No FR-XX/UJ-XX found:** Skip trace file; add note to state.yaml handoff: "No FR-XX/UJ-XX IDs found — traceability file skipped".
+**No FR-XX/UJ-XX found:** Skip the trace file; add a note to the `.agent/tasks/state.yml` handoff: "No FR-XX/UJ-XX IDs found; traceability file skipped".
 
 See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirements_traceyaml-format) for the complete schema.
 
@@ -91,7 +91,7 @@ See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirement
 
 → verify: `test -f .agent/tasks/state.yml`
 
-### Step 4 — Generate state.yaml
+### Step 4 — Generate `.agent/tasks/state.yml`
 
 Always regenerate `.agent/tasks/state.yml` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
 

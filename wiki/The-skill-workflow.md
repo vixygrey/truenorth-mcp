@@ -20,7 +20,7 @@ PLAN        scope-work, slice-tasks, plan-work, plan-tests, plan-release, plan-r
             assess-impact, run-planning, change-request, seed-conventions
 INITIATE    kickoff-branch, guard-git, hook-commits, setup-environment
 SPIKE?      spike-prototype (feeds back to plan-work)
-EXECUTE     develop-tdd + enforce-first, execute-plan, build-epic, delegate-task,
+EXECUTE     develop-tdd + enforce-first, execute-plan, build-group, delegate-task,
             dispatch-agents
 VERIFY      verify-work, run-evals, validate-contracts, smoke-test
 BUG?        investigate-bug, diagnose-root, fix-bug, validate-fix
@@ -105,7 +105,7 @@ unresolved blockers. `security-review` and `gate-trace` gate the merge in
 ## Orchestration
 
 `orchestrate-project` coordinates a multi-phase project through the core loop with hard
-gates, calling `build-epic` once per story in the build phase. `compose-workflow` chains
+gates, calling `build-group` once per task in the build phase. `compose-workflow` chains
 skills into a named recipe. The Standard Recipe Library maps a command to a skill chain:
 
 | Command        | Skill chain                                               |
@@ -120,8 +120,8 @@ skills into a named recipe. The Standard Recipe Library maps a command to a skil
 
 ## security-review touches many phases
 
-`security-review` is a cross-phase skill. It integrates at nine touchpoints: `build-epic`
-step 0 (threat model), `plan-work` (the `security:` field), `plan-release` (a WSJF boost),
+`security-review` is a cross-phase skill. It integrates at nine touchpoints: `build-group`
+step 0 (threat model), `plan-work` (the `security:` field), conditional release prioritization,
 `audit-code`, `request-review`, `investigate-bug`, `validate-fix`, `verify-work` phase 5,
 and `release-branch` (the merge gate).
 

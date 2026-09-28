@@ -1,6 +1,6 @@
 ---
 name: security-review
-description: 'Security analysis of code changes. Traces data flow and detects injection, auth bypass, secrets exposure, and unsafe deserialization across files. Use it when reviewing pending changes, before release-branch, during verify-work, during build-epic threat modeling, or when the user says "security review".'
+description: 'Security analysis of code changes. Traces data flow and detects injection, auth bypass, secrets exposure, and unsafe deserialization across files. Use it when reviewing pending changes, before release-branch, during verify-work, during build-group threat modeling, or when the user says "security review".'
 kind: prose
 ---
 
@@ -63,17 +63,16 @@ Formal rule for SQL injection classification:
 
 ## Integration points
 
-| Skill             | Touchpoint                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `build-epic`      | Step 0 — threat-model group scope → the security review report                                                     |
-| `plan-work`       | `security:` field (none/low/medium/high) on story tasks                                                            |
-| `plan-release`    | +2 WSJF risk boost for HIGH+ risk task groups                                                                      |
-| `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                                                           |
-| `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt                                         |
-| `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                                                                  |
-| `validate-fix`    | Recurrence hardening check for security bugs                                                                       |
-| `verify-work`     | Phase 5 — blocks on unresolved confirmed HIGH/CRITICAL findings or undispositioned high-impact investigation items |
-| `release-branch`  | Hard gate — applies the same unresolved-finding rule                                                               |
+| Skill             | Touchpoint                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `build-group`     | Step 0 — threat-model selected scope → the security review report                                                   |
+| `plan-work`       | `security:` field (none/low/medium/high) on tasks; feed risk into the selected prioritization policy when supported |
+| `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                                                            |
+| `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt                                          |
+| `investigate-bug` | Security-impact assessment in RCA (NONE→CRITICAL)                                                                   |
+| `validate-fix`    | Recurrence hardening check for security bugs                                                                        |
+| `verify-work`     | Phase 5 — blocks on unresolved confirmed HIGH/CRITICAL findings or undispositioned high-impact investigation items  |
+| `release-branch`  | Hard gate — applies the same unresolved-finding rule                                                                |
 
 ## Report format
 

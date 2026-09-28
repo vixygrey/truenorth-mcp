@@ -123,7 +123,7 @@ from `team-pr`.
 ## Handoff
 
 Gate: READY -> next: survey-context
-Writes: state.yaml handoff.next_skill = survey-context
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = survey-context`
 
 ---
 

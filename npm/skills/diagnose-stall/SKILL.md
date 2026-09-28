@@ -8,7 +8,7 @@ kind: prose
 
 > **HARD GATE** — Do NOT restart work blindly. Run this diagnostic first when orchestration goes quiet without an explicit terminal state.
 
-Explicit handler for silent stalls in long-running agent workflows (`/loop`, `dispatch-agents`, `execute-plan`, `build-epic` resume mode).
+Explicit handler for silent stalls in long-running agent workflows (`/loop`, `dispatch-agents`, `execute-plan`, `build-group` resume mode).
 
 ## Stall signals
 
@@ -50,5 +50,5 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Handoff
 
-Gate: READY → next: survey-context (if state unclear) or resume prior skill from `state.yaml`
+Gate: READY → next: survey-context (if state unclear) or resume the prior skill from `.agent/tasks/state.yml`
 Writes: the verification note

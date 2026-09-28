@@ -40,16 +40,16 @@ Test-driven development with a red-green-refactor loop over vertical slices.
   commit or push a deliberately failing tree. Never refactor while RED.
 - **Handoff**: gate READY, next `verify-work`.
 
-### build-epic
+### build-group
 
-The task-group build cycle. Advances the build flow one step per invocation in resume
+The profile-aware task and optional group build cycle. Advances one step per invocation in resume
 mode.
 
 - **What it does**: orchestrates the eight-step build flow for one story: security-review,
   survey, plan, kickoff, TDD, verify, the non-optional audit-code gate, commit-message, and
   release-branch. It records timestamps and refreshes traceability.
 - **When to use it**: for release work, instead of an ad-hoc `execute-plan`. It is called
-  by `orchestrate-project`, scoped to one story, and is not a replacement for it.
+  by `orchestrate-project`, scoped to one task, and is not a replacement for it.
 - **Inputs**: the state, execution status, release plan, and the active task group.
 - **Outputs**: an advanced build flow and an updated execution status.
 - **Hard gates**: set `active_flow: build_group` and `active_group` first. Not on `main`
@@ -79,8 +79,8 @@ The meta-skill that coordinates a multi-phase project through the six-phase core
 hard gates.
 
 - **What it does**: maintains the phase state, routes to the phase skill, applies
-  methodology lenses, enforces the gates, gatekeeps between stories in the build phase
-  (using `build-epic` per story), and pauses for confirmation between phases.
+  methodology lenses, enforces the gates, gatekeeps between tasks in the build phase
+  (using `build-group` per task), and pauses for confirmation between phases.
 - **When to use it**: to coordinate complex, multi-stage work. A single-skill task uses the
   dedicated skill instead.
 - **Inputs**: the state (`project_cycle`), the cockpit files.

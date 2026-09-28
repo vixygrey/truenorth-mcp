@@ -39,7 +39,7 @@ version: "1"
 areas:
   config: [rules.yml]
   spec: [requirements.md]
-  tasks: [state.yml]
+  tasks: [state.yml] # truenorth-lint: allow-relative-layout-path
   memories: [lessons.md, glossary.md]
   telemetry: [runs.yml]
 ```
@@ -111,11 +111,11 @@ no external tracker request.
 V1 reads the `.agent/` cockpit first. When the corresponding file is absent, it
 reads these legacy BigPowers paths:
 
-| V1 path                         | Legacy fallback           | First runtime write                    |
-| ------------------------------- | ------------------------- | -------------------------------------- |
-| `.agent/tasks/state.yml`        | `specs/state.yaml`        | Writes `.agent/tasks/state.yml`        |
-| `.agent/tasks/release-plan.yml` | `specs/release-plan.yaml` | Writes `.agent/tasks/release-plan.yml` |
-| `.agent/ontology.yml`           | `specs/ontology.yaml`     | Writes `.agent/ontology.yml`           |
+| V1 path                         | Legacy fallback           | First runtime write                                                                       |
+| ------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
+| `.agent/tasks/state.yml`        | `specs/state.yaml`        | Writes `.agent/tasks/state.yml` <!-- truenorth-lint: allow-legacy-cockpit-path -->        |
+| `.agent/tasks/release-plan.yml` | `specs/release-plan.yaml` | Writes `.agent/tasks/release-plan.yml` <!-- truenorth-lint: allow-legacy-cockpit-path --> |
+| `.agent/ontology.yml`           | `specs/ontology.yaml`     | Writes `.agent/ontology.yml` <!-- truenorth-lint: allow-legacy-cockpit-path -->           |
 
 When both files exist, the `.agent/` file wins. V1 never mutates a legacy
 `specs/` source. It does not automatically delete or rename legacy files.

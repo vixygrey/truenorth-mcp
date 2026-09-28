@@ -1,38 +1,50 @@
-# Plan Tests — Reference
+# Plan Tests Reference
 
-## Group test plan
-
-Write this template to `.agent/tasks/<capsule>/test-plan.md`. Copy story ids from
-`group.yml`. Never create a story id in the test plan.
+Write this template to `.agent/tasks/<capsule>/test-plan.md`. Copy task ids from
+the active manifest. Never create an id in the test plan.
 
 ```markdown
-# Test Design: [group id and title]
+# Test design: <task group id and title>
 
-## 1. Risk Matrix and Scenarios
+## Scope
 
-| Scenario ID     | Behavior Description | Risk | Test Level  | Target File/Module |
-| --------------- | -------------------- | ---- | ----------- | ------------------ |
-| SC-e01s01-P0-01 | Primary checkout     | P0   | Integration | checkout.spec.ts   |
+- Profile: <issue-per-task | epic-based | milestone-based | kanban | generic>
+- Work items: <declared task ids>
+- Exclusions: <explicit exclusions>
 
-## 2. Fixture Architecture and Isolation
+## Scenarios
 
-- Data factories: for example, `UserFactory`
-- Network intercepts: for example, MSW handlers
-- Database state: for example, in-memory SQLite
+### SC-<task-id>-P0-01: <observable behavior>
 
-## 3. NFR Verification
+- Risk: P0
+- Owner: <task id>
+- Level: unit | integration | end-to-end
+- Setup: <fixture or initial state>
+- Action: <user or system action>
+- Expected: <observable result>
+- Verify: `<runnable command or smoke procedure>`
+- Failure evidence: <log, response, state, or screenshot>
 
-| NFR Type | Requirement | Verification Command |
-| -------- | ----------- | -------------------- |
-| Perf     | < 200ms     | `npm run test:perf`  |
+## Coverage matrix
 
-## 4. Out of Scope
+| Requirement or behavior | Task id   | Scenario ids       | Risk |
+| ----------------------- | --------- | ------------------ | ---- |
+| <behavior>              | <task-id> | SC-<task-id>-P0-01 | P0   |
 
-- [Explicitly excluded testing areas]
+## Fixtures and boundaries
+
+- <fixture ownership, isolation, and cleanup>
+
+## Deferred coverage
+
+- <P2 or P3 scenario, owner, and rationale>
 ```
 
-## Fixture Planning Guidance
+## Rules
 
-- **Data Factories**: Prefer factory functions over manual object construction.
-- **Network Intercepts**: For frontend integration tests, use tools like Mock Service Worker (MSW) to intercept and mock HTTP requests.
-- **Database State**: For backend tests, use a clean database state per test or an in-memory database to ensure isolation.
+- Every scenario references a task already declared in the active manifest.
+- Every P0 and P1 behavior has an owner and verification path.
+- Prefer the lowest test level that proves the behavior.
+- Include failure and boundary behavior where risk warrants it.
+- Preserve an existing profile-specific id format only when the project already
+  selected it. Shared schema remains task-based.

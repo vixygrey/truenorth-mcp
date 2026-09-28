@@ -24,8 +24,25 @@ areas:
     .to_string()
 }
 
-/// The empty execution-status cockpit shared by every methodology profile.
-pub(super) const EXECUTION_STATUS_SEED: &str = "stories: {}\ndevelopment_status: {}\n";
+/// The methodology-neutral state cockpit shared by every profile.
+pub(super) const STATE_SEED: &str = "\
+phase: discover
+active_flow: null
+active_task: null
+active_group: null
+handoff:
+  next_skill: null
+  last_step_completed: null
+  context: null
+  open_decisions: []
+  required_reading: []
+  group_id: null
+  artifacts_summary: null
+  git_context: null
+";
+
+/// The empty methodology-neutral execution-status cockpit.
+pub(super) const EXECUTION_STATUS_SEED: &str = "tasks: {}\ngroups: {}\ndevelopment_status: {}\n";
 
 /// The seed body for a profile starter file.
 pub(super) fn starter_seed(rel: &str) -> String {

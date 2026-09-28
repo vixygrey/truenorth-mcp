@@ -19,14 +19,14 @@ workspace contract, legacy cockpit migration behavior, and upgrade steps.
 The contract requires these entries under `.agent/`. Each area is a directory with its
 named files.
 
-| Area         | Required entries            | Purpose                                            |
-| ------------ | --------------------------- | -------------------------------------------------- |
-| `config/`    | `rules.yml`                 | Token caps, approval gates, protected paths, flags |
-| `spec/`      | `requirements.md`           | The feature narrative                              |
-| `tasks/`     | `state.yml`                 | Cockpit state, the phase, the TDD step             |
-| `memories/`  | `lessons.md`, `glossary.md` | Durable lessons and the working glossary           |
-| `telemetry/` | `runs.yml`                  | The agent cost audit, excluded from agent reads    |
-| (root)       | `layout.yml`, `profile.yml` | The contract and the active profile name           |
+| Area         | Required entries            | Purpose                                                                                    |
+| ------------ | --------------------------- | ------------------------------------------------------------------------------------------ |
+| `config/`    | `rules.yml`                 | Token caps, approval gates, protected paths, flags                                         |
+| `spec/`      | `requirements.md`           | The feature narrative                                                                      |
+| `tasks/`     | `state.yml`                 | Cockpit state, the phase, the TDD step <!-- truenorth-lint: allow-relative-layout-path --> |
+| `memories/`  | `lessons.md`, `glossary.md` | Durable lessons and the working glossary                                                   |
+| `telemetry/` | `runs.yml`                  | The agent cost audit, excluded from agent reads                                            |
+| (root)       | `layout.yml`, `profile.yml` | The contract and the active profile name                                                   |
 
 The runtime also reads `tasks/release-plan.yml` for recorded tasks.
 `tasks/backlog.yml` independently declares whether backlog ownership is local or

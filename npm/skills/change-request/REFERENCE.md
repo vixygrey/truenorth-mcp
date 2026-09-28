@@ -1,5 +1,8 @@
 # WSJF Scoring Reference
 
+Use this policy only when project conventions, an existing artifact, or the user
+explicitly selects WSJF. It is not a default of any methodology profile.
+
 Weighted Shortest Job First: **WSJF = (Business Value + Time Criticality + Risk Reduction) / Job Size**
 
 All dimensions scored 1–10 using a Fibonacci-like scale: 1, 2, 3, 5, 8, 10.
@@ -47,7 +50,7 @@ All dimensions scored 1–10 using a Fibonacci-like scale: 1, 2, 3, 5, 8, 10.
 
 ## Cut threshold
 
-Stories with WSJF < 1.5 are cut candidates: high effort, low combined value.
+Work items with WSJF below 1.5 are cut candidates: high effort, low combined value.
 
 ## Example
 

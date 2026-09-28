@@ -38,7 +38,7 @@ deviating from production-grade craft.
 
 ### 1. Planning
 
-- [ ] Read the active group story tasks or the external bug issue. Understand the verify steps.
+- [ ] Read the active task ledger or the external bug issue. Understand the verify steps.
 - [ ] When a test plan exists for the active group, read it before the first test. Implement the P0 scenarios before P1. P2 and P3 are optional per the time budget.
 - [ ] Confirm the interface changes and the behaviors to test. Prioritize them.
 - [ ] Design the interfaces for testability. Identify deep-module opportunities.
@@ -129,4 +129,4 @@ Run the verify command from the active group task or external bug issue through 
 ## Handoff
 
 Gate: READY. Next: verify-work.
-Writes: `state.yaml` `handoff.next_skill = verify-work`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = verify-work`.

@@ -43,7 +43,7 @@ next-skill recommendation. This is the "where am I?" skill.
   state is stale or contradicts the code, ask rather than assume.
 - **Handoff**: gate READY, next `plan-work`, writing `handoff.next_skill`. In practice it
   routes to the phase-appropriate skill (for example `kickoff-branch` on `main`,
-  `build-epic` mid-build, `verify-work` after implementation).
+  `build-group` mid-build, `verify-work` after implementation).
 - **Related**: for deriving a tech-stack note from scratch, run `map-codebase` first.
 
 ## map-codebase

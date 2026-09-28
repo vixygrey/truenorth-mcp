@@ -1,167 +1,133 @@
-# Plan Work — Reference
-
-## Navigation
-
-| Lines   | Section                                     |
-| ------- | ------------------------------------------- |
-| 1       | Title                                       |
-| 3–25    | Navigation                                  |
-| 26–27   | Output file formats                         |
-| 28–31   | Story spec (task group directory)           |
-| 32–48   | Task checklist (task group directory)       |
-| 49–51   | Plan template                               |
-| 52–58   | Story [X.Y]: [title] — Implementation Steps |
-| 59–64   | Steps                                       |
-| 65–72   | Verification Script (Step-by-Step)          |
-| 73–76   | Out of scope                                |
-| 77–81   | Risks                                       |
-| 82–104  | Verify step format rules                    |
-| 105–106 | Sub-operations                              |
-| 107–117 | Risk Assignment Heuristics                  |
-| 118–135 | Requirement delta tags (e45s29)             |
-| 136–145 | Define Success                              |
-| 146–155 | Zoom-Out Check                              |
-| 156–164 | Slopcheck                                   |
+# Plan Work Reference
 
 ## Output file formats
 
-### Story spec (task group directory: `.agent/tasks/<capsule>/`)
+Use the filenames reserved by the selected work item in its manifest. A neutral
+convention is:
 
-Populated countable-story-format with all 20 sections. Minimum maturity: 3 (Countable). Acceptance criteria in §17.
+- `.agent/tasks/<capsule>/<task-id>-spec.md`
+- `.agent/tasks/<capsule>/<task-id>-tasks.yml`
 
-### Task checklist (task group directory: `.agent/tasks/<capsule>/`)
+A profile may use its grouping vocabulary in the id. Shared instructions and
+schema fields remain task-based.
+
+## Task ledger
 
 ```yaml
-story_id: e01s01
+task_id: task-17
 title: Login
 status: failing
-bcps: 3
 tasks:
   - id: 1
     description: "Add login form component tests"
     verify: "npm test -- login-form.test.tsx"
     risk: P1
-    status: failing # flip to passing only after verify exits 0 (e45s06)
+    status: failing
 ```
 
-The story must already be listed in `group.yml`. Do not update the manifest or
-`.agent/tasks/execution-status.yml`; report a mismatch to the owning skill.
+Add a BCP estimate only when project policy or the user explicitly selects BCP:
 
-## Plan template
-
+```yaml
+bcp: 3
+estimation_policy: bcp
 ```
-### Story [X.Y]: [title] — Implementation Steps
+
+The work item must already be listed in its manifest. Do not update the manifest
+or `.agent/tasks/execution-status.yml`; report a mismatch to the owning skill.
+
+## Specification template
+
+```markdown
+# Work item <id>: <title>
 
 **type:** feat | fix | refactor
 **risk:** P0 | P1 | P2 | P3
 **context:** domain | infra
-**Context**: [One paragraph: what this story implements and why]
+
+## Context
+
+<What this work item implements and why.>
+
+## Requirements
+
+#### ADDED: <requirement>
+
+<Full requirement text.>
 
 ## Steps
 
-1. [Step description] (ref: ADR-NNNN or commit SHA) → verify: `<runnable command>`
-2. [Step description] (ref: ADR-NNNN or commit SHA) → verify: `<runnable command>`
-...
+1. <Step description> (ref: ADR-NNNN or commit SHA)
+   verify: `<runnable command>`
 
-## Verification Script (Step-by-Step)
+## Verification script
 
-[A human-readable, step-by-step script for the user to verify the story's outcome.]
-
-1. [Action 1: e.g. Start the server]
-2. [Action 2: e.g. Open browser to http://localhost:3000]
-3. [Observation: e.g. Verify that the login modal appears]
+1. <Action>
+2. <Observation proving the outcome>
 
 ## Out of scope
 
-- [Explicit exclusions]
+- <Explicit exclusion>
 
 ## Risks
 
-- [Anything that could go wrong and how to detect it early]
+- <Risk and early detection method>
 ```
 
-## Verify step format rules
+## Verify step rules
 
-Every step MUST follow this exact format:
+Every implementation step must include a command that proves its observable
+outcome. Commands that only inspect source text, assert non-empty output, or
+prove that a mock echoed its input are not acceptable.
 
-```
-N. <What to do> → verify: <runnable command that proves it worked>
-```
+Good:
 
-**Good examples:**
-
-```
-1. Add User model with email and name fields → verify: npm test -- user.test.ts
-2. Add POST /users endpoint → verify: curl -s -X POST http://localhost:3000/users -d '{"email":"a@b.com"}' | jq .id
-3. Add email uniqueness constraint → verify: npm test -- user-uniqueness.test.ts
+```text
+1. Add the POST /users endpoint
+   verify: npm test -- users-api.test.ts
 ```
 
-**Bad examples (no verify command):**
+Bad:
 
-```
+```text
 1. Implement the user creation flow
 2. Write tests for the API
 ```
 
-## Sub-operations
+## Risk assignment
 
-### Risk Assignment Heuristics
+Preserve the scenario risk mapping from
+`.agent/tasks/<capsule>/test-plan.md` when present. Otherwise use behavior and
+impact, not effort estimates:
 
-Every task and story MUST be assigned a `risk:` level (P0, P1, P2, P3). When
-`.agent/tasks/<capsule>/test-plan.md` exists, preserve its scenario risk mapping
-(`SC-eNNsYY-P0-NN`). Otherwise, apply these heuristics based on BCP and story type:
+- **P0**: critical path, data-loss risk, authentication or security boundary, or
+  external integration.
+- **P1**: core behavior, state mutation, or standard business value.
+- **P2**: utility behavior, layout change, or display-only data.
+- **P3**: documentation, cosmetic changes, or no behavioral change.
 
-- **P0**: Critical path, data loss risk, auth/security boundary, external integration, or high BCP (≥ 5).
-- **P1**: Core feature logic, state mutations, standard business value (BCP 3-4).
-- **P2**: Utility functions, UI layout changes, display-only data, low risk (BCP 2).
-- **P3**: Documentation, cosmetic tweaks, CSS variables, zero behavioral change (BCP 1).
+If a selected estimation policy includes BCP, it may provide additional context.
+It never overrides a higher behavior-based risk.
 
-`verify-work` scales its UAT depth based on this field.
+## Requirement delta tags
 
-### Requirement delta tags (e45s29)
-
-When modifying existing behavior in story spec § Requirements:
+For existing behavior, use one of:
 
 ```markdown
-#### MODIFIED: User can reset password via email link
+#### MODIFIED: User can reset a password through an email link
 
-**Before:** Password reset required admin approval.
-**After:** Self-service reset via signed email link (expires 1h).
-
-#### REMOVED: Legacy OAuth1 login
-
-**Before:** OAuth1 provider supported for enterprise SSO.
-**After:** (removed) — provider deprecated; OAuth2 only.
+**Before:** Password reset required administrator approval.
+**After:** A signed email link enables self-service reset and expires after one hour.
 ```
 
-Tags: `ADDED`, `MODIFIED`, `REMOVED`, `RENAMED`. `MODIFIED`/`REMOVED`/`RENAMED` without before/after → plan-work gate FAIL.
+Allowed tags: `ADDED`, `MODIFIED`, `REMOVED`, and `RENAMED`. `MODIFIED`,
+`REMOVED`, and `RENAMED` require explicit before and after content.
 
-### Define Success
+## Package check
 
-Before planning, convert task statements into observable "step → verify: <cmd>" pairs:
+For every external dependency, record one tag:
 
-- Break the task into observable outcomes (behaviors) rather than implementation steps
-- Write pairs in the format: `[What must be true] → verify: <runnable command>`
-- Challenge completeness: are all required behaviors covered?
-- Get user confirmation: "Does this capture everything the task requires?"
-- Once confirmed, these pairs become the skeleton for plan-work steps
+- `[OK]`: established package with clear maintenance and provenance.
+- `[SUS]`: uncertain maintenance, provenance, or fit.
+- `[SLOP]`: likely unnecessary, abandoned, or unsafe for the proposed use.
 
-### Zoom-Out Check
-
-When modifying an existing module, confirm scope is understood:
-
-- State the module's **purpose** — what is it responsible for?
-- Name the **callers** — who depends on it?
-- List the **contracts** — what invariants or interfaces must be preserved?
-
-If you cannot answer all three without deep code archaeology, scope is misunderstood. Clarify with the user before writing steps.
-
-### Slopcheck
-
-For every external package proposed in the plan, tag each with one of:
-
-- `[OK]` — package is mature, actively maintained, appropriate scope
-- `[SUS]` — suspiciously broad, has maintenance concerns, or unclear fit
-- `[SLOP]` — unmaintained, known security issues, or out of scope
-
-`[SUS]` and `[SLOP]` require explicit human approval before the step may execute. Document tags inline next to the package name.
+`[SUS]` and `[SLOP]` require explicit human approval before execution.

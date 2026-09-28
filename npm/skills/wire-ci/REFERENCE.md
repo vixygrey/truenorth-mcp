@@ -11,7 +11,7 @@
 | 40–49   | Create CI for a CLI tool (TBR only, no deploy)            |
 | 50–57   | Validate existing workflows (no generation)               |
 | 58–70   | Options                                                   |
-| 71–79   | Integration with build-epic                               |
+| 71–79   | Integration with build-group                              |
 | 80–154  | Reference block 1 — test-build-release.yml (Go, excerpt)  |
 | 155–204 | Reference block 2 — deploy.yml (generic web app, excerpt) |
 | 205–232 | Reference block 3 — CLI dogfood (self-releasing CLI)      |
@@ -64,9 +64,9 @@ wire-ci --validate --check-only
 
 ---
 
-## Integration with build-epic
+## Integration with build-group
 
-When `wire-ci` is used as part of `build-epic`:
+When `wire-ci` is used as part of `build-group`:
 
 1. **During develop-tdd**: If the task modifies `.github/workflows/`, run `wire-ci --validate` as a CI dry-run sub-step
 2. **During release-branch**: After push, run `gh run list --limit 1 --branch main --json status,conclusion` to verify CI passes

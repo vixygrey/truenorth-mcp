@@ -4,20 +4,21 @@ import { log } from './logging.js';
 const STATE_PATH = '.agent/tasks/state.yml';
 
 export function writeGrillMeHandoff(ctx = {}) {
-  const ul = (ctx.uncertainDecisions || []).map((d) => `  - ${d}`).join('\n');
+  const decisions = (ctx.uncertainDecisions || []).map((d) => `    - ${d}`);
   const hb = [
     'handoff:',
-    '  last_step_completed: >',
-    `    extract-design completed. The design note was written with ${ctx.tokenCount || '?'} tokens, ${ctx.componentCount || '?'} components.`,
-    `    ${ctx.uncertainCount || 0} uncertain decisions flagged.`,
+    '  next_skill: grill-me',
+    '  last_step_completed: extract-design',
+    '  context: >',
+    `    Design extraction produced ${ctx.tokenCount || '?'} tokens and ${ctx.componentCount || '?'} components; ${ctx.uncertainCount || 0} decisions remain open.`,
+    decisions.length > 0 ? '  open_decisions:' : '  open_decisions: []',
+    ...decisions,
     '  required_reading:',
     '    - .agent/product/design.md',
-    '  next_skill: grill-me',
+    '  group_id: null',
+    '  artifacts_summary: null',
+    '  git_context: null',
   ];
-  if (ul) {
-    hb.push('  uncertain_decisions:');
-    hb.push(ul);
-  }
   try {
     const d = dirname(STATE_PATH);
     if (!existsSync(d)) mkdirSync(d, { recursive: true });

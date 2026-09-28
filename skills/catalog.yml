@@ -22,7 +22,7 @@ planning_artifacts:
     writer: plan-release
     readers:
       - assess-impact
-      - build-epic
+      - build-group
       - change-request
       - grill-with-docs
       - plan-work
@@ -36,7 +36,7 @@ planning_artifacts:
     writer: slice-tasks
     readers:
       - assess-impact
-      - build-epic
+      - build-group
       - change-request
       - plan-tests
       - plan-work
@@ -52,19 +52,18 @@ planning_artifacts:
       - orchestrate-project
       - plan-work
       - verify-work
-  story-specification:
-    path: .agent/tasks/<capsule>/eNNsYY-<slug>.md
+  work-item-specification:
+    path: .agent/tasks/<capsule>/<task-id>-spec.md
     writer: plan-work
     readers:
-      - build-epic
       - develop-tdd
       - trace-requirement
       - verify-work
-  story-task-ledger:
-    path: .agent/tasks/<capsule>/eNNsYY-tasks.yaml
+  work-item-task-ledger:
+    path: .agent/tasks/<capsule>/<task-id>-tasks.yml
     writer: plan-work
     readers:
-      - build-epic
+      - build-group
       - develop-tdd
       - execute-plan
       - trace-requirement
@@ -74,7 +73,7 @@ skills:
   assess-impact: core
   audit-code: core
   audit-plan: core
-  build-epic: core
+  build-group: core
   change-request: core
   commit-message: core
   compose-workflow: core

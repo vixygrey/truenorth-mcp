@@ -16,10 +16,10 @@ status from the cockpit.
 
 Start a local server that reads the cockpit and serves it over HTTP.
 
-| Route                                | Purpose                                                                         |
-| ------------------------------------ | ------------------------------------------------------------------------------- |
-| `GET /api/status?projectDir=<abs>`   | JSON: the state, the release, the groups, the planning status, the active group |
-| `GET /cockpit.html?projectDir=<abs>` | A read-only PM view, planning on the left, groups on the right                  |
+| Route                                | Purpose                                                            |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| `GET /api/status?projectDir=<abs>`   | JSON: profile, state, tasks, optional groups, and execution status |
+| `GET /cockpit.html?projectDir=<abs>` | A read-only task and optional group status view                    |
 
 The server reads the cockpit files directly. Prefer reading them through the
 `truenorth://state` and `truenorth://cockpit` resources when driving the view from
@@ -27,11 +27,13 @@ the MCP server.
 
 ## Cockpit keys the view reads
 
-- `.agent/tasks/state.yml`: `active_flow`, `active_group_id`, `git`, `handoff`, `group_cycle`.
-- `.agent/tasks/release-plan.yml`: `release.version`, and the `groups[]` with `id`,
-  `title`, `wsjf`, `file`.
-- `.agent/tasks/execution-status.yml`: the story and group status map.
+- `.agent/profile.yml`: active methodology profile.
+- `.agent/tasks/state.yml`: `active_flow`, `active_task`, optional group, Git, and handoff.
+- `.agent/tasks/release-plan.yml`: runtime `tasks[]` and optional neutral `groups[]`.
+- `.agent/tasks/execution-status.yml`: task and optional group status maps.
+- Legacy epic and story fields are read-only compatibility fallbacks.
 
 ## Verify
 
-Confirm the status endpoint returns the current cockpit state for the project.
+Run `node --test skills/visual-dashboard/tests/read-specs-status.test.cjs`, then confirm
+the status endpoint returns current tasks for the project.

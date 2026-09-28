@@ -1,90 +1,103 @@
 ---
 name: plan-release
-description: "A release-index builder. Sequence elaborated task groups into .agent/tasks/release-plan.yml with WSJF ordering and BCP baselines. Not a planning-spine substitute: it does not scope work or write story tasks. Use it after elaborate-spec when the user wants a versioned release index of task groups."
+description: "Build the release index in .agent/tasks/release-plan.yml without assuming a grouping or prioritization method. Use it after elaborate-spec when the user wants release metadata, optional profile-derived groups, and an ordered task ledger."
 kind: prose
 ---
 
 # Plan Release
 
 > **HARD GATE**: Run this skill only after `elaborate-spec` has produced a clear
-> specification and `.agent/product/scope.yml` exists. Run `elaborate-spec` or
-> `scope-work` first when either input is missing.
+> specification and `.agent/product/scope.yml` exists.
 
-Create or update the release index at `.agent/tasks/release-plan.yml`. This skill
-owns release metadata, group identity, capsule paths, prioritization, and group
-ordering. It does not create capsule contents.
+Create or update `.agent/tasks/release-plan.yml`. Preserve the runtime-owned
+`tasks[]` ledger written by `truenorth_record_task`.
+
+## Methodology gate
+
+Read `.agent/profile.yml` before creating groups:
+
+| Profile           | Release index behavior                                      |
+| ----------------- | ----------------------------------------------------------- |
+| `epic-based`      | require `group_id` and `group_kind: epic`                   |
+| `milestone-based` | require `group_id` and `group_kind: milestone`              |
+| `issue-per-task`  | use optional ticket groups only when the project needs them |
+| `kanban`          | omit `groups[]`; order `tasks[]` directly                   |
+| `generic`         | omit `groups[]`; order `tasks[]` directly                   |
+
+Use the active profile's grouping word in user-facing prose. Shared schema and
+instructions use `group`.
 
 ## Artifact contract
 
-- **Writes**: `.agent/tasks/release-plan.yml`.
-- **Reads**: the elaborated specification, product scope, and relevant risk reports.
-- **Readers**: `slice-tasks`, planning analysis, execution, traceability, and status
-  views.
-- **Never writes**: `group.yml`, `test-plan.md`, story specifications, task ledgers,
-  or `execution-status.yml`.
-
-If a required group manifest, story specification, or task ledger is missing, hand
-off to its owner. Do not regenerate it.
+- **Writes**: release metadata and optional `groups[]` in
+  `.agent/tasks/release-plan.yml`.
+- **Preserves**: every existing `tasks[]` entry and unknown field.
+- **Readers**: planning analysis, execution, traceability, and status views.
+- **Never writes**: group manifests, test plans, work-item specifications, task
+  ledgers, or `.agent/tasks/execution-status.yml`.
 
 ## Process
 
-### 1. Define release groups
+### 1. Read policy
 
-Identify the task groups needed to deliver the scoped release. Give each group a
-stable id, title, capsule path, BCP baseline, and WSJF inputs. Do not define story
-boundaries or implementation tasks here.
+Read the active profile and project conventions. WSJF and BCP are not profile
+properties. Use either only when project policy, an existing artifact, or the user
+explicitly selects it. Otherwise preserve declared order and omit those fields.
 
-### 2. Order groups
+### 2. Define optional groups
 
-Calculate WSJF as:
+For a grouped profile, give each group a stable `group_id`, the profile-derived
+`group_kind`, a title, and a capsule path. Do not define implementation tasks here.
+For an ungrouped profile, omit `groups[]`.
 
-```text
-(Business Value + Time Criticality + Risk Reduction) / Job Size
-```
+### 3. Order work
 
-Sort groups from highest to lowest score. If a security report identifies HIGH or
-CRITICAL risk for a group, add 2 to the numerator and record the reason in that
-group's release-index note.
+Preserve user or dependency order by default. When the project explicitly selects
+WSJF, calculate it from the documented project inputs and record the rationale.
+When it explicitly selects BCP, retain the estimate without making it a universal
+gate.
 
-### 3. Save the release index
-
-The version is a non-authoritative label. The published tag remains authoritative.
+### 4. Save the release index
 
 ```yaml
 release:
   version: "2.29.0"
-  codename: "Feature Name"
   status: planning
-  bump_hint: minor
 groups:
-  - id: e01
-    title: Auth System
-    wsjf: 4.5
-    bcps: 8
-    capsule_dir: .agent/tasks/e01-auth-system
-  - id: e02
-    title: User Profile
-    wsjf: 3.8
-    bcps: 5
-    capsule_dir: .agent/tasks/e02-user-profile
+  - group_id: m01
+    group_kind: milestone
+    title: Authentication
+    capsule_dir: .agent/tasks/m01-authentication
+tasks:
+  - group_id: m01
+    group_kind: milestone
+    task_name: Add login behavior
+    verify_command: npm test -- login
 ```
 
-Each `capsule_dir` uses `.agent/tasks/<capsule>/`. `slice-tasks` owns the
-`group.yml` within that directory.
+For `kanban`, `generic`, or an ungrouped `issue-per-task` project, omit
+`groups[]`, `group_id`, and `group_kind`:
 
-### 4. Validate ownership and ordering
+```yaml
+release:
+  version: "2.29.0"
+  status: planning
+tasks:
+  - task_name: Add login behavior
+    verify_command: npm test -- login
+```
 
-- Every group has one stable id and one unique capsule path.
-- Group order matches descending WSJF.
-- Every referenced capsule path is under `.agent/tasks/`.
-- The change set contains no capsule artifact or execution-status mutation.
+Each `capsule_dir` stays under `.agent/tasks/`. `slice-tasks` owns any
+`group.yml` within it.
 
 ## Verify
 
-Confirm `.agent/tasks/release-plan.yml` exists, parses as YAML through the project's
-configured YAML tooling, and contains a unique ordered group list. Confirm no file
-owned by another planning skill changed.
+Confirm the file parses, existing `tasks[]` records are unchanged, group kinds
+match `.agent/profile.yml`, ids are unique, and every capsule path stays under
+`.agent/tasks/`. When WSJF or BCP appears, name the project policy that selected
+it.
 
 ## Handoff
 
-Gate: INDEXED. Next: `slice-tasks` for each indexed group.
+For a grouped profile, gate INDEXED and hand off to `slice-tasks` for each group.
+For an ungrouped profile, hand off directly to `plan-work`.

@@ -34,7 +34,7 @@ kind: prose
 
 ## Artifact
 
-Write the eval report alongside the verification evidence, keyed by story id for
+Write the eval report alongside verification evidence, keyed by task id for
 traceability. See [REFERENCE.md](REFERENCE.md) for the template.
 
 ## Verify

@@ -63,7 +63,7 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
     );
     assert_eq!(
         fs::read_to_string(root.join(".agent/tasks/execution-status.yml")).expect("read status"),
-        "stories: {}\ndevelopment_status: {}\n"
+        "tasks: {}\ngroups: {}\ndevelopment_status: {}\n"
     );
     // Root docs wired to .agent/.
     assert!(root.join("AGENTS.md").is_file());
@@ -96,7 +96,7 @@ fn checked_in_issue_per_task_cockpit_matches_scaffold_seeds() {
     );
     assert_eq!(
         fs::read_to_string(tasks.join("execution-status.yml")).expect("read execution status"),
-        "stories: {}\ndevelopment_status: {}\n"
+        "tasks: {}\ngroups: {}\ndevelopment_status: {}\n"
     );
 }
 
@@ -112,7 +112,7 @@ async fn scaffold_writes_the_declared_profile_name() {
     assert_eq!(
         fs::read_to_string(repo.path().join(".agent/tasks/execution-status.yml"))
             .expect("read status"),
-        "stories: {}\ndevelopment_status: {}\n"
+        "tasks: {}\ngroups: {}\ndevelopment_status: {}\n"
     );
     assert!(repo.path().join(".agent/tasks/release-plan.yml").is_file());
 }

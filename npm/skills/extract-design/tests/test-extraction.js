@@ -889,14 +889,22 @@ function inTempRepo(fn) {
   }
 }
 
-t('writeGrillMeHandoff writes handoff.next_skill: grill-me to .agent/tasks/state.yml', () => {
+t('writeGrillMeHandoff writes the canonical handoff to .agent/tasks/state.yml', () => {
   inTempRepo(() => {
-    writeGrillMeHandoff({ tokenCount: 100, componentCount: 3, uncertainCount: 0 });
+    writeGrillMeHandoff({
+      tokenCount: 100,
+      componentCount: 3,
+      uncertainCount: 1,
+      uncertainDecisions: ['Choose a focus treatment'],
+    });
     const statePath = '.agent/tasks/state.yml';
     assert(nodeFs.existsSync(statePath), 'the handoff created .agent/tasks/state.yml');
     const c = nodeFs.readFileSync(statePath, 'utf8');
     includes(c, 'next_skill: grill-me', 'the handoff names grill-me as the next skill');
-    includes(c, 'handoff:', 'the handoff block is present');
+    includes(c, 'open_decisions:', 'the handoff uses canonical open decisions');
+    includes(c, '- Choose a focus treatment', 'the handoff records the uncertainty');
+    assert(!c.includes('uncertain_decisions:'), 'the legacy uncertainty field is absent');
+    includes(c, 'context:', 'the canonical context field is present');
   });
 });
 
@@ -915,10 +923,10 @@ t('writeGrillMeHandoff appends the handoff, preserving existing state content', 
   inTempRepo(() => {
     const statePath = '.agent/tasks/state.yml';
     nodeFs.mkdirSync('.agent/tasks', { recursive: true });
-    nodeFs.writeFileSync(statePath, 'active_group_id: e01\nphase: execute\n', 'utf8');
+    nodeFs.writeFileSync(statePath, 'active_group: e01\nphase: execute\n', 'utf8');
     writeGrillMeHandoff({ tokenCount: 1 });
     const c = nodeFs.readFileSync(statePath, 'utf8');
-    includes(c, 'active_group_id: e01', 'the existing state content is preserved');
+    includes(c, 'active_group: e01', 'the existing state content is preserved');
     includes(c, 'next_skill: grill-me', 'the handoff was appended');
   });
 });

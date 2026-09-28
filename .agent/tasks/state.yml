@@ -1,13 +1,19 @@
 workflow_mode: team-pr
 active_flow: null
-active_group: null
-active_task: null
-phase: null
+active_task: Normalize skill cockpit paths and methodology-neutral vocabulary
+active_group: '452'
+phase: execute
 tdd:
   step: refactor
 handoff:
   next_skill: null
-  context: null
-  group: null
+  last_step_completed: null
+  context: 'Implement issue #452 on fix/452-normalize-skill-contracts.'
+  open_decisions: []
+  required_reading:
+  - .agent/tasks/release-plan.yml
+  group_id: '452'
+  artifacts_summary: null
+  git_context: null
 git:
-  branch: main
+  branch: fix/452-normalize-skill-contracts

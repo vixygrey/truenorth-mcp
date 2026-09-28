@@ -33,8 +33,8 @@ Define what is in and out of scope, and save the bounded PRD.
 
 Create the group manifest and define independently deliverable story boundaries.
 
-- **What it does**: cuts tracer-bullet slices, assigns BCPs, and records story ids,
-  titles, deltas, and reserved filenames in `.agent/tasks/<capsule>/group.yml`.
+- **What it does**: cuts tracer-bullet work items and records ids, titles,
+  deltas, optional policy-selected estimates, and reserved filenames in the task manifest.
 - **When to use it**: after `plan-release`, before `plan-work`.
 - **Inputs**: `.agent/product/scope.yml`, the release-index entry, and optional
   planning context.
@@ -61,7 +61,7 @@ Write the detailed implementation plan into the active task group.
   runnable verify. A CRITICAL or HIGH consistency finding blocks code generation.
 - **Modes**: default (full), or `--fast` (skip the zoom-out and impact assessment for a
   small task).
-- **Handoff**: gate READY, next `kickoff-branch`, then `build-epic`, `execute-plan`, or
+- **Handoff**: gate READY, next `kickoff-branch`, then `build-group`, `execute-plan`, or
   `develop-tdd`.
 
 ---
@@ -72,8 +72,8 @@ Write the detailed implementation plan into the active task group.
 
 Create and order the release index.
 
-- **What it does**: writes release metadata and a WSJF-ordered list of groups to
-  `.agent/tasks/release-plan.yml`.
+- **What it does**: writes release metadata plus tasks and optional groups to
+  `.agent/tasks/release-plan.yml`, ordered by dependencies and selected project policy.
 - **When to use it**: after `elaborate-spec` and `scope-work`.
 - **Inputs**: the elaborated specification, product scope, and relevant risk reports.
 - **Outputs**: the release index only.
@@ -139,7 +139,7 @@ Analyze the blast radius of a proposed change before any code is written.
   module, or when the user asks "what does this break?".
 - **Inputs**: the target symbol or file, the codebase, the release plan.
 - **Outputs**: an impact report with a risk line.
-- **Modes**: default (full), or `--lightweight` (fan-in/fan-out only, used by `build-epic`
+- **Modes**: default (full), or `--lightweight` (fan-in/fan-out only, used by `build-group`
   as a pre-plan gate). A lightweight risk score above 7 forces a `grill-me` session first.
 - **Hard gate**: run it before `plan-work` when a change touches a module used by more than
   one caller. Skip only for net-new code with no dependents.

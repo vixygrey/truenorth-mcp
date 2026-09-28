@@ -23,26 +23,27 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 - **Goal**: Write a verifiable implementation plan with success criteria.
 - **Deliverables**: `.agent/tasks/release-plan.yml`, each
   `.agent/tasks/<capsule>/group.yml`, optional
-  `.agent/tasks/<capsule>/test-plan.md`, and per-story specification and task
+  `.agent/tasks/<capsule>/test-plan.md`, and per-work-item specification and task
   ledger files.
-- **Skills**: `plan-release` owns the release index, `slice-tasks` owns group
-  boundaries, `plan-tests` owns test architecture, and `plan-work` owns story
+- **Skills**: `plan-release` owns the release index, `slice-tasks` owns task-group
+  boundaries, `plan-tests` owns test architecture, and `plan-work` owns work-item
   detail.
 - **Gate**: Risk-required review has no unresolved blocker plus slopcheck [SUS]/[SLOP].
 
 ### PHASE 4: BUILD
 
-- **Goal**: Execute the plan story by story using the `build-epic` cycle with TDD
-  and vertical slices.
-- **Deliverables**: Code and `.agent/tasks/execution-status.yml` updates per story.
-- **Skills**: `build-epic` (conductor) → per-story: `survey-context`,
+- **Goal**: Execute the plan task by task through the profile-aware `build-group`
+  cycle with TDD and vertical slices.
+- **Deliverables**: Code and `.agent/tasks/execution-status.yml` updates per task.
+- **Skills**: `build-group` (conductor) → per task: `survey-context`,
   `plan-work`, `kickoff-branch`, `develop-tdd`, `verify-work`, `audit-code`,
   `commit-message`, `release-branch`.
-- **BCP tracking**: `slice-tasks` records story BCPs in `group.yml`.
+- **Estimation**: `slice-tasks` records BCP only when project policy selects it.
 - **next_skill**: Each critical-path skill writes `handoff.next_skill` to
   `.agent/tasks/state.yml`. Agents resume by reading that file.
-- **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742) shows live pipeline, task group queue, and BCP metrics.
-- **Gate**: Integration tests PASS; all 8 build-epic steps completed per story.
+- **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742)
+  shows live task and optional group status.
+- **Gate**: Integration tests PASS; all 8 build-group steps completed per task.
 
 ### PHASE 5: VERIFY
 

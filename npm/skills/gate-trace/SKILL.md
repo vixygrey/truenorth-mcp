@@ -11,14 +11,14 @@ data into a single PASS, FAIL, CONCERNS, or WAIVED decision before a release.
 
 ## Decision rules
 
-| Rule | Condition                                                                            | Verdict  |
-| ---- | ------------------------------------------------------------------------------------ | -------- |
-| R1   | Any undone story with 0 code tags                                                    | FAIL     |
-| R2   | Any story done but no verify evidence                                                | CONCERNS |
-| R3   | A P0 story (top WSJF quartile) with 0% coverage                                      | FAIL     |
-| R4   | Overall coverage less than 60%                                                       | CONCERNS |
-| R6   | A P0 story with a test plan present and zero `SC-eNNsYY-P0-*` tags in the test files | CONCERNS |
-| R5   | Overall coverage 80% or more, no critical gaps, all verify passed                    | PASS     |
+| Rule | Condition                                                                 | Verdict |
+| ---- | ------------------------------------------------------------------------- | ------- |
+| R1   | Any not-done task has zero implementation tags                            | FAIL    |
+| R2   | Any done task has no verification tag                                     | FAIL    |
+| R3   | Any highest-priority task has zero test or acceptance coverage            | FAIL    |
+| R4   | Any `deferred` or `out-of-scope` row lacks an owner or rationale          | FAIL    |
+| R5   | Any spec or architecture item is referenced by no task                    | WARN    |
+| R6   | Any convention required by the selected profile is absent from the ledger | FAIL    |
 
 ## Oracle confidence downgrade
 
@@ -58,12 +58,12 @@ To verify the outcome, run the project verify command through the
 
 ## Verdict semantics
 
-| Verdict  | Meaning                          | Action                                              |
-| -------- | -------------------------------- | --------------------------------------------------- |
-| PASS     | Every gate is satisfied          | Proceed with the merge                              |
-| CONCERNS | Non-critical issues found        | Requires an explicit human override in `state.yaml` |
-| FAIL     | A critical traceability gap      | Block the merge. Fix the gap first                  |
-| WAIVED   | Cannot evaluate (missing inputs) | Skip the gate. The data is not available            |
+| Verdict  | Meaning                          | Action                                                          |
+| -------- | -------------------------------- | --------------------------------------------------------------- |
+| PASS     | Every gate is satisfied          | Proceed with the merge                                          |
+| CONCERNS | Non-critical issues found        | Requires an explicit human override in `.agent/tasks/state.yml` |
+| FAIL     | A critical traceability gap      | Block the merge. Fix the gap first                              |
+| WAIVED   | Cannot evaluate (missing inputs) | Skip the gate. The data is not available                        |
 
 ## Output format
 
@@ -84,7 +84,7 @@ gate_trace:
 ## Handoff
 
 Gate: READY. Next: release-branch, the final step before a merge.
-Writes: `state.yaml` `handoff.next_skill = release-branch`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = release-branch`.
 
 ## Verify
 

@@ -28,7 +28,7 @@ commits but a large diff still gets reviewed.
 - `--quick`: use for P2 or P3 changes that do not cross a security, persistence,
   compatibility, or public API boundary. Run focused correctness, convention,
   and test-evidence checks.
-- `--gate`: non-interactive mode for automated CI gating (used by build-epic).
+- `--gate`: non-interactive mode for automated CI gating (used by build-group).
   Exit non-zero when any concrete blocking defect or explicit convention
   violation remains unresolved. Produce a compact pass or fail summary and list
   every blocker with evidence.
@@ -140,4 +140,4 @@ request-review) exist.
 ## Handoff
 
 Gate: READY. Next: commit-message.
-Writes: `state.yaml` `handoff.next_skill = commit-message`.
+Writes: `.agent/tasks/state.yml` `handoff.next_skill = commit-message`.

@@ -1,71 +1,77 @@
 ---
 name: trace-requirement
-description: "Link the story ids from the release plan and the task groups to the implementing code and tests. Produces a traceability report. Use it to verify coverage of a release plan, audit which stories are implemented, or find a dark story with no code."
+description: "Link task ids from the release plan and optional group artifacts to implementing code and tests. Use it to verify plan coverage or find planned work with no implementation."
 kind: prose
 ---
 
 # Trace Requirement
 
-Build a traceability matrix from `.agent/tasks/release-plan.yml` and the task group directories to implementing code and tests. Surfaces gaps in both directions: stories with no code, and code with no story.
+Build a traceability matrix from `.agent/tasks/release-plan.yml` and any profile-
+selected group artifacts. Surface planned tasks with no code and tagged code with
+no matching task.
 
 ## Pre-flight
 
-> **HARD GATE** — `.agent/tasks/release-plan.yml` and the task group directories must exist. If it doesn't, run `plan-release` first.
+> **HARD GATE**: `.agent/tasks/release-plan.yml` must exist. Run
+> `plan-release` first when it does not.
 
-→ verify: `test -f .agent/tasks/release-plan.yml`
-
-Read `.agent/tasks/release-plan.yml` and the task group directories fully before proceeding.
+Read `.agent/profile.yml` and the release plan before proceeding. Read group
+directories only when the profile and plan use groups.
 
 ## Process
 
-### 1. Extract story IDs
+### 1. Extract task ids
 
-From release-plan.yaml, collect all story IDs (for example `e01s01`, `e01s02`, `e02s01`).
+Collect stable task ids from `tasks[]`. When an existing project uses a separate
+work-item or story id convention, collect those ids as additional trace keys. Do
+not synthesize story-shaped ids.
 
-→ verify: `grep -rho 'e[0-9]\+s[0-9]\+' .agent/tasks/release-plan.yml 2>/dev/null | sort -u | head -1 | grep -q .`
+### 2. Search implementation tags
 
-### 2. Search for story tags in code
+Search source and tests for the project's trace tag, using `task:` by default:
 
-Look for `// story: eNNsYY` or `# story: eNNsYY` comments in source files and tests:
-
+```text
+// task: 452
+# task: 452
 ```
-grep -rn "story: " . --include="*.ts" --include="*.js" --include="*.py" --include="*.sh" | grep -v node_modules
-```
 
-→ verify: `[ "$(grep -rl "story: " . --include="*.ts" --include="*.sh" --include="*.py" 2>/dev/null | wc -l | tr -d " ")" -gt 0 ]`
+Preserve an existing `story:` tag convention, but treat it as project-selected
+vocabulary rather than the universal schema.
 
 ### 3. Build the matrix
 
-For each story ID:
+For each task id:
 
-- **Implemented**: list files that contain `// story: eNNsYY`
-- **Tested**: list test files that contain `// story: eNNsYY`
-- **Dark**: story has no tag in any file — flag as unimplemented
+- **Implemented**: implementation files carry the trace tag.
+- **Tested**: test files carry the trace tag.
+- **Dark**: no implementation tag exists.
 
-For each tagged file with no matching story ID in release-plan.yaml:
+For each tagged file with no matching id in `.agent/tasks/release-plan.yml`:
 
-- **Orphan**: code exists but story was removed or never planned — flag for cleanup
+- **Orphan**: the implementation has no current plan entry.
 
-### 4. Write the traceability report
+### 4. Write the report
 
-```
-## Story Coverage
+```markdown
+## Task coverage
 
-| Story  | Title              | Files | Tests | Status    |
-|--------|--------------------|-------|-------|-----------|
-| e01s01 | [title]            | 2     | 1     | Covered   |
-| e01s02 | [title]            | 0     | 0     | Dark      |
+| Task | Title     | Files | Tests | Status  |
+| ---- | --------- | ----- | ----- | ------- |
+| 452  | Normalize | 2     | 1     | Covered |
+| 453  | Bug links | 0     | 0     | Dark    |
 
-## Orphan Code (no story tag)
-- [file]: contains untagged implementation
+## Orphan code
 
-## Gaps (dark stories)
-- Story e01s02: no implementation found → run plan-work
+- path: contains an unmatched task tag
 
 ## Coverage summary
-Stories: [X] covered / [Y] dark / [Z] total
+
+Tasks: X covered / Y dark / Z total
 ```
 
-→ verify: the traceability report counts `Covered` and `Dark` stories.
+Suggest `plan-work` for each dark task.
 
-Suggest `plan-work` for each dark story found.
+## Verify
+
+The report must count every release-plan task exactly once and use the active
+project's selected trace vocabulary.

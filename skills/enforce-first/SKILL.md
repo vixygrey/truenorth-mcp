@@ -15,7 +15,7 @@ This skill is typically invoked internally by `develop-tdd` during the test-writ
 ## Modes
 
 - Default: full F.I.R.S.T audit (all 5 criteria)
-- --quick: Check Fast, Independent, and Self-Validating criteria only (per CONVENTIONS.md §Tests). Used by build-epic step 6 as a mechanical gate after audit-code. Skips Repeatable and Timely which require contextual judgment.
+- --quick: Check Fast, Independent, and Self-Validating criteria only (per CONVENTIONS.md §Tests). Used by build-group step 6 as a mechanical gate after audit-code. Skips Repeatable and Timely which require contextual judgment.
 
 ## The F.I.R.S.T Rubric
 

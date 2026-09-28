@@ -19,6 +19,23 @@ runs the MCP server. Scaffold a new project by calling the
 methodology profile. Runtime state lands under `.agent/`. Narrative lands under
 `specs/`.
 
+## Methodology profile
+
+Read `.agent/profile.yml` before choosing grouping vocabulary:
+
+| Profile           | Grouping                                               |
+| ----------------- | ------------------------------------------------------ |
+| `epic-based`      | required `group_id`, `group_kind: epic`                |
+| `milestone-based` | required `group_id`, `group_kind: milestone`           |
+| `issue-per-task`  | optional `group_id`, `group_kind: ticket` when grouped |
+| `kanban`          | no grouping fields                                     |
+| `generic`         | no grouping fields                                     |
+
+Shared instructions use `task`, `work item`, and `group`. Use the profile's word
+when addressing the user. WSJF and BCP are separate project policies. Apply them
+only when project conventions, an existing artifact, or the user selects them.
+Do not infer them from the profile.
+
 ## What this is
 
 A curated set of skills organized around the developer lifecycle. Each skill does
@@ -64,10 +81,10 @@ UTILITY     craft-skill, edit-document (any phase)
 
 The operational source of truth, served through the `truenorth://` resources:
 
-- `.agent/tasks/state.yml`: the session, the active group and story, the handoff.
-- `.agent/tasks/release-plan.yml`: the release index and the group list.
-- The task groups: the stories and tasks, each with a verify command.
-- `.agent/tasks/execution-status.yml`: done or pending per story.
+- `.agent/tasks/state.yml`: the session, active task, optional group, and canonical handoff.
+- `.agent/tasks/release-plan.yml`: release metadata, `tasks[]`, and optional profile-derived `groups[]`.
+- Optional task-group artifacts when the active profile groups work.
+- `.agent/tasks/execution-status.yml`: task and optional group status.
 
 ## Key conventions
 
@@ -77,7 +94,7 @@ The operational source of truth, served through the `truenorth://` resources:
   Never create a tracker issue from a skill. Use a local file instead.
 - **One skill, one thing.** When unsure which skill to call, call `survey-context`.
   It reads the current state and recommends the next step.
-- **A verify for every step.** Every group task has a runnable verify command.
+- **A verify for every step.** Every recorded task has a runnable verify command.
   Evidence over claims.
 - **Find a skill with `search_skills`.** The catalog is served live.
 
