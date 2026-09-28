@@ -60,9 +60,12 @@ async fn record_bug_writes_a_reference_with_tags() {
     let repo = repo_with_task();
     let srv = server(&repo);
 
-    srv.truenorth_record_bug(Parameters(valid_args()))
-        .await
-        .expect("record bug");
+    srv.truenorth_record_bug(
+        Parameters(valid_args()),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("record bug");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
     let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse bugs");
@@ -89,14 +92,20 @@ async fn record_bug_appends_and_preserves_existing_references() {
     let repo = repo_with_task();
     let srv = server(&repo);
 
-    srv.truenorth_record_bug(Parameters(valid_args()))
-        .await
-        .expect("first");
+    srv.truenorth_record_bug(
+        Parameters(valid_args()),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("first");
     let mut second = valid_args();
     second.id = "BUG-2".to_string();
-    srv.truenorth_record_bug(Parameters(second))
-        .await
-        .expect("second");
+    srv.truenorth_record_bug(
+        Parameters(second),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("second");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
     let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse");
@@ -109,9 +118,12 @@ async fn record_bug_updates_an_existing_reference_without_duplication() {
     let repo = repo_with_task();
     let srv = server(&repo);
 
-    srv.truenorth_record_bug(Parameters(valid_args()))
-        .await
-        .expect("insert");
+    srv.truenorth_record_bug(
+        Parameters(valid_args()),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("insert");
     let mut document: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(bugs_path(&repo)).expect("read bugs"))
             .expect("parse bugs");
@@ -127,9 +139,12 @@ async fn record_bug_updates_an_existing_reference_without_duplication() {
     update.status = BugStatus::Resolved;
     update.linked_ref = "Wire the gate".to_string();
     update.tags = vec!["fixed".to_string()];
-    srv.truenorth_record_bug(Parameters(update))
-        .await
-        .expect("update");
+    srv.truenorth_record_bug(
+        Parameters(update),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("update");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("read updated bugs");
     let document: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse updated bugs");
@@ -167,15 +182,21 @@ async fn record_bug_rejects_an_existing_id_with_a_different_external_link() {
     let repo = repo_with_task();
     let srv = server(&repo);
 
-    srv.truenorth_record_bug(Parameters(valid_args()))
-        .await
-        .expect("insert");
+    srv.truenorth_record_bug(
+        Parameters(valid_args()),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("insert");
     let before = fs::read_to_string(bugs_path(&repo)).expect("read before");
     let mut conflicting = valid_args();
     conflicting.external_link = "https://tracker.example/issues/different".to_string();
 
     let error = srv
-        .truenorth_record_bug(Parameters(conflicting))
+        .truenorth_record_bug(
+            Parameters(conflicting),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect_err("conflicting external link");
 
@@ -194,7 +215,10 @@ async fn record_bug_rejects_an_empty_id_and_writes_nothing() {
     args.id = String::new();
 
     let error = srv
-        .truenorth_record_bug(Parameters(args))
+        .truenorth_record_bug(
+            Parameters(args),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect_err("empty id");
     assert!(error.message.contains("`id`"));
@@ -212,7 +236,10 @@ async fn record_bug_rejects_a_relative_link() {
     args.external_link = "tracker/1".to_string();
 
     let error = srv
-        .truenorth_record_bug(Parameters(args))
+        .truenorth_record_bug(
+            Parameters(args),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect_err("relative link");
     assert!(error.message.contains("external_link"));
@@ -227,7 +254,10 @@ async fn record_bug_rejects_an_unresolved_linked_ref() {
     args.linked_ref = "does-not-exist".to_string();
 
     let error = srv
-        .truenorth_record_bug(Parameters(args))
+        .truenorth_record_bug(
+            Parameters(args),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect_err("unresolved ref");
     assert!(error.message.contains("linked_ref"));
@@ -241,9 +271,12 @@ async fn record_bug_resolves_a_ref_to_a_task_name() {
     let mut args = valid_args();
     args.linked_ref = "Wire the gate".to_string();
 
-    srv.truenorth_record_bug(Parameters(args))
-        .await
-        .expect("task_name ref resolves");
+    srv.truenorth_record_bug(
+        Parameters(args),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("task_name ref resolves");
     assert!(bugs_path(&repo).is_file());
 }
 
@@ -253,15 +286,21 @@ async fn record_bug_resolves_a_ref_to_an_existing_bug_id() {
     let srv = server(&repo);
 
     // First bug links to the task.
-    srv.truenorth_record_bug(Parameters(valid_args()))
-        .await
-        .expect("first bug");
+    srv.truenorth_record_bug(
+        Parameters(valid_args()),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("first bug");
 
     // Second bug links to the first bug's id, which now resolves.
     let mut second = valid_args();
     second.id = "BUG-2".to_string();
     second.linked_ref = "BUG-1".to_string();
-    srv.truenorth_record_bug(Parameters(second))
-        .await
-        .expect("bug-id ref resolves");
+    srv.truenorth_record_bug(
+        Parameters(second),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
+    .await
+    .expect("bug-id ref resolves");
 }

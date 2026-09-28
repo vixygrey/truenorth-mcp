@@ -29,35 +29,48 @@ fn allowlist_includes_the_command_binary() {
 #[test]
 fn gate_result_pass_is_success() {
     let outcome = GateOutcome {
-        passed: true,
+        status: GateOutcomeStatus::Pass,
+        exit_code: Some(0),
+        duration_ms: 12,
         error: None,
         remediation_hints: Vec::new(),
     };
     let result = gate_result(
         &outcome,
         "review",
+        &rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
         crate::engine::features::TokenCaps::default(),
     )
     .expect("pass is a success result");
     assert!(!result.is_error.unwrap_or(false));
+    let text = result.content[0].as_text().expect("text result");
+    let json: serde_json::Value = serde_json::from_str(&text.text).expect("JSON result");
+    assert_eq!(json["receipt"]["gate"]["status"], "pass");
+    assert_eq!(json["receipt"]["gate"]["duration_ms"], 12);
+    assert_eq!(json["receipt"]["gate"]["exit_code"], 0);
+    assert!(json["receipt"].get("command").is_none());
 }
 
 #[test]
 fn gate_result_failure_is_error_with_hints() {
     let outcome = GateOutcome {
-        passed: false,
+        status: GateOutcomeStatus::Failure,
+        exit_code: Some(1),
+        duration_ms: 9,
         error: Some("the gate command exited with code 1".to_string()),
         remediation_hints: vec!["fix the failure".to_string()],
     };
     let error = gate_result(
         &outcome,
         "review",
+        &rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
         crate::engine::features::TokenCaps::default(),
     )
     .expect_err("failure is an MCP error");
     assert!(error.message.contains("exited with code 1"));
-    // The hints ride in the error data.
-    let data = error.data.expect("hints in data");
+    let data = error.data.expect("structured error data");
+    assert_eq!(data["receipt"]["gate"]["status"], "failure");
+    assert_eq!(data["receipt"]["gate"]["exit_code"], 1);
     assert!(data.to_string().contains("fix the failure"));
 }
 

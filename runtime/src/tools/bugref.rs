@@ -17,7 +17,7 @@
 use std::path::Path;
 
 use crate::tools::result;
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::{Deserialize, Serialize};
@@ -27,11 +27,13 @@ use crate::engine::agent_ws::{ObservedFile, WritePrecondition, write_under_agent
 use crate::engine::cockpit::release_plan_path;
 use crate::server::TrueNorthServer;
 use crate::tools::mutation_error::{mutation_error, write_error};
+use crate::tools::receipt::{self, ChangedContent, OperationReceipt};
 
 /// The maximum length of a bug id (Requirement 8.6).
 const MAX_BUG_ID: usize = 200;
 /// The `bugs.yml` path relative to `.agent/`, for the write guard.
 const BUGS_REL_PATH: &str = "tasks/bugs.yml";
+const BUGS_REPO_PATH: &str = ".agent/tasks/bugs.yml";
 
 /// The bounded bug status enumeration (Requirement 8.6, design §9).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
@@ -87,6 +89,7 @@ impl TrueNorthServer {
     pub async fn truenorth_record_bug(
         &self,
         params: Parameters<RecordBugArgs>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -125,20 +128,27 @@ impl TrueNorthServer {
         // external issue is rejected before the guarded write.
         let (mut doc, precondition) = self.read_bugs_for_write()?;
         upsert_bug(&mut doc, &args)?;
+        let yaml = serde_yaml::to_string(&doc).map_err(|e| {
+            ErrorData::internal_error(format!("could not serialize the bug references: {e}"), None)
+        })?;
+        let change = ChangedContent::new(BUGS_REPO_PATH, yaml.as_bytes()).map_err(receipt_error)?;
+        let receipt =
+            OperationReceipt::new("truenorth_record_bug", &request_id, vec![change], None)
+                .map_err(receipt_error)?;
         let response = result::success(
             vec![ContentBlock::text(
-                serde_json::json!({
-                    "recorded_bug": args.id,
-                    "status": args.status.as_str(),
-                    "linked_ref": args.linked_ref,
-                })
+                receipt::attach(
+                    serde_json::json!({
+                        "recorded_bug": args.id,
+                        "status": args.status.as_str(),
+                        "linked_ref": args.linked_ref,
+                    }),
+                    receipt,
+                )
                 .to_string(),
             )],
             self.ctx.token_caps,
         )?;
-        let yaml = serde_yaml::to_string(&doc).map_err(|e| {
-            ErrorData::internal_error(format!("could not serialize the bug references: {e}"), None)
-        })?;
         write_under_agent_if_unchanged(
             &self.ctx.repo_root,
             Path::new(BUGS_REL_PATH),
@@ -150,6 +160,10 @@ impl TrueNorthServer {
 
         Ok(response)
     }
+}
+
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build mutation receipt: {error}"), None)
 }
 
 impl TrueNorthServer {

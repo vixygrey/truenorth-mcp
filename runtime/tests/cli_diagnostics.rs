@@ -37,7 +37,7 @@ fn seed_complete_repo() -> TempDir {
     fs::create_dir_all(repo.path().join("skills")).expect("create skills");
 
     let agent = repo.path().join(".agent");
-    for directory in ["config", "spec", "tasks", "memories", "telemetry"] {
+    for directory in ["config", "spec", "tasks", "memories"] {
         fs::create_dir_all(agent.join(directory)).expect("create layout directory");
     }
     fs::write(agent.join("layout.yml"), "version: \"1\"\n").expect("write layout");
@@ -51,7 +51,6 @@ fn seed_complete_repo() -> TempDir {
     fs::write(agent.join("tasks/state.yml"), "phase: discover\n").expect("write state");
     fs::write(agent.join("memories/lessons.md"), "# Lessons\n").expect("write lessons");
     fs::write(agent.join("memories/glossary.md"), "# Glossary\n").expect("write glossary");
-    fs::write(agent.join("telemetry/runs.yml"), "runs: []\n").expect("write telemetry");
 
     repo
 }

@@ -18,9 +18,12 @@ use crate::engine::profile::ALL_PROFILES;
 
 fn run_scaffold(repo: &TempDir, profile: Option<&str>) {
     let srv = TrueNorthServer::test_server(repo.path().to_path_buf());
-    let fut = srv.truenorth_scaffold_project(Parameters(ScaffoldArgs {
-        profile: profile.map(str::to_string),
-    }));
+    let fut = srv.truenorth_scaffold_project(
+        Parameters(ScaffoldArgs {
+            profile: profile.map(str::to_string),
+        }),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    );
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
@@ -82,9 +85,12 @@ proptest! {
         prop_assume!(crate::engine::profile::by_name(&name).is_none());
         let repo = TempDir::new().expect("temp repo");
         let srv = TrueNorthServer::test_server(repo.path().to_path_buf());
-        let fut = srv.truenorth_scaffold_project(Parameters(ScaffoldArgs {
-            profile: Some(name),
-        }));
+        let fut = srv.truenorth_scaffold_project(
+            Parameters(ScaffoldArgs {
+                profile: Some(name),
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        );
         let outcome = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()

@@ -84,7 +84,10 @@ proptest! {
             tags: tags.clone(),
         };
 
-        let outcome = tokio_test_block(srv.truenorth_record_bug(Parameters(args)));
+        let outcome = tokio_test_block(srv.truenorth_record_bug(
+            Parameters(args),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        ));
         prop_assert_eq!(outcome.is_ok(), expected_ok,
             "id_ok={} link_ok={} ref_ok={} id_len={}", id_ok, link_ok, ref_ok, id.chars().count());
 
@@ -123,7 +126,11 @@ proptest! {
             linked_ref: KNOWN_REF.to_string(),
             tags: Vec::new(),
         };
-        tokio_test_block(srv.truenorth_record_bug(Parameters(initial))).expect("insert");
+        tokio_test_block(srv.truenorth_record_bug(
+            Parameters(initial),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        ))
+        .expect("insert");
 
         let update = RecordBugArgs {
             id: "BUG-1".to_string(),
@@ -132,7 +139,11 @@ proptest! {
             linked_ref: KNOWN_REF.to_string(),
             tags: tags.clone(),
         };
-        tokio_test_block(srv.truenorth_record_bug(Parameters(update))).expect("update");
+        tokio_test_block(srv.truenorth_record_bug(
+            Parameters(update),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        ))
+        .expect("update");
 
         let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
         let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse");

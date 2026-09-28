@@ -158,17 +158,28 @@ async fn generate_writes_under_agent() {
     let root = dir.path();
     let server = server_at(root);
 
-    server
-        .truenorth_generate_ontology(Parameters(GenerateOntologyArgs {
-            domain: "orders".to_string(),
-            source_paths: vec!["src/order.rs".to_string()],
-        }))
+    let result = server
+        .truenorth_generate_ontology(
+            Parameters(GenerateOntologyArgs {
+                domain: "orders".to_string(),
+                source_paths: vec!["src/order.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect("generate");
 
     assert!(root.join(".agent/ontology.yml").is_file());
     assert!(!root.join("specs/ontology.yaml").exists());
     assert_eq!(read_agent_ontology(root).domain, "orders");
+    let text = result.content[0].as_text().expect("text result");
+    let json: serde_json::Value = serde_json::from_str(&text.text).expect("JSON result");
+    assert_eq!(json["receipt"]["operation"], "truenorth_generate_ontology");
+    assert_eq!(json["receipt"]["changes"][0]["path"], ".agent/ontology.yml");
+    assert_eq!(
+        json["receipt"]["changes"][0]["sha256"],
+        crate::engine::digest::sha256(&fs::read(root.join(".agent/ontology.yml")).expect("read"))
+    );
 }
 
 #[tokio::test]
@@ -183,10 +194,13 @@ async fn generate_overwrites_the_empty_stub() {
 
     let server = server_at(root);
     server
-        .truenorth_generate_ontology(Parameters(GenerateOntologyArgs {
-            domain: "orders".to_string(),
-            source_paths: vec!["src/order.rs".to_string()],
-        }))
+        .truenorth_generate_ontology(
+            Parameters(GenerateOntologyArgs {
+                domain: "orders".to_string(),
+                source_paths: vec!["src/order.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect("overwrite stub");
 
@@ -203,10 +217,13 @@ async fn generate_refuses_to_overwrite_a_real_ontology() {
 
     let server = server_at(root);
     let error = server
-        .truenorth_generate_ontology(Parameters(GenerateOntologyArgs {
-            domain: "different".to_string(),
-            source_paths: vec!["src/other.rs".to_string()],
-        }))
+        .truenorth_generate_ontology(
+            Parameters(GenerateOntologyArgs {
+                domain: "different".to_string(),
+                source_paths: vec!["src/other.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect_err("refuse overwrite");
     assert!(error.message.contains(".agent/ontology.yml"));

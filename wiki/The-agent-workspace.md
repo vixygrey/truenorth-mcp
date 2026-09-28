@@ -19,14 +19,13 @@ workspace contract, legacy cockpit migration behavior, and upgrade steps.
 The contract requires these entries under `.agent/`. Each area is a directory with its
 named files.
 
-| Area         | Required entries            | Purpose                                                                                    |
-| ------------ | --------------------------- | ------------------------------------------------------------------------------------------ |
-| `config/`    | `rules.yml`                 | Token caps, approval gates, protected paths, flags                                         |
-| `spec/`      | `requirements.md`           | The feature narrative                                                                      |
-| `tasks/`     | `state.yml`                 | Cockpit state, the phase, the TDD step <!-- truenorth-lint: allow-relative-layout-path --> |
-| `memories/`  | `lessons.md`, `glossary.md` | Durable lessons and the working glossary                                                   |
-| `telemetry/` | `runs.yml`                  | The agent cost audit, excluded from agent reads                                            |
-| (root)       | `layout.yml`, `profile.yml` | The contract and the active profile name                                                   |
+| Area        | Required entries            | Purpose                                                                                    |
+| ----------- | --------------------------- | ------------------------------------------------------------------------------------------ |
+| `config/`   | `rules.yml`                 | Token caps, approval gates, protected paths, flags                                         |
+| `spec/`     | `requirements.md`           | The feature narrative                                                                      |
+| `tasks/`    | `state.yml`                 | Cockpit state, the phase, the TDD step <!-- truenorth-lint: allow-relative-layout-path --> |
+| `memories/` | `lessons.md`, `glossary.md` | Durable lessons and the working glossary                                                   |
+| (root)      | `layout.yml`, `profile.yml` | The contract and the active profile name                                                   |
 
 The runtime also reads `tasks/release-plan.yml` for recorded tasks.
 `tasks/backlog.yml` independently declares whether backlog ownership is local or
@@ -41,9 +40,10 @@ is enabled, the runtime also reads `ontology.yml`. Product docs live under
 - `tasks/state.yml`, `tasks/release-plan.yml`, and `tasks/bugs.yml` are runtime-written.
 - `tasks/backlog.yml` is human-seeded. Local owners may update its backlog; external
   owners keep only provider metadata in it.
-- `layout.yml`, `profile.yml`, `config/*`, `spec/*`, and `product/*` are human-seeded.
-- `memories/*` are human-seeded and runtime-updatable.
-- `telemetry/runs.yml` is runtime-written and excluded from agent reads.
+- `layout.yml`, `profile.yml`, `config/*`, `spec/*`, `product/*`, and `memories/*`
+  are human-seeded.
+- `.agent/telemetry/` remains an optional local diagnostics location. It is excluded
+  from agent reads, and the runtime does not create or append a telemetry journal.
 
 ## The single write guard
 

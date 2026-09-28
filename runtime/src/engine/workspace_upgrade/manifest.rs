@@ -3,8 +3,9 @@ use std::fs;
 use std::path::{Component, Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use thiserror::Error;
+
+pub use crate::engine::digest::sha256;
 
 pub const MANIFEST_REL_PATH: &str = ".agent/workspace-manifest.yml";
 pub const MANIFEST_VERSION: &str = "2";
@@ -301,16 +302,6 @@ pub fn validate_relative_path(value: &str) -> Result<PathBuf, String> {
         );
     }
     Ok(path.to_path_buf())
-}
-
-pub fn sha256(bytes: &[u8]) -> String {
-    let digest = Sha256::digest(bytes);
-    let mut output = String::with_capacity(64);
-    for byte in digest {
-        use std::fmt::Write as _;
-        let _ = write!(output, "{byte:02x}");
-    }
-    output
 }
 
 fn validate_record(

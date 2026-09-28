@@ -33,7 +33,7 @@ struct LayoutContract {
 /// [`read_layout`] confirms every entry here is present on disk. Each path is relative to
 /// the `.agent/` directory. Directories end without a trailing slash; the presence check
 /// distinguishes a directory from a file by its declared kind.
-const REQUIRED_ENTRIES: [(&str, EntryKind); 13] = [
+const REQUIRED_ENTRIES: [(&str, EntryKind); 11] = [
     // config/ area (Requirement 1.5).
     ("config", EntryKind::Dir),
     ("config/rules.yml", EntryKind::File),
@@ -47,9 +47,6 @@ const REQUIRED_ENTRIES: [(&str, EntryKind); 13] = [
     ("memories", EntryKind::Dir),
     ("memories/lessons.md", EntryKind::File),
     ("memories/glossary.md", EntryKind::File),
-    // telemetry/ area (Requirement 1.9). The area is required, its content is read-excluded.
-    ("telemetry", EntryKind::Dir),
-    ("telemetry/runs.yml", EntryKind::File),
     // The contract file itself and the active profile name (§1.1).
     ("layout.yml", EntryKind::File),
     ("profile.yml", EntryKind::File),

@@ -18,9 +18,12 @@ fn server(repo: &TempDir) -> TrueNorthServer {
 }
 
 async fn scaffold(srv: &TrueNorthServer, profile: Option<&str>) -> Result<(), ErrorData> {
-    srv.truenorth_scaffold_project(Parameters(ScaffoldArgs {
-        profile: profile.map(str::to_string),
-    }))
+    srv.truenorth_scaffold_project(
+        Parameters(ScaffoldArgs {
+            profile: profile.map(str::to_string),
+        }),
+        rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+    )
     .await
     .map(|_| ())
 }
@@ -55,7 +58,7 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
     assert!(root.join(".agent/profile.yml").is_file());
     assert!(root.join(".agent/tasks/state.yml").is_file());
     assert!(root.join(".agent/memories/glossary.md").is_file());
-    assert!(root.join(".agent/telemetry/runs.yml").is_file());
+    assert!(!root.join(".agent/telemetry/runs.yml").exists());
     // Backlog ownership is explicit and independent of the methodology profile.
     assert_eq!(
         fs::read_to_string(root.join(".agent/tasks/backlog.yml")).expect("read backlog"),
@@ -169,12 +172,38 @@ async fn scaffold_emits_hooks_and_github_templates() {
 }
 
 #[tokio::test]
+async fn oversized_scaffold_receipt_writes_nothing() {
+    let repo = TempDir::new().expect("temp repo");
+    let srv = TrueNorthServer::from_context(crate::server::ServerContext::with_config(
+        repo.path().to_path_buf(),
+        crate::engine::features::Features::default(),
+        crate::engine::features::TokenCaps {
+            skill_lean_tokens: 100,
+            tool_payload_tokens: 1,
+        },
+    ));
+    let error = srv
+        .truenorth_scaffold_project(
+            Parameters(ScaffoldArgs { profile: None }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
+        .await
+        .expect_err("receipt exceeds cap");
+    assert!(error.message.contains("token cap"));
+    assert!(!repo.path().join(".agent").exists());
+    assert!(!repo.path().join("AGENTS.md").exists());
+}
+
+#[tokio::test]
 async fn scaffold_prints_the_hooks_path_command_without_running_it() {
     // Requirement 5.7: the command is reported, not run. So core.hooksPath is not set.
     let repo = TempDir::new().expect("temp repo");
     let srv = server(&repo);
     let result = srv
-        .truenorth_scaffold_project(Parameters(ScaffoldArgs { profile: None }))
+        .truenorth_scaffold_project(
+            Parameters(ScaffoldArgs { profile: None }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect("scaffold");
 

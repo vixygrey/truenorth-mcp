@@ -80,9 +80,39 @@ pub fn release_plan_path(repo_root: &Path) -> PathBuf {
 
 /// The state file path relative to `.agent/`, for the write guard.
 const STATE_REL: &str = "tasks/state.yml";
+const STATE_REPO_REL: &str = ".agent/tasks/state.yml";
 
 /// The release-plan file path relative to `.agent/`, for the write guard.
 const RELEASE_PLAN_REL: &str = "tasks/release-plan.yml";
+const RELEASE_PLAN_REPO_REL: &str = ".agent/tasks/release-plan.yml";
+
+/// A validated cockpit mutation whose exact bytes are ready for a guarded commit.
+pub struct PreparedCockpitWrite {
+    guard_relative_path: &'static str,
+    repository_relative_path: &'static str,
+    contents: String,
+    precondition: WritePrecondition,
+}
+
+impl PreparedCockpitWrite {
+    pub fn repository_relative_path(&self) -> &'static str {
+        self.repository_relative_path
+    }
+
+    pub fn contents(&self) -> &[u8] {
+        self.contents.as_bytes()
+    }
+
+    pub fn commit(self, repo_root: &Path) -> Result<(), CockpitError> {
+        write_under_agent_if_unchanged(
+            repo_root,
+            Path::new(self.guard_relative_path),
+            &self.contents,
+            &self.precondition,
+        )?;
+        Ok(())
+    }
+}
 
 /// The legacy bigpowers state path under `specs/`, for the fallback read (Requirement 2.9).
 fn legacy_state_path(repo_root: &Path) -> PathBuf {
@@ -113,6 +143,24 @@ pub fn advance_phase(
     artifacts_summary: &str,
     git_context: &str,
 ) -> Result<(), CockpitError> {
+    prepare_advance_phase(
+        repo_root,
+        from_phase,
+        to_phase,
+        artifacts_summary,
+        git_context,
+    )?
+    .commit(repo_root)
+}
+
+/// Prepare a validated lifecycle phase write without changing disk.
+pub fn prepare_advance_phase(
+    repo_root: &Path,
+    from_phase: Phase,
+    to_phase: Phase,
+    artifacts_summary: &str,
+    git_context: &str,
+) -> Result<PreparedCockpitWrite, CockpitError> {
     let mut versioned = read_state_versioned(repo_root)?;
     let current = current_phase(&versioned.value)?;
     let expected = current.successor();
@@ -131,15 +179,13 @@ pub fn advance_phase(
         artifacts_summary,
         git_context,
     );
-
-    let yaml = validate_state_for_write(&versioned.value)?;
-    write_under_agent_if_unchanged(
-        repo_root,
-        Path::new(STATE_REL),
-        &yaml,
-        &versioned.precondition,
-    )?;
-    Ok(())
+    let contents = validate_state_for_write(&versioned.value)?;
+    Ok(PreparedCockpitWrite {
+        guard_relative_path: STATE_REL,
+        repository_relative_path: STATE_REPO_REL,
+        contents,
+        precondition: versioned.precondition,
+    })
 }
 
 /// Append a task to the release plan with its neutral grouping key (Requirement 2.5, 4.9).
@@ -158,8 +204,19 @@ pub fn record_task(
     task_name: &str,
     verify_command: &str,
 ) -> Result<(), CockpitError> {
-    let mut versioned = read_release_plan_versioned(repo_root)?;
+    prepare_record_task(repo_root, group_id, group_kind, task_name, verify_command)?
+        .commit(repo_root)
+}
 
+/// Prepare a validated release-plan write without changing disk.
+pub fn prepare_record_task(
+    repo_root: &Path,
+    group_id: Option<&str>,
+    group_kind: Option<&str>,
+    task_name: &str,
+    verify_command: &str,
+) -> Result<PreparedCockpitWrite, CockpitError> {
+    let mut versioned = read_release_plan_versioned(repo_root)?;
     apply_task(
         &mut versioned.value,
         group_id,
@@ -167,15 +224,13 @@ pub fn record_task(
         task_name,
         verify_command,
     );
-
-    let yaml = validate_release_plan_for_write(&versioned.value)?;
-    write_under_agent_if_unchanged(
-        repo_root,
-        Path::new(RELEASE_PLAN_REL),
-        &yaml,
-        &versioned.precondition,
-    )?;
-    Ok(())
+    let contents = validate_release_plan_for_write(&versioned.value)?;
+    Ok(PreparedCockpitWrite {
+        guard_relative_path: RELEASE_PLAN_REL,
+        repository_relative_path: RELEASE_PLAN_REPO_REL,
+        contents,
+        precondition: versioned.precondition,
+    })
 }
 
 /// Read the recorded TDD step from `state.yaml`, or `None` when unset (Requirement 2.8).
@@ -250,9 +305,17 @@ pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitErro
 /// Commit a TDD transition against the state revision used to validate it.
 pub fn commit_tdd_step(
     repo_root: &Path,
-    mut mutation: TddMutation,
+    mutation: TddMutation,
     step: TddStep,
 ) -> Result<(), CockpitError> {
+    prepare_tdd_step(mutation, step)?.commit(repo_root)
+}
+
+/// Prepare a validated TDD-state write without changing disk.
+pub fn prepare_tdd_step(
+    mut mutation: TddMutation,
+    step: TddStep,
+) -> Result<PreparedCockpitWrite, CockpitError> {
     let mut tdd = mutation
         .state
         .get("tdd")
@@ -264,14 +327,13 @@ pub fn commit_tdd_step(
     );
     mutation.state.set("tdd", Value::Mapping(tdd));
 
-    let yaml = validate_state_for_write(&mutation.state)?;
-    write_under_agent_if_unchanged(
-        repo_root,
-        Path::new(STATE_REL),
-        &yaml,
-        &mutation.precondition,
-    )?;
-    Ok(())
+    let contents = validate_state_for_write(&mutation.state)?;
+    Ok(PreparedCockpitWrite {
+        guard_relative_path: STATE_REL,
+        repository_relative_path: STATE_REPO_REL,
+        contents,
+        precondition: mutation.precondition,
+    })
 }
 
 struct VersionedState {

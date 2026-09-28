@@ -19,7 +19,6 @@ areas:
   spec: [requirements.md]
   tasks: [state.yml]
   memories: [lessons.md, glossary.md]
-  telemetry: [runs.yml]
 "
     .to_string()
 }

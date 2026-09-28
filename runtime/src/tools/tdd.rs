@@ -8,7 +8,7 @@
 //!
 //! Requirements: 2.1, 2.6, 2.7, 2.8, 2.9, 2.10, 2.11. Design: Part II §2.
 
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
@@ -16,10 +16,13 @@ use serde::Deserialize;
 use crate::config::GateExecutionConfig;
 use crate::config::gate_environment::{GATE_ENV_ALLOWLIST_ENV, GateEnvironmentPolicy};
 use crate::engine::cockpit::{self, CockpitError};
-use crate::engine::gate_runner::{CommandRunner, SystemCommandRunner};
+use crate::engine::gate_runner::{GateOutcome, GateOutcomeStatus, SystemCommandRunner, run_gate};
 use crate::engine::tdd::{TddStep, next_step};
 use crate::server::TrueNorthServer;
 use crate::tools::mutation_error::{mutation_error, write_error};
+use crate::tools::receipt::{
+    self, ChangedContent, GateExpectation, GateReceipt, GateStatus, OperationReceipt,
+};
 use crate::tools::result;
 
 /// The maximum length of the failing test command (Requirement 2.6).
@@ -45,6 +48,7 @@ impl TrueNorthServer {
     pub async fn truenorth_tdd_cycle(
         &self,
         params: Parameters<TddCycleArgs>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -67,31 +71,67 @@ impl TrueNorthServer {
         let mutation = cockpit::read_tdd_mutation(&self.ctx.repo_root).map_err(cockpit_error)?;
         let step = next_step(mutation.current(), requested)
             .map_err(|error| ErrorData::invalid_request(error.to_string(), None))?;
+
+        // Red succeeds only for an observed non-zero exit. A timeout, signal, or spawn
+        // failure cannot satisfy the expected-failure contract.
+        let gate = if step == TddStep::Red {
+            let outcome = self.run_red_stage(&args.failing_test_cmd)?;
+            let expectation_met = red_expectation_met(&outcome);
+            let gate = gate_receipt(&outcome, true);
+            if !expectation_met {
+                let receipt = OperationReceipt::new(
+                    "truenorth_tdd_cycle",
+                    &request_id,
+                    Vec::new(),
+                    Some(gate),
+                )
+                .map_err(receipt_error)?;
+                let message = if outcome.status == GateOutcomeStatus::Pass {
+                    "red step failed: the test did not fail as required (it exited 0). \
+                     Write a test that fails before you write the code."
+                        .to_string()
+                } else {
+                    outcome
+                        .error
+                        .unwrap_or_else(|| "red step gate failed".to_string())
+                };
+                return Err(ErrorData::invalid_request(
+                    message,
+                    Some(serde_json::json!({ "receipt": receipt })),
+                ));
+            }
+            Some(gate)
+        } else {
+            None
+        };
+
+        let prepared = cockpit::prepare_tdd_step(mutation, step).map_err(cockpit_error)?;
+        let change = ChangedContent::new(prepared.repository_relative_path(), prepared.contents())
+            .map_err(receipt_error)?;
+        let receipt = OperationReceipt::new("truenorth_tdd_cycle", &request_id, vec![change], gate)
+            .map_err(receipt_error)?;
         let response = result::success(
             vec![ContentBlock::text(
-                serde_json::json!({ "step": step.as_str(), "step_ok": true }).to_string(),
+                receipt::attach(
+                    serde_json::json!({ "step": step.as_str(), "step_ok": true }),
+                    receipt,
+                )
+                .to_string(),
             )],
             self.ctx.token_caps,
         )?;
 
-        // The red step runs the failing test command and checks its exit code.
-        if step == TddStep::Red {
-            self.run_red_stage(&args.failing_test_cmd)?;
-        }
-
-        // Record the step only after the checks pass.
-        cockpit::commit_tdd_step(&self.ctx.repo_root, mutation, step).map_err(cockpit_error)?;
+        prepared
+            .commit(&self.ctx.repo_root)
+            .map_err(cockpit_error)?;
         drop(permit);
         Ok(response)
     }
 }
 
 impl TrueNorthServer {
-    /// Run the red-stage failing test command and enforce its exit-code semantics.
-    ///
-    /// A non-zero exit reports red passed (Requirement 2.9). An exit code 0 reports red
-    /// failed, since the test did not fail as required (Requirement 2.10).
-    fn run_red_stage(&self, failing_test_cmd: &str) -> Result<(), ErrorData> {
+    /// Run the red-stage command through the same bounded executor as the verify gate.
+    fn run_red_stage(&self, failing_test_cmd: &str) -> Result<GateOutcome, ErrorData> {
         let binary = failing_test_cmd
             .split_whitespace()
             .next()
@@ -110,26 +150,34 @@ impl TrueNorthServer {
             vec![binary],
             environment.allowed_names().to_vec(),
         );
-
-        let result = SystemCommandRunner
-            .run(failing_test_cmd, &cfg)
-            .map_err(|error| {
-                ErrorData::internal_error(
-                    format!("could not run the failing test command: {error}"),
-                    None,
-                )
-            })?;
-
-        if result.exit_code == Some(0) {
-            return Err(ErrorData::invalid_request(
-                "red step failed: the test did not fail as required (it exited 0). \
-                 Write a test that fails before you write the code."
-                    .to_string(),
-                None,
-            ));
-        }
-        Ok(())
+        Ok(run_gate(failing_test_cmd, &cfg, &SystemCommandRunner))
     }
+}
+
+fn red_expectation_met(outcome: &GateOutcome) -> bool {
+    outcome.status == GateOutcomeStatus::Failure && outcome.exit_code.is_some()
+}
+
+fn gate_receipt(outcome: &GateOutcome, expected_failure: bool) -> GateReceipt {
+    let status = match outcome.status {
+        GateOutcomeStatus::Pass => GateStatus::Pass,
+        GateOutcomeStatus::Failure => GateStatus::Failure,
+        GateOutcomeStatus::Timeout => GateStatus::Timeout,
+    };
+    GateReceipt {
+        status,
+        expectation: if expected_failure {
+            GateExpectation::Nonzero
+        } else {
+            GateExpectation::Zero
+        },
+        duration_ms: outcome.duration_ms,
+        exit_code: outcome.exit_code,
+    }
+}
+
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build mutation receipt: {error}"), None)
 }
 
 /// Check the failing test command length (Requirement 2.6).
