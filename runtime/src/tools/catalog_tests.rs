@@ -58,6 +58,49 @@ async fn oversized_graph_receipt_rejects_before_writing_cache() {
     assert!(!server.ctx.graph_path().exists());
 }
 
+#[tokio::test]
+async fn unresolved_canonical_skill_target_rejects_before_writing_cache() {
+    let repo = tempdir().expect("temporary repository");
+    make_skill(
+        repo.path(),
+        "orchestrate-project",
+        "# Orchestrate\n\nSee skills/removed-skill/SKILL.md.\n",
+    );
+    let server = server_at(repo.path());
+    let error = server
+        .build_skill_graph()
+        .await
+        .expect_err("unresolved target");
+    assert!(error.message.contains("removed-skill"), "{}", error.message);
+    assert!(!server.ctx.graph_path().exists());
+}
+
+#[tokio::test]
+async fn graph_receipt_reports_catalog_diagnostics() {
+    let repo = tempdir().expect("temporary repository");
+    make_skill(
+        repo.path(),
+        "orchestrate-project",
+        "---\ndescription: Orchestrate a project workflow.\n---\n\n# Orchestrate\n",
+    );
+    let server = server_at(repo.path());
+    let result = server.build_skill_graph().await.expect("build graph");
+    let text = result.content[0]
+        .as_text()
+        .expect("text result")
+        .text
+        .clone();
+    let value: serde_json::Value = serde_json::from_str(&text).expect("JSON receipt");
+    assert_eq!(
+        value["diagnostics"]["suspicious_isolated_orchestrators"][0],
+        "orchestrate-project"
+    );
+    assert_eq!(
+        value["diagnostics"]["unresolved_mentions"],
+        serde_json::json!([])
+    );
+}
+
 /// Write a minimal skill for discovery.
 fn make_skill(root: &std::path::Path, name: &str, body: &str) {
     let dir = root.join("skills").join(name);

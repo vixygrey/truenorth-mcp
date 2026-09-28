@@ -14,7 +14,7 @@ use regex::Regex;
 
 use crate::engine::regex_util::compile_static;
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
+use std::sync::LazyLock;
 
 use crate::engine::skill_parser::ParsedSkill;
 
@@ -58,6 +58,43 @@ pub struct SkillGraph {
     pub relations: Vec<GraphRelation>,
 }
 
+/// A canonical skill mention that could not be resolved to a current catalog entity.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct MentionDiagnostic {
+    /// Skill containing the mention.
+    pub source: String,
+    /// Referenced target text.
+    pub target: String,
+    /// One-based source line.
+    pub line: usize,
+    /// Canonical relation syntax that produced the mention.
+    pub syntax: String,
+}
+
+/// Diagnostics produced while constructing a graph.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+pub struct GraphDiagnostics {
+    /// Canonical relation targets absent from the current catalog.
+    pub unresolved_mentions: Vec<MentionDiagnostic>,
+    /// Exact catalog mentions that were neither related nor explicitly classified.
+    pub unclassified_mentions: Vec<MentionDiagnostic>,
+    /// Skills with no incoming or outgoing skill relation.
+    pub isolated_skills: Vec<String>,
+    /// Isolated skills whose contract describes orchestration or routing.
+    pub suspicious_isolated_orchestrators: Vec<String>,
+    /// Cycles in the `depends_on` relation.
+    pub dependency_cycles: Vec<Vec<String>>,
+}
+
+/// A graph and the diagnostics observed while building it.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct GraphBuildResult {
+    /// Constructed graph.
+    pub graph: SkillGraph,
+    /// Catalog consistency diagnostics.
+    pub diagnostics: GraphDiagnostics,
+}
+
 impl GraphEntity {
     /// Build a skill entity with the given name and observations.
     fn skill(name: &str, observations: Vec<String>) -> Self {
@@ -82,30 +119,36 @@ impl GraphRelation {
     }
 }
 
-/// Build the graph from parsed skills (ports `buildGraphFromSkills`).
-///
-/// Each skill becomes an entity with a `description` observation. Relations are mined from
-/// the prose and the description, and every skill-to-skill target is validated against the
-/// set of known skill names, so a relation never points at a stray English word (#239).
+/// Build the graph from parsed skills.
 pub fn build_graph(skills: &[ParsedSkill]) -> SkillGraph {
-    let mut graph = SkillGraph::default();
+    build_graph_report(skills).graph
+}
 
-    // Collect the known skill names first, so relation mining can reject a target that is
-    // not a skill. This is the fix for the garbage targets the token-grabbing regexes
-    // produced (for example `gates -> "Do"`), see #239.
-    let known: BTreeSet<String> = skills.iter().map(|s| s.name.clone()).collect();
+/// Build the graph and classify every exact inter-skill mention.
+///
+/// Relation direction is semantic:
+///
+/// - `A depends_on B`: A requires B before A can run.
+/// - `A invokes B`: A directly runs or routes work to B.
+/// - `A handoff_to B`: A may select B as its next lifecycle skill.
+/// - `A references B`: A mentions B without execution ordering.
+/// - `A enforces B`: A applies B's convention contract.
+pub fn build_graph_report(skills: &[ParsedSkill]) -> GraphBuildResult {
+    let known: BTreeSet<String> = skills.iter().map(|skill| skill.name.clone()).collect();
+    let mut result = GraphBuildResult::default();
 
     for skill in skills {
-        let observations = observations_from(skill);
-        graph.entities.insert(
+        result.graph.entities.insert(
             skill.name.clone(),
-            GraphEntity::skill(&skill.name, observations),
+            GraphEntity::skill(&skill.name, observations_from(skill)),
         );
-
-        mine_relations(&mut graph, skill, &known);
+    }
+    for skill in skills {
+        mine_relations(&mut result, skill, &known);
     }
 
-    graph
+    finish_diagnostics(&mut result, skills);
+    result
 }
 
 /// The observations for a skill, drawn from its frontmatter.
@@ -121,74 +164,279 @@ fn observations_from(skill: &ParsedSkill) -> Vec<String> {
     observations
 }
 
-/// Mine relations from a skill, validating every skill target against `known` (#239).
-///
-/// Four relation kinds are mined:
-///
-/// - `references`: an explicit `skills/<name>/SKILL.md` link. The captured name is a skill
-///   by construction, so it is recorded without a graph-membership check.
-/// - `depends_on`: a handoff phrasing the skills actually use, `after <skill>` or
-///   `before <skill>`, where `<skill>` is a known skill name.
-/// - `handoff_to`: an explicit next-skill directive, `handoff.next_skill = <skill>` or
-///   `Next: <skill>`, where `<skill>` is a known skill name.
-/// - `enforces`: a `CONVENTIONS.md` reference, with an optional section.
-///
-/// The `HARD GATE` text is no longer mined into a relation. A gate is a property of the
-/// skill, not an edge to another node, and the old first-token grab produced garbage
-/// targets like `Do` and `this`.
-fn mine_relations(graph: &mut SkillGraph, skill: &ParsedSkill, known: &BTreeSet<String>) {
-    let prose = &skill.raw_prose;
+/// Mine classified relations from one skill.
+fn mine_relations(result: &mut GraphBuildResult, skill: &ParsedSkill, known: &BTreeSet<String>) {
+    let prose = &skill.relation_text;
     let description = skill
         .frontmatter
         .get("description")
         .and_then(scalar_string)
         .unwrap_or_default();
-
-    // The description and the prose together, so a handoff stated in either is seen. The
-    // description carries the "Use it after X, before Y" triggers; the prose carries the
-    // "Next:" and "handoff.next_skill" directives.
     let combined = format!("{description}\n{prose}");
 
-    // references: an explicit skills/<name>/SKILL.md link. The path form guarantees a
-    // skill name, so it is not filtered against `known` (a referenced skill can live
-    // outside a single-skill build).
+    let lower = normalize_relation_text(&combined);
+    for target in known {
+        if target == &skill.name {
+            continue;
+        }
+        if contains_phrase(&lower, "after ", target) {
+            push_unique(
+                &mut result.graph,
+                GraphRelation::new(&skill.name, target, "depends_on"),
+            );
+        }
+        if contains_phrase(&lower, "before ", target) {
+            push_unique(
+                &mut result.graph,
+                GraphRelation::new(target, &skill.name, "depends_on"),
+            );
+        }
+        if ["run ", "invoke ", "invokes ", "route to "]
+            .iter()
+            .any(|prefix| contains_phrase(&lower, prefix, target))
+        {
+            push_unique(
+                &mut result.graph,
+                GraphRelation::new(&skill.name, target, "invokes"),
+            );
+        }
+        if [
+            "next: ",
+            "next_skill: ",
+            "next_skill = ",
+            "hand off to ",
+            "hand off directly to ",
+        ]
+        .iter()
+        .any(|prefix| contains_phrase(&lower, prefix, target))
+        {
+            push_unique(
+                &mut result.graph,
+                GraphRelation::new(&skill.name, target, "handoff_to"),
+            );
+        }
+    }
+
+    // Explicit paths are canonical even when their target was renamed or removed.
     for caps in skill_ref_re().captures_iter(prose) {
-        push_unique(
-            graph,
-            GraphRelation::new(&skill.name, &caps[1], "references"),
+        record_canonical(
+            result,
+            skill,
+            known,
+            prose,
+            caps.get(1).expect("skill path target"),
+            "references",
+            "skill path",
         );
     }
-
-    // depends_on: "after <skill>" or "before <skill>", validated against known names.
-    for caps in handoff_edge_re().captures_iter(&combined) {
-        let target = caps[2].to_string();
-        if target != skill.name && known.contains(&target) {
-            push_unique(
-                graph,
-                GraphRelation::new(&skill.name, &target, "depends_on"),
+    for link in &skill.links {
+        for caps in skill_ref_re().captures_iter(&link.url) {
+            record_canonical(
+                result,
+                skill,
+                known,
+                &link.url,
+                caps.get(1).expect("linked skill target"),
+                "references",
+                "skill link",
             );
         }
     }
 
-    // handoff_to: an explicit next-skill directive, validated against known names.
-    for caps in next_skill_re().captures_iter(&combined) {
-        let target = caps[1].to_string();
-        if target != skill.name && known.contains(&target) {
+    // Every remaining exact catalog mention is deliberately non-control-flow.
+    for target in known {
+        if target == &skill.name || !contains_skill_name(&lower, target) {
+            continue;
+        }
+        let already_classified = result
+            .graph
+            .relations
+            .iter()
+            .any(|relation| relation.from == skill.name && relation.to == *target);
+        if !already_classified {
             push_unique(
-                graph,
-                GraphRelation::new(&skill.name, &target, "handoff_to"),
+                &mut result.graph,
+                GraphRelation::new(&skill.name, target, "references"),
             );
         }
     }
 
-    // enforces: a CONVENTIONS.md reference, with an optional section.
     for caps in conventions_re().captures_iter(prose) {
         let target = match caps.get(1) {
             Some(section) => format!("CONVENTIONS.md §{}", section.as_str()),
             None => "CONVENTIONS.md".to_string(),
         };
-        push_unique(graph, GraphRelation::new(&skill.name, &target, "enforces"));
+        push_unique(
+            &mut result.graph,
+            GraphRelation::new(&skill.name, &target, "enforces"),
+        );
     }
+}
+
+/// Record a canonical relation or an actionable unresolved-target diagnostic.
+fn record_canonical(
+    result: &mut GraphBuildResult,
+    skill: &ParsedSkill,
+    known: &BTreeSet<String>,
+    source: &str,
+    target_match: regex::Match<'_>,
+    relation_type: &str,
+    syntax: &str,
+) {
+    let target = target_match.as_str().to_ascii_lowercase();
+    if target == skill.name || target == "null" {
+        return;
+    }
+    if known.contains(&target) {
+        push_unique(
+            &mut result.graph,
+            GraphRelation::new(&skill.name, &target, relation_type),
+        );
+        return;
+    }
+    let diagnostic = MentionDiagnostic {
+        source: skill.name.clone(),
+        target,
+        line: line_number(source, target_match.start()),
+        syntax: syntax.to_string(),
+    };
+    if !result.diagnostics.unresolved_mentions.contains(&diagnostic) {
+        result.diagnostics.unresolved_mentions.push(diagnostic);
+    }
+}
+
+/// One-based line containing a byte offset.
+fn line_number(source: &str, offset: usize) -> usize {
+    source[..offset]
+        .bytes()
+        .filter(|byte| *byte == b'\n')
+        .count()
+        + 1
+}
+
+/// Lowercase and collapse Markdown parser spacing for canonical phrase matching.
+fn normalize_relation_text(text: &str) -> String {
+    let mut normalized = String::with_capacity(text.len());
+    for part in text.split_whitespace() {
+        if !normalized.is_empty() {
+            normalized.push(' ');
+        }
+        normalized.push_str(part);
+    }
+    normalized.make_ascii_lowercase();
+    normalized
+}
+
+/// Whether text contains a canonical phrase followed by a known skill.
+///
+/// The parser flattens inline code and following prose without retaining the code
+/// delimiter, so the target intentionally needs only a leading phrase boundary.
+fn contains_phrase(text: &str, prefix: &str, target: &str) -> bool {
+    let needle = format!("{prefix}{target}");
+    text.match_indices(&needle).any(|(start, _)| {
+        let before = text[..start].chars().next_back();
+        !before.is_some_and(is_skill_char)
+    })
+}
+
+/// Whether text contains a skill name with kebab-case token boundaries.
+fn contains_skill_name(text: &str, name: &str) -> bool {
+    text.match_indices(name).any(|(start, _)| {
+        let end = start + name.len();
+        let before = text[..start].chars().next_back();
+        let after = text[end..].chars().next();
+        !before.is_some_and(is_skill_char) && !after.is_some_and(is_skill_char)
+    })
+}
+
+fn is_skill_char(character: char) -> bool {
+    character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-'
+}
+
+/// Populate diagnostics that require the complete relation set.
+fn finish_diagnostics(result: &mut GraphBuildResult, skills: &[ParsedSkill]) {
+    let known: BTreeSet<&str> = result.graph.entities.keys().map(String::as_str).collect();
+    let mut incident = BTreeSet::new();
+    for relation in &result.graph.relations {
+        if known.contains(relation.from.as_str()) {
+            incident.insert(relation.from.clone());
+        }
+        if known.contains(relation.to.as_str()) {
+            incident.insert(relation.to.clone());
+        }
+    }
+    result.diagnostics.isolated_skills = result
+        .graph
+        .entities
+        .keys()
+        .filter(|name| !incident.contains(*name))
+        .cloned()
+        .collect();
+
+    for skill in skills {
+        let has_outgoing_control = result.graph.relations.iter().any(|relation| {
+            relation.from == skill.name
+                && matches!(relation.relation_type.as_str(), "invokes" | "handoff_to")
+        });
+        if has_outgoing_control {
+            continue;
+        }
+        let description = skill
+            .frontmatter
+            .get("description")
+            .and_then(scalar_string)
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        if ["orchestrat", "chain multiple skills", "route work"]
+            .iter()
+            .any(|marker| description.contains(marker))
+        {
+            result
+                .diagnostics
+                .suspicious_isolated_orchestrators
+                .push(skill.name.clone());
+        }
+    }
+    result.diagnostics.dependency_cycles = dependency_cycles(&result.graph);
+}
+
+/// Find deterministic `depends_on` cycles.
+fn dependency_cycles(graph: &SkillGraph) -> Vec<Vec<String>> {
+    let mut cycles = BTreeSet::new();
+    for start in graph.entities.keys() {
+        let mut path = Vec::new();
+        visit_dependencies(graph, start, start, &mut path, &mut cycles);
+    }
+    cycles.into_iter().collect()
+}
+
+fn visit_dependencies(
+    graph: &SkillGraph,
+    start: &str,
+    current: &str,
+    path: &mut Vec<String>,
+    cycles: &mut BTreeSet<Vec<String>>,
+) {
+    if path.len() >= graph.entities.len() {
+        return;
+    }
+    path.push(current.to_string());
+    for next in graph
+        .relations
+        .iter()
+        .filter(|relation| relation.from == current && relation.relation_type == "depends_on")
+        .map(|relation| relation.to.as_str())
+    {
+        if next == start {
+            let mut cycle = path.clone();
+            cycle.sort();
+            cycle.dedup();
+            cycles.insert(cycle);
+        } else if !path.iter().any(|node| node == next) {
+            visit_dependencies(graph, start, next, path, cycles);
+        }
+    }
+    path.pop();
 }
 
 /// Push a relation only when an identical one is not already present, so a phrasing that
@@ -351,30 +599,18 @@ fn scalar_string(value: &serde_yaml::Value) -> Option<String> {
 // capture groups below match a skill name shape and the caller validates it against the
 // known set.
 
-/// An explicit `skills/<name>/SKILL.md` reference.
+/// An explicit `skills/<name>/SKILL.md` or sibling `../<name>/SKILL.md` reference.
 fn skill_ref_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)see\s+skills/([a-z][a-z0-9-]+)/SKILL\.md"))
-}
-
-/// A handoff phrasing: `after <skill>` or `before <skill>`. The skill name may be wrapped
-/// in backticks. Group 2 is the skill name.
-fn handoff_edge_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)\b(after|before)\s+`?([a-z][a-z0-9-]+)`?"))
-}
-
-/// An explicit next-skill directive: `Next: <skill>`, `next_skill = <skill>`, or
-/// `next_skill: <skill>`. Group 1 is the skill name.
-fn next_skill_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)(?:next_skill\s*[:=]|next:)\s*`?([a-z][a-z0-9-]+)`?"))
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| compile_static(r"(?i)(?:skills/|\.\./)([a-z][a-z0-9-]+)/SKILL\.md"));
+    &RE
 }
 
 /// A `CONVENTIONS.md` reference, with an optional section after `§` or `#`.
 fn conventions_re() -> &'static Regex {
-    static RE: OnceLock<Regex> = OnceLock::new();
-    RE.get_or_init(|| compile_static(r"(?i)CONVENTIONS\.md(?:\s*[§#]\s*(\S+))?"))
+    static RE: LazyLock<Regex> =
+        LazyLock::new(|| compile_static(r"(?i)CONVENTIONS\.md(?:\s*[§#]\s*(\S+))?"));
+    &RE
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

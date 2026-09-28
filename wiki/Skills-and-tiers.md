@@ -56,6 +56,20 @@ The graph tools build and query the entity-relation graph over the skills:
 - `get_dependencies`: report the forward and reverse dependencies and the handoff chain for
   one skill.
 
+`build_skill_graph` classifies skill mentions instead of treating every mention as a
+dependency:
+
+- `depends_on`: `A` requires `B` before `A` runs. `A after B` produces `A → B`;
+  `A before B` produces `B → A`.
+- `invokes`: `run`, `invoke`, `invokes`, and `route to` name an execution target.
+- `handoff_to`: `next`, `next_skill`, and `hand off to` name the next skill.
+- `references`: any other exact mention or skill link.
+- `enforces`: a skill cites a conventions section.
+
+The build receipt includes unresolved or unclassified mentions, isolated skills,
+orchestrator-like skills without outgoing control flow, and dependency cycles.
+Unresolved or unclassified targets fail the build before the graph cache is written.
+
 ## Git context
 
 `get_git_context` reports the git status, log, or diff scoped to the tracked areas. It is a

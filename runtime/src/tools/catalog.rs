@@ -142,12 +142,29 @@ impl TrueNorthServer {
             ErrorData::internal_error(format!("could not inspect the skill graph: {error}"), None)
         })?;
         let parsed = self.parse_all_skills();
-        let graph = graph::build_graph(&parsed);
+        let build = graph::build_graph_report(&parsed);
+        if let Some(mention) = build
+            .diagnostics
+            .unresolved_mentions
+            .first()
+            .or_else(|| build.diagnostics.unclassified_mentions.first())
+        {
+            return Err(ErrorData::invalid_request(
+                format!(
+                    "{}:{}: unresolved skill `{}` in {} syntax",
+                    mention.source, mention.line, mention.target, mention.syntax
+                ),
+                None,
+            ));
+        }
+        let diagnostics = build.diagnostics;
+        let graph = build.graph;
         let response = json_result(
             &serde_json::json!({
                 "entities": graph.entities.len(),
                 "relations": graph.relations.len(),
                 "graph_path": self.ctx.graph_path().display().to_string(),
+                "diagnostics": diagnostics,
             }),
             self.ctx.token_caps,
         )?;

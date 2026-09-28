@@ -71,6 +71,9 @@ pub struct ParsedSkill {
     pub links: Vec<Link>,
     /// The joined prose of every paragraph.
     pub raw_prose: String,
+    /// Complete non-fenced Markdown text, including tight-list items, for relation mining.
+    #[serde(skip)]
+    pub relation_text: String,
     /// Whether the source was truncated at the byte cap.
     pub truncated: bool,
 }
@@ -93,6 +96,7 @@ pub fn parse_skill(raw: &RawSkill) -> ParsedSkill {
         sections: parts.sections,
         links: parts.links,
         raw_prose,
+        relation_text: parts.relation_text,
         truncated: raw.truncated,
     }
 }
@@ -138,6 +142,7 @@ struct MarkdownParts {
     code_blocks: Vec<CodeBlock>,
     links: Vec<Link>,
     prose_parts: Vec<String>,
+    relation_text: String,
     sections: Vec<Section>,
     // Section-in-progress state.
     current_heading: Option<String>,
@@ -227,6 +232,11 @@ impl MarkdownParts {
                 }
                 if self.in_code.is_some() {
                     self.code_text.push_str(&text);
+                } else {
+                    if !self.relation_text.is_empty() {
+                        self.relation_text.push(' ');
+                    }
+                    self.relation_text.push_str(&text);
                 }
                 if self.in_paragraph {
                     self.paragraph_text.push_str(&text);
