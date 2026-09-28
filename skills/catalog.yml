@@ -24,7 +24,7 @@ planning_artifacts:
       - assess-impact
       - build-group
       - change-request
-      - grill-with-docs
+      - grill-me
       - plan-work
       - slice-tasks
       - survey-context
@@ -98,7 +98,6 @@ skills:
   fix-bug: core
   gate-trace: core
   grill-me: core
-  grill-with-docs: core
   guard-git: core
   hook-commits: core
   inspect-quality: core

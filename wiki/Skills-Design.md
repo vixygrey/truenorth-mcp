@@ -58,32 +58,29 @@ invariants and state machines for core entities.
 ## grill-me
 
 Interactive assumption-surfacing Q&A that stress-tests a plan through relentless
-questioning until every decision is resolved.
+questioning until every decision is resolved. It owns two explicit modes.
 
-- **What it does**: interviews about every aspect of the plan, walking the design tree and
-  resolving decisions one at a time, with a recommended answer per question. It
-  distinguishes facts (discoverable, the agent finds them) from decisions (user judgment,
-  the agent asks).
-- **When to use it**: to challenge a plan or validate decisions from the conversation.
-- **Inputs**: the plan and the codebase.
-- **Outputs**: a stress-tested plan with resolved tensions.
-- **Hard gate**: do not accept a design until every hard decision is stress-tested. Do not
-  enact the plan until the user explicitly confirms shared understanding.
-- **Related**: for the doc-grounded variant, use `grill-with-docs`.
-
-## grill-with-docs
-
-The doc-grounded variant of `grill-me`. Every challenge cites a real documentation URL.
-
-- **What it does**: reads the plan, lists the assumptions that depend on external libraries
-  or APIs, fetches the official docs for each, and challenges each assumption with "docs
-  say X, plan says Y". It resolves or updates the plan inline.
-- **When to use it**: when the plan depends on a specific library or external API.
-- **Inputs**: the plan and the real library or API documentation.
-- **Outputs**: a plan corrected against the docs. An unresolved item blocks `plan-work`.
-- **Hard gate**: every challenge must cite a real documentation URL. No hallucinated APIs.
-  Do not enact the plan until the user confirms.
-- **Related**: use `grill-me` for context-only surfacing without fetching docs.
+- **Context-only mode** is the default. It uses the conversation, plan, repository, and
+  local artifacts without fetching external documentation.
+- **Docs mode** applies when the plan depends on an external library, framework, or API.
+  Every external factual challenge cites an official source URL and quotes the relevant
+  API detail, such as a signature, parameter, version, deprecation, quota, timeout, or
+  documented error.
+- **What it does**: walks the design tree one decision at a time and provides a
+  recommended answer. Docs mode validates plan assumptions against official,
+  version-matched sources and records each as confirmed, corrected, or unresolved.
+- **When to use it**: use context-only mode to challenge a plan from conversation and
+  repository evidence. Use docs mode for “grill me with docs” or whenever correctness
+  depends on external behavior.
+- **Inputs**: the plan and repository; in docs mode, official library or API
+  documentation.
+- **Outputs**: a stress-tested plan with resolved tensions. Docs mode also records source
+  URLs, quoted details, verdicts, and required plan corrections.
+- **Facts versus decisions**: the agent researches discoverable facts. It asks the user
+  only for judgment about tradeoffs, preferences, or priorities.
+- **Hard gates**: do not accept a design until every hard decision is stress-tested.
+  Docs mode rejects uncited or unquoted external claims. Do not enact the plan until the
+  user explicitly confirms shared understanding.
 
 ## deepen-architecture
 

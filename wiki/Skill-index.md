@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-76 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+75 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -36,8 +36,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `find-way`            | Map a large effort as decision tickets on a tracker             | [Utility](Skills-Utility)   |
 | `fix-bug`             | Orchestrate the bug-fix chain                                   | [Verify](Skills-Verify)     |
 | `gate-trace`          | Deterministic traceability quality gate                         | [Verify](Skills-Verify)     |
-| `grill-me`            | Stress-test a plan through relentless questioning               | [Design](Skills-Design)     |
-| `grill-with-docs`     | The doc-grounded variant of grill-me                            | [Design](Skills-Design)     |
+| `grill-me`            | Challenge a plan in context-only or docs mode                   | [Design](Skills-Design)     |
 | `guard-git`           | Block a dangerous git command, enforce opt-in policy            | [Build](Skills-Build)       |
 | `hook-commits`        | Set up a pre-commit hook with lint-staged                       | [Build](Skills-Build)       |
 | `inspect-quality`     | An interactive QA session that logs bugs to the registry        | [Verify](Skills-Verify)     |
