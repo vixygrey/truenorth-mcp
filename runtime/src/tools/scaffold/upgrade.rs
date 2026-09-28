@@ -3,7 +3,6 @@ use std::fs;
 use std::path::Path;
 
 use super::scaffold_sources;
-use crate::engine::agent_ws::read_layout;
 use crate::engine::git;
 use crate::engine::mutation::acquire_worktree_lease;
 use crate::engine::profile;
@@ -11,6 +10,7 @@ use crate::engine::workspace_upgrade::bundle::{DesiredFile, PackageBundle};
 use crate::engine::workspace_upgrade::manifest::{ManagedFile, WorkspaceManifest, sha256};
 use crate::engine::workspace_upgrade::plan::{UpgradePlan, build_plan};
 use crate::engine::workspace_upgrade::transaction;
+use crate::engine::workspace_validation::validate_workspace;
 
 pub fn plan_workspace_upgrade(
     repo_root: &Path,
@@ -58,8 +58,8 @@ pub fn apply_workspace_upgrade(
     add_skill_sets: &[String],
     remove_skill_sets: &[String],
 ) -> Result<UpgradePlan, String> {
+    let _lease = acquire_worktree_lease(repo_root).map_err(|error| error.to_string())?;
     if transaction::transaction_exists(repo_root) {
-        let _lease = acquire_worktree_lease(repo_root).map_err(|error| error.to_string())?;
         transaction::resume(repo_root).map_err(|error| error.to_string())?;
         if let Err(error) = validate_result(repo_root) {
             if let Err(rollback) = transaction::rollback(repo_root) {
@@ -71,11 +71,11 @@ pub fn apply_workspace_upgrade(
         return plan_workspace_upgrade(repo_root, bundle_root, add_skill_sets, remove_skill_sets);
     }
 
+    validate_workspace(repo_root).map_err(|error| error.to_string())?;
     let status = git::worktree_status(repo_root).map_err(|error| error.to_string())?;
     if !status.is_empty() {
         return Err("workspace upgrade requires a clean Git worktree and index".to_string());
     }
-    let _lease = acquire_worktree_lease(repo_root).map_err(|error| error.to_string())?;
 
     let bundle = PackageBundle::load(bundle_root).map_err(|error| error.to_string())?;
     let profile = profile::resolve_active(repo_root).map_err(|error| error.to_string())?;
@@ -99,7 +99,7 @@ pub fn apply_workspace_upgrade(
 }
 
 fn validate_result(repo_root: &Path) -> Result<(), String> {
-    read_layout(repo_root).map_err(|error| error.to_string())?;
+    validate_workspace(repo_root).map_err(|error| error.to_string())?;
     WorkspaceManifest::read_optional(repo_root)
         .map_err(|error| error.to_string())?
         .ok_or_else(|| "upgrade completed without a workspace manifest".to_string())?;

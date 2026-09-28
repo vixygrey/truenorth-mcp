@@ -35,11 +35,13 @@ A workspace without a manifest is eligible only when the package contains a supp
 manifest. Migration adopts historical bundle files and profile-generated files only when their
 content and mode match exactly. TrueNorth-MCP 1.0.2 is the first migration baseline.
 
-Application requires a clean Git worktree and index and the same advisory writer lease used by MCP
-mutations. It stages source files, backups, and a journal under `.agent/runtime/upgrade`. Each
-operation verifies its expected preimage or postimage, making interrupted application resumable.
-Validation runs before the journal is removed. A failed application or validation restores every
-preimage in reverse order.
+Application acquires the same advisory writer lease used by MCP mutations, validates the
+repository-owned configuration, and requires a clean Git worktree and index. The lease and
+transaction artifacts under `.agent/runtime/` are excluded from that cleanliness check. It stages
+source files, backups, and a journal under `.agent/runtime/upgrade`. Each operation verifies its
+expected preimage or postimage, making interrupted application resumable. Layout, profile, backlog,
+feature, token-cap, and workspace-manifest validation runs again before the journal is removed.
+A failed post-apply validation restores every preimage in reverse order.
 
 ## Consequences
 

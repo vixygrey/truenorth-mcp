@@ -77,10 +77,18 @@ pub fn status(repo_root: &Path) -> Result<String, GitError> {
     )
 }
 
-/// The complete staged, unstaged, and untracked worktree status.
+/// The complete staged, unstaged, and untracked worktree status, excluding
+/// `.agent/runtime/` process state created by the writer lease and transactions.
 pub fn worktree_status(repo_root: &Path) -> Result<String, GitError> {
     let output = Command::new("git")
-        .args(["status", "--porcelain=v1", "--untracked-files=all"])
+        .args([
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "--",
+            ".",
+            ":(exclude).agent/runtime",
+        ])
         .current_dir(repo_root)
         .output()?;
     if !output.status.success() {
