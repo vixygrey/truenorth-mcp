@@ -5,7 +5,7 @@
 //! Requirements: 7.8, 7.9.
 
 use super::*;
-use crate::engine::skill::RawSkill;
+use crate::engine::skill::{RawSkill, discover_skills, read_skill_raw};
 use crate::engine::skill_parser::parse_skill;
 use tempfile::tempdir;
 
@@ -53,7 +53,7 @@ fn mines_references_relation() {
         "develop-tdd",
         "# TDD\n\nSee skills/verify-work/SKILL.md for the gate.\n",
     );
-    let graph = build_graph(&[skill]);
+    let graph = build_graph(&[skill, parsed("verify-work", "# Verify\n")]);
     let refs: Vec<&GraphRelation> = graph
         .relations
         .iter()
@@ -167,25 +167,96 @@ fn forward_and_reverse_deps() {
 }
 
 #[test]
-fn mines_depends_on_from_after_phrasing() {
-    // The real skill phrasing is "use it after <skill>", not the literal "run X after Y".
-    // The target must be a known skill, so both skills are in the build.
+fn dependency_direction_matches_execution_order() {
     let research = parsed(
         "research-first",
-        "---\ndescription: Look before you build. Use it after survey-context and before elaborate-spec.\n---\n\n# Research First\n",
+        "---\ndescription: Use it after survey-context and before elaborate-spec.\n---\n\n# Research First\n",
     );
     let survey = parsed("survey-context", "# Survey Context\n");
     let elaborate = parsed("elaborate-spec", "# Elaborate Spec\n");
     let graph = build_graph(&[research, survey, elaborate]);
 
-    let deps = forward_deps(&graph, "research-first");
-    assert!(
-        deps.contains(&"survey-context".to_string()),
-        "expected a depends_on edge to survey-context, got {deps:?}"
+    assert_eq!(
+        forward_deps(&graph, "research-first"),
+        vec!["survey-context".to_string()]
     );
-    assert!(
-        deps.contains(&"elaborate-spec".to_string()),
-        "expected a depends_on edge to elaborate-spec, got {deps:?}"
+    assert_eq!(
+        forward_deps(&graph, "elaborate-spec"),
+        vec!["research-first".to_string()]
+    );
+}
+
+#[test]
+fn mines_canonical_invocation_forms() {
+    let router = parsed(
+        "orchestrate-project",
+        "# Orchestrate\n\nRun `build-group`, invoke `verify-work`, then route to `release-branch`.\n",
+    );
+    let graph = build_graph(&[
+        router,
+        parsed("build-group", "# Build\n"),
+        parsed("verify-work", "# Verify\n"),
+        parsed("release-branch", "# Release\n"),
+    ]);
+    let invoked: BTreeSet<String> = graph
+        .relations
+        .iter()
+        .filter(|r| r.from == "orchestrate-project" && r.relation_type == "invokes")
+        .map(|r| r.to.clone())
+        .collect();
+    assert_eq!(
+        invoked,
+        BTreeSet::from([
+            "build-group".to_string(),
+            "release-branch".to_string(),
+            "verify-work".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn mines_hand_off_to_as_a_handoff() {
+    let plan = parsed("plan-release", "# Plan\n\nHand off to `slice-tasks`.\n");
+    let graph = build_graph(&[plan, parsed("slice-tasks", "# Slice\n")]);
+    assert_eq!(
+        handoff_chain(&graph, "plan-release"),
+        vec!["plan-release".to_string(), "slice-tasks".to_string()]
+    );
+}
+
+#[test]
+fn classifies_remaining_exact_skill_mentions_as_references() {
+    let delegator = parsed(
+        "delegate-task",
+        "# Delegate\n\nDistinct from `dispatch-agents`; choose based on concurrency.\n",
+    );
+    let graph = build_graph(&[delegator, parsed("dispatch-agents", "# Dispatch\n")]);
+    assert!(graph.relations.iter().any(|r| {
+        r.from == "delegate-task" && r.to == "dispatch-agents" && r.relation_type == "references"
+    }));
+}
+
+#[test]
+fn reports_unresolved_canonical_targets_and_omits_stale_edges() {
+    let skill = parsed(
+        "develop-tdd",
+        "# TDD\n\nSee skills/removed-skill/SKILL.md and ../renamed-skill/SKILL.md.\n",
+    );
+    let result = build_graph_report(&[skill]);
+    assert_eq!(result.diagnostics.unresolved_mentions.len(), 2);
+    assert!(result.graph.relations.is_empty());
+}
+
+#[test]
+fn reports_suspicious_isolated_orchestrators() {
+    let skill = parsed(
+        "orchestrate-project",
+        "---\ndescription: Orchestrate a project workflow.\n---\n\n# Orchestrate\n",
+    );
+    let result = build_graph_report(&[skill]);
+    assert_eq!(
+        result.diagnostics.suspicious_isolated_orchestrators,
+        vec!["orchestrate-project".to_string()]
     );
 }
 
@@ -282,5 +353,66 @@ fn every_skill_relation_target_resolves_to_a_known_entity() {
             .iter()
             .any(|r| r.relation_type == "depends_on"),
         "expected at least one depends_on edge in the representative graph"
+    );
+}
+
+#[test]
+fn checked_in_catalog_has_complete_resolved_graph_contract() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("repository root")
+        .to_path_buf();
+    let entries = discover_skills(&root);
+    let skills: Vec<ParsedSkill> = entries
+        .iter()
+        .map(|entry| read_skill_raw(&root, &entry.name).expect("read checked-in skill"))
+        .map(|raw| parse_skill(&raw))
+        .collect();
+    let result = build_graph_report(&skills);
+
+    assert_eq!(result.graph.entities.len(), entries.len());
+    assert!(
+        result.diagnostics.unresolved_mentions.is_empty(),
+        "unresolved mentions: {:?}",
+        result.diagnostics.unresolved_mentions
+    );
+    assert!(result.diagnostics.unclassified_mentions.is_empty());
+    assert!(!result.graph.entities.contains_key("build-epic"));
+    for relation in &result.graph.relations {
+        if relation.relation_type != "enforces" {
+            assert!(
+                result.graph.entities.contains_key(&relation.to),
+                "stale relation target: {relation:?}"
+            );
+        }
+    }
+    for orchestrator in [
+        "orchestrate-project",
+        "execute-plan",
+        "change-request",
+        "compose-workflow",
+    ] {
+        assert!(
+            result.graph.relations.iter().any(|relation| {
+                relation.from == orchestrator
+                    && matches!(relation.relation_type.as_str(), "invokes" | "handoff_to")
+            }),
+            "{orchestrator} has no outgoing control-flow edge: {:?}",
+            result
+                .graph
+                .relations
+                .iter()
+                .filter(|relation| relation.from == orchestrator)
+                .collect::<Vec<_>>()
+        );
+    }
+    assert!(
+        result.diagnostics.dependency_cycles.is_empty(),
+        "dependency cycles: {:?}",
+        result.diagnostics.dependency_cycles
+    );
+    assert_eq!(
+        to_jsonl(&result.graph),
+        to_jsonl(&build_graph_report(&skills).graph)
     );
 }
