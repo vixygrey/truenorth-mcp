@@ -7,7 +7,7 @@
 //! Requirements: 2.6, 2.8, 2.9, 2.10.
 
 use super::*;
-use std::sync::Arc;
+use std::{fs, sync::Arc};
 use tempfile::tempdir;
 
 /// Build a server rooted at a temp dir.
@@ -44,22 +44,31 @@ fn files_to_modify_is_checked() {
 }
 
 #[test]
-fn red_stage_passes_when_test_fails() {
-    // Requirement 2.9: a non-zero exit reports red passed. `false` exits 1.
+fn red_stage_observes_test_exit_status() {
     let dir = tempdir().expect("temp dir");
     let server = server_at(dir.path());
-    assert!(server.run_red_stage("false").is_ok());
+    let failure = server.run_red_stage("false").expect("run failing test");
+    assert!(red_expectation_met(&failure));
+    assert_eq!(failure.exit_code, Some(1));
+
+    let pass = server.run_red_stage("true").expect("run passing test");
+    assert!(!red_expectation_met(&pass));
+    assert_eq!(pass.status, GateOutcomeStatus::Pass);
 }
 
 #[test]
-fn red_stage_fails_when_test_passes() {
-    // Requirement 2.10: an exit code 0 reports red failed. `true` exits 0.
-    let dir = tempdir().expect("temp dir");
-    let server = server_at(dir.path());
-    let error = server
-        .run_red_stage("true")
-        .expect_err("red must fail when the test passes");
-    assert!(error.message.contains("did not fail as required"));
+fn red_stage_timeout_does_not_satisfy_expected_failure() {
+    let timeout = GateOutcome {
+        status: GateOutcomeStatus::Timeout,
+        exit_code: None,
+        duration_ms: 5,
+        error: Some("timed out".to_string()),
+        remediation_hints: Vec::new(),
+    };
+    assert!(!red_expectation_met(&timeout));
+    let receipt = gate_receipt(&timeout, true);
+    assert_eq!(receipt.status, GateStatus::Timeout);
+    assert_eq!(receipt.expectation, GateExpectation::Nonzero);
 }
 
 #[tokio::test]
@@ -70,11 +79,14 @@ async fn public_red_step_records_only_an_observed_failure() {
     let failed_test_dir = tempdir().expect("temp dir");
     let failed_test_server = server_at(failed_test_dir.path());
     let result = failed_test_server
-        .truenorth_tdd_cycle(Parameters(TddCycleArgs {
-            step: "red".to_string(),
-            failing_test_cmd: "false".to_string(),
-            files_to_modify: vec!["src/lib.rs".to_string()],
-        }))
+        .truenorth_tdd_cycle(
+            Parameters(TddCycleArgs {
+                step: "red".to_string(),
+                failing_test_cmd: "false".to_string(),
+                files_to_modify: vec!["src/lib.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect("a failing test establishes red");
     let response = result.content[0]
@@ -85,6 +97,15 @@ async fn public_red_step_records_only_an_observed_failure() {
     let response: serde_json::Value = serde_json::from_str(&response).expect("JSON response");
     assert_eq!(response["step"], "red");
     assert_eq!(response["step_ok"], true);
+    assert_eq!(response["receipt"]["operation"], "truenorth_tdd_cycle");
+    assert_eq!(response["receipt"]["gate"]["status"], "failure");
+    assert_eq!(response["receipt"]["gate"]["expectation"], "nonzero");
+    let state =
+        fs::read(failed_test_dir.path().join(".agent/tasks/state.yml")).expect("read state bytes");
+    assert_eq!(
+        response["receipt"]["changes"][0]["sha256"],
+        crate::engine::digest::sha256(&state)
+    );
     assert_eq!(
         read_tdd_step(failed_test_dir.path()).expect("read red state"),
         Some(TddStep::Red)
@@ -93,11 +114,14 @@ async fn public_red_step_records_only_an_observed_failure() {
     let passing_test_dir = tempdir().expect("temp dir");
     let passing_test_server = server_at(passing_test_dir.path());
     let error = passing_test_server
-        .truenorth_tdd_cycle(Parameters(TddCycleArgs {
-            step: "red".to_string(),
-            failing_test_cmd: "true".to_string(),
-            files_to_modify: vec!["src/lib.rs".to_string()],
-        }))
+        .truenorth_tdd_cycle(
+            Parameters(TddCycleArgs {
+                step: "red".to_string(),
+                failing_test_cmd: "true".to_string(),
+                files_to_modify: vec!["src/lib.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
         .await
         .expect_err("a passing test cannot establish red");
     assert!(error.message.contains("did not fail as required"));

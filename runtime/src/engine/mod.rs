@@ -8,6 +8,7 @@ pub mod agent_ws;
 pub mod agnostic;
 pub mod backlog;
 pub mod cockpit;
+pub mod digest;
 pub mod features;
 pub mod gate_runner;
 pub mod git;

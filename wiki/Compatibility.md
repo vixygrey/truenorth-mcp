@@ -41,7 +41,6 @@ areas:
   spec: [requirements.md]
   tasks: [state.yml] # truenorth-lint: allow-relative-layout-path
   memories: [lessons.md, glossary.md]
-  telemetry: [runs.yml]
 ```
 
 The runtime accepts only layout version `"1"`. It also requires these paths:
@@ -51,7 +50,6 @@ The runtime accepts only layout version `"1"`. It also requires these paths:
 - `.agent/tasks/state.yml`
 - `.agent/memories/lessons.md`
 - `.agent/memories/glossary.md`
-- `.agent/telemetry/runs.yml`
 - `.agent/layout.yml`
 - `.agent/profile.yml`
 
@@ -59,8 +57,18 @@ The runtime logs an invalid layout as a warning and preserves its last valid lay
 cache. A missing layout remains valid for an unscaffolded or legacy workspace, so
 v1 can perform the legacy reads described below.
 
-`profile.yml` has no independent version field. Its v1 contract is one of these
-fixed profile names:
+`.agent/telemetry/runs.yml` is no longer required or scaffolded. Existing telemetry
+directories and files remain accepted as extra v1 content, but the runtime does not
+write them. Before downgrading to a runtime that requires the placeholder, recreate it
+if absent:
+
+```sh
+mkdir -p .agent/telemetry
+test -e .agent/telemetry/runs.yml || printf 'runs: []\n' >.agent/telemetry/runs.yml
+```
+
+`profile.yml` has no independent version field. Its v1 contract is one of these fixed
+profile names:
 
 | Profile           | Grouping requirement        |
 | ----------------- | --------------------------- |
@@ -156,6 +164,40 @@ The catalog tools `index_skills`, `get_skill`, `read_skill`, `search_skills`,
 `get_dependencies`, `get_git_context`, and `validate_skill` remain available for
 the skill library. Use `tools/list` as the authoritative surface for a running
 workspace, especially when feature flags are set.
+
+### Operation receipts
+
+Successful repository mutations retain their existing result fields and add a
+`receipt` object:
+
+```json
+{
+  "receipt": {
+    "schema_version": 1,
+    "operation": "truenorth_record_task",
+    "runtime_version": "1.0.3",
+    "correlation_id": "mcp-sha256:<digest>",
+    "changes": [
+      {
+        "path": ".agent/tasks/release-plan.yml",
+        "sha256": "<digest of the exact resulting bytes>"
+      }
+    ]
+  }
+}
+```
+
+`changes` is sorted by repository-relative path and contains only files written by
+that call. It never contains absolute paths, commands, environment values, or file
+content. `correlation_id` is a one-way digest of the MCP request identifier, not the
+identifier itself. Consumers must ignore unknown receipt fields so minor releases can
+extend the schema.
+
+Gate operations add `receipt.gate` with `status` (`pass`, `failure`, or `timeout`),
+`expectation` (`zero` or `nonzero`), `duration_ms`, and nullable `exit_code`.
+Gate failures carry the same receipt in MCP error data beside `remediation_hints`.
+The configured command is never returned. Mutation failures remain MCP errors and do
+not return a success receipt.
 
 A deprecation must identify its replacement, removal version, and migration action.
 A release that contains a breaking change must include the migration notes in its

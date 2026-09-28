@@ -11,6 +11,7 @@ pub mod hooks;
 pub mod lifecycle;
 pub mod mutation_error;
 pub mod ontology;
+pub mod receipt;
 pub mod result;
 pub mod scaffold;
 pub mod skills;

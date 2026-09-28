@@ -7,7 +7,7 @@
 //!
 //! Requirements: 7.1 to 7.9. Design: Part II §2.
 
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::{Deserialize, Serialize};
@@ -20,6 +20,7 @@ use crate::engine::skill_parser::{ParsedSkill, parse_skill};
 use crate::engine::skill_validate::validate_skill;
 use crate::server::{ServerContext, TrueNorthServer};
 use crate::tools::mutation_error::{mutation_error, write_error};
+use crate::tools::receipt::{self, ChangedContent, OperationReceipt};
 use crate::tools::result;
 
 /// Render a serializable value as a pretty JSON tool result.
@@ -136,7 +137,10 @@ impl TrueNorthServer {
 
     /// Build and persist the skill graph.
     #[tool(description = "Build the entity-relation skill graph and persist it to disk.")]
-    pub async fn build_skill_graph(&self) -> Result<CallToolResult, ErrorData> {
+    pub async fn build_skill_graph(
+        &self,
+        request_id: RequestId,
+    ) -> Result<CallToolResult, ErrorData> {
         let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
         let observed = agent_ws::ObservedFile::observe(self.ctx.graph_path()).map_err(|error| {
             ErrorData::internal_error(format!("could not inspect the skill graph: {error}"), None)
@@ -159,16 +163,23 @@ impl TrueNorthServer {
         }
         let diagnostics = build.diagnostics;
         let graph = build.graph;
+        let jsonl = graph::to_jsonl(&graph);
+        let change = ChangedContent::new(".agent/tasks/skill-graph.jsonl", jsonl.as_bytes())
+            .map_err(receipt_error)?;
+        let receipt = OperationReceipt::new("build_skill_graph", &request_id, vec![change], None)
+            .map_err(receipt_error)?;
         let response = json_result(
-            &serde_json::json!({
-                "entities": graph.entities.len(),
-                "relations": graph.relations.len(),
-                "graph_path": self.ctx.graph_path().display().to_string(),
-                "diagnostics": diagnostics,
-            }),
+            &receipt::attach(
+                serde_json::json!({
+                    "entities": graph.entities.len(),
+                    "relations": graph.relations.len(),
+                    "graph_path": self.ctx.graph_path().display().to_string(),
+                    "diagnostics": diagnostics,
+                }),
+                receipt,
+            ),
             self.ctx.token_caps,
         )?;
-        let jsonl = graph::to_jsonl(&graph);
         let precondition = agent_ws::WritePrecondition::new(observed);
         agent_ws::write_under_agent_if_unchanged(
             &self.ctx.repo_root,
@@ -348,6 +359,10 @@ impl TrueNorthServer {
         results.sort_by_key(|r| std::cmp::Reverse(r.score));
         results
     }
+}
+
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build mutation receipt: {error}"), None)
 }
 
 /// Serialize skill index entries for the JSON result.

@@ -13,7 +13,7 @@
 //! Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.11, 2.12. Design: Part II §2.
 
 use crate::tools::result;
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock, ResourceUpdatedNotificationParam};
 use rmcp::service::{Peer, RoleServer};
 use rmcp::{ErrorData, schemars, tool, tool_router};
@@ -29,6 +29,7 @@ use crate::engine::validate::{ValidationError, map_legacy_phase};
 use crate::engine::watcher::ResourceUri;
 use crate::server::TrueNorthServer;
 use crate::tools::mutation_error::{mutation_error, write_error};
+use crate::tools::receipt::{self, ChangedContent, OperationReceipt};
 
 /// The maximum length of an artifacts summary (Requirement 2.2).
 const MAX_ARTIFACTS_SUMMARY: usize = 4000;
@@ -89,6 +90,7 @@ impl TrueNorthServer {
         &self,
         params: Parameters<AdvancePhaseArgs>,
         peer: Peer<RoleServer>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -101,19 +103,12 @@ impl TrueNorthServer {
             MAX_ARTIFACTS_SUMMARY,
             "artifacts_summary",
         )?;
-        let response = result::success(
-            vec![ContentBlock::text(
-                serde_json::json!({ "advanced_to": args.to_phase }).to_string(),
-            )],
-            self.ctx.token_caps,
-        )?;
         let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
 
         // Capture the git-scoped context. A non-git repo yields an empty context rather
         // than failing the advance.
         let git_context = git::status(&self.ctx.repo_root).unwrap_or_default();
-
-        cockpit::advance_phase(
+        let prepared = cockpit::prepare_advance_phase(
             &self.ctx.repo_root,
             from,
             to,
@@ -121,6 +116,22 @@ impl TrueNorthServer {
             &git_context,
         )
         .map_err(cockpit_error)?;
+        let change = ChangedContent::new(prepared.repository_relative_path(), prepared.contents())
+            .map_err(receipt_error)?;
+        let receipt =
+            OperationReceipt::new("truenorth_advance_phase", &request_id, vec![change], None)
+                .map_err(receipt_error)?;
+        let response = result::success(
+            vec![ContentBlock::text(
+                receipt::attach(serde_json::json!({ "advanced_to": args.to_phase }), receipt)
+                    .to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
+
+        prepared
+            .commit(&self.ctx.repo_root)
+            .map_err(cockpit_error)?;
         drop(permit);
 
         notify_updated(&peer, ResourceUri::State).await;
@@ -135,6 +146,7 @@ impl TrueNorthServer {
         &self,
         params: Parameters<RecordTaskArgs>,
         peer: Peer<RoleServer>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -149,19 +161,7 @@ impl TrueNorthServer {
         )?;
         let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
         let grouping = resolve_grouping(&self.ctx.repo_root, &args)?;
-        let response = result::success(
-            vec![ContentBlock::text(
-                serde_json::json!({
-                    "recorded_task": args.task_name,
-                    "group_id": grouping.id,
-                    "group_kind": grouping.kind,
-                })
-                .to_string(),
-            )],
-            self.ctx.token_caps,
-        )?;
-
-        cockpit::record_task(
+        let prepared = cockpit::prepare_record_task(
             &self.ctx.repo_root,
             grouping.id.as_deref(),
             grouping.kind.as_deref(),
@@ -169,12 +169,38 @@ impl TrueNorthServer {
             &args.verify_command,
         )
         .map_err(cockpit_error)?;
+        let change = ChangedContent::new(prepared.repository_relative_path(), prepared.contents())
+            .map_err(receipt_error)?;
+        let receipt =
+            OperationReceipt::new("truenorth_record_task", &request_id, vec![change], None)
+                .map_err(receipt_error)?;
+        let response = result::success(
+            vec![ContentBlock::text(
+                receipt::attach(
+                    serde_json::json!({
+                        "recorded_task": args.task_name,
+                        "group_id": grouping.id,
+                        "group_kind": grouping.kind,
+                    }),
+                    receipt,
+                )
+                .to_string(),
+            )],
+            self.ctx.token_caps,
+        )?;
+
+        prepared
+            .commit(&self.ctx.repo_root)
+            .map_err(cockpit_error)?;
         drop(permit);
 
         notify_updated(&peer, ResourceUri::Cockpit).await;
-
         Ok(response)
     }
+}
+
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build mutation receipt: {error}"), None)
 }
 
 /// Emit a best-effort `resources/updated` notification. A send failure is non-fatal,

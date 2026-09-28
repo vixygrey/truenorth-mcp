@@ -99,7 +99,7 @@ async fn run_profile_fixture(case: ProfileCase) -> anyhow::Result<()> {
 }
 
 fn assert_scaffold(root: &Path, case: ProfileCase) {
-    const COMMON_PATHS: [&str; 16] = [
+    const COMMON_PATHS: [&str; 15] = [
         ".agent/layout.yml",
         ".agent/profile.yml",
         ".agent/config/rules.yml",
@@ -109,7 +109,6 @@ fn assert_scaffold(root: &Path, case: ProfileCase) {
         ".agent/memories/lessons.md",
         ".agent/memories/glossary.md",
         ".agent/product/scope.md",
-        ".agent/telemetry/runs.yml",
         "AGENTS.md",
         "CONVENTIONS.md",
         ".githooks/commit-msg",

@@ -10,15 +10,16 @@
 //! Requirements: 3.1. Design: Part II §2, §5.
 
 use crate::tools::result;
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
 use crate::config::gate_environment::{GATE_ENV_ALLOWLIST_ENV, GateEnvironmentPolicy};
 use crate::config::{GateExecutionConfig, VERIFY_CMD_ENV, verify_command};
-use crate::engine::gate_runner::{GateOutcome, SystemCommandRunner, run_gate};
+use crate::engine::gate_runner::{GateOutcome, GateOutcomeStatus, SystemCommandRunner, run_gate};
 use crate::server::TrueNorthServer;
+use crate::tools::receipt::{self, GateReceipt, GateStatus, OperationReceipt};
 
 /// The environment variable that extends the gate command allowlist (comma-separated).
 const ALLOWLIST_ENV: &str = "TRUENORTH_GATE_ALLOWLIST";
@@ -40,6 +41,7 @@ impl TrueNorthServer {
     pub async fn truenorth_verify_gate(
         &self,
         params: Parameters<VerifyGateArgs>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -67,7 +69,7 @@ impl TrueNorthServer {
             environment.allowed_names().to_vec(),
         );
         let outcome = run_gate(&command, &cfg, &SystemCommandRunner);
-        gate_result(&outcome, &args.phase, self.ctx.token_caps)
+        gate_result(&outcome, &args.phase, &request_id, self.ctx.token_caps)
     }
 }
 
@@ -99,13 +101,32 @@ fn allowlist(command: &str) -> Vec<String> {
 fn gate_result(
     outcome: &GateOutcome,
     phase: &str,
+    request_id: &RequestId,
     caps: crate::engine::features::TokenCaps,
 ) -> Result<CallToolResult, ErrorData> {
-    if outcome.passed {
+    let status = match outcome.status {
+        GateOutcomeStatus::Pass => GateStatus::Pass,
+        GateOutcomeStatus::Failure => GateStatus::Failure,
+        GateOutcomeStatus::Timeout => GateStatus::Timeout,
+    };
+    let gate = GateReceipt {
+        status,
+        expectation: receipt::GateExpectation::Zero,
+        duration_ms: outcome.duration_ms,
+        exit_code: outcome.exit_code,
+    };
+    let receipt =
+        OperationReceipt::new("truenorth_verify_gate", request_id, Vec::new(), Some(gate))
+            .map_err(receipt_error)?;
+
+    if outcome.passed() {
         return result::success(
             vec![ContentBlock::text(
-                serde_json::json!({ "passed": true, "phase": phase, "mode": "execute" })
-                    .to_string(),
+                receipt::attach(
+                    serde_json::json!({ "passed": true, "phase": phase, "mode": "execute" }),
+                    receipt,
+                )
+                .to_string(),
             )],
             caps,
         );
@@ -114,8 +135,15 @@ fn gate_result(
         .error
         .clone()
         .unwrap_or_else(|| "the gate failed".to_string());
-    let data = serde_json::json!({ "remediation_hints": outcome.remediation_hints });
+    let data = serde_json::json!({
+        "remediation_hints": outcome.remediation_hints,
+        "receipt": receipt,
+    });
     Err(ErrorData::invalid_request(message, Some(data)))
+}
+
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build gate receipt: {error}"), None)
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The

@@ -16,7 +16,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::tools::result;
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
@@ -27,6 +27,7 @@ use crate::engine::ontology_scan::{Violation, pick_analyzer};
 use crate::engine::spec::{Constraint, Entity, Ontology};
 use crate::server::TrueNorthServer;
 use crate::tools::mutation_error::{mutation_error, write_error};
+use crate::tools::receipt::{self, ChangedContent, OperationReceipt};
 
 /// The maximum length of the domain name (Requirement 4.1).
 const MAX_DOMAIN: usize = 200;
@@ -57,6 +58,7 @@ impl TrueNorthServer {
     pub async fn truenorth_generate_ontology(
         &self,
         params: Parameters<GenerateOntologyArgs>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -105,14 +107,26 @@ impl TrueNorthServer {
         let yaml = serde_yaml::to_string(&ontology).map_err(|e| {
             ErrorData::internal_error(format!("could not serialize the ontology: {e}"), None)
         })?;
+        let change =
+            ChangedContent::new(".agent/ontology.yml", yaml.as_bytes()).map_err(receipt_error)?;
+        let receipt = OperationReceipt::new(
+            "truenorth_generate_ontology",
+            &request_id,
+            vec![change],
+            None,
+        )
+        .map_err(receipt_error)?;
         let response = result::success(
             vec![ContentBlock::text(
-                serde_json::json!({
-                    "domain": args.domain,
-                    "path": ".agent/ontology.yml",
-                    "entities": ontology.entities.len(),
-                    "constraints": ontology.constraints.len(),
-                })
+                receipt::attach(
+                    serde_json::json!({
+                        "domain": args.domain,
+                        "path": ".agent/ontology.yml",
+                        "entities": ontology.entities.len(),
+                        "constraints": ontology.constraints.len(),
+                    }),
+                    receipt,
+                )
                 .to_string(),
             )],
             self.ctx.token_caps,
@@ -181,6 +195,9 @@ impl TrueNorthServer {
             )),
         }
     }
+}
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build mutation receipt: {error}"), None)
 }
 
 impl TrueNorthServer {

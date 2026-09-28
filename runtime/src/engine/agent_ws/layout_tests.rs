@@ -46,6 +46,18 @@ fn read_layout_accepts_a_complete_layout() {
 }
 
 #[test]
+fn read_layout_does_not_require_telemetry_and_accepts_legacy_extra_files() {
+    let repo = seed_valid_layout();
+    let telemetry = repo.path().join(AGENT_DIR).join("telemetry/runs.yml");
+    assert!(!telemetry.exists());
+    read_layout(repo.path()).expect("layout without telemetry is valid");
+
+    fs::create_dir_all(telemetry.parent().expect("telemetry parent")).expect("create telemetry");
+    fs::write(&telemetry, "runs: []\n").expect("write legacy telemetry");
+    read_layout(repo.path()).expect("legacy telemetry remains an accepted extra");
+}
+
+#[test]
 fn read_layout_names_an_absent_required_entry() {
     let repo = seed_valid_layout();
     // Remove a required file to break the contract.

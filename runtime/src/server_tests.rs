@@ -90,8 +90,8 @@ fn resolve_errors_on_a_broken_config() {
 
 /// The required `.agent/` layout entries, mirroring `agent_ws::REQUIRED_ENTRIES`. Seeded
 /// as directories (no extension in the tuple's `dir` flag) or files.
-const LAYOUT_DIRS: [&str; 5] = ["config", "spec", "tasks", "memories", "telemetry"];
-const LAYOUT_FILES: [&str; 8] = [
+const LAYOUT_DIRS: [&str; 4] = ["config", "spec", "tasks", "memories"];
+const LAYOUT_FILES: [&str; 7] = [
     "layout.yml",
     "profile.yml",
     "config/rules.yml",
@@ -99,7 +99,6 @@ const LAYOUT_FILES: [&str; 8] = [
     "tasks/state.yml",
     "memories/lessons.md",
     "memories/glossary.md",
-    "telemetry/runs.yml",
 ];
 
 /// Seed a complete, valid `.agent/` layout under a fresh temp repository root, so

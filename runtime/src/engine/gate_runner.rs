@@ -25,7 +25,7 @@
 
 use std::ffi::OsString;
 use std::process::{Command, Stdio};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use wait_timeout::ChildExt;
 
@@ -34,14 +34,22 @@ use crate::config::GateExecutionConfig;
 /// The maximum stderr tail returned on a gate failure (Requirement 3.3).
 const MAX_STDERR_TAIL_BYTES: usize = 2 * 1024;
 
+/// The structured outcome class retained for tool receipts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GateOutcomeStatus {
+    Pass,
+    Failure,
+    Timeout,
+}
+
 /// The outcome of a gate run (design §5).
-///
-/// A pass carries `passed = true` and no error. A failure carries `passed = false`, an
-/// error message, and remediation hints.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GateOutcome {
-    /// Whether the gate passed.
-    pub passed: bool,
+    pub status: GateOutcomeStatus,
+    /// The process exit code when one was observed.
+    pub exit_code: Option<i32>,
+    /// Monotonic elapsed wall-clock time, rounded down to milliseconds.
+    pub duration_ms: u64,
     /// The error message on failure, or `None` on a pass.
     pub error: Option<String>,
     /// Actionable remediation hints on failure.
@@ -49,19 +57,31 @@ pub struct GateOutcome {
 }
 
 impl GateOutcome {
-    /// A passing outcome.
-    fn passed() -> Self {
+    pub fn passed(&self) -> bool {
+        self.status == GateOutcomeStatus::Pass
+    }
+
+    fn pass(exit_code: i32, duration_ms: u64) -> Self {
         Self {
-            passed: true,
+            status: GateOutcomeStatus::Pass,
+            exit_code: Some(exit_code),
+            duration_ms,
             error: None,
             remediation_hints: Vec::new(),
         }
     }
 
-    /// A failing outcome with a message and hints.
-    fn failed(error: impl Into<String>, hints: &[&str]) -> Self {
+    fn failed(
+        status: GateOutcomeStatus,
+        exit_code: Option<i32>,
+        duration_ms: u64,
+        error: impl Into<String>,
+        hints: &[&str],
+    ) -> Self {
         Self {
-            passed: false,
+            status,
+            exit_code,
+            duration_ms,
             error: Some(error.into()),
             remediation_hints: hints.iter().map(|hint| hint.to_string()).collect(),
         }
@@ -109,8 +129,12 @@ pub fn run_gate<R: CommandRunner>(
     cfg: &GateExecutionConfig,
     runner: &R,
 ) -> GateOutcome {
+    let started = Instant::now();
     let Some(binary) = first_token(command) else {
         return GateOutcome::failed(
+            GateOutcomeStatus::Failure,
+            None,
+            elapsed_ms(started),
             "the gate command is empty",
             &["supply a non-empty verify or test command"],
         );
@@ -121,27 +145,34 @@ pub fn run_gate<R: CommandRunner>(
         .iter()
         .any(|allowed| allowed == binary)
     {
-        // Requirement 3.5: do not execute a command whose binary is not allowlisted.
         return GateOutcome::failed(
+            GateOutcomeStatus::Failure,
+            None,
+            elapsed_ms(started),
             format!("command `{binary}` is not in the allowlist"),
             &["add the binary to the gate command allowlist"],
         );
     }
 
     match runner.run(command, cfg) {
-        Ok(result) => map_result(result, cfg.timeout),
+        Ok(result) => map_result(result, cfg.timeout, elapsed_ms(started)),
         Err(error) => GateOutcome::failed(
+            GateOutcomeStatus::Failure,
+            None,
+            elapsed_ms(started),
             format!("could not start the gate command `{binary}`: {error}"),
             &["make sure that the binary is installed and on PATH"],
         ),
     }
 }
 
-/// Map a command result to a gate outcome.
-fn map_result(result: CommandResult, timeout: Duration) -> GateOutcome {
+/// Map a command result to a typed gate outcome.
+fn map_result(result: CommandResult, timeout: Duration, duration_ms: u64) -> GateOutcome {
     if result.timed_out {
-        // Requirement 3.4.
         return GateOutcome::failed(
+            GateOutcomeStatus::Timeout,
+            None,
+            duration_ms,
             format!("the gate timed out after {} seconds", timeout.as_secs()),
             &[
                 "reduce the test scope so the gate finishes within the timeout",
@@ -151,23 +182,28 @@ fn map_result(result: CommandResult, timeout: Duration) -> GateOutcome {
     }
 
     if result.exit_code == Some(0) {
-        // Requirement 3.2: pass only on a real exit-0 observation.
-        return GateOutcome::passed();
+        return GateOutcome::pass(0, duration_ms);
     }
 
-    // Requirement 3.3: non-zero exit returns at most the final 2 KB of stderr.
     let tail = stderr_tail(&result.stderr);
     let code = result
         .exit_code
-        .map(|c| c.to_string())
+        .map(|code| code.to_string())
         .unwrap_or_else(|| "unknown (killed by signal)".to_string());
     GateOutcome::failed(
+        GateOutcomeStatus::Failure,
+        result.exit_code,
+        duration_ms,
         format!("the gate command exited with code {code}:\n{tail}"),
         &[
             "read the stderr tail above and fix the reported failure",
             "re-run the gate after the fix",
         ],
     )
+}
+
+fn elapsed_ms(started: Instant) -> u64 {
+    u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX)
 }
 
 /// The first whitespace-separated token of a command, when present.

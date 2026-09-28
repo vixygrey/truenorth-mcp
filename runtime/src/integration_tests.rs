@@ -13,7 +13,7 @@
 use std::fs;
 
 use rmcp::ServiceExt;
-use rmcp::model::{CallToolRequestParams, ReadResourceRequestParams};
+use rmcp::model::{CallToolRequestParams, CallToolResult, ContentBlock, ReadResourceRequestParams};
 use tempfile::tempdir;
 
 use crate::config::VERIFY_CMD_ENV;
@@ -62,7 +62,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     assert!(state.contains("active_epic: e01"));
 
     // Drive a phase advance. The tool writes state.yaml (Requirements 2.1, 2.3).
-    call_tool(
+    let advance_result = call_tool(
         &client,
         "truenorth_advance_phase",
         serde_json::json!({
@@ -72,6 +72,13 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
         }),
     )
     .await?;
+    let advance_receipt = result_json(&advance_result)?;
+    assert_receipt_change(
+        &advance_receipt,
+        "truenorth_advance_phase",
+        ".agent/tasks/state.yml",
+        &root.join(".agent/tasks/state.yml"),
+    )?;
 
     // The state resource now reflects the written phase (Requirement 5.4/5.5).
     let after_advance = read_text(&client, "truenorth://state").await?;
@@ -81,7 +88,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     );
 
     // Record a task. The tool appends to release-plan.yaml (Requirements 2.1, 2.5).
-    call_tool(
+    let task_result = call_tool(
         &client,
         "truenorth_record_task",
         serde_json::json!({
@@ -91,6 +98,17 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
         }),
     )
     .await?;
+    let task_receipt = result_json(&task_result)?;
+    assert_receipt_change(
+        &task_receipt,
+        "truenorth_record_task",
+        ".agent/tasks/release-plan.yml",
+        &root.join(".agent/tasks/release-plan.yml"),
+    )?;
+    assert_ne!(
+        advance_receipt["receipt"]["correlation_id"],
+        task_receipt["receipt"]["correlation_id"]
+    );
 
     // The cockpit resource reflects the appended task.
     let cockpit = read_text(&client, "truenorth://cockpit").await?;
@@ -244,7 +262,13 @@ async fn build_skill_graph_writes_the_cache_under_agent() -> anyhow::Result<()> 
 
     let (client, handle) = connect(root.clone()).await?;
 
-    call_tool(&client, "build_skill_graph", serde_json::json!({})).await?;
+    let graph_result = call_tool(&client, "build_skill_graph", serde_json::json!({})).await?;
+    assert_receipt_change(
+        &result_json(&graph_result)?,
+        "build_skill_graph",
+        ".agent/tasks/skill-graph.jsonl",
+        &root.join(".agent/tasks/skill-graph.jsonl"),
+    )?;
 
     // The cache is written under .agent/tasks/, not in the crate source tree.
     assert!(
@@ -294,7 +318,7 @@ async fn call_tool(
     client: &rmcp::service::RunningService<rmcp::RoleClient, ()>,
     name: &'static str,
     args: serde_json::Value,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<CallToolResult> {
     let arguments = args.as_object().cloned().unwrap_or_default();
     let result = client
         .call_tool(CallToolRequestParams::new(name).with_arguments(arguments))
@@ -303,6 +327,36 @@ async fn call_tool(
         !result.is_error.unwrap_or(false),
         "tool `{name}` returned an error: {result:?}"
     );
+    Ok(result)
+}
+
+fn result_json(result: &CallToolResult) -> anyhow::Result<serde_json::Value> {
+    let text = result
+        .content
+        .first()
+        .and_then(ContentBlock::as_text)
+        .ok_or_else(|| anyhow::anyhow!("tool result has no text content"))?;
+    Ok(serde_json::from_str(&text.text)?)
+}
+
+fn assert_receipt_change(
+    result: &serde_json::Value,
+    operation: &str,
+    relative_path: &str,
+    disk_path: &std::path::Path,
+) -> anyhow::Result<()> {
+    assert_eq!(result["receipt"]["schema_version"], 1);
+    assert_eq!(result["receipt"]["operation"], operation);
+    let change = result["receipt"]["changes"]
+        .as_array()
+        .and_then(|changes| {
+            changes
+                .iter()
+                .find(|change| change["path"] == relative_path)
+        })
+        .unwrap_or_else(|| panic!("receipt does not contain `{relative_path}`"));
+    let bytes = fs::read(disk_path)?;
+    assert_eq!(change["sha256"], crate::engine::digest::sha256(&bytes));
     Ok(())
 }
 
@@ -437,7 +491,7 @@ async fn records_and_updates_a_bug_over_the_client() -> anyhow::Result<()> {
     )
     .await?;
 
-    call_tool(
+    let bug_result = call_tool(
         &client,
         "truenorth_record_bug",
         serde_json::json!({
@@ -449,6 +503,12 @@ async fn records_and_updates_a_bug_over_the_client() -> anyhow::Result<()> {
         }),
     )
     .await?;
+    assert_receipt_change(
+        &result_json(&bug_result)?,
+        "truenorth_record_bug",
+        ".agent/tasks/bugs.yml",
+        &root.join(".agent/tasks/bugs.yml"),
+    )?;
 
     let bugs: serde_yaml::Value =
         serde_yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?)?;
@@ -475,12 +535,18 @@ async fn scaffolds_a_project_over_the_client() -> anyhow::Result<()> {
 
     let (client, handle) = connect(root.clone()).await?;
 
-    call_tool(
+    let scaffold_result = call_tool(
         &client,
         "truenorth_scaffold_project",
         serde_json::json!({ "profile": "kanban" }),
     )
     .await?;
+    assert_receipt_change(
+        &result_json(&scaffold_result)?,
+        "truenorth_scaffold_project",
+        ".agent/layout.yml",
+        &root.join(".agent/layout.yml"),
+    )?;
 
     assert!(root.join(".agent/layout.yml").is_file());
     assert!(root.join(".agent/profile.yml").is_file());

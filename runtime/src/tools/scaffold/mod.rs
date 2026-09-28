@@ -15,7 +15,7 @@
 use std::path::Path;
 
 use crate::tools::result;
-use rmcp::handler::server::wrapper::Parameters;
+use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
@@ -27,6 +27,7 @@ use crate::engine::profile::{self, Profile};
 use crate::server::TrueNorthServer;
 use crate::tools::hooks::{commit_msg_hook, post_merge_hook};
 use crate::tools::mutation_error::{mutation_error, write_error};
+use crate::tools::receipt::{self, ChangedContent, OperationReceipt};
 
 mod bootstrap;
 mod templates;
@@ -74,6 +75,7 @@ impl TrueNorthServer {
     pub async fn truenorth_scaffold_project(
         &self,
         params: Parameters<ScaffoldArgs>,
+        request_id: RequestId,
     ) -> Result<CallToolResult, ErrorData> {
         let args = params.0;
 
@@ -82,15 +84,27 @@ impl TrueNorthServer {
         let profile = resolve_scaffold_profile(args.profile.as_deref())?;
 
         let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
-        let emissions = scaffold_project(&self.ctx.repo_root, profile)?;
-        drop(permit);
-
-        result::success(
+        let plan = plan_scaffold(&self.ctx.repo_root, profile)?;
+        let emissions = plan.emissions();
+        let changes = plan
+            .writes()
+            .map(|write| ChangedContent::new(&write.source.path, write.source.body.as_bytes()))
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(receipt_error)?;
+        let receipt =
+            OperationReceipt::new("truenorth_scaffold_project", &request_id, changes, None)
+                .map_err(receipt_error)?;
+        let response = result::success(
             vec![ContentBlock::text(
-                result_json(profile, &emissions).to_string(),
+                receipt::attach(result_json(profile, &emissions), receipt).to_string(),
             )],
             self.ctx.token_caps,
-        )
+        )?;
+
+        // Commit only after the complete receipt has passed the response token cap.
+        plan.commit(&self.ctx.repo_root)?;
+        drop(permit);
+        Ok(response)
     }
 }
 
@@ -142,7 +156,6 @@ pub fn scaffold_sources(profile: Profile) -> Vec<ScaffoldSource> {
         source(".agent/memories/lessons.md", "# Lessons\n"),
         source(".agent/memories/glossary.md", "# Glossary\n"),
         source(".agent/product/scope.md", "# Product scope\n"),
-        source(".agent/telemetry/runs.yml", "runs: []\n"),
     ];
     files.extend(
         profile
@@ -172,61 +185,123 @@ fn source(path: impl Into<String>, body: impl Into<String>) -> ScaffoldSource {
     }
 }
 
+#[derive(Debug)]
+enum PlannedDestination {
+    Agent(WritePrecondition),
+    RepoRoot,
+    Skip,
+}
+
+#[derive(Debug)]
+struct PlannedEmission {
+    source: ScaffoldSource,
+    destination: PlannedDestination,
+}
+
+#[derive(Debug)]
+struct ScaffoldPlan {
+    emissions: Vec<PlannedEmission>,
+}
+
+impl ScaffoldPlan {
+    fn writes(&self) -> impl Iterator<Item = &PlannedEmission> {
+        self.emissions
+            .iter()
+            .filter(|entry| !matches!(entry.destination, PlannedDestination::Skip))
+    }
+
+    fn emissions(&self) -> Vec<Emission> {
+        self.emissions
+            .iter()
+            .map(|entry| match entry.destination {
+                PlannedDestination::Skip => Emission::Skipped(entry.source.path.clone()),
+                PlannedDestination::Agent(_) | PlannedDestination::RepoRoot => {
+                    Emission::Wrote(entry.source.path.clone())
+                }
+            })
+            .collect()
+    }
+
+    fn commit(self, repo_root: &Path) -> Result<(), ErrorData> {
+        for entry in self.emissions {
+            match entry.destination {
+                PlannedDestination::Agent(precondition) => {
+                    let relative = entry
+                        .source
+                        .path
+                        .strip_prefix(".agent/")
+                        .expect("agent scaffold path was classified by its prefix");
+                    write_under_agent_if_unchanged(
+                        repo_root,
+                        Path::new(relative),
+                        &entry.source.body,
+                        &precondition,
+                    )
+                    .map_err(write_error)?;
+                }
+                PlannedDestination::RepoRoot => {
+                    write_repo_seed(
+                        repo_root,
+                        Path::new(&entry.source.path),
+                        &entry.source.body,
+                        true,
+                    )
+                    .map_err(|error| {
+                        ErrorData::internal_error(
+                            format!("could not seed `{}`: {error}", entry.source.path),
+                            None,
+                        )
+                    })?;
+                }
+                PlannedDestination::Skip => {}
+            }
+        }
+        Ok(())
+    }
+}
+
+fn plan_scaffold(repo_root: &Path, profile: Profile) -> Result<ScaffoldPlan, ErrorData> {
+    let mut emissions = Vec::new();
+    for source in scaffold_sources(profile) {
+        let destination = if let Some(relative) = source.path.strip_prefix(".agent/") {
+            let target = repo_root.join(".agent").join(relative);
+            let (existing, observed) = ObservedFile::read_string(&target).map_err(|error| {
+                ErrorData::internal_error(
+                    format!("could not inspect `{}`: {error}", source.path),
+                    None,
+                )
+            })?;
+            if existing.is_some() {
+                PlannedDestination::Skip
+            } else {
+                PlannedDestination::Agent(WritePrecondition::new(observed))
+            }
+        } else if repo_root.join(&source.path).exists() {
+            PlannedDestination::Skip
+        } else {
+            PlannedDestination::RepoRoot
+        };
+        emissions.push(PlannedEmission {
+            source,
+            destination,
+        });
+    }
+    Ok(ScaffoldPlan { emissions })
+}
+
 /// Emit all existing-project scaffold targets and return their write outcomes.
 pub(super) fn scaffold_project(
     repo_root: &Path,
     profile: Profile,
 ) -> Result<Vec<Emission>, ErrorData> {
-    let mut emissions = Vec::new();
-    for file in scaffold_sources(profile) {
-        if let Some(relative) = file.path.strip_prefix(".agent/") {
-            seed_under_agent(repo_root, relative, &file.body, &mut emissions)?;
-        } else {
-            seed_repo_root(repo_root, &file.path, &file.body, &mut emissions)?;
-        }
-    }
+    let plan = plan_scaffold(repo_root, profile)?;
+    let emissions = plan.emissions();
+    plan.commit(repo_root)?;
     Ok(emissions)
 }
 
-/// Write `rel` under `.agent/` when absent, recording the outcome (Requirement 5.12).
-fn seed_under_agent(
-    repo_root: &Path,
-    rel: &str,
-    body: &str,
-    out: &mut Vec<Emission>,
-) -> Result<(), ErrorData> {
-    let target = repo_root.join(".agent").join(rel);
-    let display = format!(".agent/{rel}");
-    let (existing, observed) = ObservedFile::read_string(&target).map_err(|error| {
-        ErrorData::internal_error(format!("could not inspect `{display}`: {error}"), None)
-    })?;
-    if existing.is_some() {
-        out.push(Emission::Skipped(display));
-        return Ok(());
-    }
-    let precondition = WritePrecondition::new(observed);
-    write_under_agent_if_unchanged(repo_root, Path::new(rel), body, &precondition)
-        .map_err(write_error)?;
-    out.push(Emission::Wrote(display));
-    Ok(())
-}
-
-/// Write a repo-root `rel` when absent, recording the outcome (Requirement 5.12).
-fn seed_repo_root(
-    repo_root: &Path,
-    rel: &str,
-    body: &str,
-    out: &mut Vec<Emission>,
-) -> Result<(), ErrorData> {
-    let target = repo_root.join(rel);
-    if target.exists() {
-        out.push(Emission::Skipped(rel.to_string()));
-        return Ok(());
-    }
-    write_repo_seed(repo_root, Path::new(rel), body, true)
-        .map_err(|e| ErrorData::internal_error(format!("could not seed `{rel}`: {e}"), None))?;
-    out.push(Emission::Wrote(rel.to_string()));
-    Ok(())
+fn receipt_error(error: String) -> ErrorData {
+    ErrorData::internal_error(format!("could not build mutation receipt: {error}"), None)
 }
 
 /// Build the tool result JSON from the emission outcomes.

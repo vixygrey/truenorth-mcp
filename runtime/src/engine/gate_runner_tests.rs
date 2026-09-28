@@ -59,7 +59,7 @@ fn pass_only_on_exit_zero() {
     // Property 2: exit 0 passes.
     let runner = FakeCommandRunner::passing();
     let outcome = run_gate("cargo test", &cfg_with_cargo(), &runner);
-    assert!(outcome.passed);
+    assert!(outcome.passed());
     assert!(outcome.error.is_none());
     assert!(runner.ran.get());
 }
@@ -73,7 +73,7 @@ fn nonzero_exit_fails_with_stderr_tail() {
         timed_out: false,
     });
     let outcome = run_gate("cargo test", &cfg_with_cargo(), &runner);
-    assert!(!outcome.passed);
+    assert!(!outcome.passed());
     let error = outcome.error.expect("failure carries an error");
     assert!(error.contains("101"));
     assert!(error.contains("test `foo` failed"));
@@ -110,7 +110,7 @@ fn timeout_fails_with_timeout_hints() {
         timed_out: true,
     });
     let outcome = run_gate("cargo test", &cfg_with_cargo(), &runner);
-    assert!(!outcome.passed);
+    assert!(!outcome.passed());
     let error = outcome.error.expect("failure carries an error");
     assert!(error.contains("timed out"));
     let hints = outcome.remediation_hints.join(" ");
@@ -128,7 +128,7 @@ fn allowlist_miss_rejects_without_executing() {
         Vec::new(),
     );
     let outcome = run_gate("rm -rf /", &cfg, &runner);
-    assert!(!outcome.passed);
+    assert!(!outcome.passed());
     assert!(
         !runner.ran.get(),
         "an allowlist miss must not execute the command"
@@ -141,7 +141,7 @@ fn allowlist_miss_rejects_without_executing() {
 fn empty_command_is_rejected() {
     let runner = FakeCommandRunner::passing();
     let outcome = run_gate("   ", &cfg_with_cargo(), &runner);
-    assert!(!outcome.passed);
+    assert!(!outcome.passed());
     assert!(!runner.ran.get());
 }
 

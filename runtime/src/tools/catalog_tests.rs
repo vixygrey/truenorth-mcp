@@ -51,7 +51,9 @@ async fn oversized_graph_receipt_rejects_before_writing_cache() {
         },
     ));
     let error = server
-        .build_skill_graph()
+        .build_skill_graph(rmcp::handler::server::tool::RequestId(
+            rmcp::model::NumberOrString::Number(1),
+        ))
         .await
         .expect_err("receipt exceeds cap");
     assert!(error.message.contains("token cap"));
@@ -68,7 +70,9 @@ async fn unresolved_canonical_skill_target_rejects_before_writing_cache() {
     );
     let server = server_at(repo.path());
     let error = server
-        .build_skill_graph()
+        .build_skill_graph(rmcp::handler::server::tool::RequestId(
+            rmcp::model::NumberOrString::Number(1),
+        ))
         .await
         .expect_err("unresolved target");
     assert!(error.message.contains("removed-skill"), "{}", error.message);
@@ -84,7 +88,12 @@ async fn graph_receipt_reports_catalog_diagnostics() {
         "---\ndescription: Orchestrate a project workflow.\n---\n\n# Orchestrate\n",
     );
     let server = server_at(repo.path());
-    let result = server.build_skill_graph().await.expect("build graph");
+    let result = server
+        .build_skill_graph(rmcp::handler::server::tool::RequestId(
+            rmcp::model::NumberOrString::Number(1),
+        ))
+        .await
+        .expect("build graph");
     let text = result.content[0]
         .as_text()
         .expect("text result")
