@@ -70,7 +70,7 @@ SPIKE?      spike-prototype (feeds back to plan-work)
 EXECUTE     develop-tdd + enforce-first, delegate-task, dispatch-agents, execute-plan
 VERIFY      run-evals, verify-work
 HARDEN      wire-observability (any phase)
-BUG?        investigate-bug, diagnose-root, validate-fix
+BUG?        investigate-bug, validate-fix
 REVIEW      audit-code, request-review, respond-review
 INTEGRATE   commit-message, release-branch
 SUSTAIN     inspect-quality, organize-workspace (ongoing)

@@ -122,34 +122,23 @@ Act on reviewer feedback systematically.
 The end-to-end bug entry point: history check, RCA, fix approach, TDD plan, and tracker update.
 
 - **What it does**: reads lean local references and prior external issue history, captures
-  the problem with a security-impact assessment, runs the 4-phase RCA by delegating to
-  `diagnose-root`, and posts the verified RCA and TDD plan to the same external issue. It
-  records or updates the lean local reference through `truenorth_record_bug`.
+  the problem with a security-impact assessment, and runs four ordered RCA phases:
+  reproduce the failure with evidence, isolate the responsible boundary, rank hypotheses
+  with falsification tests, and verify one root cause. It posts the detailed RCA and TDD
+  plan to the same external issue and records or updates only the lean local reference
+  through `truenorth_record_bug`.
 - **When to use it**: when the user reports a bug, mentions triage, or wants to plan a fix.
-- **Hard gate**: do not proceed to the fix approach until `diagnose-root` phase 4 produces
-  a verified root cause.
+- **Hard gate**: do not propose a fix, implementation change, or TDD plan until the Verify
+  phase confirms one root cause with reproducible evidence.
 - **Handoff**: `kickoff-branch` to create a fix branch.
-
-### diagnose-root
-
-The canonical four-phase root-cause analysis engine: reproduce, isolate, hypothesize,
-verify.
-
-- **What it does**: runs the four phases in order, recording findings in the external
-  tracker. It is invoked by `investigate-bug` and by `fix-bug`. It does not write the bug
-  record.
-- **When to use it**: when a bug is confirmed but the root cause is unclear, or after
-  `investigate-bug`.
-- **Hard gate**: do not propose a fix until phase 4 confirms a single root cause with
-  evidence.
 
 ### fix-bug
 
 The bug-fix orchestrator. Sets the fix_bug flow and chains the bug-fix skills.
 
 - **What it does**: sets `active_flow: fix_bug`, then runs the chain: `investigate-bug`
-  (which itself runs `diagnose-root`), `develop-tdd`, `validate-fix`, and `release-branch`.
-  It supports entry without a user-reported bug for a red baseline or CI failure.
+  (which owns the complete four-phase RCA), `develop-tdd`, `validate-fix`, and
+  `release-branch`. It supports entry without a user-reported bug for a red baseline or CI failure.
 - **When to use it**: when the user reports a defect.
 - **Hard gate**: set the fix_bug flow and step before starting.
 - **Handoff**: resumes from `bug_cycle.current_step`.

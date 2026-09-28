@@ -23,7 +23,7 @@ SPIKE?      spike-prototype (feeds back to plan-work)
 EXECUTE     develop-tdd + enforce-first, execute-plan, build-group, delegate-task,
             dispatch-agents
 VERIFY      verify-work, run-evals, validate-contracts, smoke-test
-BUG?        investigate-bug, diagnose-root, fix-bug, validate-fix
+BUG?        investigate-bug, fix-bug, validate-fix
 REVIEW      audit-code, request-review, respond-review, security-review,
             trace-requirement, gate-trace
 INTEGRATE   commit-message, release-branch, deploy, publish-package
@@ -49,7 +49,7 @@ flowchart TD
     Commit --> Release[release-branch]
     Release --> Done([merged])
 
-    TDD -.bug found.-> FixBug[fix-bug: investigate-bug, diagnose-root, validate-fix]
+    TDD -.bug found.-> FixBug[fix-bug: investigate-bug, validate-fix]
     FixBug -.-> Verify
     Audit -.audit fails.-> TDD
     Review -.blocking finding.-> TDD
@@ -85,10 +85,10 @@ scope-work  ->  slice-tasks  ->  plan-work
 ## The bug-fix chain
 
 ```text
-investigate-bug  ->  diagnose-root  ->  develop-tdd  ->  validate-fix  ->  release-branch
+investigate-bug  ->  develop-tdd  ->  validate-fix  ->  release-branch
 ```
 
-`investigate-bug` runs `diagnose-root` internally for the four-phase root-cause analysis.
+`investigate-bug` owns the four-phase root-cause analysis.
 `fix-bug` orchestrates the whole chain and sets the `fix_bug` flow.
 
 ## The review and integrate arc
@@ -108,15 +108,15 @@ unresolved blockers. `security-review` and `gate-trace` gate the merge in
 gates, calling `build-group` once per task in the build phase. `compose-workflow` chains
 skills into a named recipe. The Standard Recipe Library maps a command to a skill chain:
 
-| Command        | Skill chain                                               |
-| -------------- | --------------------------------------------------------- |
-| `/check-stack` | survey-context, assess-impact, setup-environment          |
-| `/plan`        | survey-context, research-first, plan-work                 |
-| `/tdd`         | develop-tdd, enforce-first                                |
-| `/build-fix`   | investigate-bug, diagnose-root, develop-tdd, validate-fix |
-| `/code-review` | audit-code, request-review, respond-review                |
-| `/e2e`         | smoke-test, verify-work                                   |
-| `/ship`        | audit-code, commit-message, release-branch                |
+| Command        | Skill chain                                      |
+| -------------- | ------------------------------------------------ |
+| `/check-stack` | survey-context, assess-impact, setup-environment |
+| `/plan`        | survey-context, research-first, plan-work        |
+| `/tdd`         | develop-tdd, enforce-first                       |
+| `/build-fix`   | investigate-bug, develop-tdd, validate-fix       |
+| `/code-review` | audit-code, request-review, respond-review       |
+| `/e2e`         | smoke-test, verify-work                          |
+| `/ship`        | audit-code, commit-message, release-branch       |
 
 ## security-review touches many phases
 

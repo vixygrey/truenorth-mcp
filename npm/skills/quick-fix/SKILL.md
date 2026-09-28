@@ -60,7 +60,6 @@ release-branch -> integrate through the configured workflow mode
 | Skipped skill     | Why skipped                                      |
 | ----------------- | ------------------------------------------------ |
 | `investigate-bug` | Root cause is an obvious data gap                |
-| `diagnose-root`   | The missing or incorrect data is the root cause  |
 | `develop-tdd`     | One focused assertion proves the data correction |
 
 Include the justification in the `fix:` commit body for the audit trail.
@@ -96,7 +95,6 @@ grep -q "Bosnia" src/flags.js
 git add <file>
 git commit -m "fix(<scope>): <description>" -m "Skipped skills:
 - investigate-bug: root cause is an obvious data gap
-- diagnose-root: the missing data point is the root cause
 - develop-tdd: one focused assertion proves correctness"
 ```
 

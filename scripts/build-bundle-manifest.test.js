@@ -29,8 +29,8 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
     manifest.skill_sets.map((set) => set.name),
     ['core', 'integrations', 'maintainer', 'visual'],
   );
-  assert.strictEqual(manifest.skill_sets.find((set) => set.name === 'core').skills.length, 67);
-  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 73);
+  assert.strictEqual(manifest.skill_sets.find((set) => set.name === 'core').skills.length, 66);
+  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 72);
 });
 
 test('planning artifacts have one canonical writer and path', () => {

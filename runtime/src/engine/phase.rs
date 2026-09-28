@@ -50,9 +50,8 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
         | "validate-contracts" => "Build",
 
         "verify-work" | "validate-fix" | "audit-code" | "enforce-first" | "run-evals"
-        | "investigate-bug" | "diagnose-root" | "fix-bug" | "inspect-quality"
-        | "request-review" | "respond-review" | "trace-requirement" | "gate-trace"
-        | "security-review" => "Verify",
+        | "investigate-bug" | "fix-bug" | "inspect-quality" | "request-review"
+        | "respond-review" | "trace-requirement" | "gate-trace" | "security-review" => "Verify",
 
         "release-branch" | "commit-message" => "Release",
 
