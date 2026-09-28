@@ -1,7 +1,7 @@
 //! The lean-tier table-compaction pass (#62).
 //!
 //! `compact_tables` rewrites markdown tables to a leaner form. Tables appear in 45 of the
-//! 75 skills, so this is the main compression lever. A table drops its separator row and
+//! 74 skills, so this is the main compression lever. A table drops its separator row and
 //! strips cell padding. A two-column table reflows each body row to `- left -> right`. A
 //! row that encodes an invariant or an acceptance criterion is emitted verbatim, so the
 //! pass never rewrites a load-bearing rule (Property 4).

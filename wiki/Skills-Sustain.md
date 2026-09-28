@@ -89,32 +89,23 @@ Dispatch multiple subagents in parallel on independent tasks.
 
 ## Document authoring
 
-These two are a pair: create versus improve.
-
 ### write-document
 
-Write a high-integrity technical document using the BMAD methodology (Bold, Minimal,
-Actionable, Durable).
+Create or revise a high-integrity technical document through one evidence-first workflow.
 
-- **What it does**: identifies the artifact type (ADR, context map, technical guide,
-  behavioral feature, README), drafts with instructions over descriptions and provenance
-  links, applies a quality gate against filler and ambiguity, and organizes it by tier with
-  nested indexing.
-- **When to use it**: to create a document that does not yet exist.
-- **Hard gate**: every document must have a clear reason to exist. No speculative doc.
-- **Related**: `edit-document` when the document already exists.
-
-### edit-document
-
-Edit and improve an existing document by restructuring, clarifying, and tightening.
-
-- **What it does**: divides the document into sections, orders them to respect information
-  dependencies (treating information as a DAG), confirms the sections with the user, then
-  rewrites each for clarity within a paragraph length limit.
-- **When to use it**: to revise, restructure, or improve any existing document.
-- **Hard gate**: preserve intent and accuracy. Do not remove or contradict content without
-  understanding why it was written; check git history.
-- **Related**: `write-document` to create from scratch.
+- **Modes**: create mode applies when the target does not exist; revise mode applies when
+  it does.
+- **What it does**: reads the target, related repository documentation, conventions, and
+  Git history; establishes purpose, audience, authority, and location; then creates or
+  revises the document and verifies its claims, links, commands, and outcomes.
+- **Create gate**: do not create a document unless it provides actionable value to a
+  caller, operator, maintainer, or verification path.
+- **Revision gate**: preserve intent and accuracy. Do not remove, contradict, or
+  materially change content without understanding why it exists.
+- **Facts versus decisions**: inspect file existence, headings, repository conventions,
+  and history directly. Ask only about unresolved user-owned decisions.
+- **Style validation**: use `simple-english` when deterministic sentence, paragraph, or
+  vocabulary checks are required.
 
 ---
 

@@ -88,7 +88,6 @@ skills:
   diagnose-root: core
   diagnose-stall: core
   dispatch-agents: core
-  edit-document: core
   elaborate-spec: core
   enforce-first: core
   evolve-skill: core

@@ -28,7 +28,7 @@ REVIEW      audit-code, request-review, respond-review, security-review,
             trace-requirement, gate-trace
 INTEGRATE   commit-message, release-branch, deploy, publish-package
 SUSTAIN     session-state, organize-workspace, stocktake-skills (ongoing)
-UTILITY     craft-skill, edit-document, write-document (any phase)
+UTILITY     craft-skill, write-document (any phase)
 ```
 
 ## The core loop
