@@ -12,8 +12,8 @@ kind: prose
 
 1. Read the product scope, the release plan and task groups, and the current task
    statement.
-2. Search in order: this repo, then the skill catalog with the `search_skills`
-   tool, then the package registries, then the web docs.
+2. Search in order: this repo, then call the `search_skills` tool directly, then
+   search the package registries and the web docs.
 3. Check for local source: when the task integrates an external library, find any
    locally-cached source and read it for the API shapes before writing integration
    code.

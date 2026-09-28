@@ -59,7 +59,6 @@
         "run-evals",
         "run-planning",
         "scope-work",
-        "search-skills",
         "security-review",
         "seed-conventions",
         "session-state",
@@ -675,7 +674,7 @@
     },
     {
       "path": "skills/research-first/SKILL.md",
-      "sha256": "2c3013bbfa26ce3075515e4dd98ecf92fc2ba6e1e632883a5f22a5bc72488fed",
+      "sha256": "885931c063838ca24a4588c8c39016019cfcaae4bb6058fbe43daa094ec62c0c",
       "mode": "0644"
     },
     {
@@ -711,11 +710,6 @@
     {
       "path": "skills/scope-work/SKILL.md",
       "sha256": "267af9151270f0c802702a9411a918eab0923bb2b91c83c07c814d6708da38d3",
-      "mode": "0644"
-    },
-    {
-      "path": "skills/search-skills/SKILL.md",
-      "sha256": "ffb80ac0e43f4a90377ae93b60f7048ca25d066064d248d22ea11bb7ee45072e",
       "mode": "0644"
     },
     {
@@ -855,7 +849,7 @@
     },
     {
       "path": "skills/using-truenorth/SKILL.md",
-      "sha256": "47ba69d31e73ef1a7286697e4fb8173b869479ed8be5feea445188add712bf38",
+      "sha256": "7596079d5e3ef8b32e198612b40beb7885c5c6e556071f9b2db2d2ce34970f03",
       "mode": "0644"
     },
     {

@@ -44,6 +44,18 @@ cohesion stays high. Runtime state lands under `.agent/`. Narrative lands under
 `specs/`. The server serves each skill through the `get_skill` tool at a full,
 reasoning, or lean tier.
 
+## Finding a skill
+
+Call `search_skills` directly with terms from the user's intent when the right
+skill is unclear or the user asks whether a skill exists. Use `index_skills` only
+when the complete catalog is needed.
+
+Review the leading matches by exact intent fit, lifecycle phase, and the trigger
+language in each description. Select one best match and state why it fits and what
+it produces. If no result fits, use the closest phase-appropriate skill or call
+`survey-context` to establish the next step. The search is deterministic and
+lexical; do not add embeddings, external APIs, or network dependencies.
+
 ## The lifecycle at a glance
 
 See orchestrate-project for the canonical six-phase lifecycle.

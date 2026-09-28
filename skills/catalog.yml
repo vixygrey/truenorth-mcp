@@ -123,7 +123,6 @@ skills:
   run-evals: core
   run-planning: core
   scope-work: core
-  search-skills: core
   security-review: core
   seed-conventions: core
   session-state: core

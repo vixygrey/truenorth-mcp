@@ -17,8 +17,8 @@ pub fn phase_for_skill(name: &str) -> String {
 /// The raw phase lookup, mirroring the legacy `PHASE_MAP` (`phase-map.ts`).
 fn phase_lookup(name: &str) -> Option<&'static str> {
     let phase = match name {
-        "survey-context" | "research-first" | "search-skills" | "using-truenorth"
-        | "map-codebase" | "elaborate-spec" => "Discover",
+        "survey-context" | "research-first" | "using-truenorth" | "map-codebase"
+        | "elaborate-spec" => "Discover",
 
         "model-domain"
         | "define-language"
