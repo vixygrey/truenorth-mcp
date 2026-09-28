@@ -13,7 +13,7 @@ phase hands off to the next.
 
 ```text
 BOOTSTRAP   using-truenorth (first time only)
-DISCOVER    survey-context, research-first, elaborate-spec, map-codebase, search-skills
+DISCOVER    survey-context, research-first, elaborate-spec, map-codebase
 DESIGN      model-domain, define-language, grill-me (context-only or docs mode),
             deepen-architecture, design-interface
 PLAN        scope-work, slice-tasks, plan-work, plan-tests, plan-release, plan-refactor,
@@ -57,18 +57,18 @@ flowchart TD
 
 ## Where to start
 
-The `using-truenorth` bootstrap routes you from your situation to the first skill.
+The `using-truenorth` bootstrap routes you from your situation to the first action.
 
-| Your situation                       | First skill to call                     |
-| ------------------------------------ | --------------------------------------- |
-| A greenfield project, nothing set up | `seed-conventions`                      |
-| An existing project, a new task      | `survey-context`                        |
-| A vague idea that needs shaping      | `elaborate-spec`                        |
-| A plan exists, ready to implement    | `kickoff-branch`, then `develop-tdd`    |
-| A bug to fix                         | `investigate-bug`                       |
-| Code ready for review                | `audit-code`                            |
-| Shipping a feature                   | `commit-message`, then `release-branch` |
-| Unsure which skill fits              | `search-skills`                         |
+| Your situation                       | First action                                 |
+| ------------------------------------ | -------------------------------------------- |
+| A greenfield project, nothing set up | Call `seed-conventions`                      |
+| An existing project, a new task      | Call `survey-context`                        |
+| A vague idea that needs shaping      | Call `elaborate-spec`                        |
+| A plan exists, ready to implement    | Call `kickoff-branch`, then `develop-tdd`    |
+| A bug to fix                         | Call `investigate-bug`                       |
+| Code ready for review                | Call `audit-code`                            |
+| Shipping a feature                   | Call `commit-message`, then `release-branch` |
+| Unsure which skill fits              | Call the `search_skills` tool directly       |
 
 ## The planning spine
 

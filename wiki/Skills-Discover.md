@@ -24,6 +24,9 @@ which skill to call first for your situation.
 - **Hard gate**: do not skip it when onboarding a new user or starting a new session.
 - **Handoff**: call `survey-context` next, to read the project state and get a
   recommendation.
+- **Catalog search**: when the right skill is unclear, call `search_skills` directly.
+  Compare the leading matches by intent fit, lifecycle phase, and description, then
+  choose one and explain why it fits. Use `index_skills` only for the complete catalog.
 
 ## survey-context
 
@@ -80,22 +83,6 @@ Look before you build. Search for prior art before implementing.
 - **Hard gate**: do not implement until you search. The minimum outcome is one of adopt,
   extend, compose, or build, with evidence.
 - **Handoff**: feeds the prior-art into `elaborate-spec`.
-
-## search-skills
-
-Find the right skill from a natural-language intent using the catalog search.
-
-- **What it does**: calls the `search_skills` tool (a lexical match over each skill name
-  and description), ranks the top matches by exactness, phase fit, and trigger phrase, and
-  recommends the single best skill.
-- **When to use it**: when unsure which skill to invoke, at the start of `research-first`,
-  or when a user asks "is there a skill for X?".
-- **Inputs**: a natural-language intent.
-- **Outputs**: one recommended skill with the reason and what it produces.
-- **Hard gate**: rank the results by relevance. Do not use an external embedding API or
-  AI-based semantic search. The catalog search is lexical, with zero external dependency.
-- **Why lexical, not semantic**: zero network dependency, zero cost, instant,
-  deterministic, and auditable.
 
 ## elaborate-spec
 
