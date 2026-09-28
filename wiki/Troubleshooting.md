@@ -65,7 +65,9 @@ separate Git worktree for each parallel agent.
 The error identifies `.agent/runtime/writer.lock` and can include the owner process id. Do
 not delete the file. It is a persistent rendezvous path, while the operating-system lock is
 released automatically when the owner exits or crashes. A running contender retries the
-lease on its next mutation.
+lease on its next mutation. Moving the worktree to a shared network filesystem is not a
+supported coordination mechanism. See the canonical
+[operating model](../README.md#operating-model).
 
 ## A mutating tool reports `stale_write_conflict`
 

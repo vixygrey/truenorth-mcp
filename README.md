@@ -159,11 +159,23 @@ required names with `TRUENORTH_GATE_ENV_ALLOWLIST`. The
 [install and connect guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect)
 has per-client steps.
 
-### One mutating server per worktree
+## Operating model
 
-One TrueNorth server owns mutation rights for a Git worktree. A second server can read
-existing resources, but mutating tools return `writer_lease_conflict`. Use a separate Git
-worktree for each parallel agent that needs to write TrueNorth state.
+TrueNorth-MCP is a local development tool for individuals and small teams. One
+runtime governs one repository worktree through the supported stdio transport. One
+server owns mutation rights for that worktree. Additional servers may read existing
+resources, but mutating tools return `writer_lease_conflict`. Give each parallel agent
+that needs to mutate TrueNorth state a separate Git worktree.
+
+Git is the durable collaboration and history boundary. Shared network-filesystem
+mutation is unsupported. TrueNorth-MCP is not a multi-user service, centralized policy
+authority, authentication or authorization layer, or compliance record system.
+Operation receipts are bounded results returned to the caller, not retained audit or
+compliance records.
+
+See the [install guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#one-mutating-server-per-worktree)
+for setup and the [troubleshooting guide](https://github.com/vixygrey/truenorth-mcp/wiki/Troubleshooting#a-mutating-tool-reports-writer_lease_conflict)
+for second-writer recovery.
 
 ## Diagnose a setup
 

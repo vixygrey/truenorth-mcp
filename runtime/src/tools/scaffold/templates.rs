@@ -62,7 +62,15 @@ pub(super) fn agents_md(profile: Profile) -> String {
          - Cockpit state: `.agent/tasks/`\n\
          - Backlog ownership: `.agent/tasks/backlog.yml`\n\
          - Ontology: `.agent/ontology.yml`\n\
-         - Product scope and vision: `.agent/product/`\n",
+         - Product scope and vision: `.agent/product/`\n\n\
+         ## Operating model\n\n\
+         TrueNorth-MCP is a local stdio tool for individuals and small teams. One runtime\n\
+         governs one repository worktree, with one mutating server supported per worktree.\n\
+         Parallel mutating agents use separate Git worktrees. Git is the durable collaboration\n\
+         and history boundary. Shared network-filesystem mutation, multi-user hosting, and\n\
+         centralized policy enforcement are unsupported.\n\n\
+         See the canonical operating model:\n\
+         https://github.com/vixygrey/truenorth-mcp#operating-model\n",
         profile.name
     )
 }
