@@ -61,6 +61,13 @@ tar -xzf truenorth-mcp-v<version>-<platform>.tar.gz
 The release also links every npm package version. After installing from npm, verify registry
 signatures and provenance attestations with `npm audit signatures`.
 
+## Operating model
+
+TrueNorth-MCP is a local stdio tool for individuals and small teams. One runtime governs
+one Git worktree, and Git is the durable collaboration and history boundary. It is not a
+multi-user service or centralized policy authority. See the canonical
+[operating model](../README.md#operating-model).
+
 ## Connect an MCP client
 
 Point your MCP client at the wrapper as a stdio server. The client runs the wrapper
@@ -82,11 +89,13 @@ command and its arguments.
 
 The first TrueNorth server for a worktree owns its writer lease. Other servers can read
 existing resources, but their mutating tools return `writer_lease_conflict`. Close the
-original server to transfer mutation rights, or give each parallel agent a separate Git
-worktree and set `TRUENORTH_ROOT` to that worktree.
+original server to transfer mutation rights. For parallel agents that need to mutate,
+create a separate Git worktree for each agent and point that client's `TRUENORTH_ROOT`
+at its worktree.
 
 The lease path is `.agent/runtime/writer.lock`. Do not delete it to force ownership. The
-operating-system lock, not the file's presence, controls ownership.
+operating-system lock, not the file's presence, controls ownership. Do not place worktrees
+on a shared network filesystem to coordinate writers; that mutation model is unsupported.
 
 ## Confirm the handshake
 

@@ -68,14 +68,19 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
         fs::read_to_string(root.join(".agent/tasks/execution-status.yml")).expect("read status"),
         "tasks: {}\ngroups: {}\ndevelopment_status: {}\n"
     );
-    // Root docs wired to .agent/.
+    // Root docs carry the workspace and operating-model contracts.
     assert!(root.join("AGENTS.md").is_file());
     assert!(root.join("CONVENTIONS.md").is_file());
-    assert!(
-        fs::read_to_string(root.join("AGENTS.md"))
-            .unwrap()
-            .contains(".agent/")
-    );
+    let agents = fs::read_to_string(root.join("AGENTS.md")).expect("read agent guidance");
+    assert!(agents.contains(".agent/"));
+    assert!(agents.contains("local stdio tool for individuals and small teams"));
+    assert!(agents.contains("one mutating server supported per worktree"));
+    assert!(agents.contains("Parallel mutating agents use separate Git worktrees"));
+    assert!(agents.contains("Git is the durable collaboration"));
+    assert!(agents.contains("Shared network-filesystem mutation"));
+    assert!(agents.contains("multi-user hosting"));
+    assert!(agents.contains("centralized policy enforcement"));
+    assert!(agents.contains("https://github.com/vixygrey/truenorth-mcp#operating-model"));
 }
 
 #[test]

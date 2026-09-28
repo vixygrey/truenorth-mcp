@@ -3,6 +3,12 @@
 TrueNorth-MCP is an active MCP runtime for spec-driven engineering discipline. This
 package is the npm launcher for the native `truenorth-mcp` server binary.
 
+TrueNorth-MCP supports local development by individuals and small teams. It uses stdio,
+allows one mutating server per Git worktree, and uses Git as the durable collaboration
+boundary. Parallel mutating agents require separate worktrees. Shared network-filesystem
+mutation and multi-user or centralized-policy operation are unsupported. See the
+[canonical operating model](https://github.com/vixygrey/truenorth-mcp#operating-model).
+
 ## Bootstrap a project
 
 From an empty project directory, run:

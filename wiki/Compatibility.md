@@ -21,6 +21,19 @@ success or error semantics, or removed resource URI is a breaking change. Breaki
 changes require a new major version, release notes, a replacement when one exists,
 and command-first migration steps.
 
+## Operating and concurrency boundary
+
+TrueNorth-MCP supports local development by individuals and small teams. The supported
+deployment is one local stdio runtime governing one Git worktree, with one server holding
+mutation rights. Additional servers may read, but their mutations return
+`writer_lease_conflict`. Parallel mutating agents require separate Git worktrees, and Git
+is the durable collaboration and history boundary.
+
+Shared network-filesystem mutation, multi-user hosting, centralized policy enforcement,
+authentication or authorization, and compliance-record guarantees are outside the v1
+compatibility contract. Operation receipts are bounded call results, not retained audit
+records. See the canonical [operating model](../README.md#operating-model).
+
 ## Supported runtimes
 
 The npm wrapper supports macOS ARM64/x64 and Linux ARM64/x64. Native Windows is
