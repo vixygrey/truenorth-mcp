@@ -107,17 +107,22 @@
   "files": [
     {
       "path": "skills/align-grid/SKILL.md",
-      "sha256": "bff99ddf0b5e49f2f8051fafb5bfd1ee8e46cc74d11261854778d18dfbe8a0bc",
+      "sha256": "06b3ff4599c2f1d5465977fe9a66a25145ef1b783829b7aaa51d10c45f7b858f",
       "mode": "0644"
     },
     {
       "path": "skills/align-grid/scripts/grid_tokens.py",
-      "sha256": "9fa89e0020ade90bd3afe22e02024985a44e6195e5cba3a20548b53496859d01",
+      "sha256": "600fe1d739e71a6f3ede6c69dd87605277e6638ecda688aee7eb3ca84402f988",
       "mode": "0755"
     },
     {
       "path": "skills/align-grid/scripts/verify_grid.js",
       "sha256": "dbfc8d5de90fe37d1821032d318a5a75e7430b8ce303645a79b89dcb9023c5c7",
+      "mode": "0755"
+    },
+    {
+      "path": "skills/align-grid/tests/test_grid_tokens.py",
+      "sha256": "c8e1023ae68cd8df5aa9e5511559b3e0101ef94f089f842a3fb76efedcecc80c",
       "mode": "0755"
     },
     {
@@ -322,12 +327,17 @@
     },
     {
       "path": "skills/extract-design/SKILL.md",
-      "sha256": "d2d685f277880e311d2716aa5538ea8674dd4d0b29a71a41f4d9101cefa50fac",
+      "sha256": "c3536334142fde81c03a569ce9d831112965256606d1baa47c3b88875b9be568",
       "mode": "0644"
     },
     {
       "path": "skills/extract-design/extract-design.feature",
       "sha256": "35ccc8ef8aac4ad7c5c3e193d2315f2876b6c2ba9d12d00cc5ced6486cc3c873",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/extract-design/package.json",
+      "sha256": "282efa6826d0d6abe11dc5cad81920a7a6573998dfe5de3f2dda7488c21a0b73",
       "mode": "0644"
     },
     {
@@ -342,7 +352,7 @@
     },
     {
       "path": "skills/extract-design/scripts/classify-spacing.js",
-      "sha256": "c7244988d7b3fe8049a67fde1a728a7e9f61dbeb36b6e4e2aa1ce01ca2175a53",
+      "sha256": "8a4f3405dedde7918cbecad0d157c61b855469b05be370489853ae9824607d82",
       "mode": "0644"
     },
     {
@@ -362,7 +372,7 @@
     },
     {
       "path": "skills/extract-design/scripts/extract.js",
-      "sha256": "913d71bf328fcb0ccbd3a0f03fb1037f0aa1e3292ba14af48795600ca2f9febe",
+      "sha256": "e82c5b8b50f22591aa5e83be56b9b214afba79340dcdc7886490afd6180a6de1",
       "mode": "0755"
     },
     {
@@ -442,7 +452,7 @@
     },
     {
       "path": "skills/extract-design/tests/test-extraction.js",
-      "sha256": "e92936e03e80a56d5e807df91abaa0e8d05f93a4bfb0bb5d956907aaa02ac1ff",
+      "sha256": "487a135856d28beee185bc0cf036ae91e8f73be17c70291f836f4540395dd8a2",
       "mode": "0755"
     },
     {
@@ -812,7 +822,7 @@
     },
     {
       "path": "skills/simple-english/SKILL.md",
-      "sha256": "4e610bb3d8aacae2b84694c9e6bedc76275787e68882a8b95dcff679e88474df",
+      "sha256": "5eec9a15792ca0dfa1159c444191c283b369749cd6e144ffe7bb80ea78e5150f",
       "mode": "0644"
     },
     {
@@ -897,7 +907,7 @@
     },
     {
       "path": "skills/visual-dashboard/SKILL.md",
-      "sha256": "89e8e25588b1b0ac9f096a016f23684f21aff62a4da2f40a7082fb6f65226ffa",
+      "sha256": "a3999ff872be5fcdb11cedc3ba09f38bdc66b793f87bb09e5424120c9c328020",
       "mode": "0644"
     },
     {
@@ -922,7 +932,7 @@
     },
     {
       "path": "skills/visual-dashboard/scripts/server.cjs",
-      "sha256": "3463985f2d79212256bb6557ba89d32959fdd52cdd5532829009185ff3241977",
+      "sha256": "59c4f21d9bf452c09a38a9bd1fff2dd7b89630b40834f63ec847c311e72efc81",
       "mode": "0644"
     },
     {
@@ -938,6 +948,11 @@
     {
       "path": "skills/visual-dashboard/tests/read-specs-status.test.cjs",
       "sha256": "f49daf2f9963412c7641f88c0026aecff1f57d4c074e5b9c08329aca5bf60f9b",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/visual-dashboard/tests/server-status.test.cjs",
+      "sha256": "e9c7905093f8fe3ade44d4d2eb6589b6f51cb4863adf77fd57f447caed5b8bed",
       "mode": "0644"
     },
     {

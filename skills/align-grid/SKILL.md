@@ -2,7 +2,7 @@
 name: align-grid
 description: "Build an editorial or report webpage on a genuine Müller-Brockmann modular grid (International Typographic Style), not a decorative one. Encodes the discipline (columns, modules, and a baseline, grotesque type, flush-left, a restrained black-white-red palette) and the front-end engineering to make the grid real and verified: one CSS-variable source of truth, an interactive grid-toggle overlay, subgrid bands so every element snaps to a column line, an 8px baseline lock, and runtime optical alignment. Ships with a scaffold generator and a verification harness."
 kind: scripted
-verify: python3 skills/align-grid/scripts/grid_tokens.py --help
+verify: python3 skills/align-grid/tests/test_grid_tokens.py
 ---
 
 # Müller-Brockmann Grid Systems — built real, visible, and verified
@@ -138,6 +138,8 @@ A clean run looks like: `col=0px overlay=0px baseline≤4px ink=0px` → `GRID V
 
 - **`grid_tokens.py`** — deterministic scaffold generator. Emits the `:root` tokens, `.grid`/`.band` (subgrid) scaffold, `.guides` overlay CSS, toggle JS, and the optical-alignment JS — all wired to one source of truth. `--scaffold` emits a full minimal HTML page. No network/credentials.
 - **`verify_grid.js`** — Puppeteer harness implementing all four checks above with the corrected both-edges column math, the optical-exclusion, per-element column-line ink targeting, and PASS/FAIL output at multiple widths. Env: `CHROME` (chrome binary), `PUP` (puppeteer-core module path).
+- **`tests/test_grid_tokens.py`** — generates a configured scaffold and asserts the
+  shared grid tokens, overlay structure, toggle wiring, and optical-alignment hooks.
 
 ## CREED
 

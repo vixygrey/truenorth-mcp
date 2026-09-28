@@ -76,7 +76,9 @@ function decodeFrame(buffer) {
 
 // ========== Configuration ==========
 
-const PORT = process.env.TRUENORTH_DASHBOARD_PORT || 49152 + Math.floor(Math.random() * 16383);
+const PORT = process.env.TRUENORTH_DASHBOARD_PORT
+  ? Number(process.env.TRUENORTH_DASHBOARD_PORT)
+  : 49152 + Math.floor(Math.random() * 16383);
 const HOST = process.env.TRUENORTH_DASHBOARD_HOST || '127.0.0.1';
 const URL_HOST =
   process.env.TRUENORTH_DASHBOARD_URL_HOST || (HOST === '127.0.0.1' ? 'localhost' : HOST);
@@ -403,12 +405,14 @@ function startServer() {
   }
 
   server.listen(PORT, HOST, () => {
+    const address = server.address();
+    const boundPort = typeof address === 'object' && address ? address.port : PORT;
     const info = JSON.stringify({
       type: 'server-started',
-      port: Number(PORT),
+      port: boundPort,
       host: HOST,
       url_host: URL_HOST,
-      url: 'http://' + URL_HOST + ':' + PORT,
+      url: 'http://' + URL_HOST + ':' + boundPort,
       screen_dir: CONTENT_DIR,
       state_dir: STATE_DIR,
     });

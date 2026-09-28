@@ -1,7 +1,8 @@
 ---
 name: simple-english
 description: 'Write or rewrite technical text with the rules of ASD-STE100 Simplified Technical English, so the result is clear, unambiguous, and free of AI slop. Use it for documentation, a README, a runbook, a procedure, an error message, release notes, an incident report, or an API guide. Also use it when the user says "STE", "Simplified Technical English", "ASD-STE100", "de-slop", "make this readable", or asks for docs that translate well. Enforces the 53 rules of the standard with a deterministic lint gate.'
-kind: prose
+kind: scripted
+verify: python3 skills/simple-english/scripts/ste_lint.py --self-test
 ---
 
 # Simple English
@@ -61,7 +62,7 @@ Common slop replacements: `leverage`/`utilize` → `use`; `in order to` → `to`
 
 ## Verify
 
-→ verify: `test -x skills/simple-english/scripts/ste_lint.py && python3 skills/simple-english/scripts/ste_lint.py --self-test && echo OK`
+Run the frontmatter `verify` command before delivery.
 
 ## Reference
 

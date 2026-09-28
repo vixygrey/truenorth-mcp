@@ -191,6 +191,12 @@ def main():
     ap.add_argument("--accent", default="#e4002b")
     ap.add_argument("--scaffold", action="store_true", help="emit a full minimal HTML page")
     cfg = ap.parse_args()
+    for name, value in (("cols", cfg.cols), ("baseline", cfg.baseline), ("maxw", cfg.maxw)):
+        if value <= 0:
+            ap.error(f"--{name} must be greater than zero")
+    for name, value in (("gutter", cfg.gutter), ("margin", cfg.margin)):
+        if value < 0:
+            ap.error(f"--{name} must be zero or greater")
     for name, v in (("gutter", cfg.gutter), ("margin", cfg.margin)):
         if v % cfg.baseline != 0:
             print(f"# WARNING: --{name} ({v}) is not a multiple of --baseline ({cfg.baseline}); "

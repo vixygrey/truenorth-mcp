@@ -152,6 +152,8 @@ run_shell() {
   bash scripts/lint-skill-paths.sh
   echo "preflight: [shell] skill handoffs"
   bash scripts/lint-skill-handoffs.sh
+  echo "preflight: [shell] scripted skill runner"
+  node --test scripts/verify-scripted-skills.test.js
   echo "preflight: [shell] scripted skills"
   bash scripts/verify-skills.sh
 }
