@@ -16,5 +16,5 @@
     "prettier": "3.9.9",
     "puppeteer": "25.12.0"
   },
-  "version": "1.0.3"
+  "version": "1.0.4"
 }
