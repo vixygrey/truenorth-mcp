@@ -24,8 +24,8 @@ fn unmapped_skill_is_other() {
 
 #[test]
 fn late_added_skills_map_correctly() {
-    // plan-tests, gate-trace, and security-review were appended in the legacy map.
+    // plan-tests, trace-requirement, and security-review are Verify/Plan additions.
     assert_eq!(phase_for_skill("plan-tests"), "Plan");
-    assert_eq!(phase_for_skill("gate-trace"), "Verify");
+    assert_eq!(phase_for_skill("trace-requirement"), "Verify");
     assert_eq!(phase_for_skill("security-review"), "Verify");
 }

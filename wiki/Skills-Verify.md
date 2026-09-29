@@ -193,24 +193,19 @@ An interactive QA session that creates external issues and lean local references
 
 ### trace-requirement
 
-Link story ids to the implementing code and tests, and surface gaps both ways.
+Build and gate one versioned traceability report from durable project evidence.
 
-- **What it does**: extracts story ids from the release plan, searches for `story:` tags in
-  code and tests, builds a matrix (implemented, tested, dark, orphan), and writes a
-  traceability report with a coverage summary.
-- **When to use it**: to verify coverage of a release plan, audit which stories are
-  implemented, or find a dark story with no code.
-- **Hard gate**: the release plan and task groups must exist. Run `plan-release` first.
-- **Handoff**: `plan-work` for each dark story.
-
-### gate-trace
-
-A deterministic traceability quality gate that emits a single verdict.
-
-- **What it does**: reads the coverage matrix and blind-spot data, applies decision rules
-  R1 to R6 (first match wins), applies an oracle-confidence downgrade for heuristic links,
-  attempts to refute a PASS, and emits PASS, CONCERNS, FAIL, or WAIVED.
-- **When to use it**: before `release-branch`, to gate a merge on traceability.
-- **Inputs**: the traceability matrix and blind-spot data. Missing inputs yield WAIVED.
-- **Outputs**: a structured verdict recorded in the project status.
-- **Handoff**: gate READY, next `release-branch`.
+- **Modes**: `report` writes `.agent/tasks/traceability.yml`; `gate` consumes that
+  exact artifact and records PASS, CONCERNS, FAIL, or WAIVED.
+- **Evidence**: release tasks, work-item ledgers, Git changes and commits, test
+  scenarios and commands, and real verification receipts. Source planning-ID
+  comments are optional legacy hints, never required proof.
+- **When to use it**: report mode after `verify-work`; gate mode before
+  `release-branch`.
+- **Hard gates**: a missing, unreadable, unsupported, stale, or materially
+  incomplete report fails. A failed receipt remains authoritative.
+- **Waivers**: WAIVED requires an explicit approval with owner, rationale, scope,
+  and timestamp. Missing evidence is not a waiver.
+- **Handoff**: route evidence gaps to their planning, implementation, or
+  verification owner. A passing or validly waived gate hands off to
+  `release-branch`.

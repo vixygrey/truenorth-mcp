@@ -47,13 +47,13 @@ mode.
 
 - **What it does**: orchestrates the eight-step build flow for one story: security-review,
   survey, plan, kickoff, TDD, verify, the non-optional audit-code gate, commit-message, and
-  release-branch. It records timestamps and refreshes traceability.
+  release-branch. After verification it runs `trace-requirement report`.
 - **When to use it**: for release work, instead of an ad-hoc `execute-plan`. It is called
   by `orchestrate-project`, scoped to one task, and is not a replacement for it.
 - **Inputs**: the state, execution status, release plan, and the active task group.
 - **Outputs**: an advanced build flow and an updated execution status.
 - **Hard gates**: set `active_flow: build_group` and `active_group` first. Not on `main`
-  before step 3. The audit-code gate at step 6 loops back to step 4 on a fail.
+  before step 3. Audit blockers loop to step 4; missing or stale trace evidence blocks release.
 - **Modes**: default (resume one step), or `--fast` (coalesce read-and-report steps without
   skipping any checklist item).
 

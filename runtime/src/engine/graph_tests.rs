@@ -406,6 +406,17 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
                 .collect::<Vec<_>>()
         );
     }
+    for orchestrator in ["build-group", "release-branch"] {
+        assert!(
+            result.graph.relations.iter().any(|relation| {
+                relation.from == orchestrator
+                    && relation.to == "trace-requirement"
+                    && relation.relation_type == "invokes"
+            }),
+            "{orchestrator} must invoke the retained traceability contract"
+        );
+    }
+    assert!(!result.graph.entities.contains_key("gate-trace"));
     assert!(
         result.diagnostics.dependency_cycles.is_empty(),
         "dependency cycles: {:?}",

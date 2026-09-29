@@ -25,7 +25,7 @@ EXECUTE     develop-tdd + enforce-first, execute-plan, build-group, delegate-tas
 VERIFY      verify-work, run-evals, validate-contracts, smoke-test
 BUG?        investigate-bug, fix-bug, validate-fix
 REVIEW      audit-code, request-review, respond-review, security-review,
-            trace-requirement, gate-trace
+            trace-requirement (report and gate modes)
 INTEGRATE   commit-message, release-branch, deploy, publish-package
 SUSTAIN     session-state, organize-workspace, stocktake-skills (ongoing)
 UTILITY     craft-skill, write-document (any phase)
@@ -99,8 +99,8 @@ verify-work  ->  audit-code  ->  request-review  ->  respond-review  ->  commit-
 
 `audit-code` is self-review, run first. `request-review` scales independent
 reviewer count and specialist focus from story risk; its pass rule is zero
-unresolved blockers. `security-review` and `gate-trace` gate the merge in
-`release-branch`.
+unresolved blockers. `security-review` and `trace-requirement gate` block an
+unsafe or untraceable merge in `release-branch`.
 
 ## Orchestration
 

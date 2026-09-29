@@ -40,7 +40,9 @@ when the active project already selected it.
 6. Compare expected and actual results. A mismatch fails verification even when
    tests pass.
 7. Record evidence using [REFERENCE.md](./REFERENCE.md), including command or
-   action, expected result, actual result, and pass or fail.
+   action, expected result, actual result, and pass or fail. This durable evidence
+   is consumed by `trace-requirement report`; source planning-ID comments are not
+   required.
 8. Mark execution status done only after every required task is passing and no
    blocking mismatch remains.
 

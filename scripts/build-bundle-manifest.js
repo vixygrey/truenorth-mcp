@@ -9,6 +9,7 @@ const REQUIRED_PLANNING_ARTIFACTS = [
   'group-manifest',
   'group-test-plan',
   'release-index',
+  'traceability-report',
   'work-item-specification',
   'work-item-task-ledger',
 ];
