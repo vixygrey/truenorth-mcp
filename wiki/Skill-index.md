@@ -56,7 +56,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `research-first`      | Search for prior art before implementing                        | [Discover](Skills-Discover) |
 | `reset-baseline`      | Restore the project to a known clean state                      | [Sustain](Skills-Sustain)   |
 | `respond-review`      | Act on reviewer feedback systematically                         | [Verify](Skills-Verify)     |
-| `run-benchmark`       | Run a skill quality benchmark with delta grading                | [Utility](Skills-Utility)   |
+| `run-benchmark`       | Run isolated skill benchmarks with validation deltas            | [Utility](Skills-Utility)   |
 | `run-evals`           | Eval-driven development, define evals before building           | [Verify](Skills-Verify)     |
 | `run-planning`        | The discover-phase advancer                                     | [Plan](Skills-Plan)         |
 | `scope-work`          | Define what is in and out of scope (spine step 1)               | [Plan](Skills-Plan)         |

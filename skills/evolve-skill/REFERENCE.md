@@ -1,12 +1,17 @@
-# Evolve Skill — ADR snippet
+# Evolve Skill ADR snippet
 
 ```markdown
-## ADR-XXXX: Evolve &lt;skill-name&gt;
+## ADR-XXXX: Evolve <skill-name>
 
 **Status:** Accepted
-**Benchmark:** before X% / after Y%
+**Definition:** path/to/benchmark.json (`<sha256>`)
+**Baseline:** path/to/baseline.json, validation delta X
+**Result:** path/to/report.json, validation delta Y
+**Skill:** `skills/<skill-name>/SKILL.md` (`<sha256>`)
 **Change:** one-sentence summary
-**Evidence:** path/to/benchmark-report.md
 ```
 
-Benchmark repo: the project benchmark repository — resolve the local clone on this machine; clone it from wherever your fork lives if absent. Never assume a hard-coded absolute path or a specific owner.
+Both reports must use `run-benchmark` report schema version 1 and the same
+definition. Keep the reviewed definition outside held-out fixture mutation during
+the evolution loop. A missing definition, skill, or baseline is unavailable
+evidence and blocks the ADR.

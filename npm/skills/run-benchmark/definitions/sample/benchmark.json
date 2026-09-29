@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "skill": "sample-normalizer",
+  "runs": 2,
+  "timeout_ms": 5000,
+  "scenarios": [
+    {
+      "id": "trim-and-lowercase",
+      "split": "train",
+      "weight": 1,
+      "fixture": "train",
+      "executor": {
+        "command": "node",
+        "args": ["executor.js"]
+      },
+      "grader": {
+        "command": "node",
+        "args": ["grader.js"]
+      }
+    },
+    {
+      "id": "held-out-normalization",
+      "split": "validation",
+      "weight": 2,
+      "fixture": "validation",
+      "executor": {
+        "command": "node",
+        "args": ["executor.js"]
+      },
+      "grader": {
+        "command": "node",
+        "args": ["grader.js"]
+      }
+    }
+  ]
+}

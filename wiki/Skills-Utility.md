@@ -101,16 +101,18 @@ cockpit.
 
 ### run-benchmark
 
-Run a skill quality benchmark with N-run, with-and-without-skill delta grading.
+Run deterministic skill benchmarks with isolated with-skill and without-skill contexts.
 
-- **What it does**: reads a benchmark definition, runs each scenario N times with and
-  without the skill loaded (isolating the skill's causal contribution as a delta), splits
-  train from validation scenarios, and writes a pass@k report that `evolve-skill` consumes.
-- **When to use it**: before and after `evolve-skill`, to prove a quality change is an
-  improvement, not a regression.
-- **Hard gate**: do not use benchmark scores to declare a skill good or bad in isolation.
-  They measure relative quality versus a baseline; they catch regressions, they do not
-  certify correctness. A negative validation delta blocks release.
+- **What it does**: executes a versioned JSON definition in fresh disposable workspaces,
+  runs direct code graders, and emits one stable JSON schema with per-run evidence and
+  weighted train and validation deltas.
+- **Command**: `node skills/run-benchmark/scripts/run.js --definition <path> --skill
+skills/<name>/SKILL.md --output .agent/tasks/<capsule>/benchmark-<name>.json`.
+- **Baseline**: use `--update-baseline <path>` before a change and
+  `--check-baseline <path>` after it. A lower validation delta fails.
+- **Hard gate**: missing definitions, skills, or baselines are unavailable and
+  non-passing. Failed or timed-out graders remain failed evidence. Scores measure change;
+  they do not certify correctness.
 
 ---
 
