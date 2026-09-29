@@ -291,3 +291,5 @@ tasks:
   group_kind: ticket
   task_name: Implement native artifact attestations, SBOMs, and signing policy
   verify_command: cargo test --locked --manifest-path runtime/Cargo.toml && node --test scripts/release-record.test.js && actionlint .github/workflows/release.yml && bash scripts/lint-skill-handoffs.sh && bash scripts/lint-skill-paths.sh && bash scripts/lint-skill-artifacts.sh && npm run preflight
+- task_name: Prepare v1.0.3 release metadata and distribution artifacts
+  verify_command: node scripts/check-release-version.js 1.0.3 && node scripts/release-record.js validate-notes --version 1.0.3 --notes release-notes/v1.0.3.md && cargo test --locked --manifest-path runtime/Cargo.toml && npm run preflight
