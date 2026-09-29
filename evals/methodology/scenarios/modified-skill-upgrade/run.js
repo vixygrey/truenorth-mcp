@@ -10,7 +10,7 @@ async function run(ctx) {
     'project/.agent/workspace-manifest.yml',
     ctx
       .read('project/.agent/workspace-manifest.yml')
-      .replace('bundle_version: 1.0.2', 'bundle_version: 0.9.0'),
+      .replace('bundle_version: 1.0.3', 'bundle_version: 0.9.0'),
   );
   await ctx.git(['init', '-b', 'main'], { cwd: project });
   await ctx.git(['config', 'user.email', 'eval@example.test'], { cwd: project });
