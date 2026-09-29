@@ -120,7 +120,7 @@
     },
     {
       "path": "skills/assess-impact/SKILL.md",
-      "sha256": "dff0567d344a4ed047b827ced5f1c6ce03d34ac08e581f293a822b19768d0e0d",
+      "sha256": "0badccf824f04a24b9014376acd920f267a376f57db62f7046d7a940421edca2",
       "mode": "0644"
     },
     {
@@ -135,7 +135,7 @@
     },
     {
       "path": "skills/audit-plan/SKILL.md",
-      "sha256": "061e52c3f6967ffb3ab5d9e9a404223721818eb7d4c1c84e15da82fee6a58886",
+      "sha256": "6a3ca97fcd63fd4e4a895f19d6343a4b84838fdf8f8e392e7774048f2238d0b2",
       "mode": "0644"
     },
     {
@@ -160,7 +160,7 @@
     },
     {
       "path": "skills/compose-workflow/REFERENCE.md",
-      "sha256": "829b99597b5ea830f3125203e11504cf24660ce3c21cfdfc55427b3d19bc8d5f",
+      "sha256": "a19450060a1ca8eed8d1eecca24ae742b1e9ba14e826cb2d142060396a552160",
       "mode": "0644"
     },
     {
@@ -210,7 +210,7 @@
     },
     {
       "path": "skills/delegate-task/SKILL.md",
-      "sha256": "b278ab8ac52c5d0dd17cf0f8628ac81a6deae7c338ca207cecca9d7b4ae00cd4",
+      "sha256": "32b3a52f90ab7baa11af184392bbc600dce8893d6b17f824b1514d55316bce77",
       "mode": "0644"
     },
     {
@@ -270,7 +270,7 @@
     },
     {
       "path": "skills/dispatch-agents/SKILL.md",
-      "sha256": "549d4f559c2cd5cbb02803b5b581d997476d0b8968103da6e87fbecfc0a190f7",
+      "sha256": "f55349a8368e643bffe687cbaa96a42ca9371f56919fdb57df6af124142ec7e1",
       "mode": "0644"
     },
     {
@@ -530,7 +530,7 @@
     },
     {
       "path": "skills/migrate-spec/SKILL.md",
-      "sha256": "1ede530a9e52b7e1fa173d1bbc602e656f57c9d52e84bd17de03c22549ce2ba7",
+      "sha256": "0165aef2747e0c0ffc6de3c6dfb026419592df0b0adc3c2b60a5566d273086c0",
       "mode": "0644"
     },
     {
@@ -555,7 +555,7 @@
     },
     {
       "path": "skills/model-domain/SKILL.md",
-      "sha256": "c9b73c1813ab72de6d465f3d1f3dae12019a5104c95b148088cfaa654b46ca89",
+      "sha256": "a9ba063c8d170f28301f9c2096da36b4b6bfec83833f326b5b551090982b4269",
       "mode": "0644"
     },
     {
@@ -880,7 +880,7 @@
     },
     {
       "path": "skills/survey-context/SKILL.md",
-      "sha256": "69961c6e09a6a6ba09b3a7088a8c46b7563d6056976b23b46f1fb333afa3ab26",
+      "sha256": "0e31ad1d60f13d5f511353e7d223dd29003b947cf5e0539378f22c5d054d686a",
       "mode": "0644"
     },
     {
@@ -900,7 +900,7 @@
     },
     {
       "path": "skills/validate-contracts/SKILL.md",
-      "sha256": "135534d7693813fa1f80744944df39c702e394918b600c0cf5bd36653883cfd9",
+      "sha256": "115da4c43f2242b9c8463455f3a78637cc560dde52521b93093a65625677550c",
       "mode": "0644"
     },
     {

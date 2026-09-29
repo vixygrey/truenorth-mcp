@@ -1,6 +1,6 @@
 ---
 name: dispatch-agents
-description: "Dispatch multiple subagents in parallel on independent tasks. No waiting between them, all run concurrently. Use it when the tasks are truly decoupled and speed matters. Distinct from delegate-task, which has no inter-task review gate here."
+description: "Dispatch multiple subagents in parallel on independent, decoupled tasks. Use it for concurrent workstreams when tasks have no ordering dependencies or shared state."
 kind: prose
 ---
 
@@ -10,9 +10,7 @@ kind: prose
 
 > **HARD GATE** — Agent work must be parallelizable and have explicit synchronization points. Do NOT dispatch work that has hidden dependencies between agents.
 
-Run multiple subagents in parallel on independent tasks. Use when tasks are genuinely decoupled — no agent needs the output of another to start.
-
-**Distinct from `delegate-task`:** This skill maximizes throughput via concurrency. There is no sequential review gate between tasks. Use `delegate-task` instead when a single task needs careful two-stage oversight before proceeding.
+Run multiple subagents in parallel on independent tasks. Use when tasks are genuinely decoupled — no agent needs the output of another to start. Use `delegate-task` instead when a single task needs careful sequential two-stage oversight.
 
 ## When to use
 
@@ -40,15 +38,14 @@ If any two tasks conflict, sequence them with `delegate-task` or `execute-group`
 
 ## Subagent depth tiers (e45s30)
 
-Map the story `risk:` to prompt depth — do not send `minimal_decisive` agents a `full_maturity` brief.
+Map the task risk and complexity to prompt depth — do not send `minimal_decisive` agents a `full_maturity` brief.
 
-| Tier               | When                                 | Brief shape                                                        | Token budget  |
-| ------------------ | ------------------------------------ | ------------------------------------------------------------------ | ------------- |
-| `full_maturity`    | `risk: P0`, security-sensitive diffs | Full `task_brief` + CONVENTIONS excerpts + threat model if present | Full envelope |
-| `standard`         | `risk: P1`–`P2`                      | Standard `task_brief` fields below                                 | Default       |
-| `minimal_decisive` | `risk: P3`, read-only exploration    | `goal` + `verify` + `in_scope` only                                | ≤15 lines     |
-
-Record `depth: <tier>` in the Agent tool description when dispatching.
+| Tier                                                                   | When                                      | Brief shape                                                        | Token budget  |
+| ---------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------ | ------------- |
+| `full_maturity`                                                        | High-risk tasks, security-sensitive diffs | Full `task_brief` + CONVENTIONS excerpts + threat model if present | Full envelope |
+| `standard`                                                             | Moderate-risk implementation tasks        | Standard `task_brief` fields below                                 | Default       |
+| `minimal_decisive`                                                     | Low-risk tasks, read-only exploration     | `goal` + `verify` + `in_scope` only                                | ≤15 lines     |
+| Record `depth: <tier>` in the Agent tool description when dispatching. |
 
 ### 2. Write typed task briefs (Orca message protocol)
 

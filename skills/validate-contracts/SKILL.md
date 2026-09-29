@@ -7,12 +7,10 @@ kind: prose
 # Validate Contracts
 
 > **HARD GATE**: Do NOT deploy or migrate data without running validate-contracts first. Silent data divergence between system boundaries causes the hardest production bugs to debug.
->
-> **HARD GATE**: a contract file MUST be version-controlled alongside the code. An outdated contract is worse than no contract. When a contract has not been reviewed in 30 days, flag it as stale.
-
-Validate that data structures stay in sync across a system boundary: front end
-versus back end, an API response versus its expected schema, a config file versus
-the code assumptions, and migration output versus the target shape.
+> **HARD GATE**: a contract file MUST be version-controlled alongside the code. When source data schemas or producer interfaces change without a corresponding contract review, flag the contract as stale.
+> Validate that data structures stay in sync across a system boundary: front end
+> versus back end, an API response versus its expected schema, a config file versus
+> the code assumptions, and migration output versus the target shape.
 
 ## Contract types
 

@@ -59,7 +59,7 @@ Apply the mapping from [REFERENCE.md](./REFERENCE.md) and [REFERENCE-GSD.md](./R
 
 1. Show what will be created or appended (title + first 20 lines).
 2. Ask: "Create this? [yes / edit / skip]"
-3. On yes: write to `specs/`.
+3. On yes: write runtime task and planning state under `.agent/` and human-authored architectural narrative / ADRs under `specs/`.
 
 #### ID Tracking (REQ-XX, FR-XX, UJ-XX)
 
@@ -85,11 +85,10 @@ See [REFERENCE.md](REFERENCE.md) — `trace:...`
 
 See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirements_traceyaml-format) for the complete schema.
 
-> **HARD GATE** — Never overwrite an existing `specs/` file without explicit user confirmation. Merge into it if it exists; don't clobber.
+> **HARD GATE** — Never overwrite existing `.agent/` or `specs/` files without explicit user confirmation. Merge into them if they exist; don't clobber.
 >
 > → verify: `git rev-parse --git-dir >/dev/null 2>&1 && test -d specs`
-
-→ verify: `test -f .agent/tasks/state.yml`
+> → verify: `test -f .agent/tasks/state.yml`
 
 ### Step 4 — Generate `.agent/tasks/state.yml`
 

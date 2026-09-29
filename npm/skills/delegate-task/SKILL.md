@@ -1,6 +1,6 @@
 ---
 name: delegate-task
-description: "Delegate one complex task to a single subagent, and review its work in two stages before merging back. Sequential, one agent at a time, with oversight. Use it when a task is complex and needs careful review before the result is accepted. Distinct from dispatch-agents, which has no parallelism here and the reviewer sees the full diff before proceeding."
+description: "Delegate a complex task to a single subagent with a two-stage review gate before merging back. Use it for sequential subagent delegation when careful oversight and review are required."
 kind: prose
 ---
 
@@ -10,17 +10,17 @@ kind: prose
 
 Delegate a single complex task to a subagent with a two-stage review gate before accepting the result. Use when oversight of a single task matters more than speed.
 
-**Distinct from `dispatch-agents`:** This skill runs one subagent sequentially with a mandatory review. `dispatch-agents` runs multiple subagents in parallel without inter-task review gates.
+Use `delegate-task` when oversight of a single task matters. Use `dispatch-agents` when multiple independent tasks can run concurrently in parallel.
 
 ## Subagent depth tiers (e45s30)
 
-Select brief depth from the task `risk:` before spawning:
+Select brief depth based on the task complexity and risk profile before spawning:
 
-| Tier               | When                                               | Brief includes                                                   |
-| ------------------ | -------------------------------------------------- | ---------------------------------------------------------------- |
-| `full_maturity`    | P0 work items, multi-file refactors, security work | Full template + CONVENTIONS excerpts + threat model if present   |
-| `standard`         | Default implementation tasks                       | Goal, scope, out-of-bounds, constraints, verify, prior decisions |
-| `minimal_decisive` | Light probes, read-only audits                     | Goal, verify, explicit file list (≤15 lines total)               |
+| Tier               | When                                          | Brief includes                                                   |
+| ------------------ | --------------------------------------------- | ---------------------------------------------------------------- |
+| `full_maturity`    | Complex refactors, high-risk or security work | Full template + CONVENTIONS excerpts + threat model if present   |
+| `standard`         | Default implementation tasks                  | Goal, scope, out-of-bounds, constraints, verify, prior decisions |
+| `minimal_decisive` | Light probes, read-only audits                | Goal, verify, explicit file list (≤15 lines total)               |
 
 State `depth: <tier>` in the Agent tool description field.
 
