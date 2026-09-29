@@ -35,4 +35,5 @@ fn consolidated_execution_conductor_is_the_only_mapped_execution_skill() {
     assert_eq!(phase_for_skill("execute-group"), "Build");
     assert_eq!(phase_for_skill("build-group"), "Other");
     assert_eq!(phase_for_skill("execute-plan"), "Other");
+    assert_eq!(phase_for_skill("run-planning"), "Other");
 }

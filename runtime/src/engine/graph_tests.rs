@@ -378,7 +378,7 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
     );
     assert!(result.diagnostics.unclassified_mentions.is_empty());
     assert!(result.graph.entities.contains_key("execute-group"));
-    for retired in ["build-epic", "build-group", "execute-plan"] {
+    for retired in ["build-epic", "build-group", "execute-plan", "run-planning"] {
         assert!(!result.graph.entities.contains_key(retired));
     }
     for relation in &result.graph.relations {

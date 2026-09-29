@@ -6,9 +6,13 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 
 ### PHASE 1: DISCOVER
 
-- **Goal**: Understand the problem completely and map existing context.
-- **Deliverables**: `.agent/product/vision.yml`, `.agent/product/scope.yml`, the project tech-stack note.
-- **Skills**: `survey-context`, `elaborate-spec`, `grill-me`.
+- **Goal**: Understand the problem completely, research existing art, and establish shared boundaries.
+- **Deliverables**: `.agent/product/vision.yml`, the project tech-stack note, and transient `.agent/tasks/planning-context.yml`.
+- **Sequence**:
+  1. `survey-context` — map current lifecycle phase, active work, and repository state.
+  2. `research-first` — verify dependencies, investigate prior art, and prevent duplicate work.
+  3. `elaborate-spec` — refine user needs into a specification and write transient `.agent/tasks/planning-context.yml`.
+  4. `grill-me` — stress-test assumptions and resolve ambiguities before design.
 - **Gate**: Confirm ("Is the problem clear?").
 
 ### PHASE 2: ELABORATE
@@ -21,13 +25,17 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 ### PHASE 3: PLAN
 
 - **Goal**: Write a verifiable implementation plan with success criteria.
-- **Deliverables**: `.agent/tasks/release-plan.yml`, each
+- **Deliverables**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, each
   `.agent/tasks/<capsule>/group.yml`, optional
   `.agent/tasks/<capsule>/test-plan.md`, and per-work-item specification and task
   ledger files.
-- **Skills**: `plan-release` owns the release index, `slice-tasks` owns task-group
-  boundaries, `plan-tests` owns test architecture, and `plan-work` owns work-item
-  detail.
+- **Sequence**:
+  1. `scope-work` — consume `.agent/tasks/planning-context.yml` and produce the bounded `.agent/product/scope.yml`.
+  2. `plan-release` — build the release index and define profile-appropriate group boundaries.
+  3. `slice-tasks` — define vertical slices and optional group manifests.
+  4. `plan-tests` — design test architecture when risk requires explicit scenario coverage.
+  5. `plan-work` — write runnable task specifications and ledgers.
+- **Context capsule cleanup**: `.agent/tasks/planning-context.yml` is consumed during scoping; clear it when transitioning out of planning into execution.
 - **Gate**: Risk-required review has no unresolved blocker plus slopcheck [SUS]/[SLOP].
 
 ### PHASE 4: EXECUTE

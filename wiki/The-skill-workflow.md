@@ -17,7 +17,7 @@ DISCOVER    survey-context, research-first, elaborate-spec, map-codebase
 DESIGN      model-domain, define-language, grill-me (context-only or docs mode),
             deepen-architecture, design-interface
 PLAN        scope-work, slice-tasks, plan-work, plan-tests, plan-release, plan-refactor,
-            assess-impact, run-planning, change-request, seed-conventions
+            assess-impact, change-request, seed-conventions
 INITIATE    kickoff-branch, guard-git, hook-commits, setup-environment
 SPIKE?      spike-prototype (feeds back to plan-work)
 EXECUTE     execute-group, develop-tdd + enforce-first, delegate-task, dispatch-agents
