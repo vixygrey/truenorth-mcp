@@ -16,6 +16,7 @@ use regex::Regex;
 use thiserror::Error;
 
 pub mod gate_environment;
+pub mod rules_schema;
 
 /// Environment variable that names an explicit repository root.
 const REPO_ROOT_ENV: &str = "TRUENORTH_ROOT";

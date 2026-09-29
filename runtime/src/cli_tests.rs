@@ -19,7 +19,12 @@ fn version_argument_selects_version_mode() {
 fn check_config_argument_selects_diagnostics_mode() {
     assert_eq!(
         parse_args(["--check-config".to_string()]).expect("parse arguments"),
-        Mode::CheckConfig
+        Mode::CheckConfig { strict: false }
+    );
+    assert_eq!(
+        parse_args(["--check-config".to_string(), "--strict".to_string()])
+            .expect("parse arguments"),
+        Mode::CheckConfig { strict: true }
     );
 }
 

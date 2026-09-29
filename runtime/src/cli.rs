@@ -19,7 +19,7 @@ use truenorth_mcp::tools::scaffold::{
     apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
 };
 
-const USAGE: &str = "usage: truenorth-mcp [--version | --check-config | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | skills list --bundle-dir <path>]";
+const USAGE: &str = "usage: truenorth-mcp [--version | --check-config [--strict] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | skills list --bundle-dir <path>]";
 
 /// The operation requested by the process arguments.
 #[derive(Debug, PartialEq, Eq)]
@@ -29,7 +29,10 @@ pub enum Mode {
     /// Print the compiled package version.
     Version,
     /// Report the read-only configuration diagnostics.
-    CheckConfig,
+    CheckConfig {
+        /// Enforce strict configuration schema with no unknown or deprecated keys.
+        strict: bool,
+    },
     /// Seed a fresh project from an explicit package bundle before MCP startup.
     Init {
         /// Optional methodology profile.
@@ -63,7 +66,10 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
     match args.as_slice() {
         [] => Ok(Mode::Serve),
         [flag] if flag == "--version" => Ok(Mode::Version),
-        [flag] if flag == "--check-config" => Ok(Mode::CheckConfig),
+        [flag] if flag == "--check-config" => Ok(Mode::CheckConfig { strict: false }),
+        [flag, opt] if flag == "--check-config" && opt == "--strict" => {
+            Ok(Mode::CheckConfig { strict: true })
+        }
         [command, rest @ ..] if command == "init" => parse_init(rest),
         [command, rest @ ..] if command == "upgrade" => parse_upgrade(rest),
         [skills, list, rest @ ..] if skills == "skills" && list == "list" => {
@@ -237,8 +243,8 @@ pub fn list_skills(bundle_dir: PathBuf) -> ExitCode {
 }
 
 /// Inspect the configuration without starting the server or running a gate command.
-pub fn check_config() -> ExitCode {
-    let report = DiagnosticReport::collect();
+pub fn check_config(strict: bool) -> ExitCode {
+    let report = DiagnosticReport::collect(strict);
     println!(
         "{}",
         serde_json::to_string(&report).expect("diagnostic report serializes")
@@ -261,24 +267,29 @@ struct DiagnosticReport {
     features: FeaturesReport,
     token_caps: TokenCapsReport,
     verify_gate: VerifyGateReport,
+    rules_config: Option<truenorth_mcp::config::rules_schema::RulesConfigInspection>,
 }
 
 impl DiagnosticReport {
-    fn collect() -> Self {
+    fn collect(strict: bool) -> Self {
         let root = config::get_repo_root();
         let verify_gate = VerifyGateReport::collect();
 
         match root {
-            Ok(path) => Self {
-                package: PackageReport::current(),
-                platform: PlatformReport::current(),
-                repository_root: RepositoryRootReport::ok(path.clone()),
-                layout: layout_report(&path),
-                backlog: backlog_report(&path),
-                features: features_report(&path),
-                token_caps: token_caps_report(&path),
-                verify_gate,
-            },
+            Ok(path) => {
+                let rules_inspection = rules_config_report(&path, strict);
+                Self {
+                    package: PackageReport::current(),
+                    platform: PlatformReport::current(),
+                    repository_root: RepositoryRootReport::ok(path.clone()),
+                    layout: layout_report(&path),
+                    backlog: backlog_report(&path),
+                    features: features_report(&path),
+                    token_caps: token_caps_report(&path),
+                    verify_gate,
+                    rules_config: Some(rules_inspection),
+                }
+            }
             Err(error) => Self {
                 package: PackageReport::current(),
                 platform: PlatformReport::current(),
@@ -288,17 +299,41 @@ impl DiagnosticReport {
                 features: FeaturesReport::skipped("repository root could not be resolved"),
                 token_caps: TokenCapsReport::skipped("repository root could not be resolved"),
                 verify_gate,
+                rules_config: None,
             },
         }
     }
 
     fn ready(&self) -> bool {
+        let rules_ok = match &self.rules_config {
+            Some(inspection) => inspection.errors.is_empty(),
+            None => true,
+        };
         self.repository_root.status == Status::Ok
             && self.layout.status == Status::Ok
             && self.backlog.status == Status::Ok
             && self.features.status == Status::Ok
             && self.token_caps.status == Status::Ok
             && self.verify_gate.status == Status::Ok
+            && rules_ok
+    }
+}
+
+fn rules_config_report(
+    root: &std::path::Path,
+    strict: bool,
+) -> truenorth_mcp::config::rules_schema::RulesConfigInspection {
+    let rules_path = root.join(".agent").join("config").join("rules.yml");
+    match std::fs::read_to_string(&rules_path) {
+        Ok(text) => {
+            truenorth_mcp::config::rules_schema::RulesConfigInspection::inspect_yaml(&text, strict)
+        }
+        Err(_) => truenorth_mcp::config::rules_schema::RulesConfigInspection {
+            version: None,
+            blocks: std::collections::BTreeMap::new(),
+            warnings: Vec::new(),
+            errors: Vec::new(),
+        },
     }
 }
 

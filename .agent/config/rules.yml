@@ -1,6 +1,6 @@
-# The per-project runtime config. The runtime parses `features` and `token_caps`.
-# The Jev guard reads `protected_paths` when enabled. Other blocks record project
-# conventions, not runtime-enforced policy.
+# The per-project runtime config. Version 2 separates enforced runtime settings
+# from advisory project conventions (ADR-0017, issue #432).
+version: 2
 
 features:
   # The ontology feature is disabled for this project. When disabled, the two ontology
@@ -8,36 +8,12 @@ features:
   # file is seeded (optional-ontology design, ADR-0012).
   ontology: false
 
-# The development methodology. The runtime resolves the workflow shape from
-# `.agent/profile.yml` (issue-per-task). This block records the human-facing intent.
-methodology:
-  model: issue-per-task
-  # One unit of work starts as one issue, then one short-lived branch, then one
-  # squash-merge pull request that closes the issue. A spec task maps to one issue.
-  issue_first: true
-  branch_per_issue: true
-  pull_request_required: true
-  squash_merge: true
-  # A commit references its issue id (the issue-per-task profile requires an id).
-  commit_requires_issue_id: true
-
-token_caps:
-  # Lean bodies use this estimated-token target. Tool responses above their cap fail rather
-  # than truncating content. Estimates are ceil(characters / 4).
-  tool_payload_tokens: 4000
-  skill_lean_tokens: 1200
-
-quality_gates:
-  coverage:
-    overall_minimum_percent: 80
-    business_logic_minimum_percent: 95
-
-approval_gates:
-  # Human-facing approval policy. This list is not enforced by the runtime.
-  - destructive_git
-  - production_change
-  - dependency_addition
-  - schema_migration
+runtime:
+  token_caps:
+    # Lean bodies use this estimated-token target. Tool responses above their cap fail rather
+    # than truncating content. Estimates are ceil(characters / 4).
+    tool_payload_tokens: 4000
+    skill_lean_tokens: 1200
 
 protected_paths:
   # The Jev change guard reads this list when enabled. The write guard independently
@@ -47,20 +23,47 @@ protected_paths:
   - LICENSE
   - .github/workflows/
 
-lint_standards:
-  rust:
-    - cargo fmt
-    - cargo clippy --deny warnings
-  javascript:
-    - prettier
-  prose:
-    # All prose follows the house writing rules (ASD-STE100-based Simplified Technical
-    # English) in .kiro/steering/writing-rules.md.
-    - house-writing-rules
+# Documented human and team conventions (explicitly advisory, not runtime-enforced).
+advisory:
+  # The development methodology. The runtime resolves the workflow shape from
+  # `.agent/profile.yml` (issue-per-task). This block records the human-facing intent.
+  methodology:
+    model: issue-per-task
+    # One unit of work starts as one issue, then one short-lived branch, then one
+    # squash-merge pull request that closes the issue. A spec task maps to one issue.
+    issue_first: true
+    branch_per_issue: true
+    pull_request_required: true
+    squash_merge: true
+    # A commit references its issue id (the issue-per-task profile requires an id).
+    commit_requires_issue_id: true
 
-secret_denylist:
-  # Human-facing policy. Runtime secret filtering uses its built-in denylist, not this list.
-  - "\\.env"
-  - "\\.pem$"
-  - "secret"
-  - "credentials"
+  quality_gates:
+    coverage:
+      overall_minimum_percent: 80
+      business_logic_minimum_percent: 95
+
+  approval_gates:
+    # Human-facing approval policy. This list is not enforced by the runtime.
+    - destructive_git
+    - production_change
+    - dependency_addition
+    - schema_migration
+
+  lint_standards:
+    rust:
+      - cargo fmt
+      - cargo clippy --deny warnings
+    javascript:
+      - prettier
+    prose:
+      # All prose follows the house writing rules (ASD-STE100-based Simplified Technical
+      # English) in .kiro/steering/writing-rules.md.
+      - house-writing-rules
+
+  secret_denylist:
+    # Human-facing policy. Runtime secret filtering uses its built-in denylist, not this list.
+    - "\\.env"
+    - "\\.pem$"
+    - "secret"
+    - "credentials"

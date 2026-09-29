@@ -112,11 +112,19 @@ struct RulesFeatureView {
     features: FeaturesBlock,
 }
 
-/// The subset of `.agent/config/rules.yml` that declares token budgets.
+/// The subset of `.agent/config/rules.yml` that declares runtime settings in v2 or token budgets in v1.
 #[derive(Debug, Default, Deserialize)]
 struct RulesTokenCapsView {
     #[serde(default)]
-    token_caps: TokenCapsBlock,
+    runtime: Option<RuntimeBlock>,
+    #[serde(default)]
+    token_caps: Option<TokenCapsBlock>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct RuntimeBlock {
+    #[serde(default)]
+    token_caps: Option<TokenCapsBlock>,
 }
 
 /// The `token_caps` block. Missing fields preserve the documented defaults.
@@ -238,18 +246,37 @@ pub fn resolve_token_caps(repo_root: &Path) -> Result<TokenCaps, FeaturesError> 
             path: config_path.display().to_string(),
             source,
         })?;
+
+    let (caps_block, prefix) = if let Some(runtime) = view.runtime
+        && let Some(caps) = runtime.token_caps
+    {
+        (caps, "runtime.token_caps")
+    } else if let Some(caps) = view.token_caps {
+        (caps, "token_caps")
+    } else {
+        (TokenCapsBlock::default(), "runtime.token_caps")
+    };
+
     let caps = TokenCaps {
-        skill_lean_tokens: view.token_caps.skill_lean_tokens,
-        tool_payload_tokens: view.token_caps.tool_payload_tokens,
+        skill_lean_tokens: caps_block.skill_lean_tokens,
+        tool_payload_tokens: caps_block.tool_payload_tokens,
     };
     if caps.skill_lean_tokens == 0 {
         return Err(FeaturesError::InvalidTokenCap {
-            key: "token_caps.skill_lean_tokens",
+            key: if prefix == "token_caps" {
+                "token_caps.skill_lean_tokens"
+            } else {
+                "runtime.token_caps.skill_lean_tokens"
+            },
         });
     }
     if caps.tool_payload_tokens == 0 {
         return Err(FeaturesError::InvalidTokenCap {
-            key: "token_caps.tool_payload_tokens",
+            key: if prefix == "token_caps" {
+                "token_caps.tool_payload_tokens"
+            } else {
+                "runtime.token_caps.tool_payload_tokens"
+            },
         });
     }
     Ok(caps)

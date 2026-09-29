@@ -40,7 +40,7 @@ fn main() -> ExitCode {
             cli::print_version();
             ExitCode::SUCCESS
         }
-        Ok(cli::Mode::CheckConfig) => cli::check_config(),
+        Ok(cli::Mode::CheckConfig { strict }) => cli::check_config(strict),
         Ok(cli::Mode::Init {
             profile,
             bundle_dir,
