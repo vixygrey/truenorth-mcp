@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "bundle_version": "1.0.3",
+  "bundle_version": "1.0.4",
   "workspace_schema_version": "2",
   "supported_from": ["0.9.0"],
   "skill_sets": [

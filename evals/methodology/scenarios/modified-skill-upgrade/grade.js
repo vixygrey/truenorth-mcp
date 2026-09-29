@@ -40,7 +40,7 @@ function grade({ evidence }) {
     ),
     result(
       'upgrade-manifest-advanced',
-      manifest.includes('bundle_version: 1.0.3') &&
+      manifest.includes('bundle_version: 1.0.4') &&
         manifest.includes(conflict ? conflict.path : 'missing'),
       'workspace manifest advances the target bundle baseline',
     ),

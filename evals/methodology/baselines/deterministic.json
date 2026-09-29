@@ -95,9 +95,9 @@
         }
       ],
       "definition_digests": {
-        "driver": "58e639e92811e0863d061d55bfe07dc5d5998701fea39a4356bb4ae109891984",
-        "fixture": "c6e1a7e65120bb0d5871823841002bcfe810800f03f15f6680302cb51ff14778",
-        "grader": "74c0bf57c0f8e2d62d7735c1fece26db8d94649ec1a2d03d67fb2afa4600ed6d",
+        "driver": "8e3140e0610bc4882b0d73ee85a0fd3e2059d5a6b02aaade9c9b8d8715f01e8d",
+        "fixture": "294621477142224135a8c213c54840680e91044ca6d80b2e15d4c972d633ecb3",
+        "grader": "3eaeb5874cf569938b08d99166b9a0a4b5bfb507473887c851adb2d2caf4dcf8",
         "scenario": "c6c3dc4b223f436029e1e026446988a2c536f8875e733f7b68b03525bdc9abb8"
       },
       "id": "modified-skill-upgrade"
