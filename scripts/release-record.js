@@ -216,7 +216,7 @@ function createInitialRecord(options) {
 }
 
 function releasePreamble(options, packages) {
-  return `## Audit trail\n\n- Tag: [${options.tag}](https://github.com/${options.repository}/tree/${options.tag})\n- Commit: [${options.commit}](https://github.com/${options.repository}/commit/${options.commit})\n- Verification run: ${options.runUrl}\n\n## Verify native downloads\n\nDownload the archive for your platform and \`SHA256SUMS\`, then run:\n\n\`shasum -a 256 -c SHA256SUMS\`\n\n## npm publication\n\nRegistry status: staged_pending_approval. The release record is updated after registry publication.\n\n${packages.map((pkg) => `- [${pkg.name}@${pkg.version}](${pkg.url})`).join('\n')}\n\nVerify published npm provenance with \`npm audit signatures\`.\n\n${options.notes.trim()}\n`;
+  return `## Audit trail\n\n- Tag: [${options.tag}](https://github.com/${options.repository}/tree/${options.tag})\n- Commit: [${options.commit}](https://github.com/${options.repository}/commit/${options.commit})\n- Verification run: ${options.runUrl}\n\n## Verify native downloads\n\nDownload the archive for your platform and \`SHA256SUMS\`, then run:\n\n\`shasum -a 256 -c SHA256SUMS\`\n\nTo cryptographically verify the build provenance attestation:\n\n\`gh attestation verify <archive-filename> --owner ${options.repository.split('/')[0]}\`\n\n## npm publication\n\nRegistry status: staged_pending_approval. The release record is updated after registry publication.\n\n${packages.map((pkg) => `- [${pkg.name}@${pkg.version}](${pkg.url})`).join('\n')}\n\nVerify published npm provenance with \`npm audit signatures\`.\n\n${options.notes.trim()}\n`;
 }
 
 function createRegistryRecord(options) {
