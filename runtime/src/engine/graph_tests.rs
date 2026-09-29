@@ -190,11 +190,11 @@ fn dependency_direction_matches_execution_order() {
 fn mines_canonical_invocation_forms() {
     let router = parsed(
         "orchestrate-project",
-        "# Orchestrate\n\nRun `build-group`, invoke `verify-work`, then route to `release-branch`.\n",
+        "# Orchestrate\n\nRun `execute-group`, invoke `verify-work`, then route to `release-branch`.\n",
     );
     let graph = build_graph(&[
         router,
-        parsed("build-group", "# Build\n"),
+        parsed("execute-group", "# Execute\n"),
         parsed("verify-work", "# Verify\n"),
         parsed("release-branch", "# Release\n"),
     ]);
@@ -207,7 +207,7 @@ fn mines_canonical_invocation_forms() {
     assert_eq!(
         invoked,
         BTreeSet::from([
-            "build-group".to_string(),
+            "execute-group".to_string(),
             "release-branch".to_string(),
             "verify-work".to_string(),
         ])
@@ -377,7 +377,10 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
         result.diagnostics.unresolved_mentions
     );
     assert!(result.diagnostics.unclassified_mentions.is_empty());
-    assert!(!result.graph.entities.contains_key("build-epic"));
+    assert!(result.graph.entities.contains_key("execute-group"));
+    for retired in ["build-epic", "build-group", "execute-plan"] {
+        assert!(!result.graph.entities.contains_key(retired));
+    }
     for relation in &result.graph.relations {
         if relation.relation_type != "enforces" {
             assert!(
@@ -388,7 +391,7 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
     }
     for orchestrator in [
         "orchestrate-project",
-        "execute-plan",
+        "execute-group",
         "change-request",
         "compose-workflow",
     ] {
@@ -406,7 +409,7 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
                 .collect::<Vec<_>>()
         );
     }
-    for orchestrator in ["build-group", "release-branch"] {
+    for orchestrator in ["execute-group", "release-branch"] {
         assert!(
             result.graph.relations.iter().any(|relation| {
                 relation.from == orchestrator
@@ -414,6 +417,22 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
                     && relation.relation_type == "invokes"
             }),
             "{orchestrator} must invoke the retained traceability contract"
+        );
+    }
+    for gate in [
+        "security-review",
+        "develop-tdd",
+        "verify-work",
+        "audit-code",
+        "release-branch",
+    ] {
+        assert!(
+            result.graph.relations.iter().any(|relation| {
+                relation.from == "execute-group"
+                    && relation.to == gate
+                    && matches!(relation.relation_type.as_str(), "invokes" | "handoff_to")
+            }),
+            "execute-group must keep the {gate} control-flow gate reachable"
         );
     }
     assert!(!result.graph.entities.contains_key("gate-trace"));

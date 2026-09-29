@@ -1,6 +1,6 @@
 ---
 name: security-review
-description: 'Security analysis of code changes. Traces data flow and detects injection, auth bypass, secrets exposure, and unsafe deserialization across files. Use it when reviewing pending changes, before release-branch, during verify-work, during build-group threat modeling, or when the user says "security review".'
+description: 'Security analysis of code changes. Traces data flow and detects injection, auth bypass, secrets exposure, and unsafe deserialization across files. Use it when reviewing pending changes, before release-branch, during verify-work, during execute-group threat modeling, or when the user says "security review".'
 kind: prose
 ---
 
@@ -65,7 +65,7 @@ Formal rule for SQL injection classification:
 
 | Skill             | Touchpoint                                                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `build-group`     | Step 0 — threat-model selected scope → the security review report                                                   |
+| `execute-group`   | Threat-model the selected scope → the security review report                                                        |
 | `plan-work`       | `security:` field (none/low/medium/high) on tasks; feed risk into the selected prioritization policy when supported |
 | `audit-code`      | Checklist: "diff scanned — no unaddressed HIGH findings"                                                            |
 | `request-review`  | Inject threat model categories + false-positive rules into reviewer prompt                                          |

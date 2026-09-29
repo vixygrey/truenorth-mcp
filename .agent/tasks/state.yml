@@ -4,7 +4,7 @@ active_task: Normalize skill cockpit paths and methodology-neutral vocabulary
 active_group: '452'
 phase: execute
 tdd:
-  step: refactor
+  step: red
 handoff:
   next_skill: null
   last_step_completed: null

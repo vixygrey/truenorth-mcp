@@ -36,7 +36,7 @@ Before dispatching, verify each task pair is truly independent:
 - No shared state (DB migrations, config files)
 - No ordering dependency between outcomes
 
-If any two tasks conflict, sequence them with `delegate-task` or `execute-plan` instead.
+If any two tasks conflict, sequence them with `delegate-task` or `execute-group` instead.
 
 ## Subagent depth tiers (e45s30)
 

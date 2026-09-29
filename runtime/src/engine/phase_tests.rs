@@ -29,3 +29,10 @@ fn late_added_skills_map_correctly() {
     assert_eq!(phase_for_skill("trace-requirement"), "Verify");
     assert_eq!(phase_for_skill("security-review"), "Verify");
 }
+
+#[test]
+fn consolidated_execution_conductor_is_the_only_mapped_execution_skill() {
+    assert_eq!(phase_for_skill("execute-group"), "Build");
+    assert_eq!(phase_for_skill("build-group"), "Other");
+    assert_eq!(phase_for_skill("execute-plan"), "Other");
+}

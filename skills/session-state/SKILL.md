@@ -81,7 +81,7 @@ When `.agent/tasks/state.yml` does not exist, or a new major phase starts:
 
 | Flow                | Cycle key       | Step field      |
 | ------------------- | --------------- | --------------- |
-| build-group         | `group_cycle`   | `current_step`  |
+| execute-group       | `group_cycle`   | `current_step`  |
 | fix-bug             | `bug_cycle`     | `current_step`  |
 | orchestrate-project | `project_cycle` | `current_phase` |
 
@@ -102,11 +102,12 @@ needed for the next step.
 ## File format
 
 ```yaml
-active_flow: build_group # planning | build_group | fix_bug
+active_flow: execute_group # planning | execute_group | fix_bug
 active_task: "Implement profile-neutral planning"
 active_group: null
 phase: execute
 group_cycle:
+  mode: checkpoint
   current_step: develop-tdd
   completed_steps: [kickoff-branch]
 bug_cycle:

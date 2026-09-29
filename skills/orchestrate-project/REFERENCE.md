@@ -30,20 +30,20 @@ Detailed documentation for the `orchestrate-project` meta-skill.
   detail.
 - **Gate**: Risk-required review has no unresolved blocker plus slopcheck [SUS]/[SLOP].
 
-### PHASE 4: BUILD
+### PHASE 4: EXECUTE
 
-- **Goal**: Execute the plan task by task through the profile-aware `build-group`
-  cycle with TDD and vertical slices.
+- **Goal**: Execute the plan through the profile-aware `execute-group` conductor
+  with TDD and vertical slices.
 - **Deliverables**: Code and `.agent/tasks/execution-status.yml` updates per task.
-- **Skills**: `build-group` (conductor) → per task: `survey-context`,
-  `plan-work`, `kickoff-branch`, `develop-tdd`, `verify-work`, `audit-code`,
-  `commit-message`, `release-branch`.
+- **Skills**: `execute-group` runs `survey-context`, `plan-work`,
+  `kickoff-branch`, `develop-tdd`, `verify-work`, `audit-code`,
+  `commit-message`, and `release-branch`.
 - **Estimation**: `slice-tasks` records BCP only when project policy selects it.
 - **next_skill**: Each critical-path skill writes `handoff.next_skill` to
   `.agent/tasks/state.yml`. Agents resume by reading that file.
 - **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742)
   shows live task and optional group status.
-- **Gate**: Integration tests PASS; all 8 build-group steps completed per task.
+- **Gate**: Integration tests PASS; all required execute-group gates completed for each work item.
 
 ### PHASE 5: VERIFY
 

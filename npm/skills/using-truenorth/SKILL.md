@@ -67,7 +67,7 @@ DESIGN      model-domain, define-language, grill-me, deepen-architecture, design
 PLAN        scope-work, slice-tasks, plan-work, plan-refactor
 INITIATE    kickoff-branch, guard-git, hook-commits, seed-conventions
 SPIKE?      spike-prototype (feeds back to plan-work)
-EXECUTE     develop-tdd + enforce-first, delegate-task, dispatch-agents, execute-plan
+EXECUTE     execute-group, develop-tdd + enforce-first, delegate-task, dispatch-agents
 VERIFY      run-evals, verify-work
 HARDEN      wire-observability (any phase)
 BUG?        investigate-bug, validate-fix

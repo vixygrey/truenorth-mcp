@@ -23,7 +23,7 @@ Create an isolated worktree or branch and verify a clean baseline before code.
 - **Outputs**: a feature branch or worktree, a confirmed green baseline.
 - **Hard gate**: no direct work on `main` or `master`. A red preflight blocks kickoff;
   route to `quick-fix` or `fix-bug`.
-- **Handoff**: gate READY, next `develop-tdd` or `execute-plan`.
+- **Handoff**: gate READY, next `develop-tdd` or `execute-group`.
 
 ### develop-tdd
 
@@ -40,38 +40,28 @@ Test-driven development with a red-green-refactor loop over vertical slices.
   commit or push a deliberately failing tree. Never refactor while RED.
 - **Handoff**: gate READY, next `verify-work`.
 
-### build-group
+### execute-group
 
-The profile-aware task and optional group build cycle. Advances one step per invocation in resume
-mode.
+The profile-aware execution conductor for an active task or group.
 
-- **What it does**: orchestrates the eight-step build flow for one story: security-review,
-  survey, plan, kickoff, TDD, verify, the non-optional audit-code gate, commit-message, and
-  release-branch. After verification it runs `trace-requirement report`.
-- **When to use it**: for release work, instead of an ad-hoc `execute-plan`. It is called
-  by `orchestrate-project`, scoped to one task, and is not a replacement for it.
-- **Inputs**: the state, execution status, release plan, and the active task group.
-- **Outputs**: an advanced build flow and an updated execution status.
-- **Hard gates**: set `active_flow: build_group` and `active_group` first. Not on `main`
-  before step 3. Audit blockers loop to step 4; missing or stale trace evidence blocks release.
-- **Modes**: default (resume one step), or `--fast` (coalesce read-and-report steps without
-  skipping any checklist item).
-
-### execute-plan
-
-Batch-execute the active group tasks sequentially, with a human checkpoint after each step.
-
-- **What it does**: reads the active group, then for each task announces it, executes,
-  runs the verify (green before advancing), logs decisions, and checkpoints with the user.
-  It spawns each skill with a fresh context, passing decisions only through the state
-  handoff.
-- **When to use it**: when the user has an approved plan and wants step-by-step oversight.
-- **Inputs**: the state and the matching task group.
-- **Outputs**: executed tasks with evidence, an updated execution status.
-- **Hard gates**: not on `main`. The active group must exist with a runnable verify per
-  task.
-- **Handoff**: `verify-work`, `run-evals`, `audit-code`, `request-review`,
-  `respond-review`, `commit-message`, `release-branch`.
+- **What it does**: owns the selected execution scope from threat modeling and branch
+  kickoff through TDD, task verification, behavioral verification, traceability, audit,
+  review, commit, and release. It may delegate disjoint waves but retains ordering, state,
+  and verification ownership.
+- **When to use it**: when approved work is ready to build, directly or from
+  `orchestrate-project` during Execute.
+- **Inputs**: the profile, state, execution status, release plan, and selected work-item
+  ledger. Group artifacts are required only when the profile groups work.
+- **Outputs**: verified code, updated execution status and handoff, and a release-ready
+  branch when every gate passes.
+- **Hard gates**: set `active_flow: execute_group`; do not implement on `main` or
+  `master`; require a runnable verify command per task; block on failed security,
+  verification, traceability, audit, review, or release gates.
+- **Modes**: `checkpoint` confirms scope and pauses after each verified work item.
+  `autonomous` continues without routine prompts. Both modes stop at failures,
+  unresolved blockers, scope changes, external decisions, and release safety gates.
+- **Profile behavior**: grouped profiles use their active epic, milestone, or optional
+  ticket group. Ungrouped profiles use `active_task` and omit group fields.
 
 ### orchestrate-project
 
@@ -79,8 +69,8 @@ The meta-skill that coordinates a multi-phase project through the six-phase core
 hard gates.
 
 - **What it does**: maintains the phase state, routes to the phase skill, applies
-  methodology lenses, enforces the gates, gatekeeps between tasks in the build phase
-  (using `build-group` per task), and pauses for confirmation between phases.
+  methodology lenses, enforces the gates, and calls `execute-group` as the sole
+  conductor during Execute. It pauses for confirmation between phases.
 - **When to use it**: to coordinate complex, multi-stage work. A single-skill task uses the
   dedicated skill instead.
 - **Inputs**: the state (`project_cycle`), the cockpit files.

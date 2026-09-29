@@ -12,7 +12,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `assess-impact`       | Analyze the blast radius of a change before code                | [Plan](Skills-Plan)         |
 | `audit-code`          | Self-review checklist before dispatching a reviewer             | [Verify](Skills-Verify)     |
 | `audit-plan`          | Evaluate an incoming plan, produce a READY verdict              | [Utility](Skills-Utility)   |
-| `build-group`         | The profile-aware build cycle, one step per invocation          | [Build](Skills-Build)       |
 | `change-request`      | Add a requirement or reorder work by selected project policy    | [Plan](Skills-Plan)         |
 | `commit-message`      | Draft a Conventional Commits message and its SemVer bump        | [Release](Skills-Release)   |
 | `compose-workflow`    | Chain multiple skills into a custom workflow recipe             | [Sustain](Skills-Sustain)   |
@@ -29,7 +28,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `elaborate-spec`      | Refine a rough idea into a clear specification                  | [Discover](Skills-Discover) |
 | `enforce-first`       | Apply the F.I.R.S.T test-quality rubric                         | [Verify](Skills-Verify)     |
 | `evolve-skill`        | Benchmark-gated skill evolution                                 | [Sustain](Skills-Sustain)   |
-| `execute-plan`        | Batch-execute the active group tasks with checkpoints           | [Build](Skills-Build)       |
+| `execute-group`       | Execute active work with checkpoint or autonomous control       | [Build](Skills-Build)       |
 | `extract-design`      | Extract a DESIGN.md from an HTML prototype                      | [Utility](Skills-Utility)   |
 | `find-way`            | Map a large effort as decision tickets on a tracker             | [Utility](Skills-Utility)   |
 | `fix-bug`             | Orchestrate the bug-fix chain                                   | [Verify](Skills-Verify)     |

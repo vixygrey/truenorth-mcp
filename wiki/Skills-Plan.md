@@ -61,7 +61,7 @@ Write the detailed implementation plan into the active task group.
   runnable verify. A CRITICAL or HIGH consistency finding blocks code generation.
 - **Modes**: default (full), or `--fast` (skip the zoom-out and impact assessment for a
   small task).
-- **Handoff**: gate READY, next `kickoff-branch`, then `build-group`, `execute-plan`, or
+- **Handoff**: gate READY, next `kickoff-branch`, then `execute-group` or
   `develop-tdd`.
 
 ---
@@ -139,8 +139,8 @@ Analyze the blast radius of a proposed change before any code is written.
   module, or when the user asks "what does this break?".
 - **Inputs**: the target symbol or file, the codebase, the release plan.
 - **Outputs**: an impact report with a risk line.
-- **Modes**: default (full), or `--lightweight` (fan-in/fan-out only, used by `build-group`
-  as a pre-plan gate). A lightweight risk score above 7 forces a `grill-me` session first.
+- **Modes**: default (full), or `--lightweight` (fan-in/fan-out only, used by
+  `execute-group` as a pre-plan gate). A lightweight risk score above 7 forces a `grill-me` session first.
 - **Hard gate**: run it before `plan-work` when a change touches a module used by more than
   one caller. Skip only for net-new code with no dependents.
 
