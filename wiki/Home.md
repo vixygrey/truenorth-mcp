@@ -47,7 +47,7 @@ Read the pages in this order for a first run.
 
 ## The skill reference
 
-The runtime serves 72 skills across the lifecycle. For the full reference:
+The runtime serves 71 skills across the lifecycle. For the full reference:
 
 - [The skill workflow](The-skill-workflow): how the skills chain from one to the next.
 - [Skill index](Skill-index): every skill, alphabetical, with its phase page.

@@ -29,8 +29,8 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
     manifest.skill_sets.map((set) => set.name),
     ['core', 'integrations', 'maintainer', 'visual'],
   );
-  assert.strictEqual(manifest.skill_sets.find((set) => set.name === 'core').skills.length, 66);
-  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 72);
+  assert.strictEqual(manifest.skill_sets.find((set) => set.name === 'core').skills.length, 65);
+  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 71);
 });
 
 test('planning artifacts have one canonical writer and path', () => {
@@ -49,6 +49,10 @@ test('planning artifacts have one canonical writer and path', () => {
     'group-manifest': {
       path: '.agent/tasks/<capsule>/group.yml',
       writer: 'slice-tasks',
+    },
+    'traceability-report': {
+      path: '.agent/tasks/traceability.yml',
+      writer: 'trace-requirement',
     },
     'group-test-plan': {
       path: '.agent/tasks/<capsule>/test-plan.md',

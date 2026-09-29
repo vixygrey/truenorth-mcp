@@ -68,6 +68,13 @@ planning_artifacts:
       - execute-plan
       - trace-requirement
       - verify-work
+  traceability-report:
+    path: .agent/tasks/traceability.yml
+    writer: trace-requirement
+    readers:
+      - build-group
+      - release-branch
+      - verify-work
 skills:
   align-grid: visual
   assess-impact: core
@@ -94,7 +101,6 @@ skills:
   extract-design: visual
   find-way: integrations
   fix-bug: core
-  gate-trace: core
   grill-me: core
   guard-git: core
   hook-commits: core

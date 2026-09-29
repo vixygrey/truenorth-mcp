@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-72 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+71 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -33,7 +33,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `extract-design`      | Extract a DESIGN.md from an HTML prototype                      | [Utility](Skills-Utility)   |
 | `find-way`            | Map a large effort as decision tickets on a tracker             | [Utility](Skills-Utility)   |
 | `fix-bug`             | Orchestrate the bug-fix chain                                   | [Verify](Skills-Verify)     |
-| `gate-trace`          | Deterministic traceability quality gate                         | [Verify](Skills-Verify)     |
 | `grill-me`            | Challenge a plan in context-only or docs mode                   | [Design](Skills-Design)     |
 | `guard-git`           | Block a dangerous git command, enforce opt-in policy            | [Build](Skills-Build)       |
 | `hook-commits`        | Set up a pre-commit hook with lint-staged                       | [Build](Skills-Build)       |
@@ -71,7 +70,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `spike-prototype`     | A throw-away prototype for an unknown problem space             | [Build](Skills-Build)       |
 | `stocktake-skills`    | A batch audit of the skill catalog                              | [Sustain](Skills-Sustain)   |
 | `survey-context`      | Read the current state, map the phase, suggest the next skill   | [Discover](Skills-Discover) |
-| `trace-requirement`   | Link task ids to implementing code and tests                    | [Verify](Skills-Verify)     |
+| `trace-requirement`   | Report and gate task-to-evidence traceability                   | [Verify](Skills-Verify)     |
 | `using-truenorth`     | The one-time bootstrap and routing entry point                  | [Discover](Skills-Discover) |
 | `validate-contracts`  | Assert data-shape consistency across boundaries                 | [Build](Skills-Build)       |
 | `validate-fix`        | Prove a fix works and harden against recurrence                 | [Verify](Skills-Verify)     |

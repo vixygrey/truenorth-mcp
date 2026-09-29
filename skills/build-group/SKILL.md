@@ -1,6 +1,6 @@
 ---
 name: build-group
-description: "The profile-aware build cycle. Reads state, execution status, and the active task or group, then advances one verified step per invocation."
+description: "The profile-aware build cycle. Reads state, execution status, and the active task or group, advances one verified step per invocation, and invokes trace-requirement report before release."
 kind: prose
 ---
 
@@ -52,9 +52,9 @@ tasks:
     completed_at: "2026-07-12T18:45:00-03:00"
 ```
 
-Refresh traceability before step 8. Surface dark, orphan, or stale findings. A
-missing refresh remains visible as `trace skipped`; `gate-trace` decides whether
-it blocks.
+After `verify-work` and before step 8, run `trace-requirement report`. Missing,
+stale, or incomplete required evidence blocks release. Route each reported gap to
+its planning, implementation, or verification owner before continuing.
 
 ## Audit gate
 

@@ -1,77 +1,107 @@
 ---
 name: trace-requirement
-description: "Link task ids from the release plan and optional group artifacts to implementing code and tests. Use it to verify plan coverage or find planned work with no implementation."
+description: "Build a versioned traceability report from task, change, test, and verification evidence, or gate a release by consuming that report. Use report mode after verification and gate mode before release."
 kind: prose
 ---
 
 # Trace Requirement
 
-Build a traceability matrix from `.agent/tasks/release-plan.yml` and any profile-
-selected group artifacts. Surface planned tasks with no code and tagged code with
-no matching task.
+**Boundary**: Single owner of traceability reporting and release gating. `report`
+mode writes the matrix; `gate` mode reads that exact matrix and records a verdict.
 
-## Pre-flight
+## Modes and artifact
 
-> **HARD GATE**: `.agent/tasks/release-plan.yml` must exist. Run
-> `plan-release` first when it does not.
+Invoke `trace-requirement report` after `verify-work`. Invoke
+`trace-requirement gate` before `release-branch`.
 
-Read `.agent/profile.yml` and the release plan before proceeding. Read group
-directories only when the profile and plan use groups.
+Both modes own `.agent/tasks/traceability.yml`. No other skill writes it.
 
-## Process
+> **HARD GATE**: `.agent/tasks/release-plan.yml` must exist. Missing, unreadable,
+> unsupported, or stale traceability evidence is a failure, never a waiver.
 
-### 1. Extract task ids
+## Report mode
 
-Collect stable task ids from `tasks[]`. When an existing project uses a separate
-work-item or story id convention, collect those ids as additional trace keys. Do
-not synthesize story-shaped ids.
+Read the active profile, release plan, optional group manifest, work-item
+specification and task ledger, optional test plan, execution status, verification
+evidence, and Git branch, changed paths, and commits. Write schema version 1:
 
-### 2. Search implementation tags
-
-Search source and tests for the project's trace tag, using `task:` by default:
-
-```text
-// task: 452
-# task: 452
+```yaml
+schema_version: 1
+generated_at: "<ISO 8601>"
+source:
+  profile: issue-per-task
+  git_head: "<commit>"
+rows:
+  - task_id: "444"
+    title: "Unify traceability"
+    status: in-progress
+    priority: P1
+    requirements: []
+    implementation_evidence:
+      changed_paths: []
+      commits: []
+    test_evidence:
+      scenarios: []
+      commands: []
+    verification_evidence:
+      receipts: []
+      behavior_smoke: null
+    disposition:
+      state: active
+      owner: null
+      rationale: null
+    gaps: []
+summary:
+  total: 1
+  covered: 0
+  missing_evidence: 1
+  deferred: 0
+  out_of_scope: 0
+gate:
+  verdict: NOT_EVALUATED
+  evaluated_at: null
+  rationale: null
+  waiver: null
 ```
 
-Preserve an existing `story:` tag convention, but treat it as project-selected
-vocabulary rather than the universal schema.
+Include every release-plan task exactly once. Link implementation through Git
+changes and commits, tests through scenarios and runnable commands, and
+verification through real receipts and behavior-smoke evidence. Record absent
+evidence in `gaps`; do not infer it.
 
-### 3. Build the matrix
+Source comments such as `task:` or `story:` are optional legacy hints. They never
+determine coverage and are not required in implementation or test files.
 
-For each task id:
+## Gate mode
 
-- **Implemented**: implementation files carry the trace tag.
-- **Tested**: test files carry the trace tag.
-- **Dark**: no implementation tag exists.
+Read only the report-mode artifact and an optional explicit waiver record. Reject
+the artifact when its schema is unsupported or `source.git_head` differs from the
+evaluated branch head. Apply the first matching rule:
 
-For each tagged file with no matching id in `.agent/tasks/release-plan.yml`:
+| Condition                                                                         | Verdict  |
+| --------------------------------------------------------------------------------- | -------- |
+| Report missing, unreadable, unsupported, or stale                                 | FAIL     |
+| Active or done task lacks required implementation, test, or verification evidence | FAIL     |
+| Any real verification receipt failed                                              | FAIL     |
+| Deferred or out-of-scope row lacks owner or rationale                             | FAIL     |
+| Highest-priority task lacks test or acceptance coverage                           | FAIL     |
+| Non-blocking drift or incomplete lower-priority evidence remains                  | CONCERNS |
+| Every required record is present and passing                                      | PASS     |
+| Explicit approved waiver supplies owner, rationale, scope, and timestamp          | WAIVED   |
 
-- **Orphan**: the implementation has no current plan entry.
+A failed code grader or verification receipt is authoritative and cannot be
+overridden by model judgment. Missing evidence never produces `WAIVED`. Write the
+verdict, evaluation time, and rationale only under `gate`; do not manufacture
+evidence, rerun tests, or rewrite planning records.
 
-### 4. Write the report
+## Routing
 
-```markdown
-## Task coverage
-
-| Task | Title     | Files | Tests | Status  |
-| ---- | --------- | ----- | ----- | ------- |
-| 452  | Normalize | 2     | 1     | Covered |
-| 453  | Bug links | 0     | 0     | Dark    |
-
-## Orphan code
-
-- path: contains an unmatched task tag
-
-## Coverage summary
-
-Tasks: X covered / Y dark / Z total
-```
-
-Suggest `plan-work` for each dark task.
+- Report gaps route to the artifact owner: planning gaps to `plan-work`,
+  implementation gaps to `develop-tdd`, and verification gaps to `verify-work`.
+- A `FAIL` blocks release. `CONCERNS` requires the configured explicit override.
+- After `PASS` or a valid `WAIVED`, set next_skill: release-branch.
 
 ## Verify
 
-The report must count every release-plan task exactly once and use the active
-project's selected trace vocabulary.
+Confirm every planned task appears once, all links cite durable evidence, the Git
+head is current, and gate mode consumed the report generated by report mode.

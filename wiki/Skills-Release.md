@@ -41,7 +41,7 @@ Validate and integrate a finished Git branch through the configured workflow mod
 - **Modes**: `solo-git` fast-forwards locally. `team-pr` pushes and creates a GitHub PR.
   The exact state value controls the route. Missing or invalid values block release.
 - **Hard gates**: Git only. Do not merge when verification or configured coverage gates
-  fail. Merge, tag, publish, and cleanup require separate explicit approval. A
-  `gate-trace` FAIL blocks integration.
+  fail. Merge, tag, publish, and cleanup require separate explicit approval.
+  `trace-requirement gate` must PASS or carry a complete explicit waiver.
 - **Release boundary**: a merge does not publish. A `v*` tag can trigger publication,
   but tag creation and publication require their own approvals.

@@ -1,6 +1,6 @@
 ---
 name: release-branch
-description: Validate and integrate a finished Git branch through the configured solo or pull-request workflow. Use it when a feature is ready to ship, or when the user says "release", "merge", or "open a PR".
+description: Validate and integrate a finished Git branch through the configured solo or pull-request workflow. Invokes trace-requirement gate before integration. Use it when a feature is ready to ship, or when the user says "release", "merge", or "open a PR".
 kind: scripted
 verify: bash skills/release-branch/scripts/tests/run.sh
 ---
@@ -66,11 +66,11 @@ an explicit sign-off documents the decision.
 
 ### 2b. Traceability gate
 
-Run `gate-trace` before the merge. A FAIL blocks the merge. A CONCERNS requires an
-explicit override in `.agent/tasks/state.yml`. A WAIVED applies when no matrix is
-available.
-
-> **Adversarial refute framing**: the final pre-merge check refutes, it does not rubber-stamp. Before you declare ready, actively try to disprove traceability completeness: a missing story tag, absent verify evidence, a stale security review. Proceed only when the refutation fails.
+Run `trace-requirement gate`; it consumes the current report artifact. `FAIL`
+blocks. `CONCERNS` requires the configured override. `WAIVED` requires approval
+with owner, rationale, scope, and timestamp. Missing or stale evidence fails.
+Before merging, try to disprove completeness with missing task, test, change, or
+verification evidence.
 
 ### 3. Diff review
 
