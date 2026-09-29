@@ -2,14 +2,15 @@
 
 ## Configuration
 
-| Variable               | Default         | Description                              |
-| ---------------------- | --------------- | ---------------------------------------- |
-| `ARTIFACT_DIR`         | `dist`          | Build output directory                   |
-| `DEPLOY_URL`           | _(required)_    | Live URL for smoke test                  |
-| `DEPLOY_TIMEOUT`       | `300`           | Max wait for deploy completion (seconds) |
-| `DEPLOY_POLL_INTERVAL` | `30`            | Polling interval (seconds)               |
-| `RETRY_MAX`            | `3`             | Max deploy retry attempts                |
-| `BUILD_COMMAND`        | _(auto-detect)_ | Override build command                   |
+| Variable               | Default         | Description                                            |
+| ---------------------- | --------------- | ------------------------------------------------------ |
+| `DEPLOY_TARGET`        | _(required)_    | Deployment target: vercel, netlify, mcp, rsync, custom |
+| `ARTIFACT_DIR`         | `dist`          | Build output directory                                 |
+| `DEPLOY_URL`           | _(required)_    | Live URL for smoke test                                |
+| `DEPLOY_TIMEOUT`       | `300`           | Max wait for deploy completion (seconds)               |
+| `DEPLOY_POLL_INTERVAL` | `30`            | Polling interval (seconds)                             |
+| `RETRY_MAX`            | `3`             | Max deploy retry attempts                              |
+| `BUILD_COMMAND`        | _(auto-detect)_ | Override build command                                 |
 
 ---
 

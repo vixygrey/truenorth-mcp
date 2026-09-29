@@ -103,19 +103,19 @@ Block a dangerous git command before an agent runs it, and enforce opt-in policy
 
 ### hook-commits
 
-Set up a pre-commit hook with lint-staged (Prettier), type checking, and tests.
+Set up pre-commit hooks for Node.js projects with Husky, lint-staged (Prettier), type checking, and tests.
 
 - **What it does**: detects the package manager, installs Husky, lint-staged, and Prettier,
   writes `.husky/pre-commit`, `.lintstagedrc`, and a Prettier config if missing, then
   verifies the hook runs.
 - **When to use it**: when the user wants a pre-commit hook, Husky, lint-staged, or
-  commit-time formatting, type checking, or testing.
+  commit-time formatting, type checking, or testing in a Node.js / JavaScript / TypeScript project.
 - **Inputs**: the repo and its package manager.
 - **Outputs**: an installed and verified pre-commit hook.
 - **Hard gate**: the pre-commit and commit-msg hooks must run before a commit lands.
   Skipping a hook is forbidden unless explicitly authorized and documented.
 - **Note**: this is a Node/Husky setup, distinct from `guard-git` (a harness pre-command
-  hook) and the repo's own `.githooks`.
+  hook) and the repo's own `.githooks`. Non-Node projects use native `.githooks` or language-native tooling without installing Node dependencies.
 
 ---
 
@@ -135,26 +135,27 @@ Pre-install dependencies and configure tools before development begins.
 
 ### wire-ci
 
-Set up a CI workflow with forge-neutral guidance and local validation.
+Set up a GitHub Actions CI workflow with local validation.
 
-- **What it does**: resolves the forge, detects the stack from the manifest, applies a
-  test-build-release template (GitHub only), validates the YAML and permissions, and
+- **What it does**: detects the project stack from the manifest, applies a
+  GitHub test-build-release template (`.github/workflows/`), validates the YAML and permissions, and
   dry-runs it locally. It documents common CI failure patterns.
-- **When to use it**: before the first merge to main on a supported forge.
-- **Hard gate**: do not ship without CI on a supported forge. On an unsupported forge it
-  writes nothing and reports honestly rather than claiming a gate it cannot run.
+- **When to use it**: before the first merge to main on GitHub.
+- **Hard gate**: do not ship without CI on supported forges (GitHub). On an unsupported forge
+  (GitLab, Bitbucket, Codeberg, Gitea), it writes nothing and reports honestly rather than claiming a gate it cannot run.
 - **Related**: the CI counterpart of `wire-observability`.
 
 ### wire-observability
 
-Add structured JSON logging, observability commands, and idempotent setup scripts.
+Add structured JSON logging, observability commands, and setup scripts scaled to system risk.
 
-- **What it does**: assesses the current logging, adds structured JSON logs at the
-  boundaries, documents the health-check and metrics commands in the agent guide, and writes
+- **What it does**: assesses current logging, adds structured JSON logs at network
+  boundaries for services/APIs, documents health-check and metrics commands in the agent guide, and writes
   idempotent setup scripts.
 - **When to use it**: when a project needs production-readiness instrumentation, or as a
-  production-readiness gate at any phase. Recommended at the end of the first working slice.
-- **Hard gate**: observability is not optional. Never log a secret or PII.
+  readiness gate before deploying services.
+- **Hard gate**: observability requirements scale to deployment profile. Network services and APIs
+  require structured JSON logging and health checks; CLI tools and libraries require human-readable streams and proper exit codes. Never log secrets or PII.
 
 ### validate-contracts
 
@@ -179,12 +180,12 @@ Assert data-shape consistency across system boundaries.
 Build, verify the artifact, deploy, wait, then smoke the deployment.
 
 - **What it does**: runs a five-stage pipeline (build, verify artifact, deploy, wait/retry,
-  smoke), detecting the build command from the manifest and the deploy target from
-  environment variables (Vercel, Netlify, an MCP tool, rsync/SSH, or a custom command). It
-  verifies three independent facts before declaring success.
+  smoke), detecting the build command from the manifest and using explicit `DEPLOY_TARGET` configuration
+  (vercel, netlify, mcp, rsync, custom). It verifies three independent facts before declaring success.
 - **When to use it**: from a CI/CD pipeline or post-merge on `main`, as the deploy half of
   CI/CD.
-- **Hard gates**: run tests first. Never deploy from a feature branch. Chain
+- **Hard gates**: run tests first. Never deploy from a feature branch. Explicit approval is required
+  before production deployment. Never pass tokens on the command line; redact secrets from logs. Chain
   `deploy` then `smoke-test`.
 
 ### smoke-test
@@ -203,11 +204,11 @@ Post-deploy health check against a live URL.
 Package-registry publishing for npm, crates.io, PyPI, and Homebrew.
 
 - **What it does**: detects the package type from the manifest, verifies prerequisites, runs
-  the registry publish command, confirms the version appears, and surfaces actionable error
+  the dry-run check, prompts for explicit approval, runs the registry publish command, confirms the version appears, and surfaces actionable error
   hints. It prefers tag-driven publishing from CI.
 - **When to use it**: to publish a package to a language registry.
-- **Hard gates**: verify prerequisites first. Always run `--dry-run` first, because
-  registries are append-only and a bad publish cannot be fully undone.
+- **Hard gates**: verify prerequisites first. Always run `--dry-run` first, and require explicit human
+  confirmation before the live publish, because registries are append-only. Never expose raw tokens on the CLI.
 
 ---
 

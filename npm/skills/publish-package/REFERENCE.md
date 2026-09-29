@@ -51,7 +51,7 @@ publish-package
 ### Publish a Rust crate
 
 ```bash
-export CARGO_REGISTRY_TOKEN=<token>
+# Configure token in ~/.cargo/credentials.toml (never on the CLI)
 publish-package --dry-run
 publish-package
 ```
@@ -60,7 +60,7 @@ publish-package
 
 ```bash
 $ publish-package
-FAIL: NPM_TOKEN not set. Set via: export NPM_TOKEN=<token> or add to .npmrc
+FAIL: NPM_TOKEN not configured. Add authToken to ~/.npmrc or set NPM_TOKEN in secure environment.
 ```
 
 ---

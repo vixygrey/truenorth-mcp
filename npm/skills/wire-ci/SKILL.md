@@ -1,6 +1,6 @@
 ---
 name: wire-ci
-description: "CI pipeline setup with forge-neutral guidance and local validation. Detects the forge from the git remote, generates a workflow for a supported forge, and skips honestly for the rest. The CI counterpart of wire-observability."
+description: "Set up GitHub Actions CI pipelines with local validation. Generates workflow templates for GitHub, clearly marks other forges as unsupported, and verifies workflows before push."
 kind: prose
 ---
 
@@ -12,17 +12,15 @@ kind: prose
 >
 > **HARD GATE**: CI that is untestable locally breaks every cycle. Always validate the workflow after generating it, and dry-run it before pushing.
 
-Generate, validate, and test a CI workflow. Detect the forge and the project type,
+Generate, validate, and test a GitHub Actions CI workflow. Detect the project stack,
 apply a stack-appropriate template, and verify locally before anything reaches CI.
 
-## Forge resolution
+## Forge support boundary
 
-Resolve the forge, first match wins: an explicit forge setting, then `forge:` in
-`.agent/config/forge.yml`, then the `origin` remote URL, else `unknown`.
+Resolve the forge from an explicit setting, `forge:` in `.agent/config/forge.yml`, or the `origin` remote URL.
 
-GitHub has templates under `.github/workflows/`. GitLab, Bitbucket, Codeberg, and
-Gitea are detected but unsupported. For an unsupported forge, write nothing and
-report the options.
+- **Supported**: GitHub (generates `.github/workflows/` test-build-release pipeline).
+- **Unsupported**: GitLab, Bitbucket, Codeberg, and Gitea. No bundled templates exist for these forges. On an unsupported forge, write nothing, state that the forge is unsupported, and do not claim a passing CI gate.
 
 ## Template source
 
