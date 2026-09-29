@@ -166,7 +166,7 @@ async function runScenario(entry, mode, binary, model) {
       events: evidence.events,
     };
   } finally {
-    fs.rmSync(temp, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(temp, { recursive: true, force: true, maxRetries: 20, retryDelay: 100 });
   }
 }
 
