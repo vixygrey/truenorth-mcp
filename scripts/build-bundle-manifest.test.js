@@ -30,11 +30,12 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
     ['core', 'integrations', 'maintainer', 'visual'],
   );
   const coreSkills = manifest.skill_sets.find((set) => set.name === 'core').skills;
-  assert.strictEqual(coreSkills.length, 64);
-  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 70);
+  assert.strictEqual(coreSkills.length, 63);
+  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 69);
   assert.ok(coreSkills.includes('execute-group'));
   assert.ok(!coreSkills.includes('build-group'));
   assert.ok(!coreSkills.includes('execute-plan'));
+  assert.ok(!coreSkills.includes('run-planning'));
 });
 
 test('planning artifacts have one canonical writer and path', () => {

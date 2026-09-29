@@ -96,23 +96,6 @@ Route a mid-release change through the skills that own the affected artifacts.
 - **Hard gate**: every changed artifact must be written by its catalog owner.
 - **Handoff**: resume execution after all owner updates and consistency checks pass.
 
-### run-planning
-
-The discover-phase advancer. Drives the discover checklist and hands off to the spine.
-
-- **What it does**: tracks progress through `survey-context`, `scope-work`,
-  `research-first`, `elaborate-spec` (optional), `plan-release`, and `slice-tasks`,
-  invoking each in order and recording status. It manages the planning-context capsule.
-- **When to use it**: starting a brand-new initiative, resuming a stalled one, or after
-  `orchestrate-project` hands off to Discover. It is not a duplicate of `plan-work`; it
-  orchestrates the pre-coding discovery only.
-- **Inputs**: the planning progress record and the state file.
-- **Outputs**: an advanced discover checklist and a handoff to `plan-work`.
-- **Hard gate**: confirm the task group exists and the active story is clear. Planning
-  without a target is noise.
-
----
-
 ## Supporting analysis
 
 ### plan-tests

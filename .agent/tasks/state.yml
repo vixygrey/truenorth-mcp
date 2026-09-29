@@ -1,19 +1,19 @@
 workflow_mode: team-pr
 active_flow: null
-active_task: Normalize skill cockpit paths and methodology-neutral vocabulary
-active_group: '452'
+active_task: Fold run-planning into orchestrate-project
+active_group: '447'
 phase: execute
 tdd:
   step: red
 handoff:
   next_skill: null
   last_step_completed: null
-  context: 'Implement issue #452 on fix/452-normalize-skill-contracts.'
+  context: 'Implement issue #447 on refactor/447-fold-run-planning.'
   open_decisions: []
   required_reading:
   - .agent/tasks/release-plan.yml
-  group_id: '452'
+  group_id: '447'
   artifacts_summary: null
   git_context: null
 git:
-  branch: fix/452-normalize-skill-contracts
+  branch: refactor/447-fold-run-planning

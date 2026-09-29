@@ -124,7 +124,6 @@ skills:
   respond-review: core
   run-benchmark: core
   run-evals: core
-  run-planning: core
   scope-work: core
   security-review: core
   seed-conventions: core

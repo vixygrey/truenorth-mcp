@@ -27,8 +27,7 @@ fn phase_lookup(name: &str) -> Option<&'static str> {
         | "design-interface" => "Design",
 
         "scope-work" | "slice-tasks" | "plan-work" | "plan-release" | "plan-refactor"
-        | "assess-impact" | "change-request" | "run-planning" | "seed-conventions"
-        | "plan-tests" => "Plan",
+        | "assess-impact" | "change-request" | "seed-conventions" | "plan-tests" => "Plan",
 
         "develop-tdd"
         | "kickoff-branch"
