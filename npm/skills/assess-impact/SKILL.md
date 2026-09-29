@@ -13,7 +13,7 @@ Find the blast radius of the proposed change before a single line is written.
 ## Modes
 
 - Default: full impact analysis with dependents, affected work items, and test coverage mapping.
-- `--lightweight`: fast fan-in/fan-out only. Maps callers and imports without test coverage mapping. Used by build-group step 2 as a pre-plan gate. Risk score above 7 triggers a mandatory grill-me session.
+- `--lightweight`: fast fan-in/fan-out only. Maps callers and imports without test coverage mapping. Used by execute-group as a pre-plan gate. Risk score above 7 triggers a mandatory grill-me session.
 
 ## Process
 
@@ -84,7 +84,7 @@ Suggest `plan-work` once risk is understood and any test gaps are noted.
 
 ## Risk score gating
 
-In `--lightweight` mode (used by build-group step 2), assign a numeric risk score (1–10):
+In `--lightweight` mode (used by execute-group), assign a numeric risk score (1–10):
 
 - Fan-in (how many callers): 0–4 points
 - Fan-out (how many dependencies the module itself uses): 0–3 points

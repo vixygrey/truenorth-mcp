@@ -68,6 +68,6 @@ passes, and durable evidence is recorded.
 
 ## Handoff
 
-Write the canonical `.agent/tasks/state.yml` handoff. Use `next_skill: build-group`
-when more tasks remain in the group, otherwise route to the profile-appropriate
+Write the canonical `.agent/tasks/state.yml` handoff. Use `next_skill: execute-group`
+when more tasks remain in the selected scope, otherwise route to the profile-appropriate
 integration or release step.

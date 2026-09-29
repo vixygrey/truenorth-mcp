@@ -51,7 +51,7 @@ Diagnose why agent orchestration stopped producing progress.
   agent_exhausted, misconfigured_loop, external_io, unknown), and recommends one recovery
   action.
 - **When to use it**: when work appears hung, there is no output for several minutes, or a
-  subagent never returned. It is invoked by `/loop`, `dispatch-agents`, and `execute-plan`.
+  subagent never returned. It is invoked by `/loop`, `dispatch-agents`, and `execute-group`.
 - **Hard gate**: do not restart work blindly. Run the diagnostic first.
 - **Handoff**: `survey-context` if the state is unclear, or resume the prior skill.
 

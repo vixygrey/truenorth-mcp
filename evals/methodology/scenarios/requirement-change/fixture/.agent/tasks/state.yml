@@ -1,5 +1,5 @@
 phase: execute
-active_flow: build_group
+active_flow: execute_group
 active_task: normalize-display-name
 active_group: null
 handoff:

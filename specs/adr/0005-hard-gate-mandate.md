@@ -33,7 +33,7 @@ Skipping a HARD GATE requires the agent to name the rationalisation explicitly i
 ## Fork reconciliation (TrueNorth)
 
 TrueNorth-MCP keeps the HARD GATE mandate unchanged. Skills across the catalog carry the
-`> **HARD GATE**` blockquote at their critical transitions, for example `build-epic`,
+`> **HARD GATE**` blockquote at their critical transitions, for example `execute-group`,
 `plan-release`, `audit-code`, `grill-me`, and `security-review`. The convention is also
 documented in the domain glossary (`.agent/product/glossary.yml`).
 

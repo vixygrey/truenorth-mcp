@@ -355,7 +355,8 @@ phase: plan
 active_task: null
 group: null
 
-build_group_cycle:
+group_cycle:
+  mode: checkpoint
   group_id: null
   current_step: null
   completed_steps: []

@@ -28,8 +28,8 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
 3. **PLAN** (2-4 hours): Build the planning artifacts in owner order:
    `.agent/tasks/release-plan.yml`, each optional capsule `group.yml`, optional
    `test-plan.md`, then task specifications and ledgers.
-4. **EXECUTE** (1-8 hours): Run `build-group` once per active task and update
-   `.agent/tasks/execution-status.yml`.
+4. **EXECUTE** (1-8 hours): Run `execute-group` for the active execution scope
+   and update `.agent/tasks/execution-status.yml`.
 5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables:
    risk-scaled behavior evidence and the review report when used.
 6. **INTEGRATE** (30 min - 2 hours): Ship to production. Deliverables: release tag
@@ -56,9 +56,9 @@ See [REFERENCE.md](REFERENCE.md) for detailed phase specifications and gate type
 3. **Applies methodology lenses**: when a test plan or an ADR exists, apply it at
    the phase gates.
 4. **Enforces the gates**: hard stops when a success criterion is not met.
-5. **The gatekeeper**: between tasks in the build phase, read execution status.
-   The previous task must be `done` before the next starts. Use
-   `build-group` for the execution cycle.
+5. **The gatekeeper**: between tasks in the execute phase, read execution status.
+   The previous task must be `done` before the next starts. Run `execute-group`
+   as the sole execution conductor.
 6. **Pauses for confirmation**: after each phase, ask "ready to proceed?".
 7. **Snapshots**: take a cockpit snapshot before a major release cut.
 

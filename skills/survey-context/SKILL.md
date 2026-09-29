@@ -56,7 +56,7 @@ Identify the current phase from what you found.
 | **Design**    | Scope exists but no release plan                      |
 | **Plan**      | The release plan exists, on `main` or `master`        |
 | **Initiate**  | On a feature branch, no code change yet               |
-| **Execute**   | `active_flow: build_group`, a task group in progress  |
+| **Execute**   | `active_flow: execute_group`, execution in progress   |
 | **Verify**    | Implementation done, run `verify-work` or `run-evals` |
 | **Bug**       | `active_flow: fix_bug`, or an open external bug issue |
 | **Review**    | All code written, no PR yet                           |
@@ -70,9 +70,9 @@ Prefer the `active_flow` and `handoff.next_skill` from `.agent/tasks/state.yml` 
 Recommend the most useful next step for the phase and state.
 
 - In the plan or bug phase and on `main`: suggest `kickoff-branch`.
-- In the initiate phase: suggest `develop-tdd` or `execute-plan`.
-- In the execute phase: suggest `build-group` to resume, or `develop-tdd` for the
-  active task.
+- In the initiate phase: suggest `develop-tdd` or `execute-group`.
+- In the execute phase: suggest `execute-group` to resume, or `develop-tdd` for
+  the active task.
 - In the verify phase: suggest `verify-work` or `run-evals`.
 
 Be specific. Name the exact skill and why. When several options exist, list them in

@@ -22,7 +22,7 @@ planning_artifacts:
     writer: plan-release
     readers:
       - assess-impact
-      - build-group
+      - execute-group
       - change-request
       - grill-me
       - plan-work
@@ -36,7 +36,7 @@ planning_artifacts:
     writer: slice-tasks
     readers:
       - assess-impact
-      - build-group
+      - execute-group
       - change-request
       - plan-tests
       - plan-work
@@ -63,16 +63,15 @@ planning_artifacts:
     path: .agent/tasks/<capsule>/<task-id>-tasks.yml
     writer: plan-work
     readers:
-      - build-group
       - develop-tdd
-      - execute-plan
+      - execute-group
       - trace-requirement
       - verify-work
   traceability-report:
     path: .agent/tasks/traceability.yml
     writer: trace-requirement
     readers:
-      - build-group
+      - execute-group
       - release-branch
       - verify-work
 skills:
@@ -80,7 +79,6 @@ skills:
   assess-impact: core
   audit-code: core
   audit-plan: core
-  build-group: core
   change-request: core
   commit-message: core
   compose-workflow: core
@@ -97,7 +95,7 @@ skills:
   elaborate-spec: core
   enforce-first: core
   evolve-skill: core
-  execute-plan: core
+  execute-group: core
   extract-design: visual
   find-way: integrations
   fix-bug: core

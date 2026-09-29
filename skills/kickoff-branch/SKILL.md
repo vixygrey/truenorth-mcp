@@ -82,7 +82,7 @@ kickoff continues.
 ### 5. Confirm readiness
 
 Report the green preflight, the branch, and the worktree. Suggest the next skill:
-`develop-tdd` or `execute-plan`.
+`develop-tdd` or `execute-group`.
 
 ## Handoff
 

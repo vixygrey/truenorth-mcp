@@ -13,7 +13,6 @@
         "assess-impact",
         "audit-code",
         "audit-plan",
-        "build-group",
         "change-request",
         "commit-message",
         "compose-workflow",
@@ -29,7 +28,7 @@
         "elaborate-spec",
         "enforce-first",
         "evolve-skill",
-        "execute-plan",
+        "execute-group",
         "fix-bug",
         "grill-me",
         "guard-git",
@@ -122,7 +121,7 @@
     },
     {
       "path": "skills/assess-impact/SKILL.md",
-      "sha256": "af993fd242761b5a1ba2343aefcf28b0adacde4b98ac33eb449344c1b0b714eb",
+      "sha256": "dff0567d344a4ed047b827ced5f1c6ce03d34ac08e581f293a822b19768d0e0d",
       "mode": "0644"
     },
     {
@@ -132,17 +131,12 @@
     },
     {
       "path": "skills/audit-code/SKILL.md",
-      "sha256": "672e3cf915378ef623bfea5ad60d1d15b181ca2373cc66538746e4df326e3314",
+      "sha256": "b6fd48792dc722b50ea471d4f9335bcea99a45debe2e63ec64719a20d790f9bf",
       "mode": "0644"
     },
     {
       "path": "skills/audit-plan/SKILL.md",
       "sha256": "061e52c3f6967ffb3ab5d9e9a404223721818eb7d4c1c84e15da82fee6a58886",
-      "mode": "0644"
-    },
-    {
-      "path": "skills/build-group/SKILL.md",
-      "sha256": "9d29ec0461b6880505706e3e4a952349ea35c8d9e311b9b36736720a19463266",
       "mode": "0644"
     },
     {
@@ -152,7 +146,7 @@
     },
     {
       "path": "skills/change-request/SKILL.md",
-      "sha256": "75b65efee4b78cfd94223c5778d59bddfb064c2def1f5d1b755f6937f37b305e",
+      "sha256": "ca4f35c1cc388773d391881d09b99fb91ab1e4bae1fd3ca29668733c9eb69dc9",
       "mode": "0644"
     },
     {
@@ -272,12 +266,12 @@
     },
     {
       "path": "skills/diagnose-stall/SKILL.md",
-      "sha256": "1ba69ca728ef775411a84b33e9f877254901fea79b5789b3b39baa46eb91d044",
+      "sha256": "fd8b89729905f444786cc33b05654bd69c482901a7796b75ed3ec4529ab6328f",
       "mode": "0644"
     },
     {
       "path": "skills/dispatch-agents/SKILL.md",
-      "sha256": "c4d80fcd7c0f79f0adefeb547a296e03a60bac1d08429a58ced024bd65c9f0b1",
+      "sha256": "549d4f559c2cd5cbb02803b5b581d997476d0b8968103da6e87fbecfc0a190f7",
       "mode": "0644"
     },
     {
@@ -287,7 +281,7 @@
     },
     {
       "path": "skills/enforce-first/SKILL.md",
-      "sha256": "03c62cb1378fabac5d3cf463f17a0a1e23809e0c45f74177eeeba0247d1d473c",
+      "sha256": "d66504eaae9a2de85e46528a64ba9eb59a74e4600293dff2b87fc98c923f70ac",
       "mode": "0644"
     },
     {
@@ -301,8 +295,8 @@
       "mode": "0644"
     },
     {
-      "path": "skills/execute-plan/SKILL.md",
-      "sha256": "95a9ca5410439503f67638b0e7f3049a9446ba5b7adeab028bd0e2298dc26bf9",
+      "path": "skills/execute-group/SKILL.md",
+      "sha256": "f48aa107ad879e79b47ec22ca552bcd9be0e62a9963281f6785fbfbb9ab6eef8",
       "mode": "0644"
     },
     {
@@ -512,7 +506,7 @@
     },
     {
       "path": "skills/kickoff-branch/SKILL.md",
-      "sha256": "acae2c2a19d256cd6e681c703dad7052a1f0b381225719a773f99bb0694ffc9e",
+      "sha256": "974c3d8ad5f1ebc61f45ebb3698e7cf2c5a67ffba5b0223a6a832a48b0558791",
       "mode": "0644"
     },
     {
@@ -532,7 +526,7 @@
     },
     {
       "path": "skills/migrate-spec/REFERENCE.md",
-      "sha256": "e4d3a932b66a27e2d2e63194d27831fef2417f0520d598bf2bce0bae5072ed28",
+      "sha256": "523bd7167c064555018db2830cfb84e90ea9de45d2944d6d7636a33ed963088f",
       "mode": "0644"
     },
     {
@@ -567,12 +561,12 @@
     },
     {
       "path": "skills/orchestrate-project/REFERENCE.md",
-      "sha256": "0f958f320ba129b7d8fbbe8faa7ca278bb23bcd6b8a689cacdacf366928319f1",
+      "sha256": "2a22087209a49af947bc1c60cc6c28e123afc768fc95dc09c97d4a7818f6a843",
       "mode": "0644"
     },
     {
       "path": "skills/orchestrate-project/SKILL.md",
-      "sha256": "a310eafc687df428de0647f39be434bb3de122aacc255eddedb1997737f7c0e1",
+      "sha256": "d6c308c9a8050d2ac00886d32a0684ed6abd2b05d6e5b6284ed03b4d02651830",
       "mode": "0644"
     },
     {
@@ -782,7 +776,7 @@
     },
     {
       "path": "skills/security-review/SKILL.md",
-      "sha256": "ddc06badb967b72d2566a1a1678cb82525a2073365187093be17f1fedafa5ff3",
+      "sha256": "04728b3076b079672b8af6e194cd935398e8df501cecdb8a371bff659d589c86",
       "mode": "0644"
     },
     {
@@ -837,7 +831,7 @@
     },
     {
       "path": "skills/session-state/SKILL.md",
-      "sha256": "83494fedf5bf351f855694df7692a57c72e5048cb0c3f83966481e0ecd4e3802",
+      "sha256": "c915a54f91aa660fedb14f049a2657d1d5e431fd97e7836c41aa642e1a01c48f",
       "mode": "0644"
     },
     {
@@ -892,7 +886,7 @@
     },
     {
       "path": "skills/survey-context/SKILL.md",
-      "sha256": "0eb609873d1c61768bd54edfe9af551cfaa9a73a64cf1b77f6feec8cc4fa44e9",
+      "sha256": "69961c6e09a6a6ba09b3a7088a8c46b7563d6056976b23b46f1fb333afa3ab26",
       "mode": "0644"
     },
     {
@@ -902,7 +896,7 @@
     },
     {
       "path": "skills/using-truenorth/SKILL.md",
-      "sha256": "005eb39d788b2e9008e6e71bb987a356ce1f1a0291cc533cbab63b23cff5bc01",
+      "sha256": "57b4a68c816469440c3d8085fa1a89a48bdac72414ef6502184871e70d4b8a00",
       "mode": "0644"
     },
     {
@@ -932,7 +926,7 @@
     },
     {
       "path": "skills/verify-work/SKILL.md",
-      "sha256": "f0fa6f6e156fdfe046b7c00718f655701ccddac9dda0112bd3e868f1c5282630",
+      "sha256": "a6606246055bddec83aa06c7897ae551a6fe572c92a924b8abf951857a6a54f6",
       "mode": "0644"
     },
     {
@@ -987,7 +981,7 @@
     },
     {
       "path": "skills/wire-ci/REFERENCE.md",
-      "sha256": "1f1250b72a4ae26b4aff804b023dfa83d128968e7ea972080dc3f73bd641df21",
+      "sha256": "2b89c55162fb87a1629fba806074e69bf5e9504d1282604e7a6316412e2ac9c0",
       "mode": "0644"
     },
     {

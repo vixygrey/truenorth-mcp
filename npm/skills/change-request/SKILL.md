@@ -58,5 +58,5 @@ task ledgers, or execution status.
 
 ## Handoff
 
-Resume with `build-group` only after every required owner has completed its update
+Resume with `execute-group` only after every required owner has completed its update
 and cross-artifact consistency passes.

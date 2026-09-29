@@ -1,6 +1,6 @@
 ---
 name: diagnose-stall
-description: "Diagnose why agent orchestration stopped producing progress. A silent stall in a loop, dispatch-agents, or execute-plan. Use it when work appears hung, there is no output for several minutes, or a subagent never returned."
+description: "Diagnose why agent orchestration stopped producing progress. A silent stall in a loop, dispatch-agents, or execute-group. Use it when work appears hung, there is no output for several minutes, or a subagent never returned."
 kind: prose
 ---
 
@@ -8,7 +8,7 @@ kind: prose
 
 > **HARD GATE** — Do NOT restart work blindly. Run this diagnostic first when orchestration goes quiet without an explicit terminal state.
 
-Explicit handler for silent stalls in long-running agent workflows (`/loop`, `dispatch-agents`, `execute-plan`, `build-group` resume mode).
+Explicit handler for silent stalls in long-running agent workflows (`/loop`, `dispatch-agents`, or `execute-group`).
 
 ## Stall signals
 
@@ -41,7 +41,7 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 | ----------------- | ------------------------------------------------------- |
 | `/loop` (Cursor)  | After two consecutive ticks with no observable progress |
 | `dispatch-agents` | When a wave exceeds expected duration with zero returns |
-| `execute-plan`    | When a step checkpoint is overdue                       |
+| `execute-group`   | When a step checkpoint is overdue                       |
 | User              | "Why did this stop?" / "Nothing is happening"           |
 
 ## Verify
