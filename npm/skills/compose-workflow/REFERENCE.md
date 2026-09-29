@@ -5,9 +5,9 @@
 
 **Trigger:** Use when ...
 
-| Step | Skill          | Output                                | verify |
-| ---- | -------------- | ------------------------------------- | ------ |
-| 1    | survey-context | `.agent/tasks/state.yml` handoff      | ...    |
-| 2    | research-first | Prior Art in .agent/product/scope.yml | ...    |
-| 3    | plan-work      | epics/eNN-\*.yaml tasks               | ...    |
+| Step | Skill          | Output                                       | verify |
+| ---- | -------------- | -------------------------------------------- | ------ |
+| 1    | survey-context | `.agent/tasks/state.yml` handoff             | ...    |
+| 2    | research-first | Prior Art in `.agent/product/scope.yml`      | ...    |
+| 3    | plan-work      | `.agent/tasks/<capsule>/<task-id>-tasks.yml` | ...    |
 ```

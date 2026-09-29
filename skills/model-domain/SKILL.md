@@ -97,22 +97,16 @@ When the plan touches shared state, async, or multi-threaded code:
 - [ ] Flag a race risk (check-then-act, a non-atomic read-modify-write) with a severity.
 - [ ] Record the findings in the tech-architecture notes under a concurrency section, or in an ADR when architectural.
 
-## Feed the ontology
+## Feed the domain ontology
 
-The canonical terms and the invariants you capture here are the raw material for
-the project ontology.
+The canonical terms and invariants captured here serve as the domain vocabulary and model invariants.
 
-The ontology tools apply only when the project enables the ontology feature. The
-feature is on by default. A project turns it off with `features.ontology: false`
-in `.agent/config/rules.yml`. When the feature is off, the
-`truenorth_generate_ontology` and `truenorth_verify_ontology` tools are absent.
-Do not call them then. The domain-modeling and terminology work above still
-stands on its own.
+When the ontology feature is enabled in `.agent/config/rules.yml` (`features.ontology: true`), the runtime serves `.agent/ontology.yml` via the `truenorth://ontology` resource and provides `truenorth_generate_ontology` and `truenorth_verify_ontology` tools.
 
-When the feature is on and the session resolves a canonical term or a prohibited
-alias for a core entity, seed or update the ontology with the
-`truenorth_generate_ontology` tool. Then check the codebase against it with the
-`truenorth_verify_ontology` tool. This turns the agreed domain language into an
-enforced gate, not just prose.
+If the ontology tools are available in the current runtime:
 
+- Seed or update entity and prohibited alias constraints using `truenorth_generate_ontology`.
+- Verify codebase compliance using `truenorth_verify_ontology`.
+
+If the ontology feature is disabled or tools are not present, persist domain invariants and entity constraints in the tech-architecture notes or an ADR under `specs/adr/`.
 <!-- story: e07s03 -->

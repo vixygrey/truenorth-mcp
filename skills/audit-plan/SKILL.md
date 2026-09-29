@@ -22,7 +22,7 @@ Assess an incoming project plan for alignment with the project principles, ident
 
 ### 2. Conventions completeness
 
-- Does `CLAUDE.md` or `AGENTS.md` exist?
+- Does `AGENTS.md` exist?
 - Does `CONVENTIONS.md` exist?
 - Is the `specs/` directory layout in place?
 - Are commit conventions documented (Conventional Commits)?
@@ -43,7 +43,7 @@ Assess an incoming project plan for alignment with the project principles, ident
 
 ## Process
 
-1. **Ingest the plan** — accept a file path, pasted PRD text, or existing `specs/` artifacts. Read `CLAUDE.md` and `CONVENTIONS.md` if present.
+1. **Ingest the plan** — accept a file path, pasted PRD text, or existing `specs/` artifacts. Read `AGENTS.md` and `CONVENTIONS.md` if present.
 
 2. **Score each lens** — for every item above, mark:
    - ✅ Present and adequate

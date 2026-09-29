@@ -168,7 +168,7 @@ Assert data-shape consistency across system boundaries.
 - **When to use it**: before a deploy or migration, after an API change, or on translation
   and config files.
 - **Hard gates**: do not deploy or migrate without running it. A contract file must be
-  version-controlled; a contract unreviewed for 30 days is flagged stale.
+  version-controlled; flag a contract as stale when schemas or producer interfaces change without a review.
 - **Verify arc**: part of the verify sequence, after `verify-work` and before `smoke-test`.
 
 ---

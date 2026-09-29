@@ -84,9 +84,9 @@ Report a blocker before a recommendation: a broken baseline test, an open extern
 issue with no active fix branch, a group task with no verify command, or a git hash in
 `.agent/tasks/state.yml` that is stale versus the working tree.
 
-### 8. Record the story-start timestamp
+### 8. Record the task-start timestamp
 
-At story start, write `metrics.story_start` with the current ISO-8601 timestamp to
+At work-item start, write `metrics.started_at` with the current ISO-8601 timestamp to
 `.agent/tasks/state.yml` as an informational progress marker only, not a measurement input.
 
 ## Utility outputs

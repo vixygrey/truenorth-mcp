@@ -23,9 +23,14 @@ Name the symbol, module, or file being changed. If the user hasn't specified, as
 
 ### 2. Find dependents
 
-```
-grep -rn "[symbol-name]" . --include="*.ts" | grep -v node_modules
-git log --oneline -10 -- [file-path]
+Use language server references (`lsp_find_references`, `lsp_goto_definition`) where available to map symbol callers and implementations accurately across project boundaries.
+
+Fallback when LSP is unavailable:
+
+```bash
+# Scope grep to source files, excluding build artifacts and dependencies
+git grep -n "[symbol-name]" -- "src/" "lib/"
+git log --oneline -10 -- "[file-path]"
 ```
 
 → verify: `test -d .agent || test -d skills`
