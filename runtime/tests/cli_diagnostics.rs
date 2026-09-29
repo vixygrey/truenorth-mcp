@@ -264,7 +264,7 @@ fn token_cap_overrides_are_reported_and_invalid_values_fail() {
     let rules = repo.path().join(".agent/config/rules.yml");
     fs::write(
         &rules,
-        "features:\n  ontology: false\ntoken_caps:\n  skill_lean_tokens: 1200\n  tool_payload_tokens: 3000\nunrelated: true\n",
+        "version: 2\nfeatures:\n  ontology: false\nruntime:\n  token_caps:\n    skill_lean_tokens: 1200\n    tool_payload_tokens: 3000\nadvisory:\n  custom: true\n",
     )
     .expect("override rules");
     let output = run(repo.path(), &["--check-config"], Some("true"));
@@ -273,8 +273,15 @@ fn token_cap_overrides_are_reported_and_invalid_values_fail() {
     assert_eq!(report["features"]["ontology"], false);
     assert_eq!(report["token_caps"]["skill_lean_tokens"], 1200);
     assert_eq!(report["token_caps"]["tool_payload_tokens"], 3000);
+    assert_eq!(report["rules_config"]["version"], 2);
+    assert_eq!(report["rules_config"]["blocks"]["runtime"], "enforced");
+    assert_eq!(report["rules_config"]["blocks"]["advisory"], "advisory");
 
-    fs::write(&rules, "token_caps:\n  tool_payload_tokens: 0\n").expect("write invalid rules");
+    fs::write(
+        &rules,
+        "version: 2\nruntime:\n  token_caps:\n    tool_payload_tokens: 0\n",
+    )
+    .expect("write invalid rules");
     let output = run(repo.path(), &["--check-config"], Some("true"));
     assert!(!output.status.success());
     let report = parse_report(&output);
@@ -283,6 +290,40 @@ fn token_cap_overrides_are_reported_and_invalid_values_fail() {
         report["token_caps"]["error"]["message"]
             .as_str()
             .expect("token cap error")
-            .contains("token_caps.tool_payload_tokens")
+            .contains("runtime.token_caps.tool_payload_tokens")
+    );
+}
+
+#[test]
+fn strict_mode_rejects_unknown_keys_and_legacy_unnamespaced_blocks() {
+    let repo = seed_complete_repo();
+    let rules = repo.path().join(".agent/config/rules.yml");
+
+    // Strict check passes on clean v2 rules
+    fs::write(
+        &rules,
+        "version: 2\nfeatures:\n  ontology: true\nruntime:\n  token_caps:\n    skill_lean_tokens: 1500\n    tool_payload_tokens: 4000\nadvisory:\n  quality_gates:\n    coverage: 80\n",
+    )
+    .expect("write clean v2 rules");
+    let output = run(repo.path(), &["--check-config", "--strict"], Some("true"));
+    assert!(output.status.success(), "clean v2 passes strict check");
+
+    // Strict check fails on unknown keys
+    fs::write(
+        &rules,
+        "version: 2\nfeatures:\n  ontology: true\nunknown_section:\n  bar: 1\n",
+    )
+    .expect("write unknown section");
+    let output = run(repo.path(), &["--check-config", "--strict"], Some("true"));
+    assert!(
+        !output.status.success(),
+        "strict check fails on unknown key"
+    );
+    let report = parse_report(&output);
+    assert!(
+        report["rules_config"]["errors"][0]
+            .as_str()
+            .unwrap()
+            .contains("unknown configuration key `unknown_section`")
     );
 }

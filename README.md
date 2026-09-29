@@ -181,17 +181,16 @@ for second-writer recovery.
 
 ```bash
 npx -y truenorth-mcp --version
-npx -y truenorth-mcp --check-config
+npx -y truenorth-mcp --check-config [--strict]
 ```
 
 `--check-config` reports the repository root, workspace layout, backlog ownership,
 enabled features, effective token caps, verify-gate readiness, allowed gate environment
-names, package version, and platform. It reads configuration only. It does not start the
-MCP server, run the verify command, contact a backlog provider, or print configured command
-or environment values.
+names, package version, platform, and configuration schema inspection. Pass `--strict` to
+enforce schema compliance and reject unknown or deprecated configuration keys.
 
-Set `token_caps.skill_lean_tokens` and `token_caps.tool_payload_tokens` in
-`.agent/config/rules.yml`. When omitted, they default to 1500 and 4000 respectively.
+Set `runtime.token_caps.skill_lean_tokens` and `runtime.token_caps.tool_payload_tokens` in
+`.agent/config/rules.yml` (version 2 schema). Legacy top-level `token_caps` is supported for backward compatibility.
 Both values must be positive integers. Token counts are estimated as
 `ceil(characters / 4)`. The Lean cap is a rendering target: a single long line
 may be retained whole rather than cut mid-line. The payload cap applies to
