@@ -12,8 +12,11 @@ name_exception: Single-verb operational skill.
 > **HARD GATE** — Use this skill from a CI/CD pipeline or post-merge on `main`/`master`. Never deploy from a feature branch.
 >
 > **HARD GATE** — The deploy skill orchestrates deployment; the `smoke-test` skill validates post-deploy health. Chain them: `deploy → smoke-test`.
-
-Orchestrate a full build-to-deployment pipeline: build the artifact, verify it exists and is non-empty, invoke a platform deploy tool (MCP or CLI), poll until the deploy completes or times out, then run a baseline smoke test against the live URL.
+>
+> **HARD GATE** — Explicit approval before production mutation: prompt the user with the resolved target platform, destination URL/host, and artifact path. Never trigger a production deployment without human confirmation.
+>
+> **HARD GATE** — Never pass raw authorization tokens as command-line arguments where they can be observed in process lists (`ps`). Redact credentials and auth headers from all deployment logs.
+> Orchestrate a full build-to-deployment pipeline: build the artifact, verify it exists and is non-empty, invoke a platform deploy tool (MCP or CLI), poll until the deploy completes or times out, then run a baseline smoke test against the live URL.
 
 ## Pipeline Stages
 
@@ -67,22 +70,24 @@ Configurable via `$ARTIFACT_DIR` environment variable (default: `dist/`).
 
 ### 4. Deploy to platform
 
-Platform-agnostic — supports multiple deployment targets via environment variables:
+Deploy target selection requires explicit configuration via `DEPLOY_TARGET`. Targets are not selected implicitly from ambient session variables.
 
-| Platform     | Env var                                                 | Example                                                                        |
-| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Vercel       | `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`                     | `vercel deploy --prod --token $VERCEL_TOKEN`                                   |
-| Netlify      | `NETLIFY_AUTH_TOKEN`, `NETLIFY_SITE_ID`                 | `netlify deploy --prod --auth $NETLIFY_AUTH_TOKEN --dir $ARTIFACT_DIR`         |
-| Platform MCP | MCP tool call                                           | `mcp deploy` via your platform MCP server                                      |
-| rsync/SSH    | `DEPLOY_SSH_USER`, `DEPLOY_SSH_HOST`, `DEPLOY_SSH_PATH` | `rsync -avz $ARTIFACT_DIR/ $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:$DEPLOY_SSH_PATH` |
-| Custom       | `DEPLOY_COMMAND`                                        | Run any deploy command string                                                  |
+| Target (`DEPLOY_TARGET`) | Required configuration                | Execution pattern                                                                  |
+| ------------------------ | ------------------------------------- | ---------------------------------------------------------------------------------- |
+| `vercel`                 | `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`  | Vercel CLI reads config or env directly without CLI token flags                    |
+| `netlify`                | `NETLIFY_SITE_ID`                     | Netlify CLI reads config or env directly without CLI auth flags                    |
+| `mcp`                    | Configured platform MCP server        | Invoke platform deploy tool via MCP                                                |
+| `rsync`                  | `DEPLOY_SSH_HOST`, `DEPLOY_SSH_PATH`  | `rsync -avz "$ARTIFACT_DIR/" "$DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:$DEPLOY_SSH_PATH"` |
+| `custom`                 | `DEPLOY_COMMAND` (reviewed with user) | Run pre-approved, non-interactive deploy script                                    |
 
-The deploy tool is selected by which environment variables are set. If none are configured:
+If `DEPLOY_TARGET` is unset or unrecognized:
 
 ```bash
-echo "No deploy target configured. Set one of: VERCEL_TOKEN, NETLIFY_AUTH_TOKEN, DEPLOY_SSH_USER+DEPLOY_SSH_HOST, DEPLOY_COMMAND, or MCP deploy tool."
+echo "Error: DEPLOY_TARGET must be explicitly set to one of: vercel, netlify, mcp, rsync, custom." >&2
 exit 1
 ```
+
+Do not run arbitrary, unreviewed command strings by default. Redact any tokens or secret keys from standard output and standard error before recording deployment receipts.
 
 ### 5. Wait and poll status
 

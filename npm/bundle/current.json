@@ -215,12 +215,12 @@
     },
     {
       "path": "skills/deploy/REFERENCE.md",
-      "sha256": "5f5cbfa3d2cfcd0179c406f5bfd080c693018e9429830265697a59cfaa71fde4",
+      "sha256": "c80951dbd2f812ec30382d9cae8b8e9cf4f40734c6d76cda6bfb739ea0c4ac19",
       "mode": "0644"
     },
     {
       "path": "skills/deploy/SKILL.md",
-      "sha256": "d35dd310f85a26cb7da1c398b101bf630fab32830f184949005529e859dee038",
+      "sha256": "14268bba7af2af59e1f8d26bec077f28962f6294abfe1127c5f02e32af47a194",
       "mode": "0644"
     },
     {
@@ -490,7 +490,7 @@
     },
     {
       "path": "skills/hook-commits/SKILL.md",
-      "sha256": "457efb54e10527d22683a439d4794964ef52a9f3a7e358cc0b2a3b5deba13ca2",
+      "sha256": "0cf84f1f0e4890e849e5ab4f3f95c04cd3cb22815949a3aed385776e635e637e",
       "mode": "0644"
     },
     {
@@ -610,12 +610,12 @@
     },
     {
       "path": "skills/publish-package/REFERENCE.md",
-      "sha256": "c3803480be9f2c48c92c910534b351a047e90c28d347f24a8407818235be9110",
+      "sha256": "086a93c68b6fba0e560db98b225319f8128c29f765069b4486e55f30b59d5c9d",
       "mode": "0644"
     },
     {
       "path": "skills/publish-package/SKILL.md",
-      "sha256": "8036f546e45ea98fe5a1b3ae2ca20daef362bbaaca0de1e28009553f9055c65e",
+      "sha256": "d6708d0ac396776ed1deadb26a18b78652f45da9d4aa507c9b0f0c9d12b544bc",
       "mode": "0644"
     },
     {
@@ -980,12 +980,12 @@
     },
     {
       "path": "skills/wire-ci/SKILL.md",
-      "sha256": "f2ef2047b437612b4ed1e9d26e6be8e1de13822eaa6e2660af308fd9758a9c2c",
+      "sha256": "0d6603163b39b94aa9739d12d953db2906063d15f0533b97b00defe8e66ba2f7",
       "mode": "0644"
     },
     {
       "path": "skills/wire-observability/SKILL.md",
-      "sha256": "ad904b75f4725ad4f8cdd2e7942e228b61d9d2e1477490ec8b7587657749ba75",
+      "sha256": "c250b6324524fe745ffadb274e2346c11b0b379063eeb33fac6dcf071d5feb32",
       "mode": "0644"
     },
     {

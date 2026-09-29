@@ -1,16 +1,19 @@
 ---
 name: wire-observability
-description: Add structured JSON logging, observability commands, and idempotent setup scripts to a project. Use it when a project needs production-readiness instrumentation, when the user wants structured logging, or as a production-readiness gate at any phase.
+description: Add structured JSON logging, observability commands, and setup scripts scaled to system risk. Use it when instrumenting network services, or configuring baseline health checks for production readiness.
 kind: prose
 ---
 
 # Wire Observability
 
-> **HARD GATE**: observability is not optional. Before shipping, verify that structured logging is in place, the key metrics are instrumented, and an error case emits a signal. "We will add metrics later" becomes "never".
-
-Add structured logging, observability commands, and idempotent setup scripts. Invoke
-it at any phase. It is recommended at the end of the first working slice, before the
-first deploy.
+> **HARD GATE**: Observability requirements must match deployment profile and system risk.
+>
+> - **Network services, APIs, and background daemons**: Before shipping to production, verify structured JSON logging at network boundaries, health check endpoints, and error metrics.
+> - **CLI tools, libraries, and batch scripts**: Structured JSON logging is optional. Human-readable standard streams (stdout/stderr), non-zero exit codes, and standard signal handling are sufficient.
+> - **Never log secrets**: Tokens, private keys, passwords, and PII must never reach logs, metrics, or telemetry.
+>   Add structured logging, observability commands, and idempotent setup scripts. Invoke
+>   it at any phase. It is recommended at the end of the first working slice, before the
+>   first deploy.
 
 ## What this sets up
 

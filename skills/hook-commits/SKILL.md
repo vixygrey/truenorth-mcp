@@ -1,6 +1,6 @@
 ---
 name: hook-commits
-description: Set up a pre-commit hook with lint-staged (Prettier), type checking, and tests in the current repo. Use it when the user wants to add a pre-commit hook, set up Husky, configure lint-staged, or add commit-time formatting, type checking, or testing.
+description: Set up pre-commit hooks for Node.js projects with Husky, lint-staged (Prettier), type checking, and tests. Use it when the user wants commit-time checks in a JavaScript or TypeScript repository.
 kind: prose
 ---
 
@@ -8,14 +8,23 @@ kind: prose
 
 > **HARD GATE**: the pre-commit and commit-msg hooks MUST run before any commit lands. Skipping a hook (`--no-verify`) is forbidden unless it is explicitly authorized for a specific commit and documented.
 
-## What This Sets Up
+This skill configures pre-commit hooks specifically for Node.js / JavaScript / TypeScript repositories using Husky and lint-staged.
 
-- **Husky** pre-commit hook
-- **lint-staged** running Prettier on all staged files
+## What This Sets Up (Node.js)
+
+- **Husky** pre-commit hook runner
+- **lint-staged** running Prettier on staged files
 - **Prettier** config (if missing)
-- **typecheck** and **test** scripts in the pre-commit hook
+- **typecheck** and **test** scripts executed before commit
 
-## Steps
+## Non-Node Repositories
+
+For non-Node projects (e.g. pure Rust, Python, Go):
+
+- Do NOT invent a `package.json` or install Node dependencies solely for hooks.
+- Use native Git hooks in `.githooks/` configured via `git config core.hooksPath .githooks`, or use repository-native tooling (e.g. `pre-commit` in Python, `cargo fmt`/`clippy` in Rust hooks).
+
+## Steps (Node.js)
 
 ### 1. Detect package manager
 

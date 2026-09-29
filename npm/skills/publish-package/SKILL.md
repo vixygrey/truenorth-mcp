@@ -7,10 +7,12 @@ kind: prose
 # Publish Package
 
 > **HARD GATE** — Do not attempt to publish without verifying prerequisites. Missing auth tokens, stale builds, or duplicate versions cause CI failures that are hard to debug post-push.
->
 > **HARD GATE** — Always run `--dry-run` first. Package registries are append-only — a bad publish cannot be fully undone on most registries.
-
-Publish packages to language-specific registries. Detects package type from manifest files, verifies publish prerequisites, runs the registry-specific publish command, and confirms the version appears on the registry.
+>
+> **HARD GATE** — Explicit approval immediately before registry mutation: after `--dry-run` succeeds, display the package name, detected version, and target registry. Require explicit user confirmation before executing the actual publish command.
+>
+> **HARD GATE** — Never expose or print authentication tokens. Tokens must be read directly by packaging tools from standard user configuration files or keychains, never passed on the command line.
+> Publish packages to language-specific registries. Detects package type from manifest files, verifies publish prerequisites, runs the registry-specific publish command, and confirms the version appears on the registry.
 
 ## Process
 
@@ -43,7 +45,7 @@ See [REFERENCE.md](REFERENCE.md)
 
 ### 3. Run publish
 
-After all prerequisite checks pass, run the registry-specific command:
+Prompt for user confirmation with the dry-run output, package name, version, and registry. Only after explicit approval, run the registry-specific command:
 
 See [REFERENCE.md](REFERENCE.md)
 

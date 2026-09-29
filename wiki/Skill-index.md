@@ -34,7 +34,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `fix-bug`             | Orchestrate the bug-fix chain                                   | [Verify](Skills-Verify)     |
 | `grill-me`            | Challenge a plan in context-only or docs mode                   | [Design](Skills-Design)     |
 | `guard-git`           | Block a dangerous git command, enforce opt-in policy            | [Build](Skills-Build)       |
-| `hook-commits`        | Set up a pre-commit hook with lint-staged                       | [Build](Skills-Build)       |
+| `hook-commits`        | Set up pre-commit hooks for Node.js projects                    | [Build](Skills-Build)       |
 | `inspect-quality`     | An interactive QA session that logs bugs to the registry        | [Verify](Skills-Verify)     |
 | `investigate-bug`     | Investigate a bug, find the root cause, write a fix plan        | [Verify](Skills-Verify)     |
 | `kickoff-branch`      | Create an isolated worktree and verify a clean baseline         | [Build](Skills-Build)       |
@@ -74,6 +74,6 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `validate-fix`        | Prove a fix works and harden against recurrence                 | [Verify](Skills-Verify)     |
 | `verify-work`         | The multi-phase UAT gate                                        | [Verify](Skills-Verify)     |
 | `visual-dashboard`    | A read-only browser dashboard of the project status             | [Utility](Skills-Utility)   |
-| `wire-ci`             | Set up a CI workflow with forge-neutral guidance                | [Build](Skills-Build)       |
-| `wire-observability`  | Add structured logging and observability commands               | [Build](Skills-Build)       |
+| `wire-ci`             | Set up GitHub Actions CI with local validation                  | [Build](Skills-Build)       |
+| `wire-observability`  | Add logging, observability, and setup scripts scaled to risk    | [Build](Skills-Build)       |
 | `write-document`      | Create or revise a high-integrity technical document            | [Sustain](Skills-Sustain)   |
