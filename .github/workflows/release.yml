@@ -57,6 +57,10 @@ jobs:
     name: build ${{ matrix.platform }}
     needs: verify-release-version
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     strategy:
       # Do not cancel the other legs when one fails, so every platform failure remains visible.
       fail-fast: false
@@ -131,13 +135,17 @@ jobs:
             -czf "truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz" \
             truenorth-mcp
 
+      - name: Attest native binary archive provenance
+        uses: actions/attest-build-provenance@c074443f157c8d1e8533b3a6286280eb4eb9e29a # v2
+        with:
+          subject-path: "truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz"
+
       - name: Upload the public native binary archive
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-binary-${{ matrix.platform }}
           path: truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz
           if-no-files-found: error
-
       # GitHub Actions directory artifacts normalize file modes. The tar archive is the
       # private release handoff format so the executable mode survives the later download.
       - name: Archive the verified platform package
@@ -296,10 +304,11 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Check out the release tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
@@ -336,6 +345,17 @@ jobs:
             --node-version-file .node-version \
             --npm-version-file .npm-version \
             --output-dir release-record
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@f325610c9f50a54015d37c8d16cb3b0e2c8f4de0 # v0.18.0
+        with:
+          format: cyclonedx-json
+          output-file: "release-record/truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-sbom.json"
+
+      - name: Attest release checksums and verification provenance
+        uses: actions/attest-build-provenance@c074443f157c8d1e8533b3a6286280eb4eb9e29a # v2
+        with:
+          subject-path: "release-record/SHA256SUMS"
 
       - name: Create the draft GitHub Release
         env:

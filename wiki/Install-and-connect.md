@@ -194,6 +194,18 @@ debug line that the layout validated. An incomplete contract logs a warning, and
 runtime keeps serving on the last valid state. See [The .agent workspace](The-agent-workspace)
 for the required entries.
 
+## Direct native binary verification
+
+For direct standalone native binary downloads from GitHub Releases, verify archive integrity and build provenance before running:
+
+```bash
+# Checksum verification
+sha256sum --check SHA256SUMS --ignore-missing
+
+# Cryptographic GitHub build provenance attestation verification
+gh attestation verify truenorth-mcp-vX.Y.Z-<platform>.tar.gz --owner vixygrey
+```
+
 ## Scaffold an existing project
 
 For an existing governed repository, call the `truenorth_scaffold_project` tool from your
