@@ -292,12 +292,12 @@
     },
     {
       "path": "skills/evolve-skill/REFERENCE.md",
-      "sha256": "b728257e4f0d2883b8a3db5914692ac61df3ac1b5e9d25ef869502cf4bed85e8",
+      "sha256": "fe3e3c556b5908935b8de2453fa02f9482e3e2e8a986d00938d762d849ba8f6c",
       "mode": "0644"
     },
     {
       "path": "skills/evolve-skill/SKILL.md",
-      "sha256": "75d1bbd304de303b6e98a6b98eaea4cf925ecc6360cad2f8cb376377f6b41b18",
+      "sha256": "e00e76079b458d38fdd440255c003e2e241d11ed5ee345da76c8f4ba3895ae05",
       "mode": "0644"
     },
     {
@@ -676,8 +676,73 @@
       "mode": "0644"
     },
     {
+      "path": "skills/run-benchmark/REFERENCE.md",
+      "sha256": "b00a2ed95e211170363e2e83d2445d71e67d8b15f2295bcdc2fb06c772c1f3ec",
+      "mode": "0644"
+    },
+    {
       "path": "skills/run-benchmark/SKILL.md",
-      "sha256": "96728118c59087469a7c24891cecbccda8e03bc4170ab7c8f90288b3ee324909",
+      "sha256": "edde4095190a6b475f0d228d814f646bb5c2d5707f7bf58249300192f8ab36c2",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/SKILL.md",
+      "sha256": "084b9a2d0ec81435189dbbace113d3ec0e65be43bae0f3d5c48341eb478bc218",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/benchmark.json",
+      "sha256": "0ec8d1a5930318e4a8f1ed824fc7e736b744daa1aa07f6cc0509fa0d7f4d0cf0",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/train/executor.js",
+      "sha256": "4335913a636083879b62c99cfa1536d27decaa93197fc36265f769d9ba483297",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/train/expected.txt",
+      "sha256": "8e8546a643534bf243946011e1982c36509bffe661d224a1bc887734310d9733",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/train/grader.js",
+      "sha256": "139aed7b5cc30fd907a0995c731efbb2789930d5f351a8fdb44679624485e79b",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/train/input.txt",
+      "sha256": "d5166af39ec117bd0a141fe6e93fcf1c0c61274e23ad84f5339395197043ce7b",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/validation/executor.js",
+      "sha256": "4335913a636083879b62c99cfa1536d27decaa93197fc36265f769d9ba483297",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/validation/expected.txt",
+      "sha256": "d92fc3c4af54bb83857ca9a2887e5614a89e019a5933251a80bc6d71db7a57e7",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/validation/grader.js",
+      "sha256": "139aed7b5cc30fd907a0995c731efbb2789930d5f351a8fdb44679624485e79b",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/definitions/sample/validation/input.txt",
+      "sha256": "65cc27654a144e4574bc5750f01554da880e1642c19842548969834aa15d1f7f",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/run-benchmark/scripts/run.js",
+      "sha256": "8803525f49372a12dc99cd2726a00c34005c8006aee6acff94a61b4f48606b77",
+      "mode": "0755"
+    },
+    {
+      "path": "skills/run-benchmark/scripts/tests/run.js",
+      "sha256": "c0f1273898750b44660c855fe8153f74042a5d8f3eb3efc1680a420215c30fba",
       "mode": "0644"
     },
     {
