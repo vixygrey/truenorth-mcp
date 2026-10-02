@@ -5,6 +5,9 @@
 import { readFileSync, existsSync, unlinkSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURES = resolve(__dirname, 'fixtures');
@@ -41,11 +44,11 @@ function includes(text, sub, m) {
 // --- Check Puppeteer availability ---
 function checkPuppeteer() {
   try {
-    import.meta.resolve('puppeteer');
+    require.resolve('puppeteer');
     return 'puppeteer';
   } catch {
     try {
-      import.meta.resolve('puppeteer-core');
+      require.resolve('puppeteer-core');
       return 'puppeteer-core';
     } catch {
       return null;
