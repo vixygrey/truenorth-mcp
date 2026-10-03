@@ -136,7 +136,7 @@ jobs:
             truenorth-mcp
 
       - name: Attest native binary archive provenance
-        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v2
         with:
           subject-path: "truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-${{ matrix.platform }}.tar.gz"
 
@@ -353,7 +353,7 @@ jobs:
           output-file: "release-record/truenorth-mcp-v${{ needs.verify-release-version.outputs.version }}-sbom.json"
 
       - name: Attest release checksums and verification provenance
-        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v2
         with:
           subject-path: "release-record/SHA256SUMS"
 
