@@ -23,6 +23,9 @@ build/
 LICENSE
 THIRD-PARTY-NOTICES.md
 
+# Authentic recovered Git originals. Preserve bytes; format current narratives.
+specs/archive/
+
 # Lockfiles and generated data.
 **/*.jsonl
 benchmarks/runtime-baseline.json

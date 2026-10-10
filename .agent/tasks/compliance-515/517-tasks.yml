@@ -1,0 +1,36 @@
+task_id: '517'
+title: "restore specification and writing authority"
+group_id: '515'
+issue: https://github.com/vixygrey/truenorth-mcp/issues/517
+status: passing
+risk: P3
+planning_owner: plan-work
+status_meaning: Supporting commands, intended-reader smoke, archive integrity, independent reviews, and the user's actual content/provenance approval passed. This completes local step 3 only, not overall compliance or integration.
+depends_on: ['516']
+verify_command: "bash scripts/preflight.sh format"
+completion_rule: Supporting commands and every required observable smoke must pass with retained evidence.
+supporting_command_status: passing
+reader_smoke_status: passing
+independent_review_status: passing
+human_content_review: approved
+format_evidence: .agent/tasks/compliance-515/517-format-evidence.json
+verification_evidence: .agent/tasks/compliance-515/517-verification-evidence.json
+reader_evidence: .agent/tasks/compliance-515/517-reader-evidence.json
+review_evidence: .agent/tasks/compliance-515/517-review-evidence.json
+provenance_evidence: .agent/tasks/compliance-515/517-recovery-provenance.json
+human_review_evidence: .agent/tasks/compliance-515/517-human-review.json
+tasks:
+  - id: 1
+    description: "Recover normative requirement/design/task narratives from reachable history or prepare explicitly labeled current reconstruction for human review."
+    verify: "bash scripts/preflight.sh format"
+    risk: P3
+    status: passing
+    scenarios: ["SC-517-P3-01"]
+    behavior_smoke: "Open recovered/reconstructed content through the intended reader; retain provenance and actual human review rather than claiming formatting establishes content accuracy."
+  - id: 2
+    description: "Consolidate writing policy into the authoritative project convention and update precedence and all affected normative reference consumers."
+    verify: "bash scripts/preflight.sh format"
+    risk: P3
+    status: passing
+    scenarios: ["SC-517-P3-01"]
+    behavior_smoke: "Open every active local normative reference and demonstrate one consistent writing/document-precedence rule with the human owner."

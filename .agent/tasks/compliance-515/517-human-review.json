@@ -1,0 +1,34 @@
+{
+  "task_id": "517",
+  "scenario": "SC-517-P3-01",
+  "status": "approved",
+  "approved_at": "2026-10-09T19:56:24.969Z",
+  "approved_by": "User in this conversation",
+  "decision": "Approve reviewed content",
+  "question": "After reviewing the files, do you approve step3's content and provenance?",
+  "approval_scope": "Current requirements/design/task narratives, authentic recovery provenance, consolidated writing policy and document precedence, and corrected normative consumer references",
+  "content_snapshot": ".agent/tasks/compliance-515/517-review-snapshot.json",
+  "files": [
+    "specs/README.md",
+    "specs/requirements.md",
+    "specs/design.md",
+    "specs/tasks.md",
+    "CONVENTIONS.md"
+  ],
+  "provenance": ".agent/tasks/compliance-515/517-recovery-provenance.json",
+  "supporting_evidence": [
+    ".agent/tasks/compliance-515/517-format-evidence.json",
+    ".agent/tasks/compliance-515/517-verification-evidence.json",
+    ".agent/tasks/compliance-515/517-reader-evidence.json",
+    ".agent/tasks/compliance-515/517-review-evidence.json"
+  ],
+  "explicit_exclusions": [
+    "No ADR waiver or superseding architecture decision",
+    "No blanket P6 or overall repository compliance certification",
+    "No runtime redesign",
+    "No commit, merge, tag or publication authorization",
+    "No actual client configuration change or new dependency"
+  ],
+  "known_authority_inconsistency": "ADR0008 blanketwrite wording vs historically documented bootstrap/managedrepository-seed exception remains for finalaudit.",
+  "post_approval_changes": "Review status and canonical completion metadata only; approved behavior/policy/provenance content is not changed."
+}

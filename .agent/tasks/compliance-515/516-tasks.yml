@@ -1,0 +1,36 @@
+task_id: '516'
+title: "reconcile release and planning contracts"
+group_id: '515'
+issue: https://github.com/vixygrey/truenorth-mcp/issues/516
+status: passing
+risk: P1
+planning_owner: plan-work
+status_meaning: All three command sets and required operator smokes passed. Execution-level review and checkpoint status are recorded separately; this does not mean integration or publication.
+depends_on: []
+verify_command: "node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/preflight.sh wrapper shell"
+completion_rule: Supporting commands and every required observable smoke must pass with retained evidence.
+tasks:
+  - id: 1
+    description: "Reconcile the v2 advisory coverage path and permitted commit trailers with authoritative project conventions."
+    verify: "TRUENORTH_VERIFY_CMD='npm run preflight' cargo run --locked --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config --strict && bash skills/release-branch/scripts/check-route.sh --mode team-pr --action inspect"
+    risk: P1
+    status: passing
+    scenarios: ["SC-516-P1-01"]
+    behavior_smoke: "Follow corrected release preflight with current v2 policy and a permitted Co-authored-by trailer; record threshold resolution and the operator verdict."
+    evidence: ["516-operator-evidence.json", "516-verification-evidence.json"]
+  - id: 2
+    description: "Document and exercise supported issue identity, ticket-group indexing, reserved filenames, and missing-artifact owner routing."
+    verify: "node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+    risk: P1
+    status: passing
+    scenarios: ["SC-516-P1-02"]
+    behavior_smoke: "Resolve a real recorded task through group/spec/ledger readers; demonstrate owner routing for a missing prerequisite in a disposable capsule."
+    evidence: ["516-operator-evidence.json", "516-verification-evidence.json"]
+  - id: 3
+    description: "Update affected packaged skills and consumers, regenerate bundle metadata with the existing generator, and verify package delivery."
+    verify: "node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/preflight.sh wrapper shell"
+    risk: P1
+    status: passing
+    scenarios: ["SC-516-P1-03"]
+    behavior_smoke: "Read the changed affected skill through the packaged consumer and retain the coherent bundle/catalog and wrapper outcomes."
+    evidence: ["516-operator-evidence.json", "516-verification-evidence.json"]

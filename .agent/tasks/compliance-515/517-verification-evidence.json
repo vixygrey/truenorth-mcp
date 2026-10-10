@@ -1,0 +1,27 @@
+{
+  "kind": "implementation-verification",
+  "task_id": "517",
+  "started_at": "2026-10-09T19:49:00.773Z",
+  "completed_at": "2026-10-09T19:50:10.449Z",
+  "command": "node --test scripts/build-bundle-manifest.test.js && npm run preflight",
+  "gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "execute",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+      "gate": {
+        "duration_ms": 69670,
+        "exit_code": 0,
+        "expectation": "zero",
+        "status": "pass"
+      },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "scope": "Full existing verification plus bundle catalog tests through the real executor; standalone session timeout extended, actual mounted client configuration unchanged.",
+  "source_isolation": "Checkout frozen throughout this passing invocation; concurrent-evidence failure retained separately in517-serialization-failure-evidence.json."
+}

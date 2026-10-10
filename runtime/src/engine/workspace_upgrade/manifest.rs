@@ -290,15 +290,24 @@ pub fn validate_relative_path(value: &str) -> Result<PathBuf, String> {
         return Err("path must be a nonempty slash-separated relative path".to_string());
     }
     let path = Path::new(value);
+    // Compared case-insensitively: a case-insensitive filesystem (the macOS APFS
+    // default) treats `Specs/x` and `specs/x` as the same on-disk directory, so a
+    // literal case-sensitive comparison here would not match the real write target.
+    let first_component_is_specs = path
+        .components()
+        .next()
+        .and_then(|component| component.as_os_str().to_str())
+        .is_some_and(|name| name.eq_ignore_ascii_case("specs"));
     if path.is_absolute()
         || path
             .components()
             .any(|component| !matches!(component, Component::Normal(_)))
         || value.starts_with(".agent/runtime/")
         || value == ".agent/runtime"
+        || first_component_is_specs
     {
         return Err(
-            "path must stay under the repository and outside `.agent/runtime/`".to_string(),
+            "path must stay under the repository, outside `.agent/runtime/`, and outside `specs/` (case-insensitively; ADR-0019 permits only the fresh `specs/adr/.gitkeep` seed, written outside this managed path)".to_string(),
         );
     }
     Ok(path.to_path_buf())

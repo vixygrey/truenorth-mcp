@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "plan": "track 1 of the historical-evidence remediation plan (~/Desktop/traceability-historical-evidence-plan.md)",
+  "observed_at": "2026-10-10T04:21:33.918114Z",
+  "decision": {
+    "adr": "specs/adr/0020-prospective-traceability-evidence-cutover.md",
+    "status": "Accepted",
+    "date": "2026-10-10",
+    "approved_by": "vixygrey",
+    "approval_source": "Explicit user direction in the active conversation: scoping_approach='Prospective cutover at v1.0.4', disposition_owner='vixygrey'.",
+    "cutover_commit": "692edb9880866c7fb02e73fc66fbbea959a85544",
+    "cutover_release": "v1.0.4",
+    "scope": "release-plan:001 through release-plan:077 (exactly the 77 historical entries predating native verification receipts). release-plan:078 through release-plan:082 (#516-#520) are explicitly excluded from this decision and remain active disposition."
+  },
+  "changes": [
+    "Created specs/adr/0020-prospective-traceability-evidence-cutover.md (Accepted).",
+    "Set disposition.state=out_of_scope, disposition.owner=vixygrey, disposition.rationale=<ADR-0020 reference> on all 77 historical rows (release-plan:001-077) in .agent/tasks/traceability.yml. Already-recovered implementation/test/external evidence on those rows was not deleted or altered.",
+    "Recomputed summary: total 82, covered 5, missing_evidence 0, deferred 0, out_of_scope 77.",
+    "Recomputed gate: verdict PASS (previously FAIL), evaluated at the unchanged current head dee886ec9c926e6873657fbf1e5e0bfe52678e3f."
+  ],
+  "verdict_derivation": {
+    "rule_1_report_stale_or_unsupported": "No; schema_version 1, evaluated_head matches the actual unchanged current head.",
+    "rule_2_active_or_done_lacks_evidence": "No; the only active-disposition rows are release-plan:078-082, all with gaps: [] and real receipts.",
+    "rule_3_verification_receipt_failed": "No; every recorded receipt (516-520) has exit_code 0 / status pass.",
+    "rule_4_deferred_or_out_of_scope_lacks_owner_or_rationale": "No; all 77 out_of_scope rows carry owner=vixygrey and a non-null rationale referencing ADR-0020.",
+    "rule_5_highest_priority_lacks_coverage": "No; all 77 out_of_scope rows have priority: null, and the 5 active rows have full requirement/scenario coverage with gaps: [].",
+    "rule_6_concerns_non_blocking_drift": "None observed.",
+    "rule_7_pass": "Every required record is present and passing.",
+    "result": "PASS"
+  },
+  "what_this_does_not_claim": [
+    "Does not certify that any of the 77 historical entries was correct, defect-free, or actually executed as described.",
+    "Does not delete, overwrite, or weaken the already-recovered issue/PR/commit/CI/release evidence on those rows.",
+    "Does not exempt any future release-plan entry; the cutover is a fixed historical boundary (commit 692edb98), not an ongoing policy.",
+    "Does not itself authorize merge, tag, publication, or destructive cleanup; those remain separately gated per skills/release-branch/SKILL.md."
+  ],
+  "non_actions": [
+    "No commit, push, PR, merge, tag, publication, or destructive cleanup was performed.",
+    "No GitHub issue, PR, or release was mutated."
+  ]
+}

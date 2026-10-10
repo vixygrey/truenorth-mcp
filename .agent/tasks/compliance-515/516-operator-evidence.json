@@ -1,0 +1,507 @@
+{
+  "task_id": "516",
+  "started_at": "2026-10-09T18:04:15.033Z",
+  "method": "Actual native MCP requests, offline packed-wrapper installation, actual initialized profiles, and operator walkthroughs. Prose decisions are operator decisions, not runtime-enforced gates.",
+  "live_delivered_skills": [
+    "commit-message",
+    "execute-group",
+    "orchestrate-project",
+    "plan-release",
+    "plan-tests",
+    "plan-work",
+    "release-branch",
+    "slice-tasks",
+    "trace-requirement"
+  ],
+  "release_walkthrough": {
+    "configuration_version": 2,
+    "configuration_path": ".agent/config/rules.yml",
+    "resolved_namespace": "advisory.quality_gates.coverage",
+    "overall_minimum_percent": 80,
+    "business_logic_minimum_percent": 95,
+    "threshold_source": "actual current version 2 project policy",
+    "runtime_enforcement": false,
+    "coverage_measurement": "not performed in #516; #518 owns command, reports, source sets and business-logic metric",
+    "release_verdict": "BLOCKED: declared policy resolves, but no retained coverage measurement proves both minimums. No threshold lowered or default substituted."
+  },
+  "trailer_walkthrough": {
+    "fixture_only": true,
+    "actual_commit_created": false,
+    "parsed_by": "git interpret-trailers --parse",
+    "parsed_trailers": "Co-authored-by: Test Fixture <fixture@example.invalid>",
+    "authority": "CONVENTIONS.md:117-118",
+    "operator_verdict": "A syntactically standard Co-authored-by trailer is permitted by the current project policy. Attribution is not invented for an actual author or commit."
+  },
+  "live_issue_resolution": {
+    "issue": "https://github.com/vixygrey/truenorth-mcp/issues/516",
+    "group_id": "515",
+    "group_kind": "ticket",
+    "capsule_dir": ".agent/tasks/compliance-515",
+    "task_id": "516",
+    "task_name": "Reconcile release and planning contracts (#516)",
+    "verify_command": "node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/preflight.sh wrapper shell",
+    "matching_group_indexes": 1,
+    "matching_manifest_entries": 1,
+    "matching_runtime_records": 1,
+    "specification": ".agent/tasks/compliance-515/516-spec.md",
+    "ledger": ".agent/tasks/compliance-515/516-tasks.yml",
+    "cockpit_resource_read": {
+      "uri": "truenorth://cockpit"
+    },
+    "ledger_task_id": "516",
+    "unsupported_tool_arguments_sent": []
+  },
+  "package_delivery": {
+    "wrapper_version": "1.0.4",
+    "platform": "darwin-arm64",
+    "installation": "npm pack actual wrapper and compiled native platform package; npm install --offline both local tarballs; actual wrapper init/upgrade via existing fixture helper",
+    "project_path": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/tn-516-packed-ghgVpa/project",
+    "delivered_skills": {
+      "release-branch": {
+        "sha256": "c2d3dd7ea4cf40effef2a9648d262140f85c6f517ca82af6d9448ff1536548a5"
+      },
+      "commit-message": {
+        "sha256": "7ca4de1f3825458fc109f99198fd0727e071ca2a3692c3fb4b29f6019de3ed08"
+      },
+      "slice-tasks": {
+        "sha256": "66032a07b244d7460ed80df1d96fc60c627e9e071e398759aa91da636f967b54"
+      },
+      "plan-release": {
+        "sha256": "a9d8e98842bcc61a69780718328849a27d675e167a5c5255a2e984b99d01f4fb"
+      },
+      "plan-work": {
+        "sha256": "f050077ffcbfbf5c436efa7a8b858f26f8d6bc9fb370e9d08b2409401864c1a5"
+      },
+      "plan-tests": {
+        "sha256": "23c735247159f8303b8df485ea328318233218cffecb51153f9ced4d418538fb"
+      },
+      "execute-group": {
+        "sha256": "85c264cbc2e4288ccfcec66e2867211d0842226132ad30af0338ccf8da5a5a04"
+      },
+      "trace-requirement": {
+        "sha256": "d325545bc3fca3d184e7922622b2bf7180e4be07d387de586d6eb19780aba7d1"
+      },
+      "orchestrate-project": {
+        "sha256": "e7eb15397e725b60f49ab75c263a2a3b40b279c77d1c526c2d56e4056a1dc995"
+      }
+    },
+    "limit": "Existing fixture setup uses its own diagnostic environment. No fixture setup or node-version command is claimed as project verification; retained full preflight gate is separate."
+  },
+  "profile_walkthroughs": [
+    {
+      "profile": "issue-per-task",
+      "grouping": "ticket",
+      "tool_arguments": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version",
+        "group_id": "515",
+        "group_kind": "ticket"
+      },
+      "record_receipt": {
+        "group_id": "515",
+        "group_kind": "ticket",
+        "receipt": {
+          "changes": [
+            {
+              "path": ".agent/tasks/release-plan.yml",
+              "sha256": "4ecd3cc9a13134b264959343d702d5c1c5599b30b43c77db25d79f4317a5553a"
+            }
+          ],
+          "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+          "gate": null,
+          "operation": "truenorth_record_task",
+          "runtime_version": "1.0.4",
+          "schema_version": 1
+        },
+        "recorded_task": "Reconcile release and planning contracts (#516)"
+      },
+      "runtime_record": {
+        "group_id": "515",
+        "group_kind": "ticket",
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "task_id": "516",
+      "capsule_dir": ".agent/tasks/fixture-capsule",
+      "manifest": {
+        "work_items": [
+          {
+            "task_id": "516",
+            "task_name": "Reconcile release and planning contracts (#516)",
+            "verify_command": "node --version",
+            "spec": "516-spec.md",
+            "tasks": "516-tasks.yml"
+          }
+        ],
+        "group_id": "515",
+        "group_kind": "ticket"
+      },
+      "specification": ".agent/tasks/fixture-capsule/516-spec.md",
+      "ledger": ".agent/tasks/fixture-capsule/516-tasks.yml",
+      "unsupported_tool_arguments_sent": [],
+      "fixture_only": true
+    },
+    {
+      "profile": "issue-per-task",
+      "grouping": null,
+      "tool_arguments": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "record_receipt": {
+        "group_id": null,
+        "group_kind": null,
+        "receipt": {
+          "changes": [
+            {
+              "path": ".agent/tasks/release-plan.yml",
+              "sha256": "6a38a264afffc1a573e141c33a0a40bea62b70519c9493aefb44b61a0ec5e541"
+            }
+          ],
+          "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+          "gate": null,
+          "operation": "truenorth_record_task",
+          "runtime_version": "1.0.4",
+          "schema_version": 1
+        },
+        "recorded_task": "Reconcile release and planning contracts (#516)"
+      },
+      "runtime_record": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "task_id": "516",
+      "capsule_dir": ".agent/tasks/516",
+      "manifest": {
+        "work_items": [
+          {
+            "task_id": "516",
+            "task_name": "Reconcile release and planning contracts (#516)",
+            "verify_command": "node --version",
+            "spec": "516-spec.md",
+            "tasks": "516-tasks.yml"
+          }
+        ]
+      },
+      "specification": ".agent/tasks/516/516-spec.md",
+      "ledger": ".agent/tasks/516/516-tasks.yml",
+      "unsupported_tool_arguments_sent": [],
+      "fixture_only": true
+    },
+    {
+      "profile": "epic-based",
+      "grouping": "epic",
+      "tool_arguments": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version",
+        "group_id": "fixture-516",
+        "group_kind": "epic"
+      },
+      "record_receipt": {
+        "group_id": "fixture-516",
+        "group_kind": "epic",
+        "receipt": {
+          "changes": [
+            {
+              "path": ".agent/tasks/release-plan.yml",
+              "sha256": "eb7b77ba4537a4a6c731ce0c62e2425a22b80fd361d4162ec6d43c4a1a38028e"
+            }
+          ],
+          "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+          "gate": null,
+          "operation": "truenorth_record_task",
+          "runtime_version": "1.0.4",
+          "schema_version": 1
+        },
+        "recorded_task": "Reconcile release and planning contracts (#516)"
+      },
+      "runtime_record": {
+        "group_id": "fixture-516",
+        "group_kind": "epic",
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "task_id": "task-516",
+      "capsule_dir": ".agent/tasks/fixture-capsule",
+      "manifest": {
+        "work_items": [
+          {
+            "task_id": "task-516",
+            "task_name": "Reconcile release and planning contracts (#516)",
+            "verify_command": "node --version",
+            "spec": "task-516-spec.md",
+            "tasks": "task-516-tasks.yml"
+          }
+        ],
+        "group_id": "fixture-516",
+        "group_kind": "epic"
+      },
+      "specification": ".agent/tasks/fixture-capsule/task-516-spec.md",
+      "ledger": ".agent/tasks/fixture-capsule/task-516-tasks.yml",
+      "unsupported_tool_arguments_sent": [],
+      "fixture_only": true
+    },
+    {
+      "profile": "milestone-based",
+      "grouping": "milestone",
+      "tool_arguments": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version",
+        "group_id": "fixture-516",
+        "group_kind": "milestone"
+      },
+      "record_receipt": {
+        "group_id": "fixture-516",
+        "group_kind": "milestone",
+        "receipt": {
+          "changes": [
+            {
+              "path": ".agent/tasks/release-plan.yml",
+              "sha256": "6c3287f661aeedcf09b8ea31c592051a3b6651895243499d078162f30fe78238"
+            }
+          ],
+          "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+          "gate": null,
+          "operation": "truenorth_record_task",
+          "runtime_version": "1.0.4",
+          "schema_version": 1
+        },
+        "recorded_task": "Reconcile release and planning contracts (#516)"
+      },
+      "runtime_record": {
+        "group_id": "fixture-516",
+        "group_kind": "milestone",
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "task_id": "task-516",
+      "capsule_dir": ".agent/tasks/fixture-capsule",
+      "manifest": {
+        "work_items": [
+          {
+            "task_id": "task-516",
+            "task_name": "Reconcile release and planning contracts (#516)",
+            "verify_command": "node --version",
+            "spec": "task-516-spec.md",
+            "tasks": "task-516-tasks.yml"
+          }
+        ],
+        "group_id": "fixture-516",
+        "group_kind": "milestone"
+      },
+      "specification": ".agent/tasks/fixture-capsule/task-516-spec.md",
+      "ledger": ".agent/tasks/fixture-capsule/task-516-tasks.yml",
+      "unsupported_tool_arguments_sent": [],
+      "fixture_only": true
+    },
+    {
+      "profile": "kanban",
+      "grouping": null,
+      "tool_arguments": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "record_receipt": {
+        "group_id": null,
+        "group_kind": null,
+        "receipt": {
+          "changes": [
+            {
+              "path": ".agent/tasks/release-plan.yml",
+              "sha256": "6a38a264afffc1a573e141c33a0a40bea62b70519c9493aefb44b61a0ec5e541"
+            }
+          ],
+          "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+          "gate": null,
+          "operation": "truenorth_record_task",
+          "runtime_version": "1.0.4",
+          "schema_version": 1
+        },
+        "recorded_task": "Reconcile release and planning contracts (#516)"
+      },
+      "runtime_record": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "task_id": "task-516",
+      "capsule_dir": ".agent/tasks/task-516",
+      "manifest": {
+        "work_items": [
+          {
+            "task_id": "task-516",
+            "task_name": "Reconcile release and planning contracts (#516)",
+            "verify_command": "node --version",
+            "spec": "task-516-spec.md",
+            "tasks": "task-516-tasks.yml"
+          }
+        ]
+      },
+      "specification": ".agent/tasks/task-516/task-516-spec.md",
+      "ledger": ".agent/tasks/task-516/task-516-tasks.yml",
+      "unsupported_tool_arguments_sent": [],
+      "fixture_only": true
+    },
+    {
+      "profile": "generic",
+      "grouping": null,
+      "tool_arguments": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "record_receipt": {
+        "group_id": null,
+        "group_kind": null,
+        "receipt": {
+          "changes": [
+            {
+              "path": ".agent/tasks/release-plan.yml",
+              "sha256": "6a38a264afffc1a573e141c33a0a40bea62b70519c9493aefb44b61a0ec5e541"
+            }
+          ],
+          "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+          "gate": null,
+          "operation": "truenorth_record_task",
+          "runtime_version": "1.0.4",
+          "schema_version": 1
+        },
+        "recorded_task": "Reconcile release and planning contracts (#516)"
+      },
+      "runtime_record": {
+        "task_name": "Reconcile release and planning contracts (#516)",
+        "verify_command": "node --version"
+      },
+      "task_id": "task-516",
+      "capsule_dir": ".agent/tasks/task-516",
+      "manifest": {
+        "work_items": [
+          {
+            "task_id": "task-516",
+            "task_name": "Reconcile release and planning contracts (#516)",
+            "verify_command": "node --version",
+            "spec": "task-516-spec.md",
+            "tasks": "task-516-tasks.yml"
+          }
+        ]
+      },
+      "specification": ".agent/tasks/task-516/task-516-spec.md",
+      "ledger": ".agent/tasks/task-516/task-516-tasks.yml",
+      "unsupported_tool_arguments_sent": [],
+      "fixture_only": true
+    }
+  ],
+  "missing_artifact_walkthroughs": [
+    {
+      "input": "missing selected group manifest",
+      "actual_read_error": "ENOENT",
+      "missing": ".agent/tasks/fixture-capsule/group.yml",
+      "artifact_synthesized": false,
+      "owner": "slice-tasks",
+      "operator_verdict": "STOP: return missing boundaries and reservations to slice-tasks; no downstream reconstruction."
+    },
+    {
+      "input": "missing reserved ledger filename",
+      "observed_tasks_field": "absent",
+      "owner": "slice-tasks",
+      "operator_verdict": "STOP: return missing reservation to slice-tasks, do not derive it from the task title or group id."
+    },
+    {
+      "input": "missing selected group index",
+      "observed_group_index": "absent",
+      "owner": "plan-release",
+      "operator_verdict": "STOP: return missing index and capsule path to plan-release; do not guess another capsule."
+    }
+  ],
+  "preservation": {
+    "published_history_sha256": "ccf9a5e8d1eaed2f04d365b8b580ddefc710d99b1d95dd8070bbb15d9330b12d",
+    "bugs_sha256": "4ca067a528b2e7814ece438dbc64f379c3b59d86a503e59e7285370a11ae313a",
+    "profile_sha256": "808af4ce068a200dc888417b29fb2d6387cbada9aabbfc3d9e007783b1a6dae3",
+    "backlog_sha256": "97be984baf925f9017eaab778edc0ae96ed49d0e28060897a8dc8ee289cf714a"
+  },
+  "completed_at": "2026-10-09T18:04:23.236Z",
+  "passed": true,
+  "before_observations": {
+    "release_policy": "The delivered release-branch instructs reading quality_gates.coverage, which is absent in this version 2 workspace.",
+    "commit_policy": "The delivered commit-message forbids Co-authored-by; CONVENTIONS.md explicitly permits it.",
+    "ungrouped_planning": "The delivered slice-tasks reserves filenames but emits no manifest for ungrouped work, and plan-release hands off directly to plan-work, whose prerequisite is a manifest with reserved filenames.",
+    "checks_are": "Observed operator instruction conflicts, not fabricated RED test evidence."
+  },
+  "strict_diagnostics_and_route": {
+    "command": "TRUENORTH_VERIFY_CMD='npm run preflight' cargo run --locked --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config --strict && bash skills/release-branch/scripts/check-route.sh --mode team-pr --action inspect",
+    "exit_code": 0,
+    "diagnostics": {
+      "package": {
+        "name": "truenorth-mcp",
+        "version": "1.0.4"
+      },
+      "platform": {
+        "os": "macos",
+        "arch": "aarch64",
+        "family": "unix"
+      },
+      "repository_root": {
+        "status": "ok",
+        "path": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+        "error": null
+      },
+      "layout": {
+        "status": "ok",
+        "error": null,
+        "reason": null
+      },
+      "backlog": {
+        "status": "ok",
+        "error": null,
+        "reason": null
+      },
+      "features": {
+        "status": "ok",
+        "ontology": false,
+        "jev": false,
+        "error": null,
+        "reason": null
+      },
+      "token_caps": {
+        "status": "ok",
+        "skill_lean_tokens": 1200,
+        "tool_payload_tokens": 4000,
+        "estimation": "ceil(characters / 4)",
+        "error": null,
+        "reason": null
+      },
+      "verify_gate": {
+        "status": "ok",
+        "configured": true,
+        "environment": {
+          "allowed_names": [
+            "PATH",
+            "HOME",
+            "TMPDIR",
+            "TMP",
+            "TEMP"
+          ],
+          "configured_names": [],
+          "rejected_names": [],
+          "invalid_names": []
+        },
+        "error": null
+      },
+      "rules_config": {
+        "version": 2,
+        "blocks": {
+          "advisory": "advisory",
+          "features": "enforced",
+          "protected_paths": "enforced",
+          "runtime": "enforced"
+        },
+        "warnings": [],
+        "errors": []
+      }
+    },
+    "route": {
+      "route": "team-pr",
+      "action": "inspect",
+      "approved": false
+    },
+    "limit": "Process-local command override proves diagnostic compatibility. Actual mounted client verification configuration remains a separate #518 task."
+  }
+}

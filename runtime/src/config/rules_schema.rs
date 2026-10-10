@@ -1,4 +1,4 @@
-//! Schema and validation for `.agent/config/rules.yml` (ADR-0017, issue #432).
+//! Schema and validation for `.agent/config/rules.yml` (issue #432; CONVENTIONS.md).
 //!
 //! Separates enforced runtime settings from advisory conventions, validates
 //! recognized blocks, identifies misspelled keys, and provides strict-mode validation.
@@ -350,3 +350,7 @@ fn levenshtein_distance(s: &str, t: &str) -> usize {
     }
     d[s_chars.len()][t_chars.len()]
 }
+
+#[cfg(test)]
+#[path = "rules_schema_tests.rs"]
+mod tests;

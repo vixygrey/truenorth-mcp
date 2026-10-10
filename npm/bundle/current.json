@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
-  "bundle_version": "1.0.4",
+  "bundle_version": "1.0.5",
   "workspace_schema_version": "2",
-  "supported_from": ["1.0.2"],
+  "supported_from": ["1.0.2", "1.0.4"],
   "skill_sets": [
     {
       "name": "core",
@@ -155,7 +155,7 @@
     },
     {
       "path": "skills/commit-message/SKILL.md",
-      "sha256": "513a330869e8c4fb1b4e671544dea7df1dd4a6a3c1376d8318a729faac7b395f",
+      "sha256": "e2b3414e84e5d61fb8a36ebeeca0ddc0e223e3a37df19c82abce9b3e3b15c2c2",
       "mode": "0644"
     },
     {
@@ -295,7 +295,7 @@
     },
     {
       "path": "skills/execute-group/SKILL.md",
-      "sha256": "f48aa107ad879e79b47ec22ca552bcd9be0e62a9963281f6785fbfbb9ab6eef8",
+      "sha256": "b7c415103e5881ae2664652adac7350339e03574200771573908adc7f5cef503",
       "mode": "0644"
     },
     {
@@ -560,12 +560,12 @@
     },
     {
       "path": "skills/orchestrate-project/REFERENCE.md",
-      "sha256": "59744171f4ac8e2bf33e787a8cfdffd865e34b2249464cf34eb3505d959b8332",
+      "sha256": "77daeb76c1f4f58e989b71469e8e39de3fb1d78826dbca843f27752de2e83257",
       "mode": "0644"
     },
     {
       "path": "skills/orchestrate-project/SKILL.md",
-      "sha256": "d6c308c9a8050d2ac00886d32a0684ed6abd2b05d6e5b6284ed03b4d02651830",
+      "sha256": "de80402bedb8025641dda0236c571a185c25add83bd3de8299d30ad7aa37c00c",
       "mode": "0644"
     },
     {
@@ -585,27 +585,27 @@
     },
     {
       "path": "skills/plan-release/SKILL.md",
-      "sha256": "df986840921b0b466c050f9950ba6ca5c9b44add4bd96bd56d433b3f973986f9",
+      "sha256": "4aac30f625dc29c6fb1a5cf474ea89124b18864529b0d95592f5bfc395729e86",
       "mode": "0644"
     },
     {
       "path": "skills/plan-tests/REFERENCE.md",
-      "sha256": "0ca38fde8b2d44d642c8f4e6588a4847e58fd93a4035b12de030b696a74dd120",
+      "sha256": "2235fea8be827c24547888fd1a5b012133deca61eb491e9ff60dfd50245afb62",
       "mode": "0644"
     },
     {
       "path": "skills/plan-tests/SKILL.md",
-      "sha256": "e3fe78ccfd05724b9b164d86ded831f5115f4277a0ed21da5e828427d5ea75b4",
+      "sha256": "dc731fe811a4ff11db3610bafa33a5b731199548533700e21f590b0173cd285b",
       "mode": "0644"
     },
     {
       "path": "skills/plan-work/REFERENCE.md",
-      "sha256": "192884f533cf162c74e11d495ad383c7c791c5081160b2e537055643a6258a2e",
+      "sha256": "2f901b27b15ec09743a15598f033fa77e4af0316b3a1b979c96f17c84a84f677",
       "mode": "0644"
     },
     {
       "path": "skills/plan-work/SKILL.md",
-      "sha256": "348d589de4685c4b54931e5f0f62e32b181c06967901f5388feef421148bf2b9",
+      "sha256": "ee3588f99a7145b6ffe0377fb2c9abdbf5a2add0aa332cd96eb5e0f177532ce4",
       "mode": "0644"
     },
     {
@@ -625,12 +625,12 @@
     },
     {
       "path": "skills/release-branch/REFERENCE.md",
-      "sha256": "acdfe7c0d2da142776acfa5f7e5d46d0d49d8405a6e8ab467c206d6addabdfd8",
+      "sha256": "6557f16b6dfc9190b2c604416ea1f32d3e724875d62a1c104a4e1ae27676a43c",
       "mode": "0644"
     },
     {
       "path": "skills/release-branch/SKILL.md",
-      "sha256": "4292fb42ad4155fe9baf1c45ad049e33f41bd43acc5ec815abc28ca52f64a9ac",
+      "sha256": "535459bf5abf96edca43e42332f6599966156ecc16be5b8ba38f21e06de4a16b",
       "mode": "0644"
     },
     {
@@ -850,7 +850,7 @@
     },
     {
       "path": "skills/slice-tasks/SKILL.md",
-      "sha256": "cd9249bd08d52b8c07f56ecf2b8db5ffd2128c0bbca0752cd9793e459ba1bb8b",
+      "sha256": "92f599b47d4d0c6e55231f8c176dee99a5d3633f84656d5f559dc27936b365dc",
       "mode": "0644"
     },
     {
@@ -885,7 +885,7 @@
     },
     {
       "path": "skills/trace-requirement/SKILL.md",
-      "sha256": "dddab213fb3caa0ab96e276cef314b0eaf27248ab9b23ab7056373559a0cec73",
+      "sha256": "26d72ce60cb8b14a95db4c043ed2e4d29cdcdedd3f808936f2ffe2e6cdcd58bd",
       "mode": "0644"
     },
     {

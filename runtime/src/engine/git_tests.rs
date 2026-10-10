@@ -13,6 +13,8 @@ use tempfile::tempdir;
 /// Run a git command in `dir`, failing the test loudly on error.
 fn git(dir: &Path, args: &[&str]) {
     let status = Command::new("git")
+        .env_clear()
+        .env("PATH", std::env::var_os("PATH").expect("git PATH"))
         .args(args)
         .current_dir(dir)
         .output()
@@ -38,6 +40,12 @@ fn init_repo(dir: &Path) {
 
 #[test]
 fn status_excludes_paths_outside_scope() {
+    if !crate::isolated_process_tests::in_child(
+        "engine::git::tests::status_excludes_paths_outside_scope",
+        &[],
+    ) {
+        return;
+    }
     // Requirement 1.8: a change outside skills/ and specs/ is excluded from status.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
@@ -59,6 +67,12 @@ fn status_excludes_paths_outside_scope() {
 
 #[test]
 fn changed_files_in_scope_lists_only_scoped_paths() {
+    if !crate::isolated_process_tests::in_child(
+        "engine::git::tests::changed_files_in_scope_lists_only_scoped_paths",
+        &[],
+    ) {
+        return;
+    }
     // Requirement 4.7: the ontology default scope covers only scoped changes.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
@@ -79,6 +93,12 @@ fn changed_files_in_scope_lists_only_scoped_paths() {
 
 #[test]
 fn diff_excludes_out_of_scope_edits() {
+    if !crate::isolated_process_tests::in_child(
+        "engine::git::tests::diff_excludes_out_of_scope_edits",
+        &[],
+    ) {
+        return;
+    }
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
     init_repo(root);
@@ -118,5 +138,49 @@ fn parse_porcelain_takes_rename_target() {
             PathBuf::from("skills/a.txt"),
             PathBuf::from("specs/c.yaml"),
         ]
+    );
+}
+
+#[test]
+fn scoped_log_omits_commits_that_only_change_unrelated_files() {
+    if !crate::isolated_process_tests::in_child(
+        "engine::git::tests::scoped_log_omits_commits_that_only_change_unrelated_files",
+        &[],
+    ) {
+        return;
+    }
+    let dir = tempdir().expect("temp repo");
+    init_repo(dir.path());
+    fs::write(dir.path().join("specs/tracked.yml"), "v: 1\n").expect("scoped file");
+    git(dir.path(), &["add", "specs/tracked.yml"]);
+    git(dir.path(), &["commit", "-q", "-m", "scoped-contract"]);
+    fs::write(dir.path().join("README.md"), "outside\n").expect("outside edit");
+    git(dir.path(), &["add", "README.md"]);
+    git(dir.path(), &["commit", "-q", "-m", "unrelated-readme"]);
+    let history = git_context(dir.path(), GitAction::Log).expect("scoped log");
+    assert!(history.contains("scoped-contract"));
+    assert!(!history.contains("unrelated-readme"));
+    fs::write(dir.path().join("specs/tracked.yml"), "v: 2\n").expect("scoped edit");
+    assert!(
+        git_context(dir.path(), GitAction::Status)
+            .expect("status")
+            .contains("specs/tracked.yml")
+    );
+    let patch = git_context(dir.path(), GitAction::Diff).expect("diff");
+    assert!(patch.contains("-v: 1") && patch.contains("+v: 2"));
+}
+
+#[test]
+fn worktree_status_reports_a_non_repository_error() {
+    if !crate::isolated_process_tests::in_child(
+        "engine::git::tests::worktree_status_reports_a_non_repository_error",
+        &[],
+    ) {
+        return;
+    }
+    let dir = tempdir().expect("temp directory");
+    assert!(
+        matches!(worktree_status(dir.path()), Err(GitError::Command { action, stderr })
+        if action == "worktree status" && !stderr.is_empty())
     );
 }

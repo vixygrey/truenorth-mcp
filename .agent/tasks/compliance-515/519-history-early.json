@@ -1,0 +1,2918 @@
+{
+  "schema_version": 1,
+  "task_id": "519",
+  "observed_at": "2026-10-09T22:12:06.786Z",
+  "entry_count": 39,
+  "entries": [
+    {
+      "entry_id": "release-plan:001",
+      "entry_index": 1,
+      "task_name": "guard-git: enforce branch protection and Conventional Commits in the pre-command hook, add pre-commit secret scanning (#210)",
+      "verify_command": "bash skills/guard-git/scripts/tests/run.sh",
+      "issue_ids": [
+        "210"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:210",
+          "source_pointer": "/issues/210",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/210",
+          "number": 210,
+          "state": "closed",
+          "closed_at": "2026-09-18T18:39:54Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:224",
+          "source_pointer": "/pull_requests/224",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/224",
+          "number": 224,
+          "state": "closed",
+          "merged_at": "2026-09-18T18:39:52Z",
+          "merge_commit_sha": "5e2157cd25587247370d11254ac84426fa546102",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:224:merge_commit",
+          "sha": "5e2157cd25587247370d11254ac84426fa546102",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/5e2157cd25587247370d11254ac84426fa546102",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:105718725095",
+          "source_pointer": "/merge_commit_check_runs/224",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-18T18:40:50Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35381495632/job/105718725095",
+          "head_sha": "5e2157cd25587247370d11254ac84426fa546102",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/0",
+          "verify_command": "bash skills/guard-git/scripts/tests/run.sh",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:002",
+      "entry_index": 2,
+      "task_name": "Dogfood guard-git: wire the secret scanner into .githooks/pre-commit and add a CI shell job (#225)",
+      "verify_command": "shellcheck --severity=warning $(git ls-files 'skills/**/*.sh') && bash skills/guard-git/scripts/tests/run.sh",
+      "issue_ids": [
+        "225"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:225",
+          "source_pointer": "/issues/225",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/225",
+          "number": 225,
+          "state": "closed",
+          "closed_at": "2026-09-18T18:52:54Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:226",
+          "source_pointer": "/pull_requests/226",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/226",
+          "number": 226,
+          "state": "closed",
+          "merged_at": "2026-09-18T18:52:53Z",
+          "merge_commit_sha": "418c29b51d373a4525cd2d4f5d70df611a454afb",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:226:merge_commit",
+          "sha": "418c29b51d373a4525cd2d4f5d70df611a454afb",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/418c29b51d373a4525cd2d4f5d70df611a454afb",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:105722775907",
+          "source_pointer": "/merge_commit_check_runs/226",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-18T18:53:50Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35382744249/job/105722775907",
+          "head_sha": "418c29b51d373a4525cd2d4f5d70df611a454afb",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim.",
+          "non_success_checks": [
+            {
+              "source_record": "check-run:105818587865",
+              "source_pointer": "/merge_commit_check_runs/226",
+              "name": "Adjust Configuration",
+              "conclusion": "skipped",
+              "head_sha": "418c29b51d373a4525cd2d4f5d70df611a454afb",
+              "completed_at": "2026-09-19T01:50:20Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35413681413/job/105818587865"
+            }
+          ],
+          "non_success_interpretation": "All recovered non-successful CI outcomes remain explicit. Skipped checks are not passing verification. No supersession or native receipt is inferred."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/1",
+          "verify_command": "shellcheck --severity=warning $(git ls-files 'skills/**/*.sh') && bash skills/guard-git/scripts/tests/run.sh",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:003",
+      "entry_index": 3,
+      "task_name": "Reject unverified verify-gate evidence passes",
+      "verify_command": "cargo test gates",
+      "issue_ids": [
+        "337"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:337",
+          "source_pointer": "/issues/337",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/337",
+          "number": 337,
+          "state": "closed",
+          "closed_at": "2026-09-21T20:42:15Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:341",
+          "source_pointer": "/pull_requests/341",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/341",
+          "number": 341,
+          "state": "closed",
+          "merged_at": "2026-09-21T20:42:13Z",
+          "merge_commit_sha": "9dc57947dd05363d360bcb2c8572ce172d48a38e",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:341:merge_commit",
+          "sha": "9dc57947dd05363d360bcb2c8572ce172d48a38e",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/9dc57947dd05363d360bcb2c8572ce172d48a38e",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106509164513",
+          "source_pointer": "/merge_commit_check_runs/341",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-21T20:43:33Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35652729520/job/106509164513",
+          "head_sha": "9dc57947dd05363d360bcb2c8572ce172d48a38e",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/2",
+          "verify_command": "cargo test gates",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:004",
+      "entry_index": 4,
+      "task_name": "Enforce adjacent lifecycle phase transitions",
+      "verify_command": "cargo test lifecycle",
+      "issue_ids": [
+        "338"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:338",
+          "source_pointer": "/issues/338",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/338",
+          "number": 338,
+          "state": "closed",
+          "closed_at": "2026-09-21T21:17:16Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:342",
+          "source_pointer": "/pull_requests/342",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/342",
+          "number": 342,
+          "state": "closed",
+          "merged_at": "2026-09-21T21:17:15Z",
+          "merge_commit_sha": "00eb240f22451589a608c3e853dc469840ef43e1",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:342:merge_commit",
+          "sha": "00eb240f22451589a608c3e853dc469840ef43e1",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/00eb240f22451589a608c3e853dc469840ef43e1",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106521038654",
+          "source_pointer": "/merge_commit_check_runs/342",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-21T21:18:38Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35656277173/job/106521038654",
+          "head_sha": "00eb240f22451589a608c3e853dc469840ef43e1",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/3",
+          "verify_command": "cargo test lifecycle",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:005",
+      "entry_index": 5,
+      "task_name": "Restore issue-per-task cockpit seed files",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml scaffold",
+      "issue_ids": [
+        "339"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:339",
+          "source_pointer": "/issues/339",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/339",
+          "number": 339,
+          "state": "closed",
+          "closed_at": "2026-09-21T21:34:55Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:343",
+          "source_pointer": "/pull_requests/343",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/343",
+          "number": 343,
+          "state": "closed",
+          "merged_at": "2026-09-21T21:34:54Z",
+          "merge_commit_sha": "6664cd54e7462f29ec912d97a7e33a63ce74fe7d",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:343:merge_commit",
+          "sha": "6664cd54e7462f29ec912d97a7e33a63ce74fe7d",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/6664cd54e7462f29ec912d97a7e33a63ce74fe7d",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106526670921",
+          "source_pointer": "/merge_commit_check_runs/343",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-21T21:36:20Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35657998377/job/106526670921",
+          "head_sha": "6664cd54e7462f29ec912d97a7e33a63ce74fe7d",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/4",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml scaffold",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:006",
+      "entry_index": 6,
+      "task_name": "Align execute-only verify gate documentation",
+      "verify_command": "npm run lint:verify-gate-docs && cargo test --manifest-path runtime/Cargo.toml legacy_evidence_gate_requests_error_over_the_client",
+      "issue_ids": [
+        "351"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:351",
+          "source_pointer": "/issues/351",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/351",
+          "number": 351,
+          "state": "closed",
+          "closed_at": "2026-09-22T03:39:57Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:353",
+          "source_pointer": "/pull_requests/353",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/353",
+          "number": 353,
+          "state": "closed",
+          "merged_at": "2026-09-22T03:39:56Z",
+          "merge_commit_sha": "167cfae3667b1bc237da79b0d14d98d310a74fd9",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:353:merge_commit",
+          "sha": "167cfae3667b1bc237da79b0d14d98d310a74fd9",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/167cfae3667b1bc237da79b0d14d98d310a74fd9",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106607019585",
+          "source_pointer": "/merge_commit_check_runs/353",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T03:41:10Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35683986712/job/106607019585",
+          "head_sha": "167cfae3667b1bc237da79b0d14d98d310a74fd9",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/5",
+          "verify_command": "npm run lint:verify-gate-docs && cargo test --manifest-path runtime/Cargo.toml legacy_evidence_gate_requests_error_over_the_client",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:007",
+      "entry_index": 7,
+      "task_name": "Enforce coherent release artifact versions",
+      "verify_command": "node --test npm/test/release-version.test.js && node scripts/check-release-version.js 0.1.0 && npm run format:check",
+      "issue_ids": [
+        "350"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:350",
+          "source_pointer": "/issues/350",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/350",
+          "number": 350,
+          "state": "closed",
+          "closed_at": "2026-09-22T03:55:23Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:354",
+          "source_pointer": "/pull_requests/354",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/354",
+          "number": 354,
+          "state": "closed",
+          "merged_at": "2026-09-22T03:55:22Z",
+          "merge_commit_sha": "135ad314a4dd1d42e9981f53e6573e1761045eea",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:354:merge_commit",
+          "sha": "135ad314a4dd1d42e9981f53e6573e1761045eea",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/135ad314a4dd1d42e9981f53e6573e1761045eea",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106609824071",
+          "source_pointer": "/merge_commit_check_runs/354",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T03:56:51Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35684933137/job/106609824071",
+          "head_sha": "135ad314a4dd1d42e9981f53e6573e1761045eea",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/6",
+          "verify_command": "node --test npm/test/release-version.test.js && node scripts/check-release-version.js 0.1.0 && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:008",
+      "entry_index": 8,
+      "task_name": "Smoke test packed MCP release artifacts",
+      "verify_command": "node scripts/smoke-mcp-artifact.js --expected-version 0.1.0 -- runtime/target/release/truenorth-mcp && npm run format:check",
+      "issue_ids": [
+        "348"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:348",
+          "source_pointer": "/issues/348",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/348",
+          "number": 348,
+          "state": "closed",
+          "closed_at": "2026-09-22T04:12:44Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:355",
+          "source_pointer": "/pull_requests/355",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/355",
+          "number": 355,
+          "state": "closed",
+          "merged_at": "2026-09-22T04:12:43Z",
+          "merge_commit_sha": "48235d08ffff36fcc6d74bf2a13e0aab9f28408d",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:355:merge_commit",
+          "sha": "48235d08ffff36fcc6d74bf2a13e0aab9f28408d",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/48235d08ffff36fcc6d74bf2a13e0aab9f28408d",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106613125818",
+          "source_pointer": "/merge_commit_check_runs/355",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T04:14:15Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35686025102/job/106613125818",
+          "head_sha": "48235d08ffff36fcc6d74bf2a13e0aab9f28408d",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/7",
+          "verify_command": "node scripts/smoke-mcp-artifact.js --expected-version 0.1.0 -- runtime/target/release/truenorth-mcp && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:009",
+      "entry_index": 9,
+      "task_name": "Publish v1 security and support policy",
+      "verify_command": "npm run format:check && truenorth_verify_gate",
+      "issue_ids": [
+        "345"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:345",
+          "source_pointer": "/issues/345",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/345",
+          "number": 345,
+          "state": "closed",
+          "closed_at": "2026-09-22T04:27:52Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:356",
+          "source_pointer": "/pull_requests/356",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/356",
+          "number": 356,
+          "state": "closed",
+          "merged_at": "2026-09-22T04:27:51Z",
+          "merge_commit_sha": "0506ff4f6649ad786e0c5a3770f73803b5b6c872",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:356:merge_commit",
+          "sha": "0506ff4f6649ad786e0c5a3770f73803b5b6c872",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/0506ff4f6649ad786e0c5a3770f73803b5b6c872",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106615995792",
+          "source_pointer": "/merge_commit_check_runs/356",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T04:29:07Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35686978143/job/106615995792",
+          "head_sha": "0506ff4f6649ad786e0c5a3770f73803b5b6c872",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/8",
+          "verify_command": "npm run format:check && truenorth_verify_gate",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:010",
+      "entry_index": 10,
+      "task_name": "Plan v1 cockpit and MCP compatibility policy",
+      "verify_command": "git diff --check",
+      "issue_ids": [
+        "349"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:349",
+          "source_pointer": "/issues/349",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/349",
+          "number": 349,
+          "state": "closed",
+          "closed_at": "2026-09-22T04:50:25Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [],
+      "commit_evidence": [],
+      "ci_evidence": [],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/9",
+          "verify_command": "git diff --check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Issue-level history was recovered, but no pull request or receipt independently proves completion of the distinct planning stage; stage completion remains unobserved rather than inferred from the later implementation."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:011",
+      "entry_index": 11,
+      "task_name": "Publish v1 cockpit and MCP compatibility policy",
+      "verify_command": "cd runtime && cargo test engine::agent_ws::layout && cargo test cockpit && cargo test resources && cargo test integration_tests && cd .. && npm run format:check",
+      "issue_ids": [
+        "349"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:349",
+          "source_pointer": "/issues/349",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/349",
+          "number": 349,
+          "state": "closed",
+          "closed_at": "2026-09-22T04:50:25Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:358",
+          "source_pointer": "/pull_requests/358",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/358",
+          "number": 358,
+          "state": "closed",
+          "merged_at": "2026-09-22T04:50:24Z",
+          "merge_commit_sha": "12da70094af4bf9489c701f657cbc63aa4a827f9",
+          "relationship": "PR #358 cross-references issue #349 and implements/publishes the compatibility policy; it is linked to this publication entry, not used to prove the separate planning entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:358:merge_commit",
+          "sha": "12da70094af4bf9489c701f657cbc63aa4a827f9",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/12da70094af4bf9489c701f657cbc63aa4a827f9",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106620236501",
+          "source_pointer": "/merge_commit_check_runs/358",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T04:51:44Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35688400798/job/106620236501",
+          "head_sha": "12da70094af4bf9489c701f657cbc63aa4a827f9",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/10",
+          "verify_command": "cd runtime && cargo test engine::agent_ws::layout && cargo test cockpit && cargo test resources && cargo test integration_tests && cd .. && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "The shared issue has multiple release-plan stages; evidence is linked only by the pull-request title/cross-reference described above and does not collapse the other task entries into this one."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:012",
+      "entry_index": 12,
+      "task_name": "Plan solo maintainer governance controls",
+      "verify_command": "git diff --check",
+      "issue_ids": [
+        "352"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:352",
+          "source_pointer": "/issues/352",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/352",
+          "number": 352,
+          "state": "closed",
+          "closed_at": "2026-09-22T05:17:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [],
+      "commit_evidence": [],
+      "ci_evidence": [],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/11",
+          "verify_command": "git diff --check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Issue-level history was recovered, but no pull request or receipt independently proves completion of the distinct planning stage; stage completion remains unobserved rather than inferred from the later implementation."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:013",
+      "entry_index": 13,
+      "task_name": "Harden v1 merge and release controls",
+      "verify_command": "npm run format:check && cd runtime && cargo test",
+      "issue_ids": [
+        "352"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:352",
+          "source_pointer": "/issues/352",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/352",
+          "number": 352,
+          "state": "closed",
+          "closed_at": "2026-09-22T05:17:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:359",
+          "source_pointer": "/pull_requests/359",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/359",
+          "number": 359,
+          "state": "closed",
+          "merged_at": "2026-09-22T05:17:09Z",
+          "merge_commit_sha": "f316ee41cd8edeee69957fdc01516f627b460d46",
+          "relationship": "PR #359 cross-references issue #352 and implements the governance controls; it is linked to this hardening entry, not used to prove the separate planning entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:359:merge_commit",
+          "sha": "f316ee41cd8edeee69957fdc01516f627b460d46",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/f316ee41cd8edeee69957fdc01516f627b460d46",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106625335111",
+          "source_pointer": "/merge_commit_check_runs/359",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T05:18:29Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35690114507/job/106625335111",
+          "head_sha": "f316ee41cd8edeee69957fdc01516f627b460d46",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/12",
+          "verify_command": "npm run format:check && cd runtime && cargo test",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "The shared issue has multiple release-plan stages; evidence is linked only by the pull-request title/cross-reference described above and does not collapse the other task entries into this one."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:014",
+      "entry_index": 14,
+      "task_name": "Add npm registry README",
+      "verify_command": "cd npm && node --test test/package-readme.test.js && npm pack --dry-run --json",
+      "issue_ids": [
+        "360"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:360",
+          "source_pointer": "/issues/360",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/360",
+          "number": 360,
+          "state": "closed",
+          "closed_at": "2026-09-22T05:26:16Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:361",
+          "source_pointer": "/pull_requests/361",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/361",
+          "number": 361,
+          "state": "closed",
+          "merged_at": "2026-09-22T05:26:15Z",
+          "merge_commit_sha": "cb19b743a24db39574766f6f505232608b58361e",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:361:merge_commit",
+          "sha": "cb19b743a24db39574766f6f505232608b58361e",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/cb19b743a24db39574766f6f505232608b58361e",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106627160251",
+          "source_pointer": "/merge_commit_check_runs/361",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T05:27:52Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35690701679/job/106627160251",
+          "head_sha": "cb19b743a24db39574766f6f505232608b58361e",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/13",
+          "verify_command": "cd npm && node --test test/package-readme.test.js && npm pack --dry-run --json",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:015",
+      "entry_index": 15,
+      "task_name": "Preserve executable release artifact modes",
+      "verify_command": "actionlint .github/workflows/release.yml && npm run format:check",
+      "issue_ids": [
+        "362"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:362",
+          "source_pointer": "/issues/362",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/362",
+          "number": 362,
+          "state": "closed",
+          "closed_at": "2026-09-22T05:41:59Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:364",
+          "source_pointer": "/pull_requests/364",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/364",
+          "number": 364,
+          "state": "closed",
+          "merged_at": "2026-09-22T05:41:58Z",
+          "merge_commit_sha": "f47d678866409c9a1f61f42b372134e0f6ddc7de",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:364:merge_commit",
+          "sha": "f47d678866409c9a1f61f42b372134e0f6ddc7de",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/f47d678866409c9a1f61f42b372134e0f6ddc7de",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106630227822",
+          "source_pointer": "/merge_commit_check_runs/364",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T05:43:31Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35691728141/job/106630227822",
+          "head_sha": "f47d678866409c9a1f61f42b372134e0f6ddc7de",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/14",
+          "verify_command": "actionlint .github/workflows/release.yml && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:016",
+      "entry_index": 16,
+      "task_name": "Add read-only runtime diagnostics",
+      "verify_command": "cd runtime && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
+      "issue_ids": [
+        "347"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:347",
+          "source_pointer": "/issues/347",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/347",
+          "number": 347,
+          "state": "closed",
+          "closed_at": "2026-09-22T10:25:36Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:365",
+          "source_pointer": "/pull_requests/365",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/365",
+          "number": 365,
+          "state": "closed",
+          "merged_at": "2026-09-22T10:25:35Z",
+          "merge_commit_sha": "f5a6f17bb0e0213f3a71c6a0dec2cb80939f17e8",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:365:merge_commit",
+          "sha": "f5a6f17bb0e0213f3a71c6a0dec2cb80939f17e8",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/f5a6f17bb0e0213f3a71c6a0dec2cb80939f17e8",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106707569380",
+          "source_pointer": "/merge_commit_check_runs/365",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T10:26:53Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35715908391/job/106707569380",
+          "head_sha": "f5a6f17bb0e0213f3a71c6a0dec2cb80939f17e8",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/15",
+          "verify_command": "cd runtime && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:017",
+      "entry_index": 17,
+      "task_name": "Publish auditable release records",
+      "verify_command": "node --test scripts/release-record.test.js && npm run format:check",
+      "issue_ids": [
+        "346"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:346",
+          "source_pointer": "/issues/346",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/346",
+          "number": 346,
+          "state": "closed",
+          "closed_at": "2026-09-22T10:44:54Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:366",
+          "source_pointer": "/pull_requests/366",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/366",
+          "number": 366,
+          "state": "closed",
+          "merged_at": "2026-09-22T10:44:53Z",
+          "merge_commit_sha": "540cca3f247f5e3fbf2368f1bebbecb9e8200170",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:366:merge_commit",
+          "sha": "540cca3f247f5e3fbf2368f1bebbecb9e8200170",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/540cca3f247f5e3fbf2368f1bebbecb9e8200170",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106713474620",
+          "source_pointer": "/merge_commit_check_runs/366",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T10:46:57Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35717680901/job/106713474620",
+          "head_sha": "540cca3f247f5e3fbf2368f1bebbecb9e8200170",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/16",
+          "verify_command": "node --test scripts/release-record.test.js && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:018",
+      "entry_index": 18,
+      "task_name": "Prepare v1.0.0 release metadata",
+      "verify_command": "node scripts/check-release-version.js 1.0.0 && node --test scripts/release-record.test.js && npm run format:check",
+      "issue_ids": [
+        "367"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:367",
+          "source_pointer": "/issues/367",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/367",
+          "number": 367,
+          "state": "closed",
+          "closed_at": "2026-09-22T13:05:13Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:368",
+          "source_pointer": "/pull_requests/368",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/368",
+          "number": 368,
+          "state": "closed",
+          "merged_at": "2026-09-22T13:05:12Z",
+          "merge_commit_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:368:merge_commit",
+          "sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:106757507098",
+          "source_pointer": "/merge_commit_check_runs/368",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-22T13:07:03Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731191355/job/106757507098",
+          "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim.",
+          "non_success_checks": [
+            {
+              "source_record": "check-run:106773003348",
+              "source_pointer": "/merge_commit_check_runs/368",
+              "name": "publish release record",
+              "conclusion": "skipped",
+              "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+              "completed_at": "2026-09-22T13:48:17Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731227094/job/106773003348"
+            },
+            {
+              "source_record": "check-run:106773000140",
+              "source_pointer": "/merge_commit_check_runs/368",
+              "name": "publish the root wrapper",
+              "conclusion": "skipped",
+              "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+              "completed_at": "2026-09-22T13:48:16Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731227094/job/106773000140"
+            },
+            {
+              "source_record": "check-run:106772890570",
+              "source_pointer": "/merge_commit_check_runs/368",
+              "name": "publish linux-x64",
+              "conclusion": "failure",
+              "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+              "completed_at": "2026-09-22T13:48:11Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731227094/job/106772890570"
+            },
+            {
+              "source_record": "check-run:106772890493",
+              "source_pointer": "/merge_commit_check_runs/368",
+              "name": "publish linux-arm64",
+              "conclusion": "failure",
+              "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+              "completed_at": "2026-09-22T13:48:12Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731227094/job/106772890493"
+            },
+            {
+              "source_record": "check-run:106772890445",
+              "source_pointer": "/merge_commit_check_runs/368",
+              "name": "publish darwin-x64",
+              "conclusion": "failure",
+              "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+              "completed_at": "2026-09-22T13:48:12Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731227094/job/106772890445"
+            },
+            {
+              "source_record": "check-run:106772890440",
+              "source_pointer": "/merge_commit_check_runs/368",
+              "name": "publish darwin-arm64",
+              "conclusion": "failure",
+              "head_sha": "8840d1cdcab7c5fb54161d1baedfe00dfabea4ea",
+              "completed_at": "2026-09-22T13:48:16Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35731227094/job/106772890440"
+            }
+          ],
+          "non_success_interpretation": "All recovered failed or skipped publication checks remain explicit. A successful CI Gate or published release record does not override these outcomes. No supersession or native receipt is inferred."
+        }
+      ],
+      "release_evidence": [
+        {
+          "source_record": "release:v1.0.0",
+          "source_pointer": "/releases",
+          "tag": "v1.0.0",
+          "url": "https://github.com/vixygrey/truenorth-mcp/releases/tag/v1.0.0",
+          "published_at": "2026-09-22T14:13:01Z",
+          "tag_target_sha": "fcdf3c9194269784f172ecfac7f6cb3a96fe20e9",
+          "relationship": "GitHub release and annotated tag recovered for this release-specific task."
+        }
+      ],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/17",
+          "verify_command": "node scripts/check-release-version.js 1.0.0 && node --test scripts/release-record.test.js && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:019",
+      "entry_index": 19,
+      "task_name": "Investigate methodology validation and review gate failures",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml",
+      "issue_ids": [
+        "375"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:375",
+          "source_pointer": "/issues/375",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/375",
+          "number": 375,
+          "state": "closed",
+          "closed_at": "2026-09-23T02:38:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [],
+      "commit_evidence": [],
+      "ci_evidence": [],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/18",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Issue-level history was recovered, but no pull request or receipt independently proves completion of the distinct investigation stage; stage completion remains unobserved rather than inferred from the later implementation."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:020",
+      "entry_index": 20,
+      "task_name": "Implement two-tier skill validation and review gate coverage",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml && npm run format:check",
+      "issue_ids": [
+        "375"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:375",
+          "source_pointer": "/issues/375",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/375",
+          "number": 375,
+          "state": "closed",
+          "closed_at": "2026-09-23T02:38:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:376",
+          "source_pointer": "/pull_requests/376",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/376",
+          "number": 376,
+          "state": "closed",
+          "merged_at": "2026-09-23T02:38:09Z",
+          "merge_commit_sha": "07a83f1b56c5b1018f4bae06fc182e5d4fed6001",
+          "relationship": "PR #376 cross-references issue #375 and implements two-tier validation; it is linked to the implementation entry, not the separate investigation or release entries."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:376:merge_commit",
+          "sha": "07a83f1b56c5b1018f4bae06fc182e5d4fed6001",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/07a83f1b56c5b1018f4bae06fc182e5d4fed6001",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107023040456",
+          "source_pointer": "/merge_commit_check_runs/376",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-23T02:39:34Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35811142918/job/107023040456",
+          "head_sha": "07a83f1b56c5b1018f4bae06fc182e5d4fed6001",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/19",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "The shared issue has multiple release-plan stages; evidence is linked only by the pull-request title/cross-reference described above and does not collapse the other task entries into this one."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:021",
+      "entry_index": 21,
+      "task_name": "Publish v1.0.1 patch release for skill validation fix",
+      "verify_command": "node scripts/check-release-version.js 1.0.1 && npm run format:check",
+      "issue_ids": [
+        "375"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:375",
+          "source_pointer": "/issues/375",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/375",
+          "number": 375,
+          "state": "closed",
+          "closed_at": "2026-09-23T02:38:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:377",
+          "source_pointer": "/pull_requests/377",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/377",
+          "number": 377,
+          "state": "closed",
+          "merged_at": "2026-09-23T12:45:57Z",
+          "merge_commit_sha": "dba411c0ace312a563128a3a3298f46355fb40a3",
+          "relationship": "PR #377 cross-references issue #375 and is titled as the v1.0.1 publication; it is linked to this publication entry, not the investigation or implementation entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:377:merge_commit",
+          "sha": "dba411c0ace312a563128a3a3298f46355fb40a3",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/dba411c0ace312a563128a3a3298f46355fb40a3",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107186573027",
+          "source_pointer": "/merge_commit_check_runs/377",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-23T12:47:23Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35862570908/job/107186573027",
+          "head_sha": "dba411c0ace312a563128a3a3298f46355fb40a3",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [
+        {
+          "source_record": "release:v1.0.1",
+          "source_pointer": "/releases",
+          "tag": "v1.0.1",
+          "url": "https://github.com/vixygrey/truenorth-mcp/releases/tag/v1.0.1",
+          "published_at": "2026-09-23T12:57:12Z",
+          "tag_target_sha": "dba411c0ace312a563128a3a3298f46355fb40a3",
+          "relationship": "GitHub release and annotated tag recovered for this release-specific task."
+        }
+      ],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/20",
+          "verify_command": "node scripts/check-release-version.js 1.0.1 && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "The shared issue has multiple release-plan stages; evidence is linked only by the pull-request title/cross-reference described above and does not collapse the other task entries into this one."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:022",
+      "entry_index": 22,
+      "task_name": "Implement fresh project bootstrap for issue #379",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml && (cd npm && npm test)",
+      "issue_ids": [
+        "379"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:379",
+          "source_pointer": "/issues/379",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/379",
+          "number": 379,
+          "state": "closed",
+          "closed_at": "2026-09-23T20:12:24Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:383",
+          "source_pointer": "/pull_requests/383",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/383",
+          "number": 383,
+          "state": "closed",
+          "merged_at": "2026-09-23T20:12:22Z",
+          "merge_commit_sha": "041c63eb1f81d20f62c160c20b8c6b857a1e13ab",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:383:merge_commit",
+          "sha": "041c63eb1f81d20f62c160c20b8c6b857a1e13ab",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/041c63eb1f81d20f62c160c20b8c6b857a1e13ab",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107362581121",
+          "source_pointer": "/merge_commit_check_runs/383",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-23T20:14:01Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/35914380459/job/107362581121",
+          "head_sha": "041c63eb1f81d20f62c160c20b8c6b857a1e13ab",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/21",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml && (cd npm && npm test)",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:023",
+      "entry_index": 23,
+      "task_name": "Reconcile token caps with runtime behavior",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml && TRUENORTH_VERIFY_CMD=true cargo run --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config",
+      "issue_ids": [
+        "380"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:380",
+          "source_pointer": "/issues/380",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/380",
+          "number": 380,
+          "state": "closed",
+          "closed_at": "2026-09-24T14:02:30Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:384",
+          "source_pointer": "/pull_requests/384",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/384",
+          "number": 384,
+          "state": "closed",
+          "merged_at": "2026-09-24T14:02:28Z",
+          "merge_commit_sha": "0d2aca06cd037ae9031fcd7c739685fcaa434644",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:384:merge_commit",
+          "sha": "0d2aca06cd037ae9031fcd7c739685fcaa434644",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/0d2aca06cd037ae9031fcd7c739685fcaa434644",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107668152358",
+          "source_pointer": "/merge_commit_check_runs/384",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T14:04:00Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36009896523/job/107668152358",
+          "head_sha": "0d2aca06cd037ae9031fcd7c739685fcaa434644",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/22",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml && TRUENORTH_VERIFY_CMD=true cargo run --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:024",
+      "entry_index": 24,
+      "task_name": "Add CI-aligned local preflight command",
+      "verify_command": "npm run preflight",
+      "issue_ids": [
+        "381"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:381",
+          "source_pointer": "/issues/381",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/381",
+          "number": 381,
+          "state": "closed",
+          "closed_at": "2026-09-24T14:20:32Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:385",
+          "source_pointer": "/pull_requests/385",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/385",
+          "number": 385,
+          "state": "closed",
+          "merged_at": "2026-09-24T14:20:31Z",
+          "merge_commit_sha": "7173815919a2b0aa904574e4430bddbbf00a4722",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:385:merge_commit",
+          "sha": "7173815919a2b0aa904574e4430bddbbf00a4722",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/7173815919a2b0aa904574e4430bddbbf00a4722",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107675689703",
+          "source_pointer": "/merge_commit_check_runs/385",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T14:22:05Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36012093381/job/107675689703",
+          "head_sha": "7173815919a2b0aa904574e4430bddbbf00a4722",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/23",
+          "verify_command": "npm run preflight",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:025",
+      "entry_index": 25,
+      "task_name": "Make backlog ownership explicit",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml scaffold && npm run preflight",
+      "issue_ids": [
+        "382"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:382",
+          "source_pointer": "/issues/382",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/382",
+          "number": 382,
+          "state": "closed",
+          "closed_at": "2026-09-24T14:37:54Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:386",
+          "source_pointer": "/pull_requests/386",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/386",
+          "number": 386,
+          "state": "closed",
+          "merged_at": "2026-09-24T14:37:53Z",
+          "merge_commit_sha": "c003159acdd39df6b3f31a61273d11a003264b42",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:386:merge_commit",
+          "sha": "c003159acdd39df6b3f31a61273d11a003264b42",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/c003159acdd39df6b3f31a61273d11a003264b42",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107682954875",
+          "source_pointer": "/merge_commit_check_runs/386",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T14:39:38Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36014169945/job/107682954875",
+          "head_sha": "c003159acdd39df6b3f31a61273d11a003264b42",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/24",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml scaffold && npm run preflight",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:026",
+      "entry_index": 26,
+      "task_name": "Correct stable security support wording",
+      "verify_command": "bash scripts/preflight.sh format",
+      "issue_ids": [
+        "392"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:392",
+          "source_pointer": "/issues/392",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/392",
+          "number": 392,
+          "state": "closed",
+          "closed_at": "2026-09-24T18:38:55Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:397",
+          "source_pointer": "/pull_requests/397",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/397",
+          "number": 397,
+          "state": "closed",
+          "merged_at": "2026-09-24T18:38:54Z",
+          "merge_commit_sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "relationship": "PR #397 cross-references issue #392; the shared pull request covers both distinct documentation entries without collapsing them."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:397:merge_commit",
+          "sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107779216736",
+          "source_pointer": "/merge_commit_check_runs/397",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T18:40:53Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36042693822/job/107779216736",
+          "head_sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/25",
+          "verify_command": "bash scripts/preflight.sh format",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:027",
+      "entry_index": 27,
+      "task_name": "Document backlog ownership compatibility",
+      "verify_command": "bash scripts/preflight.sh format",
+      "issue_ids": [
+        "394"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:394",
+          "source_pointer": "/issues/394",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/394",
+          "number": 394,
+          "state": "closed",
+          "closed_at": "2026-09-24T18:38:56Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:397",
+          "source_pointer": "/pull_requests/397",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/397",
+          "number": 397,
+          "state": "closed",
+          "merged_at": "2026-09-24T18:38:54Z",
+          "merge_commit_sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "relationship": "PR #397 cross-references issue #394; the shared pull request covers both distinct documentation entries without collapsing them."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:397:merge_commit",
+          "sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107779216736",
+          "source_pointer": "/merge_commit_check_runs/397",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T18:40:53Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36042693822/job/107779216736",
+          "head_sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/26",
+          "verify_command": "bash scripts/preflight.sh format",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:028",
+      "entry_index": 28,
+      "task_name": "Implement combined wrapper compatibility for issues 388 and 389",
+      "verify_command": "bash scripts/preflight.sh wrapper artifact-smoke format shell",
+      "issue_ids": [
+        "388",
+        "389"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:388",
+          "source_pointer": "/issues/388",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/388",
+          "number": 388,
+          "state": "closed",
+          "closed_at": "2026-09-24T19:02:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        },
+        {
+          "source_record": "issue:389",
+          "source_pointer": "/issues/389",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/389",
+          "number": 389,
+          "state": "closed",
+          "closed_at": "2026-09-24T19:02:10Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:398",
+          "source_pointer": "/pull_requests/398",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/398",
+          "number": 398,
+          "state": "closed",
+          "merged_at": "2026-09-24T19:02:09Z",
+          "merge_commit_sha": "8a0b36d6bd7ec04cc6a5387ab6953e612c1842a7",
+          "relationship": "PR #398 cross-references both inventory issues #388 and #389 and its title matches the combined wrapper-compatibility task."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:398:merge_commit",
+          "sha": "8a0b36d6bd7ec04cc6a5387ab6953e612c1842a7",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/8a0b36d6bd7ec04cc6a5387ab6953e612c1842a7",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107788053418",
+          "source_pointer": "/merge_commit_check_runs/398",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T19:03:42Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36045370387/job/107788053418",
+          "head_sha": "8a0b36d6bd7ec04cc6a5387ab6953e612c1842a7",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/27",
+          "verify_command": "bash scripts/preflight.sh wrapper artifact-smoke format shell",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:029",
+      "entry_index": 29,
+      "task_name": "Measure and tighten local preflight duration",
+      "verify_command": "npm run preflight",
+      "issue_ids": [
+        "391"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:391",
+          "source_pointer": "/issues/391",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/391",
+          "number": 391,
+          "state": "closed",
+          "closed_at": "2026-09-24T19:46:17Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:399",
+          "source_pointer": "/pull_requests/399",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/399",
+          "number": 399,
+          "state": "closed",
+          "merged_at": "2026-09-24T19:46:15Z",
+          "merge_commit_sha": "a71893c8a929dd9d08ea3d8c85f7d13ddc12ee7d",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:399:merge_commit",
+          "sha": "a71893c8a929dd9d08ea3d8c85f7d13ddc12ee7d",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/a71893c8a929dd9d08ea3d8c85f7d13ddc12ee7d",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107804787245",
+          "source_pointer": "/merge_commit_check_runs/399",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T19:48:03Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36050385437/job/107804787245",
+          "head_sha": "a71893c8a929dd9d08ea3d8c85f7d13ddc12ee7d",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/28",
+          "verify_command": "npm run preflight",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:030",
+      "entry_index": 30,
+      "task_name": "Add end-to-end methodology profile fixtures",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml profile_workflow",
+      "issue_ids": [
+        "390"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:390",
+          "source_pointer": "/issues/390",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/390",
+          "number": 390,
+          "state": "closed",
+          "closed_at": "2026-09-24T20:25:58Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:400",
+          "source_pointer": "/pull_requests/400",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/400",
+          "number": 400,
+          "state": "closed",
+          "merged_at": "2026-09-24T20:25:57Z",
+          "merge_commit_sha": "f7e8650bf096e9723646c961491400ead7f74203",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:400:merge_commit",
+          "sha": "f7e8650bf096e9723646c961491400ead7f74203",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/f7e8650bf096e9723646c961491400ead7f74203",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107819613454",
+          "source_pointer": "/merge_commit_check_runs/400",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T20:27:40Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36054828094/job/107819613454",
+          "head_sha": "f7e8650bf096e9723646c961491400ead7f74203",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/29",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml profile_workflow",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:031",
+      "entry_index": 31,
+      "task_name": "Prove cross-language project compatibility",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml --test cross_language_projects",
+      "issue_ids": [
+        "393"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:393",
+          "source_pointer": "/issues/393",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/393",
+          "number": 393,
+          "state": "closed",
+          "closed_at": "2026-09-24T21:42:28Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:401",
+          "source_pointer": "/pull_requests/401",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/401",
+          "number": 401,
+          "state": "closed",
+          "merged_at": "2026-09-24T21:42:26Z",
+          "merge_commit_sha": "b1ce728dd6090a35efa61733402b92e3b0aef54e",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:401:merge_commit",
+          "sha": "b1ce728dd6090a35efa61733402b92e3b0aef54e",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/b1ce728dd6090a35efa61733402b92e3b0aef54e",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107847222885",
+          "source_pointer": "/merge_commit_check_runs/401",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T21:44:19Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36063162364/job/107847222885",
+          "head_sha": "b1ce728dd6090a35efa61733402b92e3b0aef54e",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/30",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml --test cross_language_projects",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:032",
+      "entry_index": 32,
+      "task_name": "Establish runtime performance baselines",
+      "verify_command": "node --test scripts/benchmark-runtime.test.js && npm run preflight",
+      "issue_ids": [
+        "387"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:387",
+          "source_pointer": "/issues/387",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/387",
+          "number": 387,
+          "state": "closed",
+          "closed_at": "2026-09-24T22:07:47Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:402",
+          "source_pointer": "/pull_requests/402",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/402",
+          "number": 402,
+          "state": "closed",
+          "merged_at": "2026-09-24T22:07:46Z",
+          "merge_commit_sha": "90f615e5ca110ab0fb7b3c497f1eb952e104079e",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:402:merge_commit",
+          "sha": "90f615e5ca110ab0fb7b3c497f1eb952e104079e",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/90f615e5ca110ab0fb7b3c497f1eb952e104079e",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107855162046",
+          "source_pointer": "/merge_commit_check_runs/402",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-24T22:09:27Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36065658206/job/107855162046",
+          "head_sha": "90f615e5ca110ab0fb7b3c497f1eb952e104079e",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/31",
+          "verify_command": "node --test scripts/benchmark-runtime.test.js && npm run preflight",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:033",
+      "entry_index": 33,
+      "task_name": "Certify MCP Inspector client compatibility",
+      "verify_command": "node --test scripts/certify-mcp-inspector.test.js && npm run preflight",
+      "issue_ids": [
+        "395"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:395",
+          "source_pointer": "/issues/395",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/395",
+          "number": 395,
+          "state": "closed",
+          "closed_at": "2026-09-25T03:10:38Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:408",
+          "source_pointer": "/pull_requests/408",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/408",
+          "number": 408,
+          "state": "closed",
+          "merged_at": "2026-09-25T03:10:37Z",
+          "merge_commit_sha": "38b143dff26b28067a4c2a7c690f732e5d4e7550",
+          "relationship": "PR #408 cross-references umbrella issue #395; its title specifically certifies MCP Inspector, matching this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:408:merge_commit",
+          "sha": "38b143dff26b28067a4c2a7c690f732e5d4e7550",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/38b143dff26b28067a4c2a7c690f732e5d4e7550",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107928292674",
+          "source_pointer": "/merge_commit_check_runs/408",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-25T03:12:13Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36089291086/job/107928292674",
+          "head_sha": "38b143dff26b28067a4c2a7c690f732e5d4e7550",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/32",
+          "verify_command": "node --test scripts/certify-mcp-inspector.test.js && npm run preflight",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Repository CI evidence does not by itself prove the named external MCP client behavior smoke or preserve a native client-session receipt."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:034",
+      "entry_index": 34,
+      "task_name": "Certify Oh My Pi MCP compatibility",
+      "verify_command": "node --test scripts/certify-omp.test.js && bash scripts/preflight.sh",
+      "issue_ids": [
+        "403"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:403",
+          "source_pointer": "/issues/403",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/403",
+          "number": 403,
+          "state": "closed",
+          "closed_at": "2026-09-25T04:20:07Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:409",
+          "source_pointer": "/pull_requests/409",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/409",
+          "number": 409,
+          "state": "closed",
+          "merged_at": "2026-09-25T04:20:06Z",
+          "merge_commit_sha": "0546604ba4daf9966423b951bc9bdbf65390771b",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:409:merge_commit",
+          "sha": "0546604ba4daf9966423b951bc9bdbf65390771b",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/0546604ba4daf9966423b951bc9bdbf65390771b",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:107942657998",
+          "source_pointer": "/merge_commit_check_runs/409",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-25T04:21:54Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36094022340/job/107942657998",
+          "head_sha": "0546604ba4daf9966423b951bc9bdbf65390771b",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/33",
+          "verify_command": "node --test scripts/certify-omp.test.js && bash scripts/preflight.sh",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Repository CI evidence does not by itself prove the named external MCP client behavior smoke or preserve a native client-session receipt."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:035",
+      "entry_index": 35,
+      "task_name": "Certify OpenCode MCP client",
+      "verify_command": "node --test scripts/certify-opencode.test.js && bash scripts/preflight.sh",
+      "issue_ids": [
+        "405"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:405",
+          "source_pointer": "/issues/405",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/405",
+          "number": 405,
+          "state": "closed",
+          "closed_at": "2026-09-25T18:35:39Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:411",
+          "source_pointer": "/pull_requests/411",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/411",
+          "number": 411,
+          "state": "closed",
+          "merged_at": "2026-09-25T18:35:37Z",
+          "merge_commit_sha": "caf9530e35c9da1972311d84df122b6d5e77dcd5",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:411:merge_commit",
+          "sha": "caf9530e35c9da1972311d84df122b6d5e77dcd5",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/caf9530e35c9da1972311d84df122b6d5e77dcd5",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:108201862337",
+          "source_pointer": "/merge_commit_check_runs/411",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-25T18:37:04Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36174413911/job/108201862337",
+          "head_sha": "caf9530e35c9da1972311d84df122b6d5e77dcd5",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/34",
+          "verify_command": "node --test scripts/certify-opencode.test.js && bash scripts/preflight.sh",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Repository CI evidence does not by itself prove the named external MCP client behavior smoke or preserve a native client-session receipt."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:036",
+      "entry_index": 36,
+      "task_name": "Certify VS Code and GitHub Copilot MCP compatibility",
+      "verify_command": "node --test scripts/certify-vscode.test.js && npm run format:check",
+      "issue_ids": [
+        "404"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:404",
+          "source_pointer": "/issues/404",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/404",
+          "number": 404,
+          "state": "closed",
+          "closed_at": "2026-09-25T22:48:33Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:413",
+          "source_pointer": "/pull_requests/413",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/413",
+          "number": 413,
+          "state": "closed",
+          "merged_at": "2026-09-25T22:48:32Z",
+          "merge_commit_sha": "f4dac61ca04033983306b2a651cd09b0f6148103",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:413:merge_commit",
+          "sha": "f4dac61ca04033983306b2a651cd09b0f6148103",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/f4dac61ca04033983306b2a651cd09b0f6148103",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:108279844713",
+          "source_pointer": "/merge_commit_check_runs/413",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-25T22:50:18Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36198431588/job/108279844713",
+          "head_sha": "f4dac61ca04033983306b2a651cd09b0f6148103",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/35",
+          "verify_command": "node --test scripts/certify-vscode.test.js && npm run format:check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Repository CI evidence does not by itself prove the named external MCP client behavior smoke or preserve a native client-session receipt."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:037",
+      "entry_index": 37,
+      "task_name": "Avoid duplicate branch and pull request CI runs",
+      "verify_command": "actionlint .github/workflows/ci.yml && bash scripts/preflight.sh format",
+      "issue_ids": [
+        "414"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:414",
+          "source_pointer": "/issues/414",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/414",
+          "number": 414,
+          "state": "closed",
+          "closed_at": "2026-09-25T22:57:13Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:415",
+          "source_pointer": "/pull_requests/415",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/415",
+          "number": 415,
+          "state": "closed",
+          "merged_at": "2026-09-25T22:57:12Z",
+          "merge_commit_sha": "bba891461c0e7907a7c949d955ec2a9cacab9d94",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:415:merge_commit",
+          "sha": "bba891461c0e7907a7c949d955ec2a9cacab9d94",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/bba891461c0e7907a7c949d955ec2a9cacab9d94",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:108281722673",
+          "source_pointer": "/merge_commit_check_runs/415",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-25T22:59:02Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36199033961/job/108281722673",
+          "head_sha": "bba891461c0e7907a7c949d955ec2a9cacab9d94",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/36",
+          "verify_command": "actionlint .github/workflows/ci.yml && bash scripts/preflight.sh format",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:038",
+      "entry_index": 38,
+      "task_name": "Publish Croft MCP capability assessment",
+      "verify_command": "npm run format:check && git diff --check",
+      "issue_ids": [
+        "406"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:406",
+          "source_pointer": "/issues/406",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/406",
+          "number": 406,
+          "state": "closed",
+          "closed_at": "2026-09-26T02:17:45Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:423",
+          "source_pointer": "/pull_requests/423",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/423",
+          "number": 423,
+          "state": "closed",
+          "merged_at": "2026-09-26T02:17:44Z",
+          "merge_commit_sha": "38313f08a5298b19bc6ca5fad3bb28c2aa2b5050",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:423:merge_commit",
+          "sha": "38313f08a5298b19bc6ca5fad3bb28c2aa2b5050",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/38313f08a5298b19bc6ca5fad3bb28c2aa2b5050",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:108318218556",
+          "source_pointer": "/merge_commit_check_runs/423",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-26T02:19:09Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36211227743/job/108318218556",
+          "head_sha": "38313f08a5298b19bc6ca5fad3bb28c2aa2b5050",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim."
+        }
+      ],
+      "release_evidence": [],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/37",
+          "verify_command": "npm run format:check && git diff --check",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke.",
+        "Repository CI evidence does not by itself prove the named external MCP client behavior smoke or preserve a native client-session receipt."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    },
+    {
+      "entry_id": "release-plan:039",
+      "entry_index": 39,
+      "task_name": "Emit version-aware cache metadata for MCP resource responses",
+      "verify_command": "cargo test --manifest-path runtime/Cargo.toml resource_cache_metadata && npm run preflight",
+      "issue_ids": [
+        "424"
+      ],
+      "external_status": "closed",
+      "issue_evidence": [
+        {
+          "source_record": "issue:424",
+          "source_pointer": "/issues/424",
+          "url": "https://github.com/vixygrey/truenorth-mcp/issues/424",
+          "number": 424,
+          "state": "closed",
+          "closed_at": "2026-09-26T18:11:14Z",
+          "relationship": "Exact issue_id recorded by the release-plan inventory."
+        }
+      ],
+      "pull_request_evidence": [
+        {
+          "source_record": "pull:425",
+          "source_pointer": "/pull_requests/425",
+          "url": "https://github.com/vixygrey/truenorth-mcp/pull/425",
+          "number": 425,
+          "state": "closed",
+          "merged_at": "2026-09-26T18:11:13Z",
+          "merge_commit_sha": "917463a9a2da6cb0d4323974b6976e1486a50044",
+          "relationship": "The pull request cross-references the inventory issue and its title aligns with this task entry."
+        }
+      ],
+      "commit_evidence": [
+        {
+          "source_record": "pull:425:merge_commit",
+          "sha": "917463a9a2da6cb0d4323974b6976e1486a50044",
+          "url": "https://github.com/vixygrey/truenorth-mcp/commit/917463a9a2da6cb0d4323974b6976e1486a50044",
+          "relationship": "merge_commit_sha returned by the GitHub pull-request API; this is commit association evidence, not a local verification receipt."
+        }
+      ],
+      "ci_evidence": [
+        {
+          "source_record": "check-run:108458772597",
+          "source_pointer": "/merge_commit_check_runs/425",
+          "name": "CI Gate",
+          "conclusion": "success",
+          "completed_at": "2026-09-26T18:12:58Z",
+          "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36261648089/job/108458772597",
+          "head_sha": "917463a9a2da6cb0d4323974b6976e1486a50044",
+          "relationship": "Observed GitHub check run attached to the merge commit. This is CI evidence, not a native truenorth gate receipt or proof that the inventory verify_command ran verbatim.",
+          "non_success_checks": [
+            {
+              "source_record": "check-run:108462664885",
+              "source_pointer": "/merge_commit_check_runs/425",
+              "name": "verify npm publication and finalize record",
+              "conclusion": "failure",
+              "head_sha": "917463a9a2da6cb0d4323974b6976e1486a50044",
+              "completed_at": "2026-09-26T18:36:37Z",
+              "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/36263147079/job/108462664885"
+            }
+          ],
+          "non_success_interpretation": "The recovered failed npm finalization remains explicit. A successful CI Gate or published release record does not override it. No supersession or native receipt is inferred."
+        }
+      ],
+      "release_evidence": [
+        {
+          "source_record": "release:v1.0.2",
+          "source_pointer": "/releases",
+          "tag": "v1.0.2",
+          "url": "https://github.com/vixygrey/truenorth-mcp/releases/tag/v1.0.2",
+          "published_at": "2026-09-26T18:32:51Z",
+          "tag_target_sha": "917463a9a2da6cb0d4323974b6976e1486a50044",
+          "relationship": "The v1.0.2 annotated tag targets the same commit as PR #425; this associates the cache-metadata change with the release, without treating publication as a local verification receipt."
+        }
+      ],
+      "local_evidence": [
+        {
+          "source_record": "inventory:519",
+          "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+          "json_pointer": "/entries/38",
+          "verify_command": "cargo test --manifest-path runtime/Cargo.toml resource_cache_metadata && npm run preflight",
+          "qualification": "This proves only the recorded inventory identity and command. Historical local execution and completion are unobserved."
+        }
+      ],
+      "gaps": [
+        "No native truenorth verification receipt was recovered for this historical release-plan entry.",
+        "No historical local execution timestamp or durable output proving that the recorded verify_command ran verbatim was recovered.",
+        "Issue closure, pull-request merge, source tests, and successful GitHub CI do not prove a historical RED stage or an acceptance-level behavior smoke."
+      ],
+      "disposition": {
+        "state": "active",
+        "owner": null,
+        "rationale": null
+      }
+    }
+  ],
+  "source_records": [
+    {
+      "id": "inventory:519",
+      "kind": "local_inventory",
+      "path": ".agent/tasks/compliance-515/519-inventory-input.json",
+      "sha256": "1a454f62fd01bdec9858318e168a0e564015b5acbed267d2902da0b8b4e99bad",
+      "relationship": "Exact source for entry identity, issue IDs, and recorded verify commands; not execution evidence."
+    },
+    {
+      "id": "github-public-sources:history-early",
+      "kind": "sanitized_api_capture",
+      "path": ".agent/tasks/compliance-515/519-history-early-sources.json",
+      "sha256": "2a33a0da7d6b10d5c5dcf803fdceae2696f9559e2e6e1f1a2f7738a6fb37655c",
+      "observed_at": "2026-10-09T22:12:06.786Z",
+      "relationship": "Durable selected public GitHub issue, timeline, pull-request, commit, check-run, release, and tag API response fields used by this evidence file."
+    }
+  ]
+}

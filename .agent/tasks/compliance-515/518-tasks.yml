@@ -1,0 +1,33 @@
+task_id: '518'
+title: "establish real verification and coverage gates"
+group_id: '515'
+issue: https://github.com/vixygrey/truenorth-mcp/issues/518
+status: failing
+risk: P1
+planning_owner: plan-work
+status_meaning: Initial unverified planning state, not an observed failing test.
+depends_on: ['516']
+verify_command: "npm run preflight"
+completion_rule: Supporting commands and every required observable smoke must pass with retained evidence.
+tasks:
+  - id: 1
+    description: "Resolve and record the coverage metric, overall/business-logic source sets, pinned tool, exact measurement command, and any dependency approval before evaluator implementation."
+    verify: "TRUENORTH_VERIFY_CMD='npm run preflight' cargo run --locked --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config --strict"
+    risk: P1
+    status: failing
+    scenarios: ["SC-518-P1-02"]
+    behavior_smoke: "Review the declared coverage contract and approval; run the chosen command on actual tests to establish a reproducible report before adopting the evaluator."
+  - id: 2
+    description: "Configure the actual MCP client verify command, restart it, and run the mounted gate on the real lifecycle phase."
+    verify: "npm run preflight"
+    risk: P1
+    status: failing
+    scenarios: ["SC-518-P1-01"]
+    behavior_smoke: "Retain the mounted truenorth_verify_gate result and show that it ran the actual command; process-local diagnostics alone are not acceptance."
+  - id: 3
+    description: "Integrate the approved coverage measurement/evaluator into verification and prove threshold and report-error behavior."
+    verify: "npm run preflight"
+    risk: P1
+    status: failing
+    scenarios: ["SC-518-P1-02", "SC-518-P1-03"]
+    behavior_smoke: "Run the finalized coverage-specific command and actual evaluator on the real report plus isolated missing/malformed/stale/below-threshold cases. Retain percentages and failure exit codes."

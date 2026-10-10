@@ -31,38 +31,60 @@ Define what is in and out of scope, and save the bounded PRD.
 
 ### slice-tasks (spine step 2 of 3)
 
-Create the group manifest and define independently deliverable story boundaries.
+Create the selected work-item manifest and define independently deliverable boundaries.
 
-- **What it does**: cuts tracer-bullet work items and records ids, titles,
-  deltas, optional policy-selected estimates, and reserved filenames in the task manifest.
-- **When to use it**: after `plan-release`, before `plan-work`.
-- **Inputs**: `.agent/product/scope.yml`, the release-index entry, and optional
-  planning context.
-- **Outputs**: the group manifest only. Reserved specification and task filenames
-  are not created here.
-- **Hard gate**: the group must already exist in the release index. Every story
-  must be independently demonstrable.
+- **What it does**: cuts tracer-bullet work items, registers them through
+  `truenorth_record_task`, and records ids, exact registered names and commands,
+  deltas, optional policy-selected estimates, and reserved filenames in `group.yml`.
+- **When to use it**: after `scope-work` and any required `plan-release` indexing,
+  before `plan-work`.
+- **Inputs**: `.agent/product/scope.yml`, the runtime task records, an indexed group
+  when selected, and optional planning context.
+- **Outputs**: the manifest and task registration. Reserved specification and ledger
+  files are not created here.
+- **Hard gate**: a selected group must already have an indexed capsule. Ungrouped
+  work needs no group; it uses `.agent/tasks/<task-id>/group.yml` with grouping fields
+  omitted. Every work item must be independently demonstrable.
 - **Handoff**: `plan-tests` for P0 or P1 risk, otherwise `plan-work`.
 
 ### plan-work (spine step 3 of 3)
 
-Write the detailed implementation plan into the active task group.
+Write the detailed implementation plan for one declared work item.
 
-- **What it does**: explores the affected modules, drafts the smallest possible steps (each
-  leaves the code working and has one verifiable command), and writes a countable-story
-  spec plus a tasks file. It applies the zoom-out mandate, requirement delta tags, a
-  slopcheck for external packages, and a cross-artifact consistency pass.
+- **What it does**: explores the affected modules, drafts the smallest possible steps
+  (each leaves the code working and has observable verification), and writes one
+  reserved specification and ledger. It applies requirement delta tags, external
+  package checks, and cross-artifact consistency.
 - **When to use it**: after `slice-tasks` and optional `plan-tests`.
 - **Inputs**: the release index, scope, active `group.yml`, tech stack, glossary,
   and `test-plan.md` when present.
-- **Outputs**: one story specification and its task ledger, every task starting
+- **Outputs**: one work-item specification and its task ledger, every task starting
   `status: failing`.
-- **Hard gate**: do not proceed until success criteria are clear. Every task ships a
-  runnable verify. A CRITICAL or HIGH consistency finding blocks code generation.
-- **Modes**: default (full), or `--fast` (skip the zoom-out and impact assessment for a
-  small task).
+- **Hard gate**: the selected manifest entry must match one exact runtime task
+  record and reserve both filenames. Missing mapping or reservations return to
+  `slice-tasks`; a missing group index returns to `plan-release`. Clear success
+  criteria and runnable verification are required; CRITICAL or HIGH consistency
+  findings block implementation.
 - **Handoff**: gate READY, next `kickoff-branch`, then `execute-group` or
   `develop-tdd`.
+
+### Runtime task records and planning files
+
+The task tool accepts `task_name`, `verify_command`, and optional `group_id` and
+`group_kind`. Planning fields such as `task_id`, `capsule_dir`, `spec`, and `tasks`
+are not tool arguments. They belong to the index or selected manifest.
+
+For `issue-per-task`, the manifest's string `task_id` is the actual issue number.
+Match its exact registered name and command, plus selected grouping, to the runtime
+record. A ticket group can contain work items with different issue ids; the group
+id is not the work-item id.
+
+For grouped work, `groups[].capsule_dir` locates `group.yml`. For ungrouped work,
+the capsule is `.agent/tasks/<task-id>/`; its `group.yml` has one work item and no
+grouping fields. The filename is shared across profiles, not a synthetic group.
+`slice-tasks` reserves `<task-id>-spec.md` and `<task-id>-tasks.yml` there.
+Readers select `active_task` by id and consume those exact reservations, not
+filenames guessed from a title.
 
 ---
 
@@ -72,14 +94,15 @@ Write the detailed implementation plan into the active task group.
 
 Create and order the release index.
 
-- **What it does**: writes release metadata plus tasks and optional groups to
-  `.agent/tasks/release-plan.yml`, ordered by dependencies and selected project policy.
+- **What it does**: writes release metadata and optional group indexing, preserving
+  runtime-owned task records and dependency order unless project policy selects otherwise.
 - **When to use it**: after `elaborate-spec` and `scope-work`.
 - **Inputs**: the elaborated specification, product scope, and relevant risk reports.
 - **Outputs**: the release index only.
 - **Hard gate**: do not create capsule contents or execution status. Missing
   downstream artifacts return to their catalog owner.
-- **Handoff**: `slice-tasks` for each indexed group.
+- **Handoff**: `slice-tasks` for every selected scope; ungrouped work must not bypass
+  registration and filename reservations.
 
 ### change-request
 
@@ -100,15 +123,17 @@ Route a mid-release change through the skills that own the affected artifacts.
 
 ### plan-tests
 
-Write the risk-scaled test architecture for one group.
+Write the risk-scaled test architecture for one declared work-item scope.
 
-- **What it does**: reads story boundaries from `group.yml`, maps behavior to P0
-  through P3, chooses test levels, plans fixtures, and assigns stable scenario ids.
+- **What it does**: reads boundaries from the selected `group.yml`, grouped or
+  ungrouped, maps behavior to P0 through P3, chooses test levels, plans fixtures,
+  and assigns stable scenario ids.
 - **When to use it**: between `slice-tasks` and `plan-work` for P0 or P1 risk.
 - **Inputs**: `.agent/tasks/<capsule>/group.yml`.
 - **Outputs**: `.agent/tasks/<capsule>/test-plan.md`.
-- **Hard gates**: every scenario must reference an existing group story. The skill
-  cannot change boundaries or write implementation artifacts.
+- **Hard gates**: every scenario must reference an existing manifest work item.
+  Missing mapping returns to `slice-tasks`; the skill cannot change boundaries,
+  fabricate grouping, or write implementation artifacts.
 - **Handoff**: gate READY, next `plan-work`.
 
 ### assess-impact

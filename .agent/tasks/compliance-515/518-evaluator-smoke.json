@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "task_id": "518",
+  "observed_at": "2026-10-09T21:56:12.758608+00:00",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "source_sha256": "c9d4ca4937f54ee7168567e6439037f5353b8a3c92c787c374e952cf81facafb",
+  "actual_checker": "node scripts/coverage.js check",
+  "fixture_basis": "Disposable variants of the final actual mounted-gate reports. Real sources unchanged. Independent exact and below-threshold boundaries also passed in the 13 permanent CLI behavior tests.",
+  "results": [
+    {
+      "scenario": "valid-current",
+      "exit_code": 0,
+      "stderr": "",
+      "measured": {
+        "overall": {
+          "covered": 7462,
+          "mapped": 7855,
+          "percent": 94.99681731381285,
+          "minimum": 80
+        },
+        "business_logic": {
+          "covered": 6703,
+          "mapped": 6912,
+          "percent": 96.97627314814815,
+          "minimum": 95
+        }
+      }
+    },
+    {
+      "scenario": "missing-metadata",
+      "exit_code": 1,
+      "stderr": "coverage report.json: ENOENT: no such file or directory, open '/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-518-smoke-38p5gtbg/report.json'"
+    },
+    {
+      "scenario": "missing-rust",
+      "exit_code": 1,
+      "stderr": "coverage report.json: ENOENT: no such file or directory, open '/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-518-smoke-phoc2262/rust.lcov'"
+    },
+    {
+      "scenario": "missing-node",
+      "exit_code": 1,
+      "stderr": "coverage report.json: ENOENT: no such file or directory, open '/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-518-smoke-r8ye0mpj/node.lcov'"
+    },
+    {
+      "scenario": "malformed-metadata",
+      "exit_code": 1,
+      "stderr": "coverage report.json: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    },
+    {
+      "scenario": "malformed-lcov",
+      "exit_code": 1,
+      "stderr": "coverage report.json: rust.lcov: malformed LCOV: invalid line record DA:NaN,8,0"
+    },
+    {
+      "scenario": "malformed-optional",
+      "exit_code": 1,
+      "stderr": "coverage report.json: rust.lcov: malformed LCOV: invalid or unknown record FNDA:NaN,0,_RNvCshCfeaItO1uJ_16regenerate_graph4main"
+    },
+    {
+      "scenario": "unsupported-schema",
+      "exit_code": 1,
+      "stderr": "coverage report.json: report.json schema/metric/build_modes: expected native-mapped-lines-v1 with default and tree-sitter"
+    },
+    {
+      "scenario": "wrong-tool",
+      "exit_code": 1,
+      "stderr": "coverage report.json: report.json tools: expected cargo-llvm-cov 0.9.1, Rust 1.88.0, and built-in Node coverage on Node 22 or newer"
+    },
+    {
+      "scenario": "stale-head",
+      "exit_code": 1,
+      "stderr": "coverage report.json: report.json head: stale; regenerate coverage for the current checkout"
+    },
+    {
+      "scenario": "stale-source",
+      "exit_code": 1,
+      "stderr": "coverage report.json: report.json source_sha256: stale; regenerate coverage for the current checkout"
+    },
+    {
+      "scenario": "expired",
+      "exit_code": 1,
+      "stderr": "coverage report.json: report.json generated_at: stale or invalid; regenerate coverage within 24 hours"
+    },
+    {
+      "scenario": "raw-digest-mismatch",
+      "exit_code": 1,
+      "stderr": "coverage report.json: node.lcov raw_sha256: missing or changed report digest"
+    },
+    {
+      "scenario": "below-business",
+      "exit_code": 1,
+      "stderr": "coverage business_logic: 94.08 percent is below 95 percent (6503/6912 mapped lines)",
+      "measured": {
+        "overall": {
+          "covered": 7262,
+          "mapped": 7855,
+          "percent": 92.4506683640993,
+          "minimum": 80
+        },
+        "business_logic": {
+          "covered": 6503,
+          "mapped": 6912,
+          "percent": 94.08275462962963,
+          "minimum": 95
+        }
+      }
+    },
+    {
+      "scenario": "below-both",
+      "exit_code": 1,
+      "stderr": "coverage overall: 1.08 percent is below 80 percent (85/7855 mapped lines)\ncoverage business_logic: 0.00 percent is below 95 percent (0/6912 mapped lines)",
+      "measured": {
+        "overall": {
+          "covered": 85,
+          "mapped": 7855,
+          "percent": 1.0821133036282622,
+          "minimum": 80
+        },
+        "business_logic": {
+          "covered": 0,
+          "mapped": 6912,
+          "percent": 0,
+          "minimum": 95
+        }
+      }
+    }
+  ]
+}

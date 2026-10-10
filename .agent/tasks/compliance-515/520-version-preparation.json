@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "observed_at": "2026-10-10T00:04:17.597Z",
+  "prepared_version": "1.0.5",
+  "publication_authorized": false,
+  "distribution_sources": [
+    "package.json",
+    "package-lock.json",
+    "runtime/Cargo.toml",
+    "runtime/Cargo.lock",
+    "npm/package.json",
+    "npm/packages/darwin-arm64/package.json",
+    "npm/packages/darwin-x64/package.json",
+    "npm/packages/linux-arm64/package.json",
+    "npm/packages/linux-x64/package.json"
+  ],
+  "dependency_changes": "No dependency added or upgraded. Same four internal platform optional dependencies align to the unpublished release version; existing third-party lock entries unchanged.",
+  "candidate_registry_observation": {
+    "url": "https://registry.npmjs.org/truenorth-mcp/1.0.5",
+    "method": "functions.read",
+    "status": 404,
+    "meaning": "Candidate wrapper version not published at observation; no publication reservation or approval implied."
+  },
+  "historical_bundle_files": [
+    {
+      "path": "npm/bundle/history/1.0.2.json",
+      "sha256": "ccf9a5e8d1eaed2f04d365b8b580ddefc710d99b1d95dd8070bbb15d9330b12d"
+    }
+  ],
+  "published104_snapshot_sha256": "8d258a7220d35b78603c92bbd01c334b6eeacd1904b170179410e233116a9c11",
+  "scope": "Local new-version preparation only, no tag or publication. Fresh consistency and packaged native runtime smokes pending.",
+  "current_bundle_sha256": "074d5a5bd49ce91fc89a85e4110f57ef75d4122a167c3826d8df4a6060385e1a"
+}

@@ -6,7 +6,6 @@
 //! Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.12.
 
 use std::fs;
-use std::path::Path;
 
 use rmcp::handler::server::wrapper::Parameters;
 use tempfile::TempDir;
@@ -81,31 +80,6 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
     assert!(agents.contains("multi-user hosting"));
     assert!(agents.contains("centralized policy enforcement"));
     assert!(agents.contains("https://github.com/vixygrey/truenorth-mcp#operating-model"));
-}
-
-#[test]
-fn checked_in_issue_per_task_cockpit_matches_scaffold_seeds() {
-    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .expect("repository root");
-    let tasks = repo_root.join(".agent/tasks");
-
-    assert_eq!(
-        fs::read_to_string(repo_root.join(".agent/profile.yml")).expect("read profile"),
-        "profile: issue-per-task\n"
-    );
-    let backlog: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(tasks.join("backlog.yml")).expect("read backlog"))
-            .expect("parse backlog ownership");
-    assert_eq!(backlog["ownership"]["mode"].as_str(), Some("external"));
-    assert!(
-        backlog.get("backlog").is_none(),
-        "an external backlog must not cache issue entries"
-    );
-    assert_eq!(
-        fs::read_to_string(tasks.join("execution-status.yml")).expect("read execution status"),
-        "tasks: {}\ngroups: {}\ndevelopment_status: {}\n"
-    );
 }
 
 #[tokio::test]
@@ -326,4 +300,63 @@ async fn the_emitted_hook_documents_the_client_honor_boundary_and_the_fallback()
         description.contains("cannot force-intercept"),
         "states the honest boundary: {description}"
     );
+}
+
+#[test]
+fn profile_name_boundaries_reject_empty_and_overlong_values() {
+    for invalid in ["".to_string(), "p".repeat(MAX_PROFILE_NAME + 1)] {
+        let error = resolve_scaffold_profile(Some(&invalid)).expect_err("invalid profile length");
+        assert!(error.message.contains("`profile`"));
+        assert!(error.message.contains("1 to 64"));
+    }
+}
+
+#[test]
+fn scaffold_plan_reports_and_preserves_mixed_existing_targets() {
+    let repo = TempDir::new().expect("temp repo");
+    let state = repo.path().join(".agent/tasks/state.yml");
+    fs::create_dir_all(state.parent().expect("state parent")).expect("tasks dir");
+    fs::write(&state, "human state\n").expect("seed state");
+    fs::write(repo.path().join("AGENTS.md"), "human agents\n").expect("seed agents");
+
+    let emissions =
+        scaffold_project(repo.path(), profile::ISSUE_PER_TASK).expect("scaffold project");
+    assert!(emissions.contains(&Emission::Skipped(".agent/tasks/state.yml".to_string())));
+    assert!(emissions.contains(&Emission::Skipped("AGENTS.md".to_string())));
+    assert!(emissions.contains(&Emission::Wrote(".agent/layout.yml".to_string())));
+    assert_eq!(fs::read_to_string(state).expect("state"), "human state\n");
+    assert_eq!(
+        fs::read_to_string(repo.path().join("AGENTS.md")).expect("agents"),
+        "human agents\n"
+    );
+    assert!(repo.path().join(".agent/layout.yml").is_file());
+}
+
+#[test]
+fn result_json_separates_written_and_skipped_paths() {
+    let value = result_json(
+        profile::GENERIC,
+        &[
+            Emission::Wrote(".agent/layout.yml".to_string()),
+            Emission::Skipped("AGENTS.md".to_string()),
+        ],
+    );
+    assert_eq!(value["profile"], "generic");
+    assert_eq!(value["wrote"], serde_json::json!([".agent/layout.yml"]));
+    assert_eq!(value["skipped"], serde_json::json!(["AGENTS.md"]));
+    assert_eq!(value["next_step"], HOOKS_PATH_COMMAND);
+}
+
+#[test]
+fn template_fallback_and_sprint_vocabulary_are_rendered_deterministically() {
+    assert_eq!(starter_seed("tasks/custom.yml"), "{}\n");
+    let sprint_profile = profile::Profile {
+        name: "sprint-test",
+        vocab: profile::GroupingVocab::Sprint,
+        rule: profile::GroupingRule::Optional,
+        starter_files: &[],
+        branch_pattern: "",
+        require_issue_id: false,
+    };
+    assert!(conventions_md(sprint_profile).contains("is `sprint`"));
 }

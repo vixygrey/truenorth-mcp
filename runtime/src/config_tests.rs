@@ -201,3 +201,22 @@ fn gate_execution_config_defaults() {
     assert_eq!(cfg.command_allowlist, vec!["cargo".to_string()]);
     assert_eq!(cfg.environment_allowlist, vec!["PATH".to_string()]);
 }
+
+#[test]
+fn configured_repository_root_takes_precedence_over_the_working_directory() {
+    let configured = tempfile::tempdir().expect("configured repository");
+    for marker in ["skills", "specs", ".agent"] {
+        std::fs::create_dir(configured.path().join(marker)).expect("repository marker");
+    }
+    if !crate::isolated_process_tests::in_child(
+        "config::tests::configured_repository_root_takes_precedence_over_the_working_directory",
+        &[(REPO_ROOT_ENV, configured.path().as_os_str().to_owned())],
+    ) {
+        return;
+    }
+    let expected = PathBuf::from(std::env::var_os(REPO_ROOT_ENV).expect("explicit root"));
+    assert_eq!(
+        get_repo_root().expect("configured repository resolves"),
+        expected
+    );
+}

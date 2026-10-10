@@ -1,0 +1,37 @@
+{
+  "task_id": "517",
+  "scope": "Repairs needed to establish a real current-workspace green baseline; no production executor or config setting changed",
+  "repairs": [
+    {
+      "problem": "Shared Cargo artifacts embedded CARGO_MANIFEST_DIR of a removed step-2 disposable clone",
+      "observed_literal": "/private/tmp/truenorth-516-baseline-f0ed731a-db8e-4955-94da-46683f50936d/runtime",
+      "observation": "Binary strings and failed source/path-reading tests agreed on the removed clone path.",
+      "action": "cargo clean --manifest-path runtime/Cargo.toml -p truenorth-mcp && cargo build --locked --manifest-path runtime/Cargo.toml",
+      "result": "Generated crate artifacts rebuilt in the actual workspace; later tests read current live cockpit.",
+      "failure_record": ".agent/tasks/compliance-515/517-baseline-failure-evidence.json"
+    },
+    {
+      "problem": "Incidental scaffold test required mutable live execution-status.yml to equal its empty seed",
+      "reproduction": "cargo test --locked --manifest-path runtime/Cargo.toml tools::scaffold::tests::checked_in_issue_per_task_cockpit_matches_scaffold_seeds -- --exact",
+      "observation": "Actual current #516 completion differed from an empty generated seed; the source-state assertion failed.",
+      "action": "Remove only this obsolete seed-copy test and its unused Path import; preserve isolated scaffold behavior and user progress.",
+      "source": "runtime/src/tools/scaffold/scaffold_tests.rs",
+      "failure_record": ".agent/tasks/compliance-515/517-baseline-rebuild-evidence.json"
+    },
+    {
+      "problem": "Current release-branch scripted skill exceeded the150-line contract after #516 changes",
+      "observation": "Captured current-workspace Cargo run:644 passed,1 failed; release-branch156/150 was the invalid catalog entry.",
+      "action": "Condense prose without changing release, coverage, attribution, security or approval gates; synchronize mirror and regenerate current manifest.",
+      "sources": [
+        "skills/release-branch/SKILL.md",
+        "npm/skills/release-branch/SKILL.md",
+        "npm/bundle/current.json"
+      ],
+      "result": "Actual native validate_skill passed all six checks, including150/150."
+    }
+  ],
+  "negative_hook_stderr": "Expected negative-case output, not the established root cause.",
+  "final_baseline": ".agent/tasks/compliance-515/517-baseline-evidence.json",
+  "final_verification": ".agent/tasks/compliance-515/517-verification-evidence.json",
+  "human_content_review": "pending"
+}

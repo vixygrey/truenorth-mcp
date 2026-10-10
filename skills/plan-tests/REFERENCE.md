@@ -4,12 +4,13 @@ Write this template to `.agent/tasks/<capsule>/test-plan.md`. Copy task ids from
 the active manifest. Never create an id in the test plan.
 
 ```markdown
-# Test design: <task group id and title>
+# Test design: <selected scope id and title>
 
 ## Scope
 
 - Profile: <issue-per-task | epic-based | milestone-based | kanban | generic>
 - Work items: <declared task ids>
+- Grouping: <selected group id and kind, or none; never invent a group>
 - Exclusions: <explicit exclusions>
 
 ## Scenarios

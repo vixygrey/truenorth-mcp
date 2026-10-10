@@ -90,6 +90,10 @@ tasks:
 Each `capsule_dir` stays under `.agent/tasks/`. `slice-tasks` owns any
 `group.yml` within it.
 
+For an ungrouped scope, `slice-tasks` derives `.agent/tasks/<task-id>/` from the
+declared task id and writes its neutral `group.yml` manifest without grouping
+fields. The release index does not need new task-tool fields or a synthetic group.
+
 ## Verify
 
 Confirm the file parses, existing `tasks[]` records are unchanged, group kinds
@@ -99,5 +103,6 @@ it.
 
 ## Handoff
 
-For a grouped profile, gate INDEXED and hand off to `slice-tasks` for each group.
-For an ungrouped profile, hand off directly to `plan-work`.
+Gate INDEXED. Hand off to `slice-tasks` for every selected scope, grouped or
+ungrouped, so task registration and filename reservations exist before
+`plan-tests` or `plan-work`. Never bypass the manifest owner.

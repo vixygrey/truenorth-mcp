@@ -291,7 +291,39 @@ fn read_journal(repo_root: &Path) -> Result<Journal, TransactionError> {
             journal.schema_version
         )));
     }
+    // The journal is read back on every `resume`/`rollback`, potentially across a
+    // process restart (ADR-0016). Re-validate every path here rather than trusting
+    // the invariant established at `prepare` time: a corrupted, hand-edited, or
+    // legacy on-disk journal must not reach `inspect`/`apply_operation`/
+    // `restore_operation` with a traversal, absolute, or `specs/` path. `staged`
+    // and `backup` are internal references into this transaction's own root
+    // (`staged/<n>` / `backup/<n>`, written by `stage_operation`); constraining
+    // their shape too stops a tampered journal from making `apply_operation` or
+    // `restore_operation` read bytes from outside the transaction root.
+    for operation in &journal.operations {
+        validate_relative_path(&operation.path).map_err(TransactionError::Prepare)?;
+        if let Some(staged) = &operation.staged {
+            validate_transaction_reference("staged", staged)?;
+        }
+        if let Some(backup) = &operation.backup {
+            validate_transaction_reference("backup", backup)?;
+        }
+    }
     Ok(journal)
+}
+
+fn validate_transaction_reference(kind: &str, value: &str) -> Result<(), TransactionError> {
+    let Some(index) = value.strip_prefix(&format!("{kind}/")) else {
+        return Err(TransactionError::Prepare(format!(
+            "invalid transaction {kind} reference `{value}`"
+        )));
+    };
+    if index.is_empty() || !index.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(TransactionError::Prepare(format!(
+            "invalid transaction {kind} reference `{value}`"
+        )));
+    }
+    Ok(())
 }
 
 fn inspect(repo_root: &Path, relative: &str) -> Result<Option<FileState>, TransactionError> {

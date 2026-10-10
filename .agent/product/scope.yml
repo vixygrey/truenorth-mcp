@@ -20,7 +20,7 @@ in_scope:
   - id: fr-05
     title: Language-agnostic ontology scan with a regex baseline and an optional AST plug-in
   - id: fr-06
-    title: The .agent/ machine-facing workspace behind a single guarded write path
+    title: The .agent/ machine-facing workspace behind a guarded write path, with ADR-0019 governing the separate scoped repository-seed exception
   - id: fr-07
     title: Five methodology profiles as data, with a neutral grouping key
   - id: fr-08
@@ -33,6 +33,21 @@ in_scope:
     title: Per-project optional ontology flag, default enabled
   - id: fr-12
     title: npm/pnpm distribution with per-platform binary packages
+  - id: mc-contracts
+    title: Coherent release and planning contracts for the active methodology
+    issue: '516'
+  - id: mc-authority
+    title: Resolvable and reviewed specification and writing authority
+    issue: '517'
+  - id: mc-gates
+    title: Real verification and measured coverage gates
+    issue: '518'
+  - id: mc-evidence
+    title: Truthful current execution and historical traceability evidence
+    issue: '519'
+  - id: mc-acceptance
+    title: Observed end-to-end methodology and GitHub integration controls
+    issue: '520'
 
 out_of_scope:
   - Vendor-specific prompt scaffolding, XML, or meta-instructions
@@ -40,20 +55,39 @@ out_of_scope:
   - SaaS tracker integrations (Jira, Linear). The external tracker owns bug detail.
   - Windows binaries for the initial release (darwin and linux only)
   - User-defined custom methodology profiles
+  - Runtime redesign or a new workflow framework for the compliance remediation
+  - Enabling ontology or restoring the retired telemetry placeholder
+  - Fabricated historical completion timestamps, RED failures, or successful receipts
+  - Replacing published 1.0.4 artifacts
+  - Implementation, merge, publication, or client configuration changes during planning bootstrap
 
 constraints:
   - Files under about 300 lines, split by responsibility
   - unwrap/expect/panic banned in library code; return typed errors
-  - Every runtime write funnels through the .agent/ write guard
+  - Normal machine-state writes stay under .agent/; ADR-0019 separately bounds repository-seed write authority
   - Every tool input is a schemars-derived struct with bounded constraints
   - All prose follows the house writing rules (ASD-STE100-based Simplified Technical English)
+  - Compliance work preserves issue-per-task, external GitHub backlog ownership, and team-pr
+  - Planning verification does not certify implementation or historical compliance
+  - New dependencies and irreversible integration actions require their separate approvals
+  - Existing product requirements and user edits remain intact
 
 success_criteria:
   - cargo fmt, cargo clippy (deny warnings), and cargo test all pass
   - The binary completes an MCP handshake over stdio and lists its tools and resources
   - The npm wrapper resolves the platform binary and propagates the exit code
   - Correctness properties P1 to P21 are covered by tests
+  - Every compliance work item has one actual GitHub issue, specification, and runnable task ledger
+  - Compliance planning ids, capsule paths, scenario owners, and handoff agree
+  - Active release and planning contracts contain no contradictory policy or unresolved artifact mapping
+  - Required current work has real execution, behavior-smoke, and verification evidence
+  - Coverage meets the configured 80 percent overall and 95 percent business-logic thresholds
+  - Every historical release-plan entry has durable evidence or an explicit honest gap or disposition
+  - Remote integration controls and required CI checks are observed rather than inferred
 
 references:
-  design: .kiro/specs/truenorth-mcp-refactor/design.md
+  design: specs/design.md
   adr: specs/adr/
+  compliance_issue: https://github.com/vixygrey/truenorth-mcp/issues/515
+  compliance_group: .agent/tasks/compliance-515/group.yml
+  compliance_plan: .agent/tasks/compliance-515/plan.md

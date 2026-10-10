@@ -1,0 +1,30 @@
+{
+  "kind": "clean-default-branch-baseline",
+  "issue": 516,
+  "root": "/tmp/truenorth-516-baseline-f0ed731a-db8e-4955-94da-46683f50936d",
+  "revision": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "started_at": "2026-10-09T17:43:19.910Z",
+  "completed_at": "2026-10-09T17:45:56.783Z",
+  "command": "npm run preflight",
+  "request_timeout_ms": 330000,
+  "runtime_version": "1.0.4",
+  "gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "plan",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+      "gate": {
+        "duration_ms": 156839,
+        "exit_code": 0,
+        "expectation": "zero",
+        "status": "pass"
+      },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "scope": "Independent default-main clone; process-local operator command; actual mounted client configuration unchanged."
+}

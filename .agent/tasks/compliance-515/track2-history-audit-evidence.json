@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "plan": "track 2 of the historical-evidence remediation plan (~/Desktop/traceability-historical-evidence-plan.md)",
+  "observed_at": "2026-10-10T04:05:55.038Z",
+  "scope": "Independent re-verification of already-recovered historical evidence for release-plan entries 001-077 (.agent/tasks/compliance-515/519-inventory-evidence.json). Not a fresh recovery pass: #519 already performed an exhaustive issue/PR/commit/CI/release recovery for all 82 entries (MC-13, Step 2 of 519-spec.md), independently reviewed and corrected once (519-ci-correction-evidence.json, finding 519-REPORT-CI-OMISSION).",
+  "methodology": [
+    "Classified all 77 historical entries' recorded ci_evidence shape: 38 entries already use an aggregated per-commit summary that exhaustively lists non_success_checks by construction; 3 entries (002, 018, 039) were already hand-corrected to the same exhaustive hybrid shape by #519; 3 entries (010, 012, 019) have zero recorded commits because they are standalone planning/investigation stages whose issue was closed by a later sibling release-plan entry's implementation PR, not by a commit of their own.",
+    "Identified the remaining 33 entries as the genuine audit target: their recorded ci_evidence is a single representative check-run (e.g. 'CI Gate: success') with no field proving every check run on that commit was inspected for a non-success conclusion.",
+    "For each of the 33, queried `gh api repos/vixygrey/truenorth-mcp/commits/<sha>/check-runs --paginate` live against the real commit SHA already on file, and compared the full live check-run list's conclusions against the recorded single-check-run evidence.",
+    "For the 3 zero-commit entries, ran `gh pr list --search '<issue> in:body' --state all` as a supplementary check to confirm no overlooked PR exists; confirmed each issue's only merged PR is already attributed to its implementation sibling entry, not an orphaned PR for the planning-stage entry itself."
+  ],
+  "findings": {
+    "plain_single_shape_entries_audited": 33,
+    "plain_single_shape_entry_indices": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      11,
+      13,
+      14,
+      15,
+      16,
+      17,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38
+    ],
+    "additional_non_success_checks_found": 0,
+    "additional_commit_or_pr_associations_found": 0,
+    "discrepancies": []
+  },
+  "live_audit_detail": [
+    {
+      "entry_id": 1,
+      "sha": "5e2157cd25587247370d11254ac84426fa546102",
+      "total_checks": 4,
+      "non_success": []
+    },
+    {
+      "entry_id": 3,
+      "sha": "9dc57947dd05363d360bcb2c8572ce172d48a38e",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 4,
+      "sha": "00eb240f22451589a608c3e853dc469840ef43e1",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 5,
+      "sha": "6664cd54e7462f29ec912d97a7e33a63ce74fe7d",
+      "total_checks": 10,
+      "non_success": []
+    },
+    {
+      "entry_id": 6,
+      "sha": "167cfae3667b1bc237da79b0d14d98d310a74fd9",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 7,
+      "sha": "135ad314a4dd1d42e9981f53e6573e1761045eea",
+      "total_checks": 10,
+      "non_success": []
+    },
+    {
+      "entry_id": 8,
+      "sha": "48235d08ffff36fcc6d74bf2a13e0aab9f28408d",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 9,
+      "sha": "0506ff4f6649ad786e0c5a3770f73803b5b6c872",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 11,
+      "sha": "12da70094af4bf9489c701f657cbc63aa4a827f9",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 13,
+      "sha": "f316ee41cd8edeee69957fdc01516f627b460d46",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 14,
+      "sha": "cb19b743a24db39574766f6f505232608b58361e",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 15,
+      "sha": "f47d678866409c9a1f61f42b372134e0f6ddc7de",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 16,
+      "sha": "f5a6f17bb0e0213f3a71c6a0dec2cb80939f17e8",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 17,
+      "sha": "540cca3f247f5e3fbf2368f1bebbecb9e8200170",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 20,
+      "sha": "07a83f1b56c5b1018f4bae06fc182e5d4fed6001",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 21,
+      "sha": "dba411c0ace312a563128a3a3298f46355fb40a3",
+      "total_checks": 34,
+      "non_success": []
+    },
+    {
+      "entry_id": 22,
+      "sha": "041c63eb1f81d20f62c160c20b8c6b857a1e13ab",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 23,
+      "sha": "0d2aca06cd037ae9031fcd7c739685fcaa434644",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 24,
+      "sha": "7173815919a2b0aa904574e4430bddbbf00a4722",
+      "total_checks": 11,
+      "non_success": []
+    },
+    {
+      "entry_id": 25,
+      "sha": "c003159acdd39df6b3f31a61273d11a003264b42",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 26,
+      "sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 27,
+      "sha": "2ca80c98543f545f917cde0a50eabc82daa4504e",
+      "total_checks": 12,
+      "non_success": []
+    },
+    {
+      "entry_id": 28,
+      "sha": "8a0b36d6bd7ec04cc6a5387ab6953e612c1842a7",
+      "total_checks": 16,
+      "non_success": []
+    },
+    {
+      "entry_id": 29,
+      "sha": "a71893c8a929dd9d08ea3d8c85f7d13ddc12ee7d",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 30,
+      "sha": "f7e8650bf096e9723646c961491400ead7f74203",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 31,
+      "sha": "b1ce728dd6090a35efa61733402b92e3b0aef54e",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 32,
+      "sha": "90f615e5ca110ab0fb7b3c497f1eb952e104079e",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 33,
+      "sha": "38b143dff26b28067a4c2a7c690f732e5d4e7550",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 34,
+      "sha": "0546604ba4daf9966423b951bc9bdbf65390771b",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 35,
+      "sha": "caf9530e35c9da1972311d84df122b6d5e77dcd5",
+      "total_checks": 15,
+      "non_success": []
+    },
+    {
+      "entry_id": 36,
+      "sha": "f4dac61ca04033983306b2a651cd09b0f6148103",
+      "total_checks": 16,
+      "non_success": []
+    },
+    {
+      "entry_id": 37,
+      "sha": "bba891461c0e7907a7c949d955ec2a9cacab9d94",
+      "total_checks": 20,
+      "non_success": []
+    },
+    {
+      "entry_id": 38,
+      "sha": "38313f08a5298b19bc6ca5fad3bb28c2aa2b5050",
+      "total_checks": 16,
+      "non_success": []
+    }
+  ],
+  "zero_commit_entries_supplementary_check": {
+    "release-plan:010": {
+      "issue": 349,
+      "only_merged_pr": 358,
+      "pr_title": "feat(compat): define v1 compatibility policy",
+      "attributed_to": "release-plan:011 (sibling 'Publish v1 cockpit and MCP compatibility policy')",
+      "conclusion": "No overlooked PR for the planning-stage entry itself; confirmed accurate."
+    },
+    "release-plan:012": {
+      "issue": 352,
+      "only_relevant_merged_pr": 359,
+      "pr_title": "feat(governance): harden merge and release controls",
+      "attributed_to": "release-plan:013 (sibling 'Harden v1 merge and release controls')",
+      "conclusion": "No overlooked PR for the planning-stage entry itself; confirmed accurate."
+    },
+    "release-plan:019": {
+      "issue": 375,
+      "merged_prs": [
+        376,
+        377
+      ],
+      "attributed_to": "release-plan:020 and release-plan:021 (sibling implementation/publication entries)",
+      "conclusion": "No overlooked PR for the investigation-stage entry itself; confirmed accurate."
+    }
+  },
+  "conclusion": "Zero discrepancies found. #519's historical evidence recovery (issue/PR/commit/CI/release association) for all 77 historical entries is independently confirmed complete and accurate as of this audit. No traceability.yml row required a correction. The remaining FAIL verdict for release-plan:001-077 is the structural pre-v1.0.4 receipt wall identified in the historical-evidence remediation plan, not a recovery gap. Track 1 (an explicit owner scoping decision) is the only remaining path to a non-FAIL gate verdict for these entries.",
+  "non_actions": [
+    "No traceability.yml row content was altered for entries 001-077 (only entry 082 was updated, to reflect #520's own real completion, and the report-level summary/gate blocks).",
+    "No disposition (deferred/out_of_scope/waived) was applied to any historical row; that decision belongs to track 1, not this audit.",
+    "No GitHub issue, PR, check run, or release was mutated; all queries were read-only."
+  ]
+}

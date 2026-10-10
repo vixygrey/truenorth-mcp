@@ -221,7 +221,7 @@ function buildManifest(repoRoot) {
     schema_version: 2,
     bundle_version: packageJson.version,
     workspace_schema_version: '2',
-    supported_from: ['1.0.2'],
+    supported_from: ['1.0.2', '1.0.4'],
     skill_sets: skillSets,
     files: trackedSkillPaths(repoRoot).map((relative) => fileRecord(packageRoot, relative)),
   };

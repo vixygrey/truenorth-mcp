@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "task_id": 520,
+  "agent": "SecurityRecheck520",
+  "finding": {
+    "id": "SEC-520-01",
+    "severity": "high",
+    "cwe": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory",
+    "original_summary": "Resume and rollback trusted operation.path, staged, and backup values deserialized from .agent/runtime/upgrade/transaction.json, allowing a crafted persisted journal to bypass the specs prohibition, read arbitrary files through staged or backup traversal, or delete an arbitrary matching-hash file outside the repository.",
+    "verified_status": "FIXED",
+    "verification": [
+      "read_journal now validates every deserialized operation.path with validate_relative_path before returning the journal to resume or rollback.",
+      "read_journal now validates every staged and backup value with validate_transaction_reference; the helper accepts only the exact staged/<ASCII digits> or backup/<ASCII digits> shape and rejects traversal, absolute paths, empty indexes, extra components, and wrong prefixes.",
+      "resume and rollback call read_journal before inspect, apply_operation, or restore_operation, so invalid persisted references are rejected as TransactionError::Prepare before any workspace mutation. This protects inspect and both direct fs::remove_file branches from absolute, parent-traversing, .agent/runtime, and specs operation paths, and prevents apply_operation and restore_operation from reading a journal-selected path outside the transaction root.",
+      "stage_operation generates staged/{index} and backup/{index} using usize indexes, which exactly satisfy the new reference validator. Existing tests exercise successful update, add, remove, idempotent resume, rollback restoration, and rollback of an unapplied transaction using those generated references.",
+      "resume_rejects_a_tampered_journal_path_and_mutates_nothing supplies ../outside.txt with a matching preimage and after=null; without read_journal path validation, resume reaches the vulnerable removal path and can delete the outside file. The test confirms rejection and no mutation.",
+      "resume_rejects_a_tampered_staged_reference_and_mutates_nothing supplies a staged traversal to an external secret while keeping a valid managed target and matching preimage; without reference validation, resume reads that external file and reaches the write path. The test confirms rejection and no mutation.",
+      "The case-insensitive specs check compares only the first parsed path component with eq_ignore_ascii_case(\"specs\"), correctly rejecting Specs, SPECS, and SpEcS aliases without over-rejecting distinct names such as specsx.",
+      "cargo test --locked --manifest-path runtime/Cargo.toml --lib workspace_upgrade::transaction passed: 13 passed, 0 failed, including both new tampering regressions and the existing legitimate resume/rollback coverage."
+    ]
+  },
+  "final_verdict": "PASS",
+  "verdict_summary": "The original HIGH CWE-22 persisted-journal bypass is closed. The fix validates untrusted journal data before every downstream inspection or mutation while remaining compatible with stage_operation-generated paths and references. The fix introduces no new HIGH or CRITICAL issue in the reviewed path."
+}

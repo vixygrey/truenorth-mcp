@@ -1,0 +1,68 @@
+group_id: '515'
+group_kind: ticket
+title: TrueNorth methodology compliance remediation
+profile: issue-per-task
+status: planning
+external_link: https://github.com/vixygrey/truenorth-mcp/issues/515
+capsule_dir: .agent/tasks/compliance-515
+planning_owner: slice-tasks
+work_items:
+  - task_id: '516'
+    title: Reconcile release and planning contracts
+    task_name: Reconcile release and planning contracts (#516)
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/516
+    status: todo
+    delta: MODIFIED
+    before: Release and planning consumers contain policy and artifact-mapping contradictions.
+    after: Consumers resolve version 2 advisory policy and real recorded task artifacts consistently.
+    risk: P1
+    depends_on: []
+    spec: 516-spec.md
+    tasks: 516-tasks.yml
+    verify_command: node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/preflight.sh wrapper shell
+  - task_id: '517'
+    title: Restore specification and writing authority
+    task_name: Restore specification and writing authority (#517)
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/517
+    status: todo
+    delta: MODIFIED
+    before: Active requirements and writing-policy references name absent local documents.
+    after: Normative references resolve to reviewed content with honest provenance and clear precedence.
+    risk: P3
+    depends_on: ['516']
+    spec: 517-spec.md
+    tasks: 517-tasks.yml
+    verify_command: bash scripts/preflight.sh format
+  - task_id: '518'
+    title: Establish real verification and coverage gates
+    task_name: Establish real verification and coverage gates (#518)
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/518
+    status: todo
+    delta: ADDED
+    risk: P1
+    depends_on: ['516']
+    spec: 518-spec.md
+    tasks: 518-tasks.yml
+    verify_command: npm run preflight
+  - task_id: '519'
+    title: Establish truthful execution and historical evidence
+    task_name: Establish truthful execution and historical evidence (#519)
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/519
+    status: todo
+    delta: ADDED
+    risk: P1
+    depends_on: ['517', '518']
+    spec: 519-spec.md
+    tasks: 519-tasks.yml
+    verify_command: npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline
+  - task_id: '520'
+    title: Prove compliant workflow and GitHub controls
+    task_name: Prove compliant workflow and GitHub controls (#520)
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/520
+    status: todo
+    delta: ADDED
+    risk: P0
+    depends_on: ['519']
+    spec: 520-spec.md
+    tasks: 520-tasks.yml
+    verify_command: npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline

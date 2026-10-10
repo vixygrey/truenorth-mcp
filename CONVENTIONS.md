@@ -14,8 +14,9 @@ See the "Relationship to upstream" section in `README.md`.
 2. **Protocol over prose.** Deliver behavior through a typed MCP tool or a resource,
    not a longer instruction file. A new capability is a schema-backed tool, not more
    markdown.
-3. **Correctness is executable.** Pin load-bearing behavior with the design's
-   correctness properties (P1 to P5) and a test. Prefer a property or golden test.
+3. **Correctness is executable.** Pin load-bearing behavior with the
+   [current design's correctness properties](specs/design.md#correctness-properties)
+   (P1 to P21) and a test. Prefer a property or golden test.
 4. **Deep modules, narrow interfaces.** Hide complexity behind a small public
    surface.
 5. **Token economy.** Every emitted payload costs context. Be terse in output, in an
@@ -120,18 +121,90 @@ See the "Relationship to upstream" section in `README.md`.
 
 ## Writing
 
-All prose this project produces follows the house writing rules in
-`.kiro/steering/writing-rules.md` (Simplified Technical English). One word, one
-meaning. Active voice. Short sentences. Approved modals: `can`, `will`, `must`.
-American English. No em dash in user-facing prose.
+This section is the single authoritative house writing policy. It adapts
+ASD-STE100 Issue 9 principles. It does not claim certification or replace technical
+review. The historical source is `.kiro/steering/writing-rules.md` at Git revision
+`ad34e41974a58952da2ce4a6bf17042fc14b7920`, not a required current file.
+
+### Scope and tiers
+
+- **Strict:** commits, pull requests, specifications, technical documentation,
+  release notes, incident reports, error messages, CLI and UI text, and agent
+  instructions.
+- **Loose:** issues, comments, wiki pages, and conversation. Apply the mechanical
+  rules and house voice below. Sentence limits and the contraction restriction do
+  not apply.
+- Preserve literal code, identifiers, paths, flags, protocol keywords, quotations,
+  and proper names exactly. Do not change a contract to satisfy a prose rule.
+- Keep recovered historical originals verbatim. Archive status prevents their old
+  wording from becoming current policy.
+- Safety instructions override tier relaxation.
+
+### House voice and mechanical rules
+
+Use calm, technical, direct language. Use American English and inclusive terms.
+State observed facts, decisions, risks, and uncertainty plainly.
+Remove praise, sales language, filler, canned encouragement, and unsupported
+certainty. Do not use an em dash in user-facing prose.
+
+Use one word for one meaning and one name for one concept. Define a technical noun
+or verb before an unusual use. Keep its part of speech consistent.
+Keep noun chains to three words. Define a shorter term for a longer chain.
+Do not turn a noun into a verb merely to shorten an instruction.
+
+Use `can`, `will`, and `must` as the house modals. Preserve literal normative
+keywords from an external standard or protocol.
+Do not use a semicolon in prose. Expand Latin abbreviations such as `e.g.` and
+`i.e.` outside literal quotations.
+
+Use plain replacements: `use` for `utilize`, `to` for `in order to`, `before` for
+`prior to`, and `make sure that` for `ensure`. Prefer the precise function or
+feature name to marketing terminology.
+
+Use `test`, `check`, and `work` as nouns in controlled prose, not verbs.
+Use `help` as a verb. Use `follow` for "come after," not "obey."
+Use `above` and `below` for physical position. Cite a section or step for document
+location. Literal identifiers and established technical names remain unchanged.
+
+Markdown tables use space-padded cells and matching delimiter widths
+(`| --- |`, not `|---|`). Tables inside fenced code blocks remain verbatim.
+
+### Strict prose
+
+- Use an imperative for a procedure. Give one instruction per sentence, with at
+  most 20 words.
+- Use simple present, past, or future for a description. Keep a sentence to at most
+  25 words and a paragraph to one topic and six sentences.
+- Prefer active voice. A descriptive passive is acceptable when the actor is
+  unknown. Do not hide responsibility.
+- Avoid perfect and progressive verb forms. Use an `-ing` form only as an
+  established technical noun.
+- Do not use contractions. Include the articles, relative pronouns, and other
+  grammar needed to make the relationship explicit.
+- Put a command or condition before its explanation. Separate actions that have
+  different conditions.
+
+### Safety and review
+
+State the required action or condition before the risk.
+Use `WARNING` for a risk of injury and `CAUTION` for a risk of damage.
+Name the consequence and the prevention. Do not rely on color or tone alone.
+The human writer reviews technical accuracy, terminology, and any justified
+exception. Formatting and automated lint are not content approval.
 
 ## Output files
 
-The repository has two layers. The machine-facing layer is `.agent/`. The runtime
-reads, watches, and writes only under `.agent/`. The human-facing layer is `specs/`,
-which holds human-authored narrative. The runtime can read a file under `specs/`, but
-it never mutates a path under `specs/`. A single write guard rejects any target
-outside `.agent/`.
+The repository has two layers. `.agent/` is the machine workspace.
+Its guarded mutation paths stay under `.agent/`.
+Human-authored narrative lives under `specs/` and remains separate from machine state.
+
+[ADR-0019](specs/adr/0019-scoped-repository-seed-write-authority.md) defines the narrow repository-seed authority.
+The MCP scaffold can create absent generated workflow files under its mutation permit.
+Fresh initialization rejects its enumerated top-level set and preserves other generated path collisions.
+Its empty `specs/adr/.gitkeep` marker is the only authorized `specs/` seed.
+Managed upgrades can change ownership-planned generated and package-manifest paths.
+They preserve local edits and unowned collisions and do not manage `specs/**`.
+These paths do not authorize mutation of existing human narrative or prove blanket runtime write confinement.
 
 The cockpit lives under `.agent/tasks/`: `state.yml` carries the phase and the TDD
 loop, `release-plan.yml` carries the recorded tasks, `execution-status.yml` carries
@@ -150,12 +223,24 @@ applies to the CLI, the terminal output, an error message, and any docs. Do not
 encode meaning in color alone. State the problem and the fix in words. Respect the
 `NO_COLOR` variable and disable color when the output is not a TTY.
 
-## When in doubt
+## Document precedence
 
-This file is the authoritative engineering convention for the project. It is
-project-owned and applies to every contributor and every agent. The Kiro styleguide
-at `.kiro/steering/styleguide.md` is a Kiro-only mirror. When this file conflicts
-with the styleguide, this file wins.
+This file is the authoritative project engineering convention and writing policy.
+It applies to every contributor and agent.
 
-Ground a decision in the active spec first, then this file, then the formatter and
-linter defaults. Do not import a `bigpowers` convention by default.
+1. The reviewed current specifications under `specs/` and accepted ADRs determine
+   the product contract. An explicit later accepted decision supersedes the
+   historical baseline.
+2. `CONVENTIONS.md` determines engineering and writing policy.
+3. Formatter and linter defaults determine unspecified layout.
+
+The [specification index](specs/README.md) records provenance and review status.
+A draft awaiting human review is not an accepted override.
+Recovered originals under `specs/archive/` are historical evidence, not current
+authority or present verification.
+Live execution status belongs to `.agent/tasks/execution-status.yml`, not a
+narrative or an archived checkbox.
+
+Contributor guides and client adapters point here. They do not define competing
+writing rules or another precedence order. Kiro inclusion is an adapter, not a
+required source of policy. Do not import a `bigpowers` convention by default.

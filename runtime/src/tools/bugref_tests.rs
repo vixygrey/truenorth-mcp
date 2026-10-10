@@ -304,3 +304,118 @@ async fn record_bug_resolves_a_ref_to_an_existing_bug_id() {
     .await
     .expect("bug-id ref resolves");
 }
+
+#[tokio::test]
+async fn record_bug_rejects_malformed_or_non_mapping_storage_without_rewriting_it() {
+    for existing in ["bugs: [\n", "- id: BUG-1\n"] {
+        let repo = repo_with_task();
+        let path = bugs_path(&repo);
+        fs::write(&path, existing).expect("seed invalid bugs document");
+        let before = fs::read(&path).expect("read fixture");
+
+        let error = server(&repo)
+            .truenorth_record_bug(
+                Parameters(valid_args()),
+                rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(2)),
+            )
+            .await
+            .expect_err("invalid stored document");
+
+        assert!(
+            error.message.contains("failed to parse")
+                || error.message.contains("must contain a YAML mapping")
+        );
+        assert_eq!(fs::read(&path).expect("read unchanged fixture"), before);
+    }
+}
+
+#[tokio::test]
+async fn record_bug_rejects_boundary_violations_before_creating_storage() {
+    let repo = repo_with_task();
+    let srv = server(&repo);
+
+    let mut overlong = valid_args();
+    overlong.id = "é".repeat(MAX_BUG_ID + 1);
+    let error = srv
+        .truenorth_record_bug(
+            Parameters(overlong),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(3)),
+        )
+        .await
+        .expect_err("overlong id");
+    assert!(error.message.contains("201"));
+
+    let mut invalid_scheme = valid_args();
+    invalid_scheme.external_link = "12://tracker.example/1".to_string();
+    let error = srv
+        .truenorth_record_bug(
+            Parameters(invalid_scheme),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(4)),
+        )
+        .await
+        .expect_err("non-alphabetic URL scheme");
+    assert!(error.message.contains("external_link"));
+    assert!(!bugs_path(&repo).exists());
+}
+
+#[tokio::test]
+async fn unresolved_ref_from_missing_or_malformed_release_plan_preserves_storage() {
+    for plan_body in [None, Some("tasks: [\n"), Some("version: 1\n")] {
+        let repo = TempDir::new().expect("temp repo");
+        if let Some(body) = plan_body {
+            let plan = release_plan_path(repo.path());
+            fs::create_dir_all(plan.parent().expect("plan parent")).expect("tasks dir");
+            fs::write(plan, body).expect("seed release plan");
+        }
+
+        let error = server(&repo)
+            .truenorth_record_bug(
+                Parameters(valid_args()),
+                rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(5)),
+            )
+            .await
+            .expect_err("unresolved ref");
+        assert!(error.message.contains("linked_ref"));
+        assert!(!bugs_path(&repo).exists());
+    }
+}
+
+#[test]
+fn read_bugs_treats_invalid_or_non_mapping_content_as_empty() {
+    for body in ["bugs: [\n", "- id: BUG-1\n"] {
+        let repo = TempDir::new().expect("temp repo");
+        let path = bugs_path(&repo);
+        fs::create_dir_all(path.parent().expect("bugs parent")).expect("tasks dir");
+        fs::write(path, body).expect("seed invalid bugs");
+
+        assert_eq!(server(&repo).read_bugs(), empty_bugs_doc());
+    }
+}
+
+#[test]
+fn bug_receipt_error_mapping_is_internal() {
+    let error = receipt_error("invalid digest".to_string());
+    assert_eq!(error.code.0, -32603);
+    assert!(error.message.contains("mutation receipt"));
+}
+
+#[tokio::test]
+async fn record_bug_normalizes_a_non_sequence_bugs_field() {
+    let repo = repo_with_task();
+    fs::write(bugs_path(&repo), "bugs: legacy-scalar\nnote: keep\n").expect("seed mapping");
+
+    server(&repo)
+        .truenorth_record_bug(
+            Parameters(valid_args()),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(6)),
+        )
+        .await
+        .expect("normalize bugs field");
+
+    let text = fs::read_to_string(bugs_path(&repo)).expect("updated bugs");
+    let value: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse bugs");
+    assert_eq!(value["note"], "keep");
+    let bugs = value["bugs"].as_sequence().expect("normalized sequence");
+    assert_eq!(bugs.len(), 1);
+    assert_eq!(bugs[0]["id"], "BUG-1");
+}

@@ -11,6 +11,13 @@ convention is:
 A profile may use its grouping vocabulary in the id. Shared instructions and
 schema fields remain task-based.
 
+The manifest is `group.yml` in the selected capsule. For grouped work, the
+release index supplies `groups[].capsule_dir`. For ungrouped work, the capsule
+is `.agent/tasks/<task-id>/` and the manifest omits grouping fields.
+Its `task_id` identifies the work item; exact `task_name` and `verify_command`
+link it to the runtime task record. The tool receives only its supported
+registration arguments, never these reserved filenames.
+
 ## Task ledger
 
 ```yaml

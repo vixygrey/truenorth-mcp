@@ -55,17 +55,17 @@ terms:
 
   - term: write guard
     definition: >
-      The single guarded write path, write_under_agent. It canonicalizes the target,
-      rejects any path that escapes .agent/, and writes nothing on rejection. It is the
-      only write path in runtime library code. Correctness Property 6.
+      The guarded normal machine-state write path, write_under_agent, which confines
+      writes to .agent/; ADR-0019 separately bounds repository-seed authority, and
+      Correctness Property 6 applies to this machine-state guard.
     related_terms: [.agent workspace, cockpit, resource]
 
   - term: .agent workspace
     definition: >
       The machine-facing directory the runtime reads, watches, and writes. It holds the
       layout contract, the profile, config, spec narrative, the tasks cockpit, the
-      ontology, product docs, memories, and telemetry. The runtime never mutates a path
-      under specs/.
+      ontology, product docs, memories, and telemetry; human specs/ narrative remains
+      read-only, with only the fresh specs/adr/.gitkeep seed permitted by ADR-0019.
     related_terms: [write guard, cockpit, specs layer]
 
   - term: cockpit
@@ -162,12 +162,13 @@ terms:
 
   - term: specs layer
     definition: >
-      The human-facing specs/ directory of authored narrative. The runtime can read a
-      file under specs/ (for example the ADR resource over specs/adr/) but never mutates
-      a path there.
+      The human-facing specs/ directory of authored narrative, readable by the
+      runtime but not mutable as narrative; ADR-0019 permits only the empty
+      specs/adr/.gitkeep marker during fresh initialization.
     related_terms: [.agent workspace, write guard, resource]
 
 note: >
   TrueNorth-MCP domain vocabulary. TrueNorth-MCP is a fork of danielvm-git/bigpowers,
   re-architected into an active, protocol-first Rust MCP runtime. Terms trace to the
-  design docs under .kiro/specs/ and the correctness properties P1 to P21.
+  current design at specs/design.md and its provenance index at specs/README.md.
+  Correctness properties P1 to P21 retain their historical identities.

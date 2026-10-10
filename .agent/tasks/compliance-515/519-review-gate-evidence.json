@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "task_id": "519",
+  "report_mode_snapshot": "519-review-report-mode.yml",
+  "head_observation": "git rev-parse HEAD with PATH-only environment immediately before report/gate evaluation",
+  "result": {
+    "verdict": "FAIL",
+    "evaluated_at": "2026-10-09T22:33:53.864149+00:00",
+    "evaluated_head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+    "rationale": "Required implementation, test or verification evidence is missing for 78 active, done or unresolved entries.",
+    "waiver": null,
+    "consumed_report_sha256": "475130020bd9916a95a042042e0bf991b3ad5478eb66d8e9b15d82ae0368e5ef",
+    "blockers": [
+      {
+        "entry_id": "release-plan:001",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:002",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:003",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:004",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:005",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:006",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:007",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:008",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:009",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:010",
+        "reason": "Required evidence absent: implementation, test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:011",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:012",
+        "reason": "Required evidence absent: implementation, test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:013",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:014",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:015",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:016",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:017",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:018",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:019",
+        "reason": "Required evidence absent: implementation, test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:020",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:021",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:022",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:023",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:024",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:025",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:026",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:027",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:028",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:029",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:030",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:031",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:032",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:033",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:034",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:035",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:036",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:037",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:038",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:039",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:040",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:041",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:042",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:043",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:044",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:045",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:046",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:047",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:048",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:049",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:050",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:051",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:052",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:053",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:054",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:055",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:056",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:057",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:058",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:059",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:060",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:061",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:062",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:063",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:064",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:065",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:066",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:067",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:068",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:069",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:070",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:071",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:072",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:073",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:074",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:075",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:076",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:077",
+        "reason": "Required evidence absent: test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:082",
+        "reason": "Required evidence absent: implementation, test/acceptance, verification/behavior-smoke"
+      },
+      {
+        "entry_id": "release-plan:082",
+        "reason": "Highest-priority task lacks actual test/acceptance coverage."
+      }
+    ]
+  },
+  "qualification": "All required current519 scenarios now have actual proof. Release remains blocked by77 historical entries with missing required verification/acceptance evidence and future520, which was not executed. No exclusion or waiver."
+}

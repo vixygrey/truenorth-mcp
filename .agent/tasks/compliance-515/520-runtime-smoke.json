@@ -1,0 +1,1505 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "group_id": "515",
+  "started_at": "2026-10-10T00:14:55.348Z",
+  "binary": "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+  "binary_sha256": "8ed4a29bb267f5b9d07a266a28310b2d5b025bdddc50be08952935b844d735df",
+  "fixture_root": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC",
+  "scope": "Real freshly built1.0.5 CLI and MCP operations only in disposable workspaces. Synthetic fixture content is not a release asset, task RED or integration proof.",
+  "commands": [
+    {
+      "label": "fresh-init-current-bundle",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/npm"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/fresh-init",
+      "started_at": "2026-10-10T00:14:55.373Z",
+      "completed_at": "2026-10-10T00:14:56.727Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"next_step\":\"git config core.hooksPath .githooks\",\"profile\":\"generic\",\"skipped\":[],\"wrote\":[\".agent/layout.yml\",\".agent/profile.yml\",\".agent/config/rules.yml\",\".agent/spec/requirements.md\",\".agent/tasks/state.yml\",\".agent/tasks/execution-status.yml\",\".agent/memories/lessons.md\",\".agent/memories/glossary.md\",\".agent/product/scope.md\",\".agent/tasks/backlog.yml\",\"AGENTS.md\",\"CONVENTIONS.md\",\".githooks/commit-msg\",\".githooks/post-merge\",\".kiro/hooks/jev-guard.json\",\".github/commit-template.md\",\".github/pull-request-template.md\",\".github/ISSUE_TEMPLATE/bug.md\",\".github/ISSUE_TEMPLATE/feature.md\",\".github/ISSUE_TEMPLATE/config.yml\",\"specs/adr/.gitkeep\",\"skills/assess-impact/SKILL.md\",\"skills/audit-code/HEURISTICS.md\",\"skills/audit-code/SKILL.md\",\"skills/audit-plan/SKILL.md\",\"skills/change-request/REFERENCE.md\",\"skills/change-request/SKILL.md\",\"skills/commit-message/REFERENCE.md\",\"skills/commit-message/SKILL.md\",\"skills/compose-workflow/REFERENCE.md\",\"skills/compose-workflow/SKILL.md\",\"skills/craft-skill/REFERENCE.md\",\"skills/craft-skill/SKILL.md\",\"skills/deepen-architecture/DEEPENING.md\",\"skills/deepen-architecture/INTERFACE-DESIGN.md\",\"skills/deepen-architecture/LANGUAGE.md\",\"skills/deepen-architecture/SKILL.md\",\"skills/define-language/SKILL.md\",\"skills/delegate-task/SKILL.md\",\"skills/deploy/REFERENCE.md\",\"skills/deploy/SKILL.md\",\"skills/design-interface/SKILL.md\",\"skills/develop-tdd/REFERENCE.md\",\"skills/develop-tdd/SKILL.md\",\"skills/develop-tdd/deep-modules.md\",\"skills/develop-tdd/interface-design.md\",\"skills/develop-tdd/mocking.md\",\"skills/develop-tdd/refactoring.md\",\"skills/develop-tdd/tests.md\",\"skills/diagnose-stall/SKILL.md\",\"skills/dispatch-agents/SKILL.md\",\"skills/elaborate-spec/SKILL.md\",\"skills/enforce-first/SKILL.md\",\"skills/evolve-skill/REFERENCE.md\",\"skills/evolve-skill/SKILL.md\",\"skills/execute-group/SKILL.md\",\"skills/fix-bug/SKILL.md\",\"skills/grill-me/REFERENCE.md\",\"skills/grill-me/SKILL.md\",\"skills/guard-git/REFERENCE.md\",\"skills/guard-git/SKILL.md\",\"skills/guard-git/scripts/block-dangerous-git.sh\",\"skills/guard-git/scripts/lib/git-guardrails-core.sh\",\"skills/guard-git/scripts/pre-commit-secret-scan.sh\",\"skills/guard-git/scripts/tests/run.sh\",\"skills/hook-commits/SKILL.md\",\"skills/inspect-quality/SKILL.md\",\"skills/investigate-bug/SKILL.md\",\"skills/kickoff-branch/SKILL.md\",\"skills/map-codebase/SKILL.md\",\"skills/migrate-spec/REFERENCE-GSD.md\",\"skills/migrate-spec/REFERENCE.md\",\"skills/migrate-spec/SKILL.md\",\"skills/migrate-spec/templates/REQUIREMENTS_TRACE.yaml\",\"skills/migrate-spec/templates/methodology.md\",\"skills/model-domain/ADR-FORMAT.md\",\"skills/model-domain/CONTEXT-FORMAT.md\",\"skills/model-domain/SKILL.md\",\"skills/orchestrate-project/REFERENCE.md\",\"skills/orchestrate-project/SKILL.md\",\"skills/organize-workspace/REFERENCE.md\",\"skills/organize-workspace/SKILL.md\",\"skills/plan-refactor/SKILL.md\",\"skills/plan-release/SKILL.md\",\"skills/plan-tests/REFERENCE.md\",\"skills/plan-tests/SKILL.md\",\"skills/plan-work/REFERENCE.md\",\"skills/plan-work/SKILL.md\",\"skills/publish-package/REFERENCE.md\",\"skills/publish-package/SKILL.md\",\"skills/quick-fix/SKILL.md\",\"skills/release-branch/REFERENCE.md\",\"skills/release-branch/SKILL.md\",\"skills/release-branch/scripts/check-route.sh\",\"skills/release-branch/scripts/tests/run.sh\",\"skills/request-review/SKILL.md\",\"skills/research-first/REFERENCE.md\",\"skills/research-first/SKILL.md\",\"skills/reset-baseline/SKILL.md\",\"skills/respond-review/SKILL.md\",\"skills/run-benchmark/REFERENCE.md\",\"skills/run-benchmark/SKILL.md\",\"skills/run-benchmark/definitions/sample/SKILL.md\",\"skills/run-benchmark/definitions/sample/benchmark.json\",\"skills/run-benchmark/definitions/sample/train/executor.js\",\"skills/run-benchmark/definitions/sample/train/expected.txt\",\"skills/run-benchmark/definitions/sample/train/grader.js\",\"skills/run-benchmark/definitions/sample/train/input.txt\",\"skills/run-benchmark/definitions/sample/validation/executor.js\",\"skills/run-benchmark/definitions/sample/validation/expected.txt\",\"skills/run-benchmark/definitions/sample/validation/grader.js\",\"skills/run-benchmark/definitions/sample/validation/input.txt\",\"skills/run-benchmark/scripts/run.js\",\"skills/run-benchmark/scripts/tests/run.js\",\"skills/run-evals/REFERENCE.md\",\"skills/run-evals/SKILL.md\",\"skills/scope-work/SKILL.md\",\"skills/security-review/REFERENCE-confidence-rubric.md\",\"skills/security-review/REFERENCE-false-positives.md\",\"skills/security-review/REFERENCE-vuln-categories.md\",\"skills/security-review/SKILL.md\",\"skills/security-review/fixtures/CWE-639-idor-negative.go\",\"skills/security-review/fixtures/CWE-639-idor-positive.go\",\"skills/security-review/fixtures/CWE-79-xss-negative.js\",\"skills/security-review/fixtures/CWE-79-xss-positive.js\",\"skills/security-review/fixtures/CWE-89-sqli-negative.py\",\"skills/security-review/fixtures/CWE-89-sqli-positive.py\",\"skills/security-review/fixtures/CWE-fail-open-verify-negative.sh\",\"skills/security-review/fixtures/CWE-fail-open-verify-positive.sh\",\"skills/seed-conventions/REFERENCE.md\",\"skills/seed-conventions/SKILL.md\",\"skills/session-state/SKILL.md\",\"skills/setup-environment/SKILL.md\",\"skills/simple-english/REFERENCE.md\",\"skills/simple-english/SKILL.md\",\"skills/simple-english/scripts/ste_lint.py\",\"skills/slice-tasks/SKILL.md\",\"skills/smoke-test/REFERENCE.md\",\"skills/smoke-test/SKILL.md\",\"skills/spike-prototype/SKILL.md\",\"skills/stocktake-skills/REFERENCE.md\",\"skills/stocktake-skills/SKILL.md\",\"skills/survey-context/SKILL.md\",\"skills/trace-requirement/SKILL.md\",\"skills/using-truenorth/SKILL.md\",\"skills/validate-contracts/REFERENCE.md\",\"skills/validate-contracts/SKILL.md\",\"skills/validate-fix/REFERENCE-generalize-fix.md\",\"skills/validate-fix/SKILL.md\",\"skills/verify-work/REFERENCE.md\",\"skills/verify-work/SKILL.md\",\"skills/wire-ci/REFERENCE.md\",\"skills/wire-ci/SKILL.md\",\"skills/wire-observability/SKILL.md\",\"skills/write-document/REFERENCE.md\",\"skills/write-document/SKILL.md\",\".agent/workspace-manifest.yml\"]}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "read-only-upgrade-check",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "upgrade",
+        "--check",
+        "--bundle-dir",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/npm"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/fresh-init",
+      "started_at": "2026-10-10T00:16:52.636Z",
+      "completed_at": "2026-10-10T00:16:52.747Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"schema_version\":1,\"from_bundle_version\":\"1.0.5\",\"to_bundle_version\":\"1.0.5\",\"workspace_schema_version\":\"2\",\"actions\":[{\"path\":\".agent/config/rules.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/layout.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/memories/glossary.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/memories/lessons.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/product/scope.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/profile.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/spec/requirements.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/backlog.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/execution-status.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/state.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".githooks/commit-msg\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".githooks/post-merge\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/bug.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/config.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/feature.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/commit-template.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/pull-request-template.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".kiro/hooks/jev-guard.json\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"AGENTS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"CONVENTIONS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/assess-impact/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/audit-code/HEURISTICS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/audit-code/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/audit-plan/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/change-request/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/change-request/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/commit-message/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/commit-message/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/compose-workflow/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/compose-workflow/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/craft-skill/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/craft-skill/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/DEEPENING.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/INTERFACE-DESIGN.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/LANGUAGE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/define-language/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/delegate-task/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deploy/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deploy/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/design-interface/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/deep-modules.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/interface-design.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/mocking.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/refactoring.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/tests.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/diagnose-stall/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/dispatch-agents/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/elaborate-spec/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/enforce-first/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/evolve-skill/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/evolve-skill/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/execute-group/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/fix-bug/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/grill-me/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/grill-me/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/block-dangerous-git.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/lib/git-guardrails-core.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/pre-commit-secret-scan.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/tests/run.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/hook-commits/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/inspect-quality/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/investigate-bug/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/kickoff-branch/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/map-codebase/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/REFERENCE-GSD.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/templates/REQUIREMENTS_TRACE.yaml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/templates/methodology.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/model-domain/ADR-FORMAT.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/model-domain/CONTEXT-FORMAT.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/model-domain/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/orchestrate-project/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/orchestrate-project/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/organize-workspace/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/organize-workspace/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-refactor/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-release/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-tests/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-tests/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-work/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-work/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/publish-package/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/publish-package/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/quick-fix/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/release-branch/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/release-branch/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/release-branch/scripts/check-route.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/release-branch/scripts/tests/run.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/request-review/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/research-first/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/research-first/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/reset-baseline/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/respond-review/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/benchmark.json\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/executor.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/expected.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/grader.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/input.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/executor.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/expected.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/grader.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/input.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/scripts/run.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/scripts/tests/run.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-evals/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-evals/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/scope-work/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/REFERENCE-confidence-rubric.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/REFERENCE-false-positives.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/REFERENCE-vuln-categories.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-639-idor-negative.go\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-639-idor-positive.go\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-79-xss-negative.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-79-xss-positive.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-89-sqli-negative.py\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-89-sqli-positive.py\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-fail-open-verify-negative.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-fail-open-verify-positive.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/seed-conventions/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/seed-conventions/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/session-state/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/setup-environment/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/simple-english/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/simple-english/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/simple-english/scripts/ste_lint.py\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/slice-tasks/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/smoke-test/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/smoke-test/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/spike-prototype/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/stocktake-skills/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/stocktake-skills/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/survey-context/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/trace-requirement/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/using-truenorth/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-contracts/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-contracts/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-fix/REFERENCE-generalize-fix.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-fix/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/verify-work/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/verify-work/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/wire-ci/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/wire-ci/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/wire-observability/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/write-document/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/write-document/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"}],\"counts\":{\"add\":0,\"update\":0,\"preserve\":155,\"conflict\":0,\"remove\":0}}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "existing-specs-rejects-second-init",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/npm"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/fresh-init",
+      "started_at": "2026-10-10T00:16:52.750Z",
+      "completed_at": "2026-10-10T00:16:52.755Z",
+      "exit_code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "truenorth-mcp: bootstrap requires a fresh project; these paths already exist: .agent, specs, skills, AGENTS.md, CONVENTIONS.md, .githooks, .github\n",
+      "expected_exit_code": 1
+    },
+    {
+      "label": "published104-native-init",
+      "command": [
+        "/Users/greyvixfen/.local/share/mise/installs/node/24.18.1/lib/node_modules/truenorth-mcp/bin/truenorth.js",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/Users/greyvixfen/.local/share/mise/installs/node/24.18.1/lib/node_modules/truenorth-mcp"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:24:01.399Z",
+      "completed_at": "2026-10-10T00:24:01.433Z",
+      "exit_code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "truenorth-mcp: usage: truenorth-mcp [--version | --check-config [--strict] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | skills list --bundle-dir <path>]\n",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "published104-native-init-corrected",
+      "command": [
+        "/Users/greyvixfen/.local/share/mise/installs/node/24.18.1/lib/node_modules/truenorth-mcp/bin/truenorth.js",
+        "init",
+        "--profile",
+        "generic"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:26:18.073Z",
+      "completed_at": "2026-10-10T00:26:18.837Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"next_step\":\"git config core.hooksPath .githooks\",\"profile\":\"generic\",\"skipped\":[],\"wrote\":[\".agent/layout.yml\",\".agent/profile.yml\",\".agent/config/rules.yml\",\".agent/spec/requirements.md\",\".agent/tasks/state.yml\",\".agent/tasks/execution-status.yml\",\".agent/memories/lessons.md\",\".agent/memories/glossary.md\",\".agent/product/scope.md\",\".agent/tasks/backlog.yml\",\"AGENTS.md\",\"CONVENTIONS.md\",\".githooks/commit-msg\",\".githooks/post-merge\",\".kiro/hooks/jev-guard.json\",\".github/commit-template.md\",\".github/pull-request-template.md\",\".github/ISSUE_TEMPLATE/bug.md\",\".github/ISSUE_TEMPLATE/feature.md\",\".github/ISSUE_TEMPLATE/config.yml\",\"specs/adr/.gitkeep\",\"skills/assess-impact/SKILL.md\",\"skills/audit-code/HEURISTICS.md\",\"skills/audit-code/SKILL.md\",\"skills/audit-plan/SKILL.md\",\"skills/change-request/REFERENCE.md\",\"skills/change-request/SKILL.md\",\"skills/commit-message/REFERENCE.md\",\"skills/commit-message/SKILL.md\",\"skills/compose-workflow/REFERENCE.md\",\"skills/compose-workflow/SKILL.md\",\"skills/craft-skill/REFERENCE.md\",\"skills/craft-skill/SKILL.md\",\"skills/deepen-architecture/DEEPENING.md\",\"skills/deepen-architecture/INTERFACE-DESIGN.md\",\"skills/deepen-architecture/LANGUAGE.md\",\"skills/deepen-architecture/SKILL.md\",\"skills/define-language/SKILL.md\",\"skills/delegate-task/SKILL.md\",\"skills/deploy/REFERENCE.md\",\"skills/deploy/SKILL.md\",\"skills/design-interface/SKILL.md\",\"skills/develop-tdd/REFERENCE.md\",\"skills/develop-tdd/SKILL.md\",\"skills/develop-tdd/deep-modules.md\",\"skills/develop-tdd/interface-design.md\",\"skills/develop-tdd/mocking.md\",\"skills/develop-tdd/refactoring.md\",\"skills/develop-tdd/tests.md\",\"skills/diagnose-stall/SKILL.md\",\"skills/dispatch-agents/SKILL.md\",\"skills/elaborate-spec/SKILL.md\",\"skills/enforce-first/SKILL.md\",\"skills/evolve-skill/REFERENCE.md\",\"skills/evolve-skill/SKILL.md\",\"skills/execute-group/SKILL.md\",\"skills/fix-bug/SKILL.md\",\"skills/grill-me/REFERENCE.md\",\"skills/grill-me/SKILL.md\",\"skills/guard-git/REFERENCE.md\",\"skills/guard-git/SKILL.md\",\"skills/guard-git/scripts/block-dangerous-git.sh\",\"skills/guard-git/scripts/lib/git-guardrails-core.sh\",\"skills/guard-git/scripts/pre-commit-secret-scan.sh\",\"skills/guard-git/scripts/tests/run.sh\",\"skills/hook-commits/SKILL.md\",\"skills/inspect-quality/SKILL.md\",\"skills/investigate-bug/SKILL.md\",\"skills/kickoff-branch/SKILL.md\",\"skills/map-codebase/SKILL.md\",\"skills/migrate-spec/REFERENCE-GSD.md\",\"skills/migrate-spec/REFERENCE.md\",\"skills/migrate-spec/SKILL.md\",\"skills/migrate-spec/templates/REQUIREMENTS_TRACE.yaml\",\"skills/migrate-spec/templates/methodology.md\",\"skills/model-domain/ADR-FORMAT.md\",\"skills/model-domain/CONTEXT-FORMAT.md\",\"skills/model-domain/SKILL.md\",\"skills/orchestrate-project/REFERENCE.md\",\"skills/orchestrate-project/SKILL.md\",\"skills/organize-workspace/REFERENCE.md\",\"skills/organize-workspace/SKILL.md\",\"skills/plan-refactor/SKILL.md\",\"skills/plan-release/SKILL.md\",\"skills/plan-tests/REFERENCE.md\",\"skills/plan-tests/SKILL.md\",\"skills/plan-work/REFERENCE.md\",\"skills/plan-work/SKILL.md\",\"skills/publish-package/REFERENCE.md\",\"skills/publish-package/SKILL.md\",\"skills/quick-fix/SKILL.md\",\"skills/release-branch/REFERENCE.md\",\"skills/release-branch/SKILL.md\",\"skills/release-branch/scripts/check-route.sh\",\"skills/release-branch/scripts/tests/run.sh\",\"skills/request-review/SKILL.md\",\"skills/research-first/REFERENCE.md\",\"skills/research-first/SKILL.md\",\"skills/reset-baseline/SKILL.md\",\"skills/respond-review/SKILL.md\",\"skills/run-benchmark/REFERENCE.md\",\"skills/run-benchmark/SKILL.md\",\"skills/run-benchmark/definitions/sample/SKILL.md\",\"skills/run-benchmark/definitions/sample/benchmark.json\",\"skills/run-benchmark/definitions/sample/train/executor.js\",\"skills/run-benchmark/definitions/sample/train/expected.txt\",\"skills/run-benchmark/definitions/sample/train/grader.js\",\"skills/run-benchmark/definitions/sample/train/input.txt\",\"skills/run-benchmark/definitions/sample/validation/executor.js\",\"skills/run-benchmark/definitions/sample/validation/expected.txt\",\"skills/run-benchmark/definitions/sample/validation/grader.js\",\"skills/run-benchmark/definitions/sample/validation/input.txt\",\"skills/run-benchmark/scripts/run.js\",\"skills/run-benchmark/scripts/tests/run.js\",\"skills/run-evals/REFERENCE.md\",\"skills/run-evals/SKILL.md\",\"skills/scope-work/SKILL.md\",\"skills/security-review/REFERENCE-confidence-rubric.md\",\"skills/security-review/REFERENCE-false-positives.md\",\"skills/security-review/REFERENCE-vuln-categories.md\",\"skills/security-review/SKILL.md\",\"skills/security-review/fixtures/CWE-639-idor-negative.go\",\"skills/security-review/fixtures/CWE-639-idor-positive.go\",\"skills/security-review/fixtures/CWE-79-xss-negative.js\",\"skills/security-review/fixtures/CWE-79-xss-positive.js\",\"skills/security-review/fixtures/CWE-89-sqli-negative.py\",\"skills/security-review/fixtures/CWE-89-sqli-positive.py\",\"skills/security-review/fixtures/CWE-fail-open-verify-negative.sh\",\"skills/security-review/fixtures/CWE-fail-open-verify-positive.sh\",\"skills/seed-conventions/REFERENCE.md\",\"skills/seed-conventions/SKILL.md\",\"skills/session-state/SKILL.md\",\"skills/setup-environment/SKILL.md\",\"skills/simple-english/REFERENCE.md\",\"skills/simple-english/SKILL.md\",\"skills/simple-english/scripts/ste_lint.py\",\"skills/slice-tasks/SKILL.md\",\"skills/smoke-test/REFERENCE.md\",\"skills/smoke-test/SKILL.md\",\"skills/spike-prototype/SKILL.md\",\"skills/stocktake-skills/REFERENCE.md\",\"skills/stocktake-skills/SKILL.md\",\"skills/survey-context/SKILL.md\",\"skills/trace-requirement/SKILL.md\",\"skills/using-truenorth/SKILL.md\",\"skills/validate-contracts/REFERENCE.md\",\"skills/validate-contracts/SKILL.md\",\"skills/validate-fix/REFERENCE-generalize-fix.md\",\"skills/validate-fix/SKILL.md\",\"skills/verify-work/REFERENCE.md\",\"skills/verify-work/SKILL.md\",\"skills/wire-ci/REFERENCE.md\",\"skills/wire-ci/SKILL.md\",\"skills/wire-observability/SKILL.md\",\"skills/write-document/REFERENCE.md\",\"skills/write-document/SKILL.md\",\".agent/workspace-manifest.yml\"]}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "before-fix-real104-to105-supported-upgrade",
+      "command": [
+        "node",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/upgrade-104-to105.cjs"
+      ],
+      "cwd": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+      "started_at": "2026-10-10T00:26:18.849Z",
+      "completed_at": "2026-10-10T00:26:18.913Z",
+      "exit_code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "node:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: A genuine initialized1.0.4 workspace must be accepted by prepared1.0.5: truenorth-mcp: installed bundle version `1.0.4` is not supported by target bundle `1.0.5`\n\n\n1 !== 0\n\n    at Object.<anonymous> (/private/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/upgrade-104-to105.cjs:5:8)\n    at Module._compile (node:internal/modules/cjs/loader:1871:14)\n    at Object..js (node:internal/modules/cjs/loader:2002:10)\n    at Module.load (node:internal/modules/cjs/loader:1594:32)\n    at Module._load (node:internal/modules/cjs/loader:1396:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.18.1\n",
+      "expected_exit_code": 1
+    },
+    {
+      "label": "after-fix-real104-to105-supported-upgrade",
+      "command": [
+        "node",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/upgrade-104-to105.cjs"
+      ],
+      "cwd": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+      "started_at": "2026-10-10T00:26:59.227Z",
+      "completed_at": "2026-10-10T00:26:59.341Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"from\":\"1.0.4\",\"to\":\"1.0.5\",\"counts\":{\"add\":0,\"update\":13,\"preserve\":142,\"conflict\":0,\"remove\":0}}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "initialize-disposable-version-fixture-git",
+      "command": [
+        "git",
+        "-c",
+        "init.templateDir=",
+        "init",
+        "--quiet"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:17.950Z",
+      "completed_at": "2026-10-10T00:31:17.976Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "stage-disposable-version-fixture-only",
+      "command": [
+        "git",
+        "add",
+        "."
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:17.976Z",
+      "completed_at": "2026-10-10T00:31:18.064Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "commit-disposable-runtime-precondition-only",
+      "command": [
+        "git",
+        "-c",
+        "user.name=TrueNorth smoke fixture",
+        "-c",
+        "user.email=smoke@example.invalid",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "commit.gpgSign=false",
+        "commit",
+        "--quiet",
+        "-m",
+        "test: seed disposable runtime fixture"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:18.064Z",
+      "completed_at": "2026-10-10T00:31:18.110Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "real104-to105-upgrade-apply",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "upgrade",
+        "--bundle-dir",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/npm"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:18.110Z",
+      "completed_at": "2026-10-10T00:31:18.339Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"schema_version\":1,\"from_bundle_version\":\"1.0.4\",\"to_bundle_version\":\"1.0.5\",\"workspace_schema_version\":\"2\",\"actions\":[{\"path\":\".agent/config/rules.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/layout.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/memories/glossary.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/memories/lessons.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/product/scope.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/profile.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/spec/requirements.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/backlog.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/execution-status.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/state.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".githooks/commit-msg\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".githooks/post-merge\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/bug.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/config.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/feature.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/commit-template.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/pull-request-template.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".kiro/hooks/jev-guard.json\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"AGENTS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"CONVENTIONS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/assess-impact/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/audit-code/HEURISTICS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/audit-code/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/audit-plan/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/change-request/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/change-request/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/commit-message/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/commit-message/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/compose-workflow/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/compose-workflow/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/craft-skill/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/craft-skill/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/DEEPENING.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/INTERFACE-DESIGN.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/LANGUAGE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deepen-architecture/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/define-language/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/delegate-task/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deploy/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/deploy/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/design-interface/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/deep-modules.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/interface-design.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/mocking.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/refactoring.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/develop-tdd/tests.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/diagnose-stall/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/dispatch-agents/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/elaborate-spec/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/enforce-first/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/evolve-skill/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/evolve-skill/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/execute-group/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/fix-bug/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/grill-me/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/grill-me/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/block-dangerous-git.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/lib/git-guardrails-core.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/pre-commit-secret-scan.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/guard-git/scripts/tests/run.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/hook-commits/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/inspect-quality/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/investigate-bug/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/kickoff-branch/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/map-codebase/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/REFERENCE-GSD.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/templates/REQUIREMENTS_TRACE.yaml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/migrate-spec/templates/methodology.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/model-domain/ADR-FORMAT.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/model-domain/CONTEXT-FORMAT.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/model-domain/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/orchestrate-project/REFERENCE.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/orchestrate-project/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/organize-workspace/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/organize-workspace/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-refactor/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/plan-release/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/plan-tests/REFERENCE.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/plan-tests/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/plan-work/REFERENCE.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/plan-work/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/publish-package/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/publish-package/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/quick-fix/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/release-branch/REFERENCE.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/release-branch/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/release-branch/scripts/check-route.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/release-branch/scripts/tests/run.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/request-review/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/research-first/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/research-first/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/reset-baseline/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/respond-review/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/benchmark.json\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/executor.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/expected.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/grader.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/train/input.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/executor.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/expected.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/grader.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/definitions/sample/validation/input.txt\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/scripts/run.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-benchmark/scripts/tests/run.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-evals/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/run-evals/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/scope-work/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/REFERENCE-confidence-rubric.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/REFERENCE-false-positives.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/REFERENCE-vuln-categories.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-639-idor-negative.go\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-639-idor-positive.go\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-79-xss-negative.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-79-xss-positive.js\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-89-sqli-negative.py\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-89-sqli-positive.py\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-fail-open-verify-negative.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/security-review/fixtures/CWE-fail-open-verify-positive.sh\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/seed-conventions/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/seed-conventions/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/session-state/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/setup-environment/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/simple-english/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/simple-english/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/simple-english/scripts/ste_lint.py\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/slice-tasks/SKILL.md\",\"action\":\"update\",\"reason\":\"unchanged_locally_bundle_changed\"},{\"path\":\"skills/smoke-test/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/smoke-test/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/spike-prototype/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/stocktake-skills/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/stocktake-skills/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/survey-context/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/trace-requirement/SKILL.md\",\"action\":\"conflict\",\"reason\":\"local_and_bundle_changed\"},{\"path\":\"skills/using-truenorth/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-contracts/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-contracts/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-fix/REFERENCE-generalize-fix.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/validate-fix/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/verify-work/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/verify-work/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/wire-ci/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/wire-ci/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/wire-observability/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/write-document/REFERENCE.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/write-document/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"}],\"counts\":{\"add\":0,\"update\":12,\"preserve\":142,\"conflict\":1,\"remove\":0}}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "planned-team-pr-route-inspect",
+      "command": [
+        "bash",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/skills/release-branch/scripts/check-route.sh",
+        "--mode",
+        "team-pr",
+        "--action",
+        "inspect"
+      ],
+      "cwd": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+      "started_at": "2026-10-10T00:31:18.339Z",
+      "completed_at": "2026-10-10T00:31:18.356Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"route\":\"team-pr\",\"action\":\"inspect\",\"approved\":false}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "unapproved-merge-rejects",
+      "command": [
+        "bash",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/skills/release-branch/scripts/check-route.sh",
+        "--mode",
+        "team-pr",
+        "--action",
+        "merge"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:18.356Z",
+      "completed_at": "2026-10-10T00:31:18.370Z",
+      "exit_code": 3,
+      "signal": null,
+      "stdout": "",
+      "stderr": "release route error: merge is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n",
+      "expected_exit_code": 3
+    },
+    {
+      "label": "unapproved-tag-rejects",
+      "command": [
+        "bash",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/skills/release-branch/scripts/check-route.sh",
+        "--mode",
+        "team-pr",
+        "--action",
+        "tag"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:18.370Z",
+      "completed_at": "2026-10-10T00:31:18.383Z",
+      "exit_code": 3,
+      "signal": null,
+      "stdout": "",
+      "stderr": "release route error: tag is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n",
+      "expected_exit_code": 3
+    },
+    {
+      "label": "unapproved-publish-rejects",
+      "command": [
+        "bash",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/skills/release-branch/scripts/check-route.sh",
+        "--mode",
+        "team-pr",
+        "--action",
+        "publish"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:18.383Z",
+      "completed_at": "2026-10-10T00:31:18.394Z",
+      "exit_code": 3,
+      "signal": null,
+      "stdout": "",
+      "stderr": "release route error: publish is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n",
+      "expected_exit_code": 3
+    },
+    {
+      "label": "unapproved-cleanup-rejects",
+      "command": [
+        "bash",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/skills/release-branch/scripts/check-route.sh",
+        "--mode",
+        "team-pr",
+        "--action",
+        "cleanup"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:31:18.394Z",
+      "completed_at": "2026-10-10T00:31:18.406Z",
+      "exit_code": 3,
+      "signal": null,
+      "stdout": "",
+      "stderr": "release route error: cleanup is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n",
+      "expected_exit_code": 3
+    },
+    {
+      "label": "compile-throwaway-real-library-rollback-probe",
+      "command": [
+        "rustc",
+        "--edition=2024",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/rollback_probe.rs",
+        "-L",
+        "dependency=/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/deps",
+        "--extern",
+        "truenorth_mcp=/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/libtruenorth_mcp.rlib",
+        "-o",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/rollback-probe"
+      ],
+      "cwd": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "scope": "Uses existing compiled local runtime and standard library only, no dependency install or repository code edit."
+    },
+    {
+      "label": "prepare-real-pending-invalid-profile-transaction",
+      "command": [
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/rollback-probe",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:32:37.352Z",
+      "completed_at": "2026-10-10T00:32:37.897Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "prepared real pending transaction with invalid profile postimage\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "native-upgrade-resume-invalid-profile-rolls-back",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "upgrade",
+        "--bundle-dir",
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/npm"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/real-104-workspace",
+      "started_at": "2026-10-10T00:32:37.897Z",
+      "completed_at": "2026-10-10T00:32:37.925Z",
+      "exit_code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "truenorth-mcp: unknown methodology profile `not-a-profile`. The valid profiles are: epic-based, issue-per-task, kanban, milestone-based, generic.\n",
+      "expected_exit_code": 1
+    },
+    {
+      "label": "custom-package-base-init",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace",
+      "started_at": "2026-10-10T00:34:28.354Z",
+      "completed_at": "2026-10-10T00:34:28.473Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"next_step\":\"git config core.hooksPath .githooks\",\"profile\":\"generic\",\"skipped\":[],\"wrote\":[\".agent/layout.yml\",\".agent/profile.yml\",\".agent/config/rules.yml\",\".agent/spec/requirements.md\",\".agent/tasks/state.yml\",\".agent/tasks/execution-status.yml\",\".agent/memories/lessons.md\",\".agent/memories/glossary.md\",\".agent/product/scope.md\",\".agent/tasks/backlog.yml\",\"AGENTS.md\",\"CONVENTIONS.md\",\".githooks/commit-msg\",\".githooks/post-merge\",\".kiro/hooks/jev-guard.json\",\".github/commit-template.md\",\".github/pull-request-template.md\",\".github/ISSUE_TEMPLATE/bug.md\",\".github/ISSUE_TEMPLATE/feature.md\",\".github/ISSUE_TEMPLATE/config.yml\",\"specs/adr/.gitkeep\",\"skills/using-truenorth/SKILL.md\",\".agent/workspace-manifest.yml\"]}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "initialize-custom-disposable-probe-git",
+      "command": [
+        "git",
+        "-c",
+        "init.templateDir=",
+        "init",
+        "--quiet"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace",
+      "started_at": "2026-10-10T00:34:28.977Z",
+      "completed_at": "2026-10-10T00:34:29.004Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "stage-custom-disposable-fixture-only",
+      "command": [
+        "git",
+        "add",
+        "."
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace",
+      "started_at": "2026-10-10T00:34:29.004Z",
+      "completed_at": "2026-10-10T00:34:29.031Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "commit-custom-disposable-precondition-only",
+      "command": [
+        "git",
+        "-c",
+        "user.name=TrueNorth smoke fixture",
+        "-c",
+        "user.email=smoke@example.invalid",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "commit.gpgSign=false",
+        "commit",
+        "--quiet",
+        "-m",
+        "test: seed disposable package authority probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace",
+      "started_at": "2026-10-10T00:34:29.031Z",
+      "completed_at": "2026-10-10T00:34:29.055Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "custom-package-upgrade-specs-authority-probe",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "upgrade",
+        "--bundle-dir",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace",
+      "started_at": "2026-10-10T00:34:29.566Z",
+      "completed_at": "2026-10-10T00:34:29.624Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"schema_version\":1,\"from_bundle_version\":\"1.0.5\",\"to_bundle_version\":\"1.0.5\",\"workspace_schema_version\":\"2\",\"actions\":[{\"path\":\".agent/config/rules.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/layout.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/memories/glossary.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/memories/lessons.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/product/scope.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/profile.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/spec/requirements.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/backlog.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/execution-status.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".agent/tasks/state.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".githooks/commit-msg\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".githooks/post-merge\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/bug.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/config.yml\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/ISSUE_TEMPLATE/feature.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/commit-template.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".github/pull-request-template.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\".kiro/hooks/jev-guard.json\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"AGENTS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"CONVENTIONS.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"skills/using-truenorth/SKILL.md\",\"action\":\"preserve\",\"reason\":\"unchanged_managed_file\"},{\"path\":\"specs/authority-probe.md\",\"action\":\"add\",\"reason\":\"new_managed_path\"}],\"counts\":{\"add\":1,\"update\":0,\"preserve\":21,\"conflict\":0,\"remove\":0}}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "custom-package-base-init-after-fix",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace-after-fix",
+      "started_at": "2026-10-10T00:59:26.334Z",
+      "completed_at": "2026-10-10T00:59:26.921Z",
+      "exit_code": 1,
+      "signal": null,
+      "stdout": "",
+      "stderr": "truenorth-mcp: invalid manifest `/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe/bundle/current.json`: invalid managed path `specs/authority-probe.md`: path must stay under the repository, outside `.agent/runtime/`, and outside `specs/` (ADR-0019 permits only the fresh `specs/adr/.gitkeep` seed, written outside this managed path)\n",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "custom-package-base-init-after-fix-clean",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace-after-fix",
+      "started_at": "2026-10-10T00:59:42.051Z",
+      "completed_at": "2026-10-10T00:59:42.168Z",
+      "exit_code": 0,
+      "signal": null,
+      "stdout": "{\"next_step\":\"git config core.hooksPath .githooks\",\"profile\":\"generic\",\"skipped\":[],\"wrote\":[\".agent/layout.yml\",\".agent/profile.yml\",\".agent/config/rules.yml\",\".agent/spec/requirements.md\",\".agent/tasks/state.yml\",\".agent/tasks/execution-status.yml\",\".agent/memories/lessons.md\",\".agent/memories/glossary.md\",\".agent/product/scope.md\",\".agent/tasks/backlog.yml\",\"AGENTS.md\",\"CONVENTIONS.md\",\".githooks/commit-msg\",\".githooks/post-merge\",\".kiro/hooks/jev-guard.json\",\".github/commit-template.md\",\".github/pull-request-template.md\",\".github/ISSUE_TEMPLATE/bug.md\",\".github/ISSUE_TEMPLATE/feature.md\",\".github/ISSUE_TEMPLATE/config.yml\",\"specs/adr/.gitkeep\",\"skills/using-truenorth/SKILL.md\",\".agent/workspace-manifest.yml\"]}\n",
+      "stderr": "",
+      "expected_exit_code": 0
+    },
+    {
+      "label": "after-fix-custom-package-upgrade-specs-authority-probe",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "upgrade",
+        "--check",
+        "--bundle-dir",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-workspace-after-fix",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "truenorth-mcp: invalid manifest `/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe/bundle/current.json`: invalid managed path `specs/authority-probe.md`: path must stay under the repository, outside `.agent/runtime/`, and outside `specs/` (ADR-0019 permits only the fresh `specs/adr/.gitkeep` seed, written outside this managed path)\n",
+      "expected_exit_code": 1
+    },
+    {
+      "label": "mixed-case-specs-alias-init-rejected",
+      "command": [
+        "/Users/greyvixfen/Code/oss/truenorth-mcp/runtime/target/debug/truenorth-mcp",
+        "init",
+        "--profile",
+        "generic",
+        "--bundle-dir",
+        "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe"
+      ],
+      "cwd": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/mixed-case-specs-probe",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "truenorth-mcp: invalid manifest `/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe/bundle/current.json`: invalid managed path `Specs/evil.md`: path must stay under the repository, outside `.agent/runtime/`, and outside `specs/` (case-insensitively; ADR-0019 permits only the fresh `specs/adr/.gitkeep` seed, written outside this managed path)\n",
+      "expected_exit_code": 1
+    }
+  ],
+  "observations": [
+    {
+      "path": "fresh-init/read-only-upgrade-check",
+      "passed": true,
+      "marker_empty": true,
+      "human_narrative_preserved": true,
+      "before_and_after_filesystem_sha256": "e5427353508c6ea98565e2786cfb1db99a5ef4ef5d5ab19e3cc0d4affe9a2031"
+    },
+    {
+      "path": "real-native-mcp-scaffold-collision",
+      "passed": true,
+      "server_discover": {
+        "resultType": "complete",
+        "supportedVersions": [
+          "2024-11-05",
+          "2025-03-26",
+          "2025-06-18",
+          "2025-11-25",
+          "2026-07-28"
+        ],
+        "capabilities": {
+          "resources": {},
+          "tools": {}
+        },
+        "instructions": "TrueNorth-MCP: spec-driven engineering discipline as active MCP tools and resources.",
+        "ttlMs": 0,
+        "cacheScope": "private",
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "truenorth-mcp",
+            "version": "1.0.5"
+          }
+        }
+      },
+      "request": {
+        "name": "truenorth_scaffold_project",
+        "arguments": {
+          "profile": "generic"
+        }
+      },
+      "actual_reply": {
+        "resultType": "complete",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"next_step\":\"git config core.hooksPath .githooks\",\"profile\":\"generic\",\"receipt\":{\"changes\":[{\"path\":\".agent/config/rules.yml\",\"sha256\":\"39c7b0066a443765623442af64d85732867436d67817ebc5bc8e1aaf17c54a58\"},{\"path\":\".agent/layout.yml\",\"sha256\":\"beda664aeeebf583ba3d2d1bbf0eedc8f6e32f6c1881deaa939db69af1a73b51\"},{\"path\":\".agent/memories/glossary.md\",\"sha256\":\"2cc714cd8dc8ed3bacf17816666f88b860422a769b8592dd3042f64323e77046\"},{\"path\":\".agent/memories/lessons.md\",\"sha256\":\"cceaaecbe43ad02816b298f3a969bf01bd5de25e87866cdf08c757376d18a8dc\"},{\"path\":\".agent/product/scope.md\",\"sha256\":\"5e4f5e38b83c62f0a187b4d9905432abe19622ca8adfacb9b227b8fc0e897f4a\"},{\"path\":\".agent/profile.yml\",\"sha256\":\"89b0adce5a29a5b40028f9f6aa5b3507c018c09523f8d7285a5d00be4200ded0\"},{\"path\":\".agent/spec/requirements.md\",\"sha256\":\"64be48535d7a5076f42a24296969a1fecec274eb495d6e58f1fc0995eae5bcdb\"},{\"path\":\".agent/tasks/backlog.yml\",\"sha256\":\"7736bb121311e099ca86205e5a9d6341707bfaebaeffdf5e6f64461cec0dd08c\"},{\"path\":\".agent/tasks/execution-status.yml\",\"sha256\":\"c7573c1e188a4f3720ca51e27d715055606b33ca6eadb6ac31b78546a022592a\"},{\"path\":\".agent/tasks/state.yml\",\"sha256\":\"cd45412c4456668dece162e948131cc749d9d4a8b1d2eaec6263e2fc562ffdf5\"},{\"path\":\".githooks/commit-msg\",\"sha256\":\"2e5729bf7f6dcf2509bec443761205cf5f51951f9024ecccf8847e32779d2cf5\"},{\"path\":\".githooks/post-merge\",\"sha256\":\"637a97a5f3423dafd45a06a2044338e7ec0ad3d39fbc5ef4b2a4882d4a2ffedd\"},{\"path\":\".github/ISSUE_TEMPLATE/bug.md\",\"sha256\":\"03e9616749042262ee4f5821a89c9103b3b7c340bac8713525b7e68c9e9245f0\"},{\"path\":\".github/ISSUE_TEMPLATE/config.yml\",\"sha256\":\"94e930bc10080986585fb97667dd46bf94c0c0825dd62e007213a5eb90f57c58\"},{\"path\":\".github/ISSUE_TEMPLATE/feature.md\",\"sha256\":\"9c6b2110964962df76b204c12ccdfb9af67604de868b7b4635a910b964cc95b5\"},{\"path\":\".github/commit-template.md\",\"sha256\":\"a3940f2cacac601b1c273e6ed40be8e01a0af8c4051bbe8f820ed99544773ede\"},{\"path\":\".github/pull-request-template.md\",\"sha256\":\"2bfc1939b6e7e03560a1caf62df3d7bc8cac4cb6267974b32dd50df938fd1d3f\"},{\"path\":\".kiro/hooks/jev-guard.json\",\"sha256\":\"961deba14bc14be3ff69c5e730c2b192ee6d3b929744686377fa04650e64c18b\"}],\"correlation_id\":\"mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc\",\"gate\":null,\"operation\":\"truenorth_scaffold_project\",\"runtime_version\":\"1.0.5\",\"schema_version\":1},\"skipped\":[\"AGENTS.md\",\"CONVENTIONS.md\"],\"wrote\":[\".agent/layout.yml\",\".agent/profile.yml\",\".agent/config/rules.yml\",\".agent/spec/requirements.md\",\".agent/tasks/state.yml\",\".agent/tasks/execution-status.yml\",\".agent/memories/lessons.md\",\".agent/memories/glossary.md\",\".agent/product/scope.md\",\".agent/tasks/backlog.yml\",\".githooks/commit-msg\",\".githooks/post-merge\",\".kiro/hooks/jev-guard.json\",\".github/commit-template.md\",\".github/pull-request-template.md\",\".github/ISSUE_TEMPLATE/bug.md\",\".github/ISSUE_TEMPLATE/feature.md\",\".github/ISSUE_TEMPLATE/config.yml\"]}"
+          }
+        ],
+        "isError": false
+      },
+      "protected_files": [
+        {
+          "path": "AGENTS.md",
+          "preserved": true
+        },
+        {
+          "path": "CONVENTIONS.md",
+          "preserved": true
+        },
+        {
+          "path": "specs/human.md",
+          "preserved": true
+        }
+      ],
+      "init_only_specs_marker_absent": true
+    },
+    {
+      "path": "published104-to-prepared105-before-fix",
+      "passed": false,
+      "reason": "Prepared new-version manifest declared only1.0.2, so native1.0.5 rejected the genuine1.0.4 installed workspace before any upgrade write.",
+      "actual_stderr": "node:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: A genuine initialized1.0.4 workspace must be accepted by prepared1.0.5: truenorth-mcp: installed bundle version `1.0.4` is not supported by target bundle `1.0.5`\n\n\n1 !== 0\n\n    at Object.<anonymous> (/private/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/upgrade-104-to105.cjs:5:8)\n    at Module._compile (node:internal/modules/cjs/loader:1871:14)\n    at Object..js (node:internal/modules/cjs/loader:2002:10)\n    at Module.load (node:internal/modules/cjs/loader:1594:32)\n    at Module._load (node:internal/modules/cjs/loader:1396:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.18.1\n",
+      "scope": "New version-preparation defect; genuine native version pair, not a guessed or retrospective historical RED."
+    },
+    {
+      "path": "published104-to-prepared105-after-fix-check",
+      "passed": true,
+      "plan_summary": {
+        "from": "1.0.4",
+        "to": "1.0.5",
+        "counts": {
+          "add": 0,
+          "update": 13,
+          "preserve": 142,
+          "conflict": 0,
+          "remove": 0
+        }
+      },
+      "legacy_manifest_sha256": "e34c6bd16b1f898b772e4e8c9b4243e1d93df989f8d82a27f6d8620e857676bd",
+      "legacy_manifest_git_blob_sha1": "350a80804504b75bba3f7933db4f90d2d70b782e",
+      "published_original_ref": "692edb9880866c7fb02e73fc66fbbea959a85544:npm/bundle/current.json",
+      "comparison": "Exact bytes match the immutable release commit, observed via GitHub file_read and local Git blob identity; no reconstructed historic skill digests."
+    },
+    {
+      "path": "genuine104-to105-managed-apply",
+      "passed": true,
+      "plan": {
+        "schema_version": 1,
+        "from_bundle_version": "1.0.4",
+        "to_bundle_version": "1.0.5",
+        "workspace_schema_version": "2",
+        "actions": [
+          {
+            "path": ".agent/config/rules.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/layout.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/memories/glossary.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/memories/lessons.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/product/scope.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/profile.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/spec/requirements.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/tasks/backlog.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/tasks/execution-status.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".agent/tasks/state.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".githooks/commit-msg",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".githooks/post-merge",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE/bug.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE/config.yml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".github/ISSUE_TEMPLATE/feature.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".github/commit-template.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".github/pull-request-template.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": ".kiro/hooks/jev-guard.json",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "AGENTS.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "CONVENTIONS.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/assess-impact/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/audit-code/HEURISTICS.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/audit-code/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/audit-plan/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/change-request/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/change-request/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/commit-message/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/commit-message/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/compose-workflow/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/compose-workflow/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/craft-skill/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/craft-skill/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/deepen-architecture/DEEPENING.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/deepen-architecture/INTERFACE-DESIGN.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/deepen-architecture/LANGUAGE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/deepen-architecture/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/define-language/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/delegate-task/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/deploy/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/deploy/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/design-interface/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/deep-modules.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/interface-design.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/mocking.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/refactoring.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/develop-tdd/tests.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/diagnose-stall/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/dispatch-agents/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/elaborate-spec/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/enforce-first/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/evolve-skill/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/evolve-skill/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/execute-group/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/fix-bug/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/grill-me/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/grill-me/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/guard-git/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/guard-git/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/guard-git/scripts/block-dangerous-git.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/guard-git/scripts/lib/git-guardrails-core.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/guard-git/scripts/pre-commit-secret-scan.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/guard-git/scripts/tests/run.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/hook-commits/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/inspect-quality/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/investigate-bug/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/kickoff-branch/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/map-codebase/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/migrate-spec/REFERENCE-GSD.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/migrate-spec/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/migrate-spec/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/migrate-spec/templates/REQUIREMENTS_TRACE.yaml",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/migrate-spec/templates/methodology.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/model-domain/ADR-FORMAT.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/model-domain/CONTEXT-FORMAT.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/model-domain/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/orchestrate-project/REFERENCE.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/orchestrate-project/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/organize-workspace/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/organize-workspace/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/plan-refactor/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/plan-release/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/plan-tests/REFERENCE.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/plan-tests/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/plan-work/REFERENCE.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/plan-work/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/publish-package/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/publish-package/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/quick-fix/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/release-branch/REFERENCE.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/release-branch/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/release-branch/scripts/check-route.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/release-branch/scripts/tests/run.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/request-review/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/research-first/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/research-first/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/reset-baseline/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/respond-review/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/benchmark.json",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/train/executor.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/train/expected.txt",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/train/grader.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/train/input.txt",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/validation/executor.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/validation/expected.txt",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/validation/grader.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/definitions/sample/validation/input.txt",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/scripts/run.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-benchmark/scripts/tests/run.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-evals/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/run-evals/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/scope-work/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/REFERENCE-confidence-rubric.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/REFERENCE-false-positives.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/REFERENCE-vuln-categories.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-639-idor-negative.go",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-639-idor-positive.go",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-79-xss-negative.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-79-xss-positive.js",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-89-sqli-negative.py",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-89-sqli-positive.py",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-fail-open-verify-negative.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/security-review/fixtures/CWE-fail-open-verify-positive.sh",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/seed-conventions/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/seed-conventions/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/session-state/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/setup-environment/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/simple-english/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/simple-english/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/simple-english/scripts/ste_lint.py",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/slice-tasks/SKILL.md",
+            "action": "update",
+            "reason": "unchanged_locally_bundle_changed"
+          },
+          {
+            "path": "skills/smoke-test/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/smoke-test/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/spike-prototype/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/stocktake-skills/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/stocktake-skills/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/survey-context/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/trace-requirement/SKILL.md",
+            "action": "conflict",
+            "reason": "local_and_bundle_changed"
+          },
+          {
+            "path": "skills/using-truenorth/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/validate-contracts/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/validate-contracts/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/validate-fix/REFERENCE-generalize-fix.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/validate-fix/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/verify-work/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/verify-work/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/wire-ci/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/wire-ci/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/wire-observability/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/write-document/REFERENCE.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          },
+          {
+            "path": "skills/write-document/SKILL.md",
+            "action": "preserve",
+            "reason": "unchanged_managed_file"
+          }
+        ],
+        "counts": {
+          "add": 0,
+          "update": 12,
+          "preserve": 142,
+          "conflict": 1,
+          "remove": 0
+        }
+      },
+      "owned_updated_path": "skills/execute-group/SKILL.md",
+      "before_sha256": "f48aa107ad879e79b47ec22ca552bcd9be0e62a9963281f6785fbfbb9ab6eef8",
+      "after_sha256": "b7c415103e5881ae2664652adac7350339e03574200771573908adc7f5cef503",
+      "new_source_sha256": "b7c415103e5881ae2664652adac7350339e03574200771573908adc7f5cef503",
+      "local_edit_preserved": true,
+      "human_narrative_preserved": true,
+      "synthetic_fixture_git_scope": "Git init/stage/commit occurred only in the disposable fixture as the documented clean-worktree precondition. No user-repository commit, identity attribution, push or integration occurred."
+    },
+    {
+      "path": "route-inspection-and-unapproved-action-rejections",
+      "passed": true,
+      "inspect": {
+        "route": "team-pr",
+        "action": "inspect",
+        "approved": false
+      },
+      "denied_actions": [
+        {
+          "action": "merge",
+          "exit_code": 3,
+          "stderr": "release route error: merge is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n"
+        },
+        {
+          "action": "tag",
+          "exit_code": 3,
+          "stderr": "release route error: tag is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n"
+        },
+        {
+          "action": "publish",
+          "exit_code": 3,
+          "stderr": "release route error: publish is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n"
+        },
+        {
+          "action": "cleanup",
+          "exit_code": 3,
+          "stderr": "release route error: cleanup is irreversible or destructive. Obtain explicit user approval for this action, then rerun with --approved.\n"
+        }
+      ],
+      "scope": "Side-effect-free helper only, inspect is not authorization. No --approved flag, merge/tag/publish/cleanup command or integration was executed. Human approval remains an operator obligation, not authenticated by a boolean flag."
+    },
+    {
+      "path": "real-native-resume-validation-rollback",
+      "passed": true,
+      "fault_injector_source": "use std::collections::BTreeMap;\nuse std::error::Error;\nuse std::fs;\nuse std::path::PathBuf;\nuse truenorth_mcp::engine::workspace_upgrade::bundle::DesiredFile;\nuse truenorth_mcp::engine::workspace_upgrade::manifest::WorkspaceManifest;\nuse truenorth_mcp::engine::workspace_upgrade::{plan, transaction};\n\nfn main() -> Result<(), Box<dyn Error>> {\n    let root = PathBuf::from(std::env::args().nth(1).ok_or(\"fixture root required\")?);\n    let installed = WorkspaceManifest::read_optional(&root)?.ok_or(\"manifest required\")?;\n    let mut desired = BTreeMap::new();\n    for (path, record) in &installed.managed {\n        desired.insert(path.clone(), DesiredFile { path: path.clone(), bytes: fs::read(root.join(path))?, mode: record.mode.clone() });\n    }\n    let profile = desired.get_mut(\".agent/profile.yml\").ok_or(\"profile must be managed\")?;\n    profile.bytes = b\"profile: not-a-profile\\n\".to_vec();\n    let prepared = plan::build_plan(&root, &desired, Some(&installed), &installed.bundle_version, &installed.workspace_schema_version, &installed.profile, installed.skill_sets.clone())?;\n    assert_eq!(prepared.counts.update, 1);\n    transaction::prepare(&root, &prepared, &desired)?;\n    println!(\"prepared real pending transaction with invalid profile postimage\");\n    Ok(())\n}\n",
+      "fault_injector_sha256": "75ad13b4c97380b11d3818e2a80a83d1d98dcbce39c17c5778b45b0315a670e8",
+      "actual_validation_error": "truenorth-mcp: unknown methodology profile `not-a-profile`. The valid profiles are: epic-based, issue-per-task, kanban, milestone-based, generic.\n",
+      "profile_preimage_restored_sha256": "89b0adce5a29a5b40028f9f6aa5b3507c018c09523f8d7285a5d00be4200ded0",
+      "manifest_preimage_restored_sha256": "29b842459ad861343704738c55283cc6fddd724d9519f7821d6f96e6d2b68a80",
+      "journal_removed": true,
+      "human_narrative_preserved": true,
+      "scope": "Deterministic fault-injected journal prepared by actual runtime library, then actual1.0.5 CLI resume validated and rolled back. No test mock, production hook, source mutation or publish/integration action."
+    },
+    {
+      "path": "custom-bundle-specs-authority-counterexample",
+      "passed": false,
+      "evidence": ".agent/tasks/compliance-515/520-custom-bundle-boundary.json",
+      "reason": "Native custom-bundle upgrade added specs narrative despite the intended supported-bundle policy. Current shipped package declares no specs files; do not turn that finite observation into universal enforcement."
+    },
+    {
+      "path": "custom-bundle-specs-authority-counterexample-after-fix",
+      "passed": true,
+      "actual_exit_code": 1,
+      "actual_stderr": "truenorth-mcp: invalid manifest `/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe/bundle/current.json`: invalid managed path `specs/authority-probe.md`: path must stay under the repository, outside `.agent/runtime/`, and outside `specs/` (ADR-0019 permits only the fresh `specs/adr/.gitkeep` seed, written outside this managed path)\n",
+      "existing_human_narrative_preserved": true,
+      "scope": "Confirms the newly approved scoped boundary fix closes the demonstrated gap at both package-load time (init) and the dedicated managed-upgrade check. A schema-valid custom package declaring a specs/ path is rejected before any write; existing human narrative and the fresh specs/adr/.gitkeep exception remain intact."
+    },
+    {
+      "path": "case-insensitive-specs-alias-closed",
+      "passed": true,
+      "actual_exit_code": 1,
+      "actual_stderr": "truenorth-mcp: invalid manifest `/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-520-smoke-pE6JBC/custom-package-probe/bundle/current.json`: invalid managed path `Specs/evil.md`: path must stay under the repository, outside `.agent/runtime/`, and outside `specs/` (case-insensitively; ADR-0019 permits only the fresh `specs/adr/.gitkeep` seed, written outside this managed path)\n",
+      "scope": "Confirms both independent-review HIGH findings are closed on this real APFS case-insensitive filesystem: a package declaring Specs/evil.md (mixed case) is now rejected at load time, matching the lowercase specs/ rejection."
+    }
+  ],
+  "current_repository_mutated_by_runtime": false,
+  "failures": [
+    {
+      "observed_at": "2026-10-10T00:16:54.283074Z",
+      "label": "initial-mcp-fixture-root-inadmissible",
+      "exit_code": 1,
+      "reason": "Native server required direct .agent/, specs/ and skills/ directories; the initial collision fixture lacked .agent/ and skills/. No MCP operation receipt or product behavior result was returned.",
+      "disposition": "Fix fixture prerequisites only, preserve failure, retry the failed native MCP observation."
+    },
+    {
+      "observed_at": "2026-10-10T00:24:01.433Z",
+      "label": "initial-historical-wrapper-invocation",
+      "exit_code": 1,
+      "reason": "The installed wrapper injects --bundle-dir automatically; the explicit duplicate caused CLI usage rejection. This is a fixture invocation error, not task RED.",
+      "disposition": "Use the documented wrapper argument surface without the duplicate bundle flag."
+    },
+    {
+      "observed_at": "2026-10-10T00:59:42.038Z",
+      "label": "after-fix-custom-package-base-init",
+      "exit_code": 1,
+      "reason": "The reused fixture package manifest still declared specs/authority-probe.md from the earlier counterexample. The fix now rejects that package at init time too (even earlier than upgrade), so this is confirmation of the fix working at a stricter point, not a fixture defect.",
+      "disposition": "Confirmed correct: load-time rejection now covers both init and upgrade. Proceeding by removing the probe-only specs entry from the fixture manifest for a clean carrier, then re-adding it for the dedicated rejection check only."
+    }
+  ]
+}

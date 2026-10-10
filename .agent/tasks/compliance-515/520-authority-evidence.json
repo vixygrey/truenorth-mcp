@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "group_id": "515",
+  "observed_at": "2026-10-10T00:02:45.158622000Z",
+  "decision": {
+    "path": "specs/adr/0019-scoped-repository-seed-write-authority.md",
+    "status": "Accepted",
+    "date": "2026-10-10",
+    "approval": "Document the audited exception",
+    "approval_source": "Explicit user direction for work item #520 in the active conversation.",
+    "interpretation": "Create a new accepted decision for the existing narrow repository-seed writes, align current authority references, and add scoped verification without a runtime behavior change or blanket confinement claim. Supersede only ADR-0008's blanket write-confinement clauses. Preserve its layer ownership and existing-human-narrative protections."
+  },
+  "audited_sources": [
+    "runtime/src/engine/agent_ws/mod.rs",
+    "runtime/src/tools/scaffold/mod.rs",
+    "runtime/src/tools/scaffold/bootstrap.rs",
+    "runtime/src/tools/scaffold/upgrade.rs",
+    "runtime/src/engine/workspace_upgrade/bundle.rs",
+    "runtime/src/engine/workspace_upgrade/manifest.rs",
+    "runtime/src/engine/workspace_upgrade/plan.rs",
+    "runtime/src/engine/workspace_upgrade/transaction.rs",
+    "specs/adr/0008-agent-vs-specs-split.md",
+    "specs/adr/0011-cockpit-relocation.md",
+    "specs/adr/0016-versioned-workspace-upgrades.md"
+  ],
+  "authority_scope": {
+    "normal_machine_state": "Guarded writes stay under .agent/.",
+    "scaffold": "Absent generated workflow targets can use the repository-seed writer. Existing targets are skipped under the MCP mutation permit.",
+    "fresh_init": "The fresh-target gate rejects an existing .agent/, specs/, skills/, AGENTS.md, CONVENTIONS.md, .githooks/, or .github/ target. Per-path scaffold checks preserve other generated path collisions. The only authorized specs write is a new empty specs/adr/.gitkeep marker. Selected package-manifest files and generated workflow files are seeded under repository containment checks.",
+    "managed_upgrade": "Only ownership-planned generated and package-manifest paths can change. Unowned collisions and local edits are preserved. Apply uses the writer lease, clean-worktree check, preimage and postimage checks, transaction journal, validation, and rollback. It does not manage specs/**.",
+    "excluded": "No general repository mutation authority, no mutation of existing human narrative, no runtime redesign, and no blanket claim that every runtime write stays under .agent/."
+  },
+  "release_interpretation": {
+    "prepared_contract": "1.0.5",
+    "historical_evidence": "The retained 1.0.4 scaffold observation remains immutable historical evidence and does not certify 1.0.5.",
+    "publication_authority": false
+  },
+  "required_runtime_smoke": {
+    "command": "repo_root=$PWD; tmp=$(mktemp -d); (cd \"$tmp\" && \"$repo_root/runtime/target/debug/truenorth-mcp\" init --profile generic --bundle-dir \"$repo_root/npm\") && test -f \"$tmp/AGENTS.md\" && test -f \"$tmp/CONVENTIONS.md\" && test -f \"$tmp/specs/adr/.gitkeep\" && test -f \"$tmp/.agent/workspace-manifest.yml\" && printf 'human narrative\\n' > \"$tmp/specs/human.md\" && (cd \"$tmp\" && \"$repo_root/runtime/target/debug/truenorth-mcp\" upgrade --check --bundle-dir \"$repo_root/npm\") && test \"$(cat \"$tmp/specs/human.md\")\" = \"human narrative\"",
+    "limits": "Run after the parent builds the current binary and prepares matching 1.0.5 package metadata. This smoke observes fresh initialization and a read-only upgrade plan. The full parent verification must also exercise scaffold collision preservation and managed-upgrade apply and rollback behavior."
+  },
+  "verification_status": "not_run_by_authority_writer",
+  "scope_limits": "This record proves the approval and authority interpretation only. It does not prove runtime behavior, release compliance, integration, publication, or historical gaps."
+}

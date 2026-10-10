@@ -48,8 +48,10 @@ cursor. Never restart the cycle or skip a previously failed gate.
 ## Artifact ownership
 
 - Read `.agent/tasks/release-plan.yml` for ordering and verify commands.
-- Read the selected group manifest only when the profile groups work.
-- Read the selected work-item specification and task ledger.
+- Read the selected work-item manifest by the `slice-tasks` contract: the indexed
+  group capsule, or `.agent/tasks/<task-id>/group.yml` for ungrouped work.
+- Resolve `active_task` by its `task_id`, exact registered `task_name` and command,
+  and reserved specification and ledger filenames. Do not infer these from a title.
 - Write execution progress and timestamps to
   `.agent/tasks/execution-status.yml`.
 - Write only the cursor and canonical handoff to `.agent/tasks/state.yml`.

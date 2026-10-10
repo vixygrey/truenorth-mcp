@@ -1,19 +1,94 @@
 workflow_mode: team-pr
-active_flow: null
-active_task: Fold run-planning into orchestrate-project
-active_group: '447'
+active_flow: execute_group
+active_task: '520'
+active_group: '515'
 phase: execute
-tdd:
-  step: red
 handoff:
-  next_skill: null
-  last_step_completed: null
-  context: 'Implement issue #447 on refactor/447-fold-run-planning.'
-  open_decisions: []
+  next_skill: execute-group
+  last_step_completed: verified-work-item-520
+  context: 'Step 6 (#520) is locally complete on test/520-workflow-controls at the preserved checkpoint. Real remote-control inspection, real native 1.0.5 TDD cycles (new-version migration fix, ADR-0019 specs-boundary enforcement, and two independently confirmed and fixed HIGH security findings: a case-insensitive specs alias bypass and unvalidated persisted transaction-journal paths), real fault-injected rollback, and both final independent reviews (quality, security) with no surviving finding are all retained. Published v1.0.4 assets are verified byte-identical and unchanged. The mounted preflight gate passed exit 0 in 137886 ms. The historical-evidence remediation plan (~/Desktop/traceability-historical-evidence-plan.md) is now fully complete. Track 2 independently re-verified all 77 historical entries'' already-recovered evidence against live GitHub data with zero discrepancies. Track 1 recorded the repository owner''s explicit scoping decision as ADR-0020 (prospective traceability evidence cutover at v1.0.4, commit 692edb98): all 77 pre-cutover entries are disposed out_of_scope with owner=vixygrey and an explicit rationale, preserving their already-recovered evidence unchanged. The traceability gate now reads PASS (total 82, covered 5, out_of_scope 77, missing_evidence 0). No exclusions or waivers were applied to any post-cutover entry. No commit, push, PR creation, merge, tag, publication, or destructive cleanup is authorized; those remain separately gated per skills/release-branch/SKILL.md.'
+  open_decisions:
+  - '#520 requires separate explicit approval for any merge, tag, publication, or destructive cleanup.'
+  - '#520 has explicit approval for a new narrow repository-seed architecture decision and current authority alignment, not runtime redesign or blanket confinement certification.'
+  - Traceability now reads PASS under ADR-0020''s explicit, owner-approved historical cutover. Any new release-plan entry from v1.0.4 forward remains fully subject to the evidence requirement with no exception.
   required_reading:
+  - CONVENTIONS.md
+  - .agent/profile.yml
+  - .agent/config/rules.yml
+  - .agent/product/scope.yml
   - .agent/tasks/release-plan.yml
-  group_id: '447'
-  artifacts_summary: null
-  git_context: null
-git:
-  branch: refactor/447-fold-run-planning
+  - .agent/tasks/compliance-515/plan.md
+  - .agent/tasks/compliance-515/group.yml
+  - .agent/tasks/compliance-515/impact.md
+  - .agent/tasks/compliance-515/test-plan.md
+  - .agent/tasks/compliance-515/516-spec.md
+  - .agent/tasks/compliance-515/516-tasks.yml
+  - .agent/tasks/execution-status.yml
+  - .agent/tasks/compliance-515/516-baseline-evidence.json
+  - .agent/tasks/compliance-515/516-verification-evidence.json
+  - .agent/tasks/compliance-515/516-operator-evidence.json
+  - .agent/tasks/compliance-515/516-audit-evidence.json
+  - .agent/tasks/compliance-515/516-review-evidence.json
+  - .agent/tasks/compliance-515/517-spec.md
+  - .agent/tasks/compliance-515/517-tasks.yml
+  - .agent/tasks/compliance-515/517-baseline-evidence.json
+  - .agent/tasks/compliance-515/517-recovery-provenance.json
+  - specs/README.md
+  - specs/requirements.md
+  - specs/design.md
+  - specs/tasks.md
+  - .agent/tasks/compliance-515/517-format-evidence.json
+  - .agent/tasks/compliance-515/517-verification-evidence.json
+  - .agent/tasks/compliance-515/517-reader-evidence.json
+  - .agent/tasks/compliance-515/517-review-evidence.json
+  - .agent/tasks/compliance-515/517-review-snapshot.json
+  - .agent/tasks/compliance-515/517-scaffold-boundary-evidence.json
+  - .agent/tasks/compliance-515/517-human-review.json
+  - .agent/tasks/compliance-515/518-spec.md
+  - .agent/tasks/compliance-515/518-tasks.yml
+  - .agent/tasks/compliance-515/518-baseline-evidence.json
+  - .agent/tasks/compliance-515/518-client-evidence.json
+  - .agent/tasks/compliance-515/518-coverage-planning.json
+  - .agent/tasks/compliance-515/518-verification-evidence.json
+  - .agent/tasks/compliance-515/518-evaluator-smoke.json
+  - .agent/tasks/compliance-515/518-review-evidence.json
+  - .agent/tasks/compliance-515/518-final-report.json
+  - .agent/tasks/compliance-515/519-spec.md
+  - .agent/tasks/compliance-515/519-tasks.yml
+  - .agent/tasks/compliance-515/519-baseline-evidence.json
+  - .agent/tasks/compliance-515/519-quality-evidence.json
+  - .agent/tasks/compliance-515/519-cockpit-evidence.json
+  - .agent/tasks/compliance-515/519-inventory-evidence.json
+  - .agent/tasks/compliance-515/519-trace-policy-evidence.json
+  - .agent/tasks/compliance-515/519-gate-smoke.json
+  - .agent/tasks/compliance-515/519-review-gate-evidence.json
+  - .agent/tasks/compliance-515/519-audit-evidence.json
+  - .agent/tasks/compliance-515/519-ci-correction-evidence.json
+  - .agent/tasks/compliance-515/519-review-evidence.json
+  - .agent/tasks/compliance-515/519-verification-evidence.json
+  - .agent/tasks/compliance-515/519-final-gate-evidence.json
+  - .agent/tasks/traceability.yml
+  - .agent/tasks/compliance-515/520-spec.md
+  - .agent/tasks/compliance-515/520-tasks.yml
+  - .agent/tasks/compliance-515/520-baseline-evidence.json
+  - .agent/tasks/compliance-515/520-authority-evidence.json
+  - .agent/tasks/compliance-515/520-remote-controls.json
+  - .agent/tasks/compliance-515/520-runtime-smoke.json
+  - .agent/tasks/compliance-515/520-version-preparation.json
+  - .agent/tasks/compliance-515/520-quality-review.json
+  - .agent/tasks/compliance-515/520-quality-recheck.json
+  - .agent/tasks/compliance-515/520-security-review.json
+  - .agent/tasks/compliance-515/520-security-recheck.json
+  - .agent/tasks/compliance-515/520-final-gate-evidence.json
+  - .agent/tasks/compliance-515/track2-history-audit-evidence.json
+  - .agent/tasks/traceability.yml
+  - specs/adr/0020-prospective-traceability-evidence-cutover.md
+  - .agent/tasks/compliance-515/track1-decision-evidence.json
+  group_id: '515'
+  artifacts_summary: 'Issues #516-#520 are all locally complete with retained evidence. #516 reconciled release/planning contracts. #517 recovered nine exact Git originals under specs/archive/ with explicit derivation. #518 established real coverage/verification gates. #519 established truthful execution and historical evidence. #520 added ADR-0019 scoped repository-seed write authority, observed real remote GitHub controls, prepared unpublished 1.0.5 distribution metadata, and fixed two independently confirmed HIGH security findings with passing regression tests. The historical-evidence remediation plan then closed the traceability gap: track 2 independently re-verified all 77 historical entries'' evidence with zero discrepancies, and track 1 recorded the owner''s explicit ADR-0020 scoping decision. Traceability now reads PASS. No commit, integration, or publication was authorized.'
+  git_context: The current issue branch is test/520-workflow-controls at the preserved checkpoint. The user explicitly approved the dependent step-6 clean-kickoff exception and a scope extension to fix a demonstrated write-boundary gap. No commit, stash, push, PR creation, merge, tag, publication, or destructive cleanup occurred.
+group_cycle:
+  mode: checkpoint
+  current_step: verified_520_checkpoint
+tdd:
+  step: green

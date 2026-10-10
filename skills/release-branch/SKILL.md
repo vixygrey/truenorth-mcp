@@ -22,8 +22,7 @@ or silently change the mode.
 | `solo-git` | Fast-forward the default branch locally     |
 | `team-pr`  | Push, create a PR, then squash-merge the PR |
 
-TrueNorth release workflows support Git only. Run the side-effect-free route
-check before any integration command:
+TrueNorth uses Git only. Run the side-effect-free route check before integration:
 
 ```bash
 bash skills/release-branch/scripts/check-route.sh \
@@ -37,7 +36,8 @@ bash skills/release-branch/scripts/check-route.sh \
 Run the full test, typecheck, and lint through `truenorth_verify_gate`. Confirm
 that the current Git branch is not the default branch, the worktree is clean,
 the commit range is nonempty, and every commit follows Conventional Commits.
-Reject an AI-attribution footer.
+Validate attribution against `CONVENTIONS.md`. Accept standard `Co-authored-by:` trailers when permitted.
+The human owns the commit. Never invent an author or attribution.
 
 ```bash
 git status --short --branch
@@ -49,9 +49,10 @@ Stop when verification fails. Do not land a branch with an empty commit range.
 
 ### 2. Coverage check
 
-Read `quality_gates.coverage.{overall_minimum_percent,business_logic_minimum_percent}`
-from `.agent/config/rules.yml`. Missing thresholds block release. Run the project
-coverage command and compare observed values. Never use skill-level defaults.
+Read `advisory.quality_gates.coverage.{overall_minimum_percent,business_logic_minimum_percent}` from version 2 `.agent/config/rules.yml`.
+This is advisory policy, not runtime enforcement. `--check-config` neither measures nor enforces coverage.
+Run the project coverage command. Compare both observed values with their declared minimums.
+Missing or invalid thresholds, or a missing command or report, block release. Never substitute defaults or lower thresholds.
 
 ### 2a. Security gate
 
@@ -60,9 +61,8 @@ coverage command and compare observed values. Never use skill-level defaults.
 - [ ] Every `Needs investigation` item with potentially HIGH or CRITICAL impact
       has an explicit disposition.
 
-When the review is missing or stale, run `security-review` inline. A confirmed
-blocker or undispositioned high-impact investigation item blocks the merge unless
-an explicit sign-off documents the decision.
+When the review is missing or stale, run `security-review` inline.
+A confirmed blocker or undispositioned high-impact investigation blocks merge without explicit documented sign-off.
 
 ### 2b. Traceability gate
 

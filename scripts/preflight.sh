@@ -3,7 +3,7 @@
 #
 # Usage:
 #   bash scripts/preflight.sh
-#   bash scripts/preflight.sh check|wrapper|artifact-smoke|format|shell [...]
+#   bash scripts/preflight.sh check|wrapper|artifact-smoke|format|shell|evals|coverage [...]
 
 set -euo pipefail
 
@@ -168,6 +168,15 @@ run_evals() {
   node scripts/run-methodology-evals.js --mode deterministic --check-baseline
 }
 
+run_coverage() {
+  require_command cargo "Install Rust 1.88.0 and llvm-tools-preview."
+  require_command node "Install Node.js 22 or newer."
+  echo "preflight: [coverage] evaluator boundaries"
+  node --test scripts/coverage.test.js
+  echo "preflight: [coverage] native measurement and thresholds"
+  node scripts/coverage.js run
+}
+
 run_group() {
   case "$1" in
     check) run_check ;;
@@ -176,13 +185,14 @@ run_group() {
     format) run_format ;;
     shell) run_shell ;;
     evals) run_evals ;;
-    *) fail "unknown group '$1'. Expected check, wrapper, artifact-smoke, format, shell, or evals." ;;
+    coverage) run_coverage ;;
+    *) fail "unknown group '$1'. Expected check, wrapper, artifact-smoke, format, shell, evals, or coverage." ;;
   esac
 }
 
 require_bash_four
 if (($# == 0)); then
-  groups=(check wrapper artifact-smoke format shell evals)
+  groups=(check wrapper artifact-smoke format shell evals coverage)
 else
   groups=("$@")
 fi

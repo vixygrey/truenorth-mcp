@@ -212,3 +212,46 @@ fn complexity_at_hundred_is_accepted() {
     let resolved = resolve(repo.path()).expect("complexity 100 accepted");
     assert_eq!(resolved.complexity_boundary, 100.0);
 }
+
+#[test]
+fn protected_paths_use_the_explicit_list_but_never_default_to_no_protection() {
+    let configured = seed_rules("protected_paths:\n  - specs/\n  - release/\n");
+    assert_eq!(
+        resolve_protected_paths(configured.path()).expect("explicit protected paths"),
+        vec!["specs/", "release/"]
+    );
+    let absent = TempDir::new().expect("temp repo");
+    let defaults = resolve_protected_paths(absent.path()).expect("missing config fallback");
+    assert!(defaults.iter().any(|path| path == "specs/"));
+    for body in ["protected_paths: []\n", "features:\n  ontology: false\n"] {
+        let repo = seed_rules(body);
+        assert_eq!(
+            resolve_protected_paths(repo.path()).expect("safe fallback"),
+            defaults
+        );
+    }
+}
+
+#[test]
+fn protected_path_resolution_rejects_malformed_and_unreadable_configuration() {
+    for body in ["protected_paths: not-a-list\n", "protected_paths: [\n"] {
+        let repo = seed_rules(body);
+        assert!(matches!(
+            resolve_protected_paths(repo.path()),
+            Err(super::super::JevError::Config { path, .. }) if path.ends_with(".agent/config/rules.yml")
+        ));
+        assert_eq!(
+            fs::read_to_string(repo.path().join(".agent/config/rules.yml"))
+                .expect("retained config"),
+            body
+        );
+    }
+    let repo = TempDir::new().expect("temp repo");
+    let path = repo.path().join(".agent/config/rules.yml");
+    fs::create_dir_all(&path).expect("directory instead of config");
+    assert!(matches!(
+        resolve_protected_paths(repo.path()),
+        Err(super::super::JevError::Config { .. })
+    ));
+    assert!(path.is_dir());
+}

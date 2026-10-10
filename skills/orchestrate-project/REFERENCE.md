@@ -32,7 +32,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 - **Sequence**:
   1. `scope-work` — consume `.agent/tasks/planning-context.yml` and produce the bounded `.agent/product/scope.yml`.
   2. `plan-release` — build the release index and define profile-appropriate group boundaries.
-  3. `slice-tasks` — define vertical slices and optional group manifests.
+  3. `slice-tasks` — register vertical work items and reserve filenames in each selected capsule's manifest; grouping fields remain optional by profile.
   4. `plan-tests` — design test architecture when risk requires explicit scenario coverage.
   5. `plan-work` — write runnable task specifications and ledgers.
 - **Context capsule cleanup**: `.agent/tasks/planning-context.yml` is consumed during scoping; clear it when transitioning out of planning into execution.

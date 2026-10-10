@@ -1,0 +1,31 @@
+{
+  "kind": "step-3-baseline",
+  "task_id": "517",
+  "started_at": "2026-10-09T18:36:32.316Z",
+  "completed_at": "2026-10-09T18:36:49.283Z",
+  "passed": false,
+  "error": {
+    "name": "McpError",
+    "message": "MCP tools/call failed: the gate command exited with code 101:\nrequired (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: subject must be 'type(scope): description'.\n  allowed types: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert\ncommit-msg: subject must be 'type(scope): description'.\n  allowed types: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\nerror: test failed, to rerun pass `--lib`\n\nstderr:\n2026-10-09T18:36:32.343623Z  INFO truenorth_mcp: resolved repository root repo_root=/Users/greyvixfen/Code/oss/truenorth-mcp\n2026-10-09T18:36:32.350364Z  INFO truenorth_mcp::server: resolved the worktree writer lease lease=\"contended\"\n2026-10-09T18:36:32.360732Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=None\n2026-10-09T18:36:49.282688Z  WARN serve_inner: rmcp::service: response error id=2 error=ErrorData { code: ErrorCode(-32600), message: \"the gate command exited with code 101:\\nrequired (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: subject must be 'type(scope): description'.\\n  allowed types: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert\\ncommit-msg: subject must be 'type(scope): description'.\\n  allowed types: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\ncommit-msg: an issue or ticket id reference is required (for example #12 or ABC-12).\\nerror: test failed, to rerun pass `--lib`\\n\", data: Some(Object {\"receipt\": Object {\"changes\": Array [], \"correlation_id\": String(\"mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc\"), \"gate\": Object {\"duration_ms\": Number(16920), \"exit_code\": Number(101), \"expectation\": String(\"zero\"), \"status\": String(\"failure\")}, \"operation\": String(\"truenorth_verify_gate\"), \"runtime_version\": String(\"1.0.4\"), \"schema_version\": Number(1)}, \"remediation_hints\": Array [String(\"read the stderr tail above and fix the reported failure\"), String(\"re-run the gate after the fix\")]}) }",
+    "code": -32600,
+    "data": {
+      "receipt": {
+        "changes": [],
+        "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+        "gate": {
+          "duration_ms": 16920,
+          "exit_code": 101,
+          "expectation": "zero",
+          "status": "failure"
+        },
+        "operation": "truenorth_verify_gate",
+        "runtime_version": "1.0.4",
+        "schema_version": 1
+      },
+      "remediation_hints": [
+        "read the stderr tail above and fix the reported failure",
+        "re-run the gate after the fix"
+      ]
+    }
+  }
+}

@@ -23,10 +23,20 @@ already declared in the active task manifest.
 - **Never writes**: the release index, the task manifest, `test-plan.md`, or
   `.agent/tasks/execution-status.yml`.
 
-> **HARD GATE**: The selected work item must already exist in the active task
-> manifest, with its specification and task filenames reserved. If either is
-> missing, return to `slice-tasks`. Never synthesize or repair an upstream
-> artifact.
+Resolve the selected manifest using the `slice-tasks` contract: an indexed
+group's `groups[].capsule_dir`, or `.agent/tasks/<task-id>/group.yml` for
+ungrouped work. The latter is a work-item manifest, not a methodology group.
+Select `active_task` by the manifest's string `task_id`, then match its exact
+`task_name` and `verify_command` to the runtime release-plan record with the
+same grouping. Do not pass planning metadata to `truenorth_record_task`.
+Read the reserved `spec` and `tasks` filenames from that entry; never guess
+them from a title or use the group id as the task id.
+
+> **HARD GATE**: The selected work item must resolve to exactly one manifest
+> entry and one runtime task record, with its specification and task filenames
+> reserved. Missing or ambiguous boundaries, registration, or reservations
+> return to `slice-tasks`; a missing group index returns to `plan-release`.
+> Never synthesize or repair an upstream artifact.
 >
 > Do not proceed until the success criteria are clear. Every task must include a
 > runnable verify command.

@@ -1,3 +1,146 @@
-tasks: {}
-groups: {}
+tasks:
+  "516":
+    status: done
+    group_id: "515"
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/516
+    branch: fix/516-methodology-contracts
+    started_at: "2026-10-09T17:43:19.910Z"
+    started_at_basis: First retained full-baseline execution for this work item.
+    baseline_evidence: .agent/tasks/compliance-515/516-baseline-evidence.json
+    completed_at: "2026-10-09T18:25:02.128Z"
+    completed_at_basis: Required command and operator proofs plus both independent reviews collected and dispositioned.
+    completion_scope: Local verified step 2 implementation only; no commit, integration, publication, or overall compliance claim.
+    verification_evidence: .agent/tasks/compliance-515/516-verification-evidence.json
+    operator_evidence: .agent/tasks/compliance-515/516-operator-evidence.json
+    audit_evidence: .agent/tasks/compliance-515/516-audit-evidence.json
+    review_evidence: .agent/tasks/compliance-515/516-review-evidence.json
+  "517":
+    status: done
+    group_id: "515"
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/517
+    branch: chore/517-specification-authority
+    started_at: "2026-10-09T19:08:28.384Z"
+    started_at_basis: Definitive passing full-baseline invocation after retained baseline repairs.
+    baseline_evidence: .agent/tasks/compliance-515/517-baseline-evidence.json
+    recovery_provenance: .agent/tasks/compliance-515/517-recovery-provenance.json
+    human_content_review: approved
+    human_review_evidence: .agent/tasks/compliance-515/517-human-review.json
+    completed_at: "2026-10-09T19:56:24.969Z"
+    completed_at_basis: Actual user content/provenance approval after retained command, reader, archive-integrity, and independent-review proof.
+    stage: locally-complete
+    format_evidence: .agent/tasks/compliance-515/517-format-evidence.json
+    verification_evidence: .agent/tasks/compliance-515/517-verification-evidence.json
+    reader_evidence: .agent/tasks/compliance-515/517-reader-evidence.json
+    review_evidence: .agent/tasks/compliance-515/517-review-evidence.json
+    known_authority_gap: .agent/tasks/compliance-515/517-scaffold-boundary-evidence.json
+    completion_scope: Local verified step 3 only; known ADR/bootstrap wording gap remains for final audit. No commit, integration, publication, or overall compliance claim.
+  "518":
+    status: done
+    group_id: "515"
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/518
+    branch: feat/518-operational-verification
+    started_at: "2026-10-09T20:38:00.163Z"
+    started_at_basis: Observed execution checkpoint clock after branch creation, passing baseline, strict diagnostics, and the mounted timeout.
+    baseline_evidence: .agent/tasks/compliance-515/518-baseline-evidence.json
+    client_evidence: .agent/tasks/compliance-515/518-client-evidence.json
+    coverage_planning: .agent/tasks/compliance-515/518-coverage-planning.json
+    stage: locally-complete
+    mounted_gate: Final reviewed actual mounted execute gate passed with exit code 0 in 143891 ms; receipt retained in verification_evidence.
+    completed_at: "2026-10-09T21:58:12.896Z"
+    completed_at_basis: Final reviewed mounted preflight, current native report acceptance, all 14 negative smoke variants, and independent-review dispositions observed.
+    verification_evidence: .agent/tasks/compliance-515/518-verification-evidence.json
+    evaluator_smoke: .agent/tasks/compliance-515/518-evaluator-smoke.json
+    review_evidence: .agent/tasks/compliance-515/518-review-evidence.json
+    coverage_report: .agent/tasks/compliance-515/518-final-report.json
+    source_sha256: c9d4ca4937f54ee7168567e6439037f5353b8a3c92c787c374e952cf81facafb
+    steps:
+      "1":
+        status: done
+        evidence: coverage_planning
+        outcome: Approved metric, source sets, pinned tooling and exact command retained with real native measurement.
+      "2":
+        status: done
+        evidence: verification_evidence
+        outcome: Actual mounted npm run preflight passed after client restart and again after the final reviewed implementation.
+      "3":
+        status: done
+        evidence: evaluator_smoke
+        outcome: Adopted preflight/CI/release coverage; overall 7462/7855 and business 6703/6912 pass unchanged 80/95. Current report passes; every invalid/insufficient variant fails.
+    next_action: Step 5 (#519) started on the next user request. Retain this locally complete step-4 evidence unchanged.
+    completion_scope: Local verified step 4 only. Native replay approved; Ubuntu/container and remote CI execution unverified. No commit, integration, publication, destructive Git cleanup, or overall compliance claim.
+  "519":
+    status: done
+    group_id: "515"
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/519
+    branch: chore/519-truthful-execution-evidence
+    started_at: "2026-10-09T22:07:08.523Z"
+    started_at_basis: Observed kickoff checkpoint clock after the approved preserved-checkout branch and successful actual mounted baseline.
+    baseline_evidence: .agent/tasks/compliance-515/519-baseline-evidence.json
+    stage: locally-complete
+    quality_evidence: .agent/tasks/compliance-515/519-quality-evidence.json
+    cockpit_evidence: .agent/tasks/compliance-515/519-cockpit-evidence.json
+    inventory_evidence: .agent/tasks/compliance-515/519-inventory-evidence.json
+    gate_smoke: .agent/tasks/compliance-515/519-gate-smoke.json
+    completed_at: "2026-10-09T22:48:51.344Z"
+    completed_at_basis: Actual commands and all three required smoke scenarios passed. Both independent reviews confirmed the CI-omission correction and no surviving finding.
+    audit_evidence: .agent/tasks/compliance-515/519-audit-evidence.json
+    review_evidence: .agent/tasks/compliance-515/519-review-evidence.json
+    ci_correction_evidence: .agent/tasks/compliance-515/519-ci-correction-evidence.json
+    verification_evidence: .agent/tasks/compliance-515/519-verification-evidence.json
+    final_gate_evidence: .agent/tasks/compliance-515/519-final-gate-evidence.json
+    traceability_report: .agent/tasks/traceability.yml
+    traceability_verdict: FAIL
+    traceability_scope: 77 historical entries lack required actual verification/acceptance evidence; step 6 (#520) is not executed. Zero exclusions or waivers.
+    steps:
+      "1":
+        status: done
+        evidence: cockpit_evidence
+        outcome: Actual live native MCP state/cockpit match disk and agree with the execution-owned ledger and retained real receipts.
+      "2":
+        status: done
+        evidence: inventory_evidence
+        outcome: Every release-plan entry appears once. Recovered GitHub issue/PR/commit/CI/release metadata remains distinct from unobserved historical local executions.
+      "3":
+        status: done
+        evidence: gate_smoke
+        outcome: Actual current-head report gate is FAIL. All 22 isolated negative cases failed as required, and the supported single-entry fixture passed.
+    completion_scope: Local verified step 5 only. Actual supporting commands, all required behavior scenarios, self-audit and both independent reviews passed. Traceability release verdict remains FAIL. No historical completion/RED/receipt fabricated, exclusion or waiver applied, step 6 executed, commit, integration or publication authorized.
+    next_action: Step 6 (#520) started on the next user request with the approved preserved-checkout exception. Retain step-5 proof unchanged; route missing historical evidence to verify-work and legitimate scope decisions to their planning owners.
+  "520":
+    status: done
+    group_id: "515"
+    issue: https://github.com/vixygrey/truenorth-mcp/issues/520
+    branch: test/520-workflow-controls
+    started_at: "2026-10-10T00:00:14.039Z"
+    started_at_basis: Observed checkpoint clock after the approved preserved-checkout branch and actual successful mounted baseline, not an invented gate start time.
+    baseline_evidence: .agent/tasks/compliance-515/520-baseline-evidence.json
+    stage: locally-complete
+    authority_evidence: .agent/tasks/compliance-515/520-authority-evidence.json
+    remote_controls_evidence: .agent/tasks/compliance-515/520-remote-controls.json
+    runtime_smoke_evidence: .agent/tasks/compliance-515/520-runtime-smoke.json
+    version_preparation_evidence: .agent/tasks/compliance-515/520-version-preparation.json
+    quality_review_evidence: .agent/tasks/compliance-515/520-quality-recheck.json
+    security_review_evidence: .agent/tasks/compliance-515/520-security-recheck.json
+    final_gate_evidence: .agent/tasks/compliance-515/520-final-gate-evidence.json
+    completed_at: "2026-10-10T01:21:17.893Z"
+    completed_at_basis: Actual mounted preflight gate passed exit 0 after two independently confirmed and fixed HIGH security findings and one restored test-pruning/wording finding; both final independent reviews returned PASS with no surviving finding.
+    approvals:
+      preserved_checkpoint: Continue preserved checkpoint
+      authority_reconciliation: Document the audited exception
+      boundary_enforcement_extension: Extend step 6 to enforce the boundary
+      irreversible_actions: Not approved
+    traceability_verdict: FAIL
+    traceability_scope: 77 historical release-plan entries still lack required local evidence; this is a pre-existing tracked gap, not introduced or waived by #520. #520 itself has complete real baseline/TDD/verification/review evidence.
+    completion_scope: Local verified step 6 only. Real remote-control inspection, real native 1.0.5 TDD cycles (version migration, specs-boundary enforcement, two independently confirmed HIGH security fixes), real fault-injected rollback, and both final independent reviews with no surviving finding. Published v1.0.4 assets verified byte-identical and unchanged. No commit, push, PR, merge, tag, publication, or destructive cleanup performed or authorized.
+    next_action: Any merge, tag, publication, or destructive cleanup requires its own separate explicit approval per skills/release-branch/SKILL.md. Historical traceability gaps route to verify-work; scope/disposition decisions route to their planning owner.
+groups:
+  "515":
+    status: done
+    current_task: "520"
+    started_at: "2026-10-09T17:43:19.910Z"
+    completed_at: "2026-10-10T04:21:33.918114Z"
+    completed_at_basis: All five work items (#516-#520) locally complete; traceability gate reads PASS under ADR-0020's explicit owner-approved historical cutover (track 1 of the historical-evidence remediation plan), with track 2 independently re-verifying all 77 historical entries' evidence first.
+    completion_scope: Local implementation and verification complete. No commit, integration, merge, tag, publication, or destructive cleanup performed or authorized; those remain separately gated per skills/release-branch/SKILL.md.
+    traceability_verdict: PASS
+    traceability_evidence: .agent/tasks/traceability.yml
 development_status: {}

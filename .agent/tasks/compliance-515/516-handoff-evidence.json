@@ -1,0 +1,42 @@
+{
+  "task_id": "516",
+  "observed_at": "2026-10-09T18:29:20.720Z",
+  "passed": true,
+  "resource_uris": [
+    "truenorth://state",
+    "truenorth://cockpit"
+  ],
+  "state": {
+    "phase": "execute",
+    "active_task": "516",
+    "active_group": "515",
+    "next_skill": "execute-group",
+    "last_step_completed": "request-review",
+    "group_cycle": {
+      "mode": "checkpoint",
+      "current_step": "checkpoint_after_516"
+    }
+  },
+  "cockpit_keys": [
+    "tasks",
+    "groups"
+  ],
+  "recorded_task_516": [
+    {
+      "group_id": "515",
+      "group_kind": "ticket",
+      "task_name": "Reconcile release and planning contracts (#516)",
+      "verify_command": "node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/preflight.sh wrapper shell"
+    }
+  ],
+  "group_index_515": [
+    {
+      "group_id": "515",
+      "group_kind": "ticket",
+      "title": "TrueNorth methodology compliance remediation",
+      "capsule_dir": ".agent/tasks/compliance-515",
+      "status": "planning",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/515"
+    }
+  ]
+}

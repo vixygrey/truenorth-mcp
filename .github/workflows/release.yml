@@ -47,6 +47,28 @@ jobs:
       - name: Verify committed release metadata
         run: node scripts/check-release-version.js "${{ steps.version.outputs.version }}"
 
+      - name: Set up Python for cross-language fixtures
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3"
+
+      - name: Set up Go for cross-language fixtures
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+
+      - name: Install the pinned Rust coverage toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
+          components: llvm-tools-preview
+
+      - name: Install approved coverage tooling
+        run: cargo install cargo-llvm-cov --version 0.9.1 --locked
+
+      - name: Enforce current production coverage before release builds
+        run: bash scripts/preflight.sh coverage
+
       - name: Validate release notes
         run: |
           node scripts/release-record.js validate-notes \

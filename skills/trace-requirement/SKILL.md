@@ -21,9 +21,10 @@ Both modes own `.agent/tasks/traceability.yml`. No other skill writes it.
 
 ## Report mode
 
-Read the active profile, release plan, optional group manifest, work-item
+Read the active profile, release plan, selected work-item manifest, work-item
 specification and task ledger, optional test plan, execution status, verification
-evidence, and Git branch, changed paths, and commits. Write schema version 1:
+evidence, and Git branch, changed paths, and commits. Resolve the manifest by the
+`slice-tasks` contract for grouped or ungrouped work. Write schema version 1:
 
 ```yaml
 schema_version: 1

@@ -1,0 +1,36 @@
+{
+  "kind": "implementation-verification",
+  "task_id": "517",
+  "started_at": "2026-10-09T19:44:39.424Z",
+  "completed_at": "2026-10-09T19:46:10.892Z",
+  "passed": false,
+  "error": {
+    "name": "McpError",
+    "message": "MCP tools/call failed: the gate command exited with code 1:\n6c4f7231.rlib --extern serde=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libserde-c37bac02ee9dff8e.rlib --extern serde_json=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libserde_json-06ea4aa1d394b864.rlib --extern serde_yaml=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libserde_yaml-a44897aeaccbe0ed.rlib --extern sha2=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libsha2-d64083ca02cdbc93.rlib --extern tempfile=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtempfile-6f377a63c9037741.rlib --extern thiserror=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libthiserror-051d761bdb313913.rlib --extern tokio=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtokio-aa452e96558e2b60.rlib --extern tracing=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtracing-90b024744cd8960a.rlib --extern tracing_subscriber=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtracing_subscriber-22760e14b310022b.rlib --extern tree_sitter=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtree_sitter-2c0b37278b5be903.rlib --extern tree_sitter_rust=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtree_sitter_rust-09b064bc075c823e.rlib --extern truenorth_mcp=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtruenorth_mcp-a30832ae08e386ee.rlib --extern wait_timeout=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libwait_timeout-6487d3e58213ba4e.rlib -C embed-bitcode=no --cfg 'feature=\"default\"' --cfg 'feature=\"tree-sitter\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\"default\", \"jev-http\", \"tree-sitter\"))' --error-format human`\n   Compiling truenorth-mcp v1.0.4 ([REDACTED_ENV]/Code/oss/truenorth-mcp/runtime)\n    Finished `release` profile [optimized] target(s) in 8.72s\nmethodology evals failed: methodology evaluations changed the source checkout: .agent/tasks/compliance-515/517-review-snapshot.json\n\nstderr:\n2026-10-09T19:44:39.427352Z  INFO truenorth_mcp: resolved repository root repo_root=/Users/greyvixfen/Code/oss/truenorth-mcp\n2026-10-09T19:44:39.427912Z  INFO truenorth_mcp::server: resolved the worktree writer lease lease=\"contended\"\n2026-10-09T19:44:39.429643Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=None\n2026-10-09T19:46:10.892217Z  WARN serve_inner: rmcp::service: response error id=2 error=ErrorData { code: ErrorCode(-32600), message: \"the gate command exited with code 1:\\n6c4f7231.rlib --extern serde=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libserde-c37bac02ee9dff8e.rlib --extern serde_json=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libserde_json-06ea4aa1d394b864.rlib --extern serde_yaml=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libserde_yaml-a44897aeaccbe0ed.rlib --extern sha2=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libsha2-d64083ca02cdbc93.rlib --extern tempfile=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtempfile-6f377a63c9037741.rlib --extern thiserror=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libthiserror-051d761bdb313913.rlib --extern tokio=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtokio-aa452e96558e2b60.rlib --extern tracing=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtracing-90b024744cd8960a.rlib --extern tracing_subscriber=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtracing_subscriber-22760e14b310022b.rlib --extern tree_sitter=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtree_sitter-2c0b37278b5be903.rlib --extern tree_sitter_rust=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtree_sitter_rust-09b064bc075c823e.rlib --extern truenorth_mcp=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libtruenorth_mcp-a30832ae08e386ee.rlib --extern wait_timeout=[REDACTED_ENV]/Code/oss/truenorth-mcp/runtime/target/debug/deps/libwait_timeout-6487d3e58213ba4e.rlib -C embed-bitcode=no --cfg 'feature=\\\"default\\\"' --cfg 'feature=\\\"tree-sitter\\\"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values(\\\"default\\\", \\\"jev-http\\\", \\\"tree-sitter\\\"))' --error-format human`\\n   Compiling truenorth-mcp v1.0.4 ([REDACTED_ENV]/Code/oss/truenorth-mcp/runtime)\\n    Finished `release` profile [optimized] target(s) in 8.72s\\nmethodology evals failed: methodology evaluations changed the source checkout: .agent/tasks/compliance-515/517-review-snapshot.json\\n\", data: Some(Object {\"receipt\": Object {\"changes\": Array [], \"correlation_id\": String(\"mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc\"), \"gate\": Object {\"duration_ms\": Number(91462), \"exit_code\": Number(1), \"expectation\": String(\"zero\"), \"status\": String(\"failure\")}, \"operation\": String(\"truenorth_verify_gate\"), \"runtime_version\": String(\"1.0.4\"), \"schema_version\": Number(1)}, \"remediation_hints\": Array [String(\"read the stderr tail above and fix the reported failure\"), String(\"re-run the gate after the fix\")]}) }",
+    "code": -32600,
+    "data": {
+      "receipt": {
+        "changes": [],
+        "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+        "gate": {
+          "duration_ms": 91462,
+          "exit_code": 1,
+          "expectation": "zero",
+          "status": "failure"
+        },
+        "operation": "truenorth_verify_gate",
+        "runtime_version": "1.0.4",
+        "schema_version": 1
+      },
+      "remediation_hints": [
+        "read the stderr tail above and fix the reported failure",
+        "re-run the gate after the fix"
+      ]
+    }
+  },
+  "disposition": {
+    "cause": "Parent created517-review-snapshot.json while methodology evaluation compared the source checkout before and after its isolated runs.",
+    "fix": "Finish all repository metadata writes, then freeze the checkout throughout final verification. Preserve the genuine isolation guard unchanged.",
+    "classification": "Concurrent evidence-collection mutation, not an implementation regression or evidence that evaluation itself modified source."
+  }
+}

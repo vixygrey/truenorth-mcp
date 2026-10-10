@@ -6,13 +6,15 @@ runtime crate is Rust. A thin Node.js wrapper distributes the binary.
 
 ## The two layers
 
-The repository has two layers. The machine-facing layer is `.agent/`. The
-runtime reads, watches, and writes only under `.agent/`. The human-facing layer is
-`specs/`, which holds human-authored narrative. The runtime can read a file under
-`specs/`, but it never mutates a path under `specs/`.
+The repository has two layers. The machine-facing layer is `.agent/`.
+Normal machine-state mutations use the shared guard and stay under `.agent/`.
+The human-facing layer is `specs/`, which holds human-authored narrative.
+The runtime can read human narrative under `specs/`, but it does not mutate it.
 
-A single write guard funnels every runtime write and rejects any target outside
-`.agent/` (ADR-0008).
+ADR-0019 authorizes narrow repository-seed paths for scaffolding, fresh
+initialization, and ownership-planned managed upgrades. The only `specs/` seed is
+an empty `specs/adr/.gitkeep` marker after fresh initialization rejects an
+existing `specs/` target.
 
 ## The `.agent/` layout
 

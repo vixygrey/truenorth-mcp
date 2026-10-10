@@ -52,3 +52,7 @@ pub fn write_error(error: crate::engine::agent_ws::WriteGuardError) -> ErrorData
         other => ErrorData::internal_error(other.to_string(), None),
     }
 }
+
+#[cfg(test)]
+#[path = "mutation_error_tests.rs"]
+mod tests;

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "task_id": 520,
+  "agent": "QualityReview520",
+  "findings": [
+    {
+      "file": "runtime/src/engine/workspace_upgrade/manifest.rs",
+      "line": 299,
+      "severity": "high",
+      "finding": "The new boundary check is case-sensitive, so a custom manifest path such as `Specs/prohibited.md` passes validation but aliases `specs/prohibited.md` on a case-insensitive supported filesystem such as a default macOS volume, leaving the ADR-0019 `specs/**` write boundary bypassable.",
+      "fix": "Reject a first path component equal to `specs` under ASCII case folding, and add mixed-case BundleManifest and CLI upgrade regression cases."
+    },
+    {
+      "file": "scripts/build-bundle-manifest.test.js",
+      "line": 7,
+      "severity": "medium",
+      "finding": "The edit removed the deterministic file/hash/mode/skill-set test, the exact planning-artifact ownership map test, and the checked-in-current-manifest equality test; every supposedly stale count and membership assertion still matches the current generated manifest (63 core, 69 total), so this deletes unrelated true-positive coverage rather than trimming catalog drift.",
+      "fix": "Restore the three invariant tests and change only assertions that are demonstrably stale; add the expected `supported_from` assertion for 1.0.2 and 1.0.4."
+    },
+    {
+      "file": ".agent/product/scope.yml",
+      "line": 23,
+      "severity": "medium",
+      "finding": "The in-scope FR-06 title still claims the machine-facing workspace is behind a single guarded write path, contradicting ADR-0019 and the same file's line 67, which distinguish normal `.agent/` writes from separate repository-seed authority.",
+      "fix": "Reword FR-06 to scope the single guard to normal `.agent/` machine-state writes and refer repository-seed writes to ADR-0019."
+    }
+  ],
+  "disposition": {
+    "verdict": "FAIL",
+    "correctness": "not ready",
+    "summary": "The 1.0.5 version-bearing manifests are aligned, supported_from correctly adds 1.0.4, the retained 1.0.4 manifest exactly matches published commit 692edb9880866c7fb02e73fc66fbbea959a85544 (SHA-256 e34c6bd16b1f898b772e4e8c9b4243e1d93df989f8d82a27f6d8620e857676bd; Git blob 350a80804504b75bba3f7933db4f90d2d70b782e), and the lowercase specs rejection is shared by bundle and workspace-manifest validation without rejecting skills/** or allowed .agent-relative paths. However, the case-insensitive-filesystem bypass leaves the runtime boundary incomplete, the bundle test deletion weakens live invariants without a factual stale assertion, and scope.yml retains a contradictory blanket single-guard claim. Historical 1.0.2 and 1.0.4 manifests contain only skills/** paths and are not rejected by the new lowercase rule."
+  }
+}

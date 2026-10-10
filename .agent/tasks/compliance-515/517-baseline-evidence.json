@@ -1,0 +1,32 @@
+{
+  "kind": "step-3-baseline",
+  "task_id": "517",
+  "started_at": "2026-10-09T19:08:28.384Z",
+  "completed_at": "2026-10-09T19:09:55.065Z",
+  "command": "node --test scripts/build-bundle-manifest.test.js && npm run preflight",
+  "gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "execute",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+      "gate": {
+        "duration_ms": 85991,
+        "exit_code": 0,
+        "expectation": "zero",
+        "status": "pass"
+      },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "scope": "Full existing verification plus bundle catalog tests through the real executor; standalone session timeout extended, actual mounted client configuration unchanged.",
+  "branch": "chore/517-specification-authority",
+  "baseline_repairs": [
+    "Rebuild cached crate artifacts embedding removed disposable clone path",
+    "Delete obsolete test asserting mutable live execution status equals empty seed, and its now-unused import",
+    "Preserve release-branch semantics while reducing scripted skill to150-line contract; synchronize mirror and regenerate current bundle"
+  ]
+}

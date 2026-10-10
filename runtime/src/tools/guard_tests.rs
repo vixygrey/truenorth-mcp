@@ -142,3 +142,93 @@ async fn an_empty_path_entry_returns_a_typed_error_naming_the_index() {
         error.message
     );
 }
+
+#[tokio::test]
+async fn too_many_paths_is_rejected_at_the_guard_boundary() {
+    let dir = tempdir().expect("temp dir");
+    let paths = (0..=MAX_PATHS)
+        .map(|index| format!("src/file-{index}.rs"))
+        .collect();
+    let error = server_with_jev(dir.path())
+        .truenorth_guard_change(Parameters(GuardChangeArgs {
+            paths,
+            content: "clean".to_string(),
+            task: None,
+        }))
+        .await
+        .expect_err("path count over cap");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+}
+
+#[tokio::test]
+async fn content_byte_cap_counts_utf8_bytes() {
+    let dir = tempdir().expect("temp dir");
+    let content = "é".repeat(MAX_CONTENT_BYTES / 2 + 1);
+    assert!(content.chars().count() < MAX_CONTENT_BYTES);
+    assert!(content.len() > MAX_CONTENT_BYTES);
+    let error = server_with_jev(dir.path())
+        .truenorth_guard_change(Parameters(GuardChangeArgs {
+            paths: vec!["src/main.rs".to_string()],
+            content,
+            task: None,
+        }))
+        .await
+        .expect_err("UTF-8 byte cap");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+}
+
+#[tokio::test]
+async fn malformed_guard_config_is_an_internal_decision_error() {
+    let dir = tempdir().expect("temp dir");
+    std::fs::create_dir_all(dir.path().join(".agent/config")).expect("config dir");
+    std::fs::write(
+        dir.path().join(".agent/config/rules.yml"),
+        "jev: [unterminated\n",
+    )
+    .expect("malformed config");
+
+    let error = server_with_jev(dir.path())
+        .truenorth_guard_change(Parameters(GuardChangeArgs {
+            paths: vec!["src/main.rs".to_string()],
+            content: "clean".to_string(),
+            task: None,
+        }))
+        .await
+        .expect_err("config resolution");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INTERNAL_ERROR);
+}
+
+#[test]
+fn annotate_decision_returns_structured_success_and_obeys_payload_cap() {
+    let caps = crate::engine::features::TokenCaps {
+        skill_lean_tokens: 100,
+        tool_payload_tokens: 100,
+    };
+    let result = decision_to_result(
+        GuardDecision::Annotate {
+            notes: vec!["review the proposed scope".to_string()],
+        },
+        caps,
+    )
+    .expect("annotation result");
+    let text = result.content[0].as_text().expect("text");
+    let value: serde_json::Value = serde_json::from_str(&text.text).expect("JSON");
+    assert_eq!(value["decision"], "annotate");
+    assert_eq!(
+        value["notes"],
+        serde_json::json!(["review the proposed scope"])
+    );
+
+    let tiny_caps = crate::engine::features::TokenCaps {
+        skill_lean_tokens: 100,
+        tool_payload_tokens: 1,
+    };
+    let error = decision_to_result(
+        GuardDecision::Annotate {
+            notes: vec!["long advisory note".to_string()],
+        },
+        tiny_caps,
+    )
+    .expect_err("payload cap");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+}
