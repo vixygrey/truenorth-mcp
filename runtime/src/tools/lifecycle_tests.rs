@@ -175,3 +175,64 @@ fn cockpit_validation_error_maps_to_invalid_params() {
     // invalid_params carries code -32602.
     assert_eq!(error.code.0, -32602);
 }
+
+#[test]
+fn resolve_grouping_rejects_empty_id_and_invalid_legacy_id() {
+    let repo = default_profile_repo();
+    let empty =
+        resolve_grouping(repo.path(), &args(Some(""), None, None)).expect_err("empty group id");
+    assert!(empty.message.contains("group_id"));
+
+    let invalid_legacy = resolve_grouping(repo.path(), &args(None, None, Some("epic-80")))
+        .expect_err("invalid legacy epic id");
+    assert!(invalid_legacy.message.contains("epic_id"));
+}
+
+#[test]
+fn explicit_neutral_grouping_takes_precedence_over_legacy_field() {
+    let repo = repo_with_profile("epic-based");
+    let grouping = resolve_grouping(
+        repo.path(),
+        &args(Some("e90"), Some("epic"), Some("not-a-valid-legacy-id")),
+    )
+    .expect("neutral fields win");
+
+    assert_eq!(grouping.id.as_deref(), Some("e90"));
+    assert_eq!(grouping.kind.as_deref(), Some("epic"));
+}
+
+#[test]
+fn lifecycle_error_mapping_covers_request_write_and_io_failures() {
+    let transition = cockpit_error(CockpitError::Transition {
+        current: "discover",
+        from: "design",
+        to: "plan",
+        expected: "design",
+    });
+    assert_eq!(transition.code.0, -32600);
+
+    let invalid_phase = cockpit_error(CockpitError::InvalidPhase {
+        actual: "[]".to_string(),
+    });
+    assert_eq!(invalid_phase.code.0, -32600);
+
+    let write = cockpit_error(CockpitError::Write(
+        crate::engine::agent_ws::WriteGuardError::OutsideAgent {
+            target: "../state.yml".to_string(),
+        },
+    ));
+    assert_eq!(write.code.0, -32603);
+
+    let io = cockpit_error(CockpitError::Io {
+        file: ".agent/tasks/state.yml".to_string(),
+        source: std::io::Error::other("read failed"),
+    });
+    assert_eq!(io.code.0, -32603);
+}
+
+#[test]
+fn receipt_errors_are_internal_errors() {
+    let error = receipt_error("digest unavailable".to_string());
+    assert_eq!(error.code.0, -32603);
+    assert!(error.message.contains("mutation receipt"));
+}

@@ -116,3 +116,113 @@ fn planner_preserves_local_deletion_and_flags_divergent_deletion() {
     assert_eq!(plan.actions[0].action, PlanAction::Conflict);
     assert_eq!(plan.actions[1].action, PlanAction::Preserve);
 }
+
+fn action<'a>(plan: &'a UpgradePlan, path: &str) -> &'a PlanEntry {
+    plan.actions
+        .iter()
+        .find(|entry| entry.path == path)
+        .expect("planned path")
+}
+
+#[test]
+fn planner_classifies_absent_and_modified_removals() {
+    let repo = tempdir().expect("repo");
+    fs::write(repo.path().join("modified.txt"), "mine").expect("local file");
+    let old = installed(&[("absent.txt", "old"), ("modified.txt", "old")]);
+
+    let plan = build_plan(
+        repo.path(),
+        &BTreeMap::new(),
+        Some(&old),
+        "new",
+        "2",
+        "generic",
+        vec!["core".to_string()],
+    )
+    .expect("plan");
+
+    assert_eq!(action(&plan, "absent.txt").action, PlanAction::Remove);
+    assert_eq!(action(&plan, "absent.txt").reason, "already_absent");
+    assert_eq!(action(&plan, "modified.txt").action, PlanAction::Conflict);
+    assert_eq!(
+        action(&plan, "modified.txt").reason,
+        "removed_locally_modified_file"
+    );
+    assert_eq!(plan.counts.remove, 1);
+    assert_eq!(plan.counts.conflict, 1);
+}
+
+#[test]
+fn planner_handles_nonregular_and_already_updated_managed_paths() {
+    let repo = tempdir().expect("repo");
+    fs::create_dir(repo.path().join("directory")).expect("directory");
+    fs::write(repo.path().join("already-new.txt"), "new").expect("new local");
+    fs::write(repo.path().join("locally-modified.txt"), "mine").expect("modified local");
+    let old = installed(&[
+        ("directory", "old"),
+        ("already-new.txt", "old"),
+        ("locally-modified.txt", "old"),
+    ]);
+    let desired: BTreeMap<_, _> = [
+        desired("directory", "new"),
+        desired("already-new.txt", "new"),
+        desired("locally-modified.txt", "old"),
+    ]
+    .into_iter()
+    .map(|file| (file.path.clone(), file))
+    .collect();
+
+    let plan = build_plan(
+        repo.path(),
+        &desired,
+        Some(&old),
+        "new",
+        "2",
+        "generic",
+        vec!["core".to_string()],
+    )
+    .expect("plan");
+
+    assert_eq!(
+        action(&plan, "directory").reason,
+        "managed_path_is_not_a_regular_file"
+    );
+    assert_eq!(
+        action(&plan, "already-new.txt").reason,
+        "already_matches_new_source"
+    );
+    assert_eq!(
+        action(&plan, "locally-modified.txt").reason,
+        "locally_modified_bundle_unchanged"
+    );
+    assert_eq!(plan.from_bundle_version.as_deref(), Some("old"));
+    assert_eq!(plan.to_bundle_version, "new");
+    assert_eq!(plan.next_manifest.bundle_version, "new");
+}
+
+#[test]
+fn planner_reports_workspace_inspection_errors_without_mutation() {
+    let repo = tempdir().expect("repo");
+    fs::write(repo.path().join("parent"), "not a directory").expect("blocking file");
+    let desired = desired("parent/child", "new");
+    let desired = BTreeMap::from([(desired.path.clone(), desired)]);
+
+    let result = build_plan(
+        repo.path(),
+        &desired,
+        None,
+        "new",
+        "2",
+        "generic",
+        vec!["core".to_string()],
+    );
+
+    assert!(matches!(
+        result,
+        Err(PlanError::Inspect { path, .. }) if path == "parent/child"
+    ));
+    assert_eq!(
+        fs::read_to_string(repo.path().join("parent")).expect("unchanged blocker"),
+        "not a directory"
+    );
+}

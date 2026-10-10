@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "metric": "native-mapped-lines-v1",
+  "build_modes": [
+    "default",
+    "tree-sitter"
+  ],
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "source_sha256": "c9d4ca4937f54ee7168567e6439037f5353b8a3c92c787c374e952cf81facafb",
+  "generated_at": "2026-10-09T21:54:26.893Z",
+  "repository_root": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+  "tools": {
+    "cargo_llvm_cov": "cargo-llvm-cov 0.9.1",
+    "rust": "rustc 1.88.0",
+    "rust_full": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+    "node": "v24.18.1"
+  },
+  "raw_sha256": {
+    "rust": "c5b4e690a84c36f4f7153c51fd158eb73e2aa0e07204e62e3dc6dbd6da7eb3d0",
+    "node": "588a8c41b964bf3f88fcdf54d48058cd7ff7bd92487fe5055614478b13ffbaed"
+  }
+}

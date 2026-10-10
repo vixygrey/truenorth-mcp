@@ -275,3 +275,8 @@ fn read_holder(path: &Path) -> LeaseConflict {
         .and_then(|pid| u32::try_from(pid).ok());
     LeaseConflict { holder_pid }
 }
+
+// Tests live in a sibling file so production lease state remains focused.
+#[cfg(test)]
+#[path = "mutation_tests.rs"]
+mod tests;

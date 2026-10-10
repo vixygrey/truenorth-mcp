@@ -446,3 +446,72 @@ fn checked_in_catalog_has_complete_resolved_graph_contract() {
         to_jsonl(&build_graph_report(&skills).graph)
     );
 }
+
+#[test]
+fn detects_a_dependency_cycle_once_and_keeps_the_directed_edges() {
+    let report = build_graph_report(&[
+        parsed("alpha", "# Alpha\n\nAfter beta.\n"),
+        parsed("beta", "# Beta\n\nAfter gamma.\n"),
+        parsed("gamma", "# Gamma\n\nAfter alpha.\n"),
+    ]);
+    assert_eq!(
+        report.diagnostics.dependency_cycles,
+        vec![vec![
+            "alpha".to_string(),
+            "beta".to_string(),
+            "gamma".to_string()
+        ]]
+    );
+    for (from, to) in [("alpha", "beta"), ("beta", "gamma"), ("gamma", "alpha")] {
+        assert!(
+            report
+                .graph
+                .relations
+                .contains(&GraphRelation::new(from, to, "depends_on"))
+        );
+    }
+}
+
+#[test]
+fn parses_relations_around_malformed_jsonl_records_and_returns_conventions() {
+    let entity = r#"{"type":"entity","name":"alpha","entityType":"Skill","observations":[]}"#;
+    let relation = r#"{"type":"relation","from":"alpha","to":"CONVENTIONS.md §Testing","relationType":"enforces"}"#;
+    let graph = from_jsonl(&format!(
+        "{entity}\nnot-json\n{relation}\n{{\"type\":\"unknown\"}}\n"
+    ));
+    assert_eq!(graph.entities.keys().collect::<Vec<_>>(), vec!["alpha"]);
+    assert_eq!(
+        conventions(&graph, "alpha"),
+        vec!["CONVENTIONS.md §Testing"]
+    );
+    assert!(conventions(&graph, "missing").is_empty());
+    assert!(to_jsonl(&SkillGraph::default()).is_empty());
+}
+
+#[test]
+fn canonical_skill_links_resolve_once_and_report_missing_targets() {
+    let report = build_graph_report(&[
+        parsed(
+            "alpha",
+            "# Alpha\n\n[known](skills/beta/SKILL.md)\n[missing](skills/removed/SKILL.md)\n",
+        ),
+        parsed("beta", "# Beta\n"),
+    ]);
+    assert_eq!(
+        report
+            .graph
+            .relations
+            .iter()
+            .filter(|relation| relation.from == "alpha" && relation.to == "beta")
+            .count(),
+        1
+    );
+    assert!(
+        report
+            .diagnostics
+            .unresolved_mentions
+            .iter()
+            .any(|mention| mention.target == "removed")
+    );
+    assert!(!report.graph.entities.contains_key("removed"));
+}

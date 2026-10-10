@@ -26,3 +26,6 @@ mod integration_tests;
 
 #[cfg(test)]
 mod resource_cache_tests;
+
+#[cfg(test)]
+mod isolated_process_tests;

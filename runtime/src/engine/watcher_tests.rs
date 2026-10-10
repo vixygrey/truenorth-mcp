@@ -166,3 +166,80 @@ fn ignored_paths_do_not_open_a_window() {
             .is_none()
     );
 }
+
+#[test]
+fn every_resource_has_its_stable_public_uri() {
+    assert_eq!(ResourceUri::State.as_str(), "truenorth://state");
+    assert_eq!(ResourceUri::Cockpit.as_str(), "truenorth://cockpit");
+    assert_eq!(ResourceUri::Ontology.as_str(), "truenorth://ontology");
+    assert_eq!(ResourceUri::Conventions.as_str(), "truenorth://conventions");
+    assert_eq!(ResourceUri::Adr.as_str(), "truenorth://adr");
+}
+
+#[test]
+fn worker_ignores_backend_errors_and_notifies_for_the_next_change() {
+    let (event_tx, event_rx) = std::sync::mpsc::channel();
+    let (stop_tx, stop_rx) = std::sync::mpsc::channel();
+    let (report_tx, report_rx) = std::sync::mpsc::channel();
+    let callback_stop = stop_tx.clone();
+    let worker = std::thread::spawn(move || {
+        run_debounce_loop(&event_rx, &stop_rx, &|uris| {
+            report_tx.send(uris).expect("report receiver");
+            callback_stop.send(()).expect("stop worker");
+        });
+    });
+
+    event_tx
+        .send(Err(notify::Error::generic("transient backend error")))
+        .expect("send backend error");
+    event_tx
+        .send(Ok(notify::Event::new(notify::EventKind::Any)
+            .add_path(Path::new("/repo/.agent/tasks/state.yml").to_path_buf())
+            .add_path(Path::new("/repo/src/unrelated.rs").to_path_buf())
+            .add_path(
+                Path::new("/repo/.agent/ontology.yml").to_path_buf(),
+            )))
+        .expect("send change");
+
+    let report = report_rx
+        .recv_timeout(Duration::from_secs(5))
+        .expect("worker notification");
+    assert_eq!(report, vec![ResourceUri::State, ResourceUri::Ontology]);
+    worker.join().expect("worker exits after callback");
+}
+
+#[test]
+fn worker_exits_cleanly_when_the_event_source_disconnects() {
+    let (event_tx, event_rx) = std::sync::mpsc::channel::<notify::Result<notify::Event>>();
+    let (_stop_tx, stop_rx) = std::sync::mpsc::channel();
+    drop(event_tx);
+
+    let called = std::cell::Cell::new(false);
+    run_debounce_loop(&event_rx, &stop_rx, &|_| called.set(true));
+    assert!(!called.get());
+}
+
+#[test]
+fn worker_honors_a_stop_signal_before_waiting_for_events() {
+    let (_event_tx, event_rx) = std::sync::mpsc::channel();
+    let (stop_tx, stop_rx) = std::sync::mpsc::channel();
+    stop_tx.send(()).expect("stop signal");
+
+    let called = std::cell::Cell::new(false);
+    run_debounce_loop(&event_rx, &stop_rx, &|_| called.set(true));
+    assert!(!called.get());
+}
+
+#[test]
+fn watcher_handle_starts_and_stops_on_an_existing_repository() {
+    let repo = tempfile::tempdir().expect("temp repo");
+    let handle = spawn_watcher(repo.path(), |_| {}).expect("start watcher");
+    drop(handle);
+}
+
+#[test]
+fn watcher_rejects_a_missing_repository_root() {
+    let repo = tempfile::tempdir().expect("temp parent");
+    let missing = repo.path().join("missing");
+    assert!(spawn_watcher(&missing, |_| {}).is_err());
+}

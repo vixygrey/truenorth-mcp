@@ -212,3 +212,70 @@ fn bootstrap_rejects_symlinked_skill_source_without_writing() {
     assert!(error.contains("regular file"));
     assert!(!repo.path().join(".agent").exists());
 }
+
+#[test]
+fn bootstrap_rejects_unknown_skill_set_before_writing() {
+    let repo = TempDir::new().expect("project");
+    let bundle = skill_bundle();
+
+    let error = bootstrap_project(
+        repo.path(),
+        Some("generic"),
+        bundle.path(),
+        &["missing".to_string()],
+    )
+    .expect_err("unknown skill set");
+
+    assert!(error.contains("unknown skill set `missing`"));
+    assert!(!repo.path().join(".agent").exists());
+    assert!(!repo.path().join("skills").exists());
+}
+
+#[test]
+fn bootstrap_requires_the_using_truenorth_skill_before_writing() {
+    let repo = TempDir::new().expect("project");
+    let bundle = skill_bundle();
+    let manifest_path = bundle.path().join("bundle/current.json");
+    let mut manifest: BundleManifest =
+        serde_json::from_slice(&fs::read(&manifest_path).expect("manifest bytes"))
+            .expect("parse manifest");
+
+    manifest
+        .files
+        .retain(|file| !file.path.starts_with("skills/using-truenorth/"));
+    manifest.skill_sets = vec![SkillSet {
+        name: "core".to_string(),
+        support: "supported".to_string(),
+        description: "Core test skills.".to_string(),
+        prerequisites: "none".to_string(),
+        skills: vec!["guard".to_string()],
+    }];
+    fs::write(
+        &manifest_path,
+        serde_json::to_vec(&manifest).expect("serialize manifest"),
+    )
+    .expect("rewrite manifest");
+
+    let error = bootstrap_project(repo.path(), None, bundle.path(), &[])
+        .expect_err("required using-truenorth skill");
+
+    assert!(error.contains("skills/using-truenorth/SKILL.md"));
+    assert!(!repo.path().join(".agent").exists());
+    assert!(!repo.path().join("skills").exists());
+}
+
+#[test]
+fn fresh_target_validation_names_every_conflicting_owned_path() {
+    let repo = TempDir::new().expect("project");
+    fs::create_dir(repo.path().join(".agent")).expect("agent conflict");
+    fs::create_dir(repo.path().join("skills")).expect("skills conflict");
+    fs::write(repo.path().join("CONVENTIONS.md"), "owned\n").expect("docs conflict");
+
+    let bundle = skill_bundle();
+    let error = bootstrap_project(repo.path(), None, bundle.path(), &[])
+        .expect_err("fresh target conflicts");
+
+    assert!(error.contains(".agent"));
+    assert!(error.contains("skills"));
+    assert!(error.contains("CONVENTIONS.md"));
+}

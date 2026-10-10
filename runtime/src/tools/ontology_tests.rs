@@ -254,3 +254,204 @@ async fn verify_notes_the_empty_stub() {
         .clone();
     assert!(text.contains("not yet defined"), "note present: {text}");
 }
+
+fn tool_json(result: CallToolResult) -> serde_json::Value {
+    let text = result.content[0].as_text().expect("text result");
+    serde_json::from_str(&text.text).expect("JSON result")
+}
+
+#[tokio::test]
+async fn generate_rejects_domain_and_source_path_boundaries_without_writing() {
+    let dir = tempdir().expect("temp dir");
+    let server = server_at(dir.path());
+    for args in [
+        GenerateOntologyArgs {
+            domain: String::new(),
+            source_paths: vec!["src".to_string()],
+        },
+        GenerateOntologyArgs {
+            domain: "é".repeat(MAX_DOMAIN + 1),
+            source_paths: vec!["src".to_string()],
+        },
+        GenerateOntologyArgs {
+            domain: "orders".to_string(),
+            source_paths: Vec::new(),
+        },
+    ] {
+        let error = server
+            .truenorth_generate_ontology(
+                Parameters(args),
+                rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(9)),
+            )
+            .await
+            .expect_err("invalid generation input");
+        assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+        assert!(!ontology_path(dir.path()).exists());
+    }
+}
+
+#[tokio::test]
+async fn generate_accepts_a_multibyte_domain_at_the_character_cap() {
+    let dir = tempdir().expect("temp dir");
+    let domain = "é".repeat(MAX_DOMAIN);
+    server_at(dir.path())
+        .truenorth_generate_ontology(
+            Parameters(GenerateOntologyArgs {
+                domain: domain.clone(),
+                source_paths: vec!["src/order.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(10)),
+        )
+        .await
+        .expect("character-count boundary");
+    assert_eq!(read_agent_ontology(dir.path()).domain, domain);
+}
+
+#[tokio::test]
+async fn generate_rejects_malformed_existing_ontology_without_replacing_it() {
+    let dir = tempdir().expect("temp dir");
+    fs::create_dir_all(dir.path().join(".agent")).expect("agent dir");
+    let malformed = "domain: [unterminated\n";
+    fs::write(ontology_path(dir.path()), malformed).expect("malformed ontology");
+
+    let error = server_at(dir.path())
+        .truenorth_generate_ontology(
+            Parameters(GenerateOntologyArgs {
+                domain: "orders".to_string(),
+                source_paths: vec!["src".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(11)),
+        )
+        .await
+        .expect_err("malformed existing ontology");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_REQUEST);
+    assert_eq!(
+        fs::read_to_string(ontology_path(dir.path())).expect("unchanged file"),
+        malformed
+    );
+}
+
+#[tokio::test]
+async fn oversized_generate_result_does_not_write_ontology() {
+    let dir = tempdir().expect("temp dir");
+    let server = TrueNorthServer::from_context(crate::server::ServerContext::with_config(
+        dir.path().to_path_buf(),
+        crate::engine::features::Features::default(),
+        crate::engine::features::TokenCaps {
+            skill_lean_tokens: 100,
+            tool_payload_tokens: 1,
+        },
+    ));
+    let error = server
+        .truenorth_generate_ontology(
+            Parameters(GenerateOntologyArgs {
+                domain: "orders".to_string(),
+                source_paths: vec!["src/order.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(12)),
+        )
+        .await
+        .expect_err("result cap");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+    assert!(!ontology_path(dir.path()).exists());
+}
+
+#[tokio::test]
+async fn verify_reports_empty_clean_and_violating_explicit_scopes() {
+    let dir = tempdir().expect("temp dir");
+    seed_ontology_file(dir.path());
+    let server = server_at(dir.path());
+
+    let empty = tool_json(
+        server
+            .truenorth_verify_ontology(Parameters(VerifyOntologyArgs {
+                scope_paths: Some(Vec::new()),
+            }))
+            .await
+            .expect("empty scope"),
+    );
+    assert_eq!(empty["passed"], true);
+    assert_eq!(empty["files_scanned"], 0);
+
+    fs::write(
+        dir.path().join("clean.rs"),
+        "struct Order { deleted_at: Option<u64> }\n",
+    )
+    .expect("clean source");
+    let clean = tool_json(
+        server
+            .truenorth_verify_ontology(Parameters(VerifyOntologyArgs {
+                scope_paths: Some(vec!["clean.rs".to_string(), "missing.rs".to_string()]),
+            }))
+            .await
+            .expect("clean scope"),
+    );
+    assert_eq!(clean["passed"], true);
+    assert_eq!(clean["files_scanned"], 2);
+
+    fs::write(
+        dir.path().join("bad.rs"),
+        "struct Order { is_deleted: bool }\n",
+    )
+    .expect("violating source");
+    let error = server
+        .truenorth_verify_ontology(Parameters(VerifyOntologyArgs {
+            scope_paths: Some(vec!["bad.rs".to_string()]),
+        }))
+        .await
+        .expect_err("prohibited alias");
+    assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_REQUEST);
+    assert_eq!(error.data.expect("violation count")["violations"], 1);
+}
+
+#[tokio::test]
+async fn verify_maps_malformed_ontology_and_unavailable_git_scope() {
+    if !crate::isolated_process_tests::in_child(
+        "tools::ontology::tests::verify_maps_malformed_ontology_and_unavailable_git_scope",
+        &[],
+    ) {
+        return;
+    }
+    let malformed_dir = tempdir().expect("temp dir");
+    fs::create_dir_all(malformed_dir.path().join(".agent")).expect("agent dir");
+    fs::write(ontology_path(malformed_dir.path()), "entities: [").expect("malformed");
+    let malformed = server_at(malformed_dir.path())
+        .truenorth_verify_ontology(Parameters(VerifyOntologyArgs {
+            scope_paths: Some(Vec::new()),
+        }))
+        .await
+        .expect_err("parse failure");
+    assert_eq!(malformed.code, rmcp::model::ErrorCode::INVALID_REQUEST);
+
+    let nongit_dir = tempdir().expect("temp dir");
+    seed_ontology_file(nongit_dir.path());
+    let scope_error = server_at(nongit_dir.path())
+        .truenorth_verify_ontology(Parameters(VerifyOntologyArgs { scope_paths: None }))
+        .await
+        .expect_err("git scope unavailable");
+    assert_eq!(scope_error.code, rmcp::model::ErrorCode::INTERNAL_ERROR);
+}
+
+#[test]
+fn primary_ontology_takes_precedence_over_legacy_and_parse_io_is_typed() {
+    let dir = tempdir().expect("temp dir");
+    seed_ontology_file(dir.path());
+    let legacy = seed_ontology("legacy", &["legacy.rs".to_string()]);
+    fs::create_dir_all(dir.path().join("specs")).expect("specs dir");
+    fs::write(
+        legacy_ontology_path(dir.path()),
+        serde_yaml::to_string(&legacy).expect("serialize"),
+    )
+    .expect("legacy ontology");
+    assert_eq!(
+        ontology_read_path(dir.path()).expect("resolved"),
+        ontology_path(dir.path())
+    );
+
+    let missing = read_and_parse(&dir.path().join("absent.yml")).expect_err("missing");
+    assert_eq!(missing.code, rmcp::model::ErrorCode::INVALID_REQUEST);
+    assert_eq!(
+        receipt_error("invalid change".to_string()).code,
+        rmcp::model::ErrorCode::INTERNAL_ERROR
+    );
+}

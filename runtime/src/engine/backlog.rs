@@ -159,6 +159,41 @@ mod tests {
     }
 
     #[test]
+    fn rejects_unreadable_or_malformed_backlog_without_rewriting_it() {
+        let root = TempDir::new().expect("temp repo");
+        let path = root.path().join(BACKLOG_PATH);
+        fs::create_dir_all(&path).expect("directory in place of backlog");
+        assert!(matches!(
+            validate_optional(root.path()),
+            Err(BacklogError::Io { source, .. }) if source.kind() == std::io::ErrorKind::IsADirectory
+        ));
+        assert!(path.is_dir());
+        fs::remove_dir(&path).expect("remove fixture directory");
+        let malformed = "ownership: [\n";
+        fs::write(&path, malformed).expect("write malformed YAML");
+        assert!(matches!(
+            validate_optional(root.path()),
+            Err(BacklogError::Parse { .. })
+        ));
+        assert_eq!(fs::read_to_string(&path).expect("retained file"), malformed);
+    }
+
+    #[test]
+    fn rejects_non_mapping_ownership_documents_and_unsupported_versions() {
+        for content in [
+            "[]\n",
+            "version: '2'\nownership:\n  mode: local\nbacklog: []\n",
+            "version: '1'\nownership:\n  provider: github\n",
+            "version: '1'\nownership:\n  mode: 7\n",
+        ] {
+            assert!(
+                matches!(validate(content), Err(BacklogError::Contract { .. })),
+                "{content}"
+            );
+        }
+    }
+
+    #[test]
     fn accepts_local_external_legacy_and_missing_backlogs() {
         let root = TempDir::new().expect("temp repo");
         assert!(validate_optional(root.path()).is_ok());

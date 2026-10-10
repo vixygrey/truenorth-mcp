@@ -255,3 +255,140 @@ fn concurrent_atomic_writes_use_distinct_temporary_files() {
         "target contains one complete payload"
     );
 }
+
+#[test]
+fn conditional_write_commits_when_target_and_dependency_are_unchanged() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("tasks/state.yml");
+    let target = repo.path().join(AGENT_DIR).join(rel);
+    let dependency = repo.path().join(AGENT_DIR).join("profile.yml");
+    fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
+    fs::write(&target, "phase: discover\n").expect("seed state");
+    fs::write(&dependency, "profile: issue-per-task\n").expect("seed dependency");
+    let precondition =
+        WritePrecondition::new(ObservedFile::observe(&target).expect("observe target"))
+            .with_dependency(ObservedFile::observe(&dependency).expect("observe dependency"));
+
+    write_under_agent_if_unchanged(repo.path(), rel, "phase: design\n", &precondition)
+        .expect("current revisions commit");
+
+    assert_eq!(
+        fs::read_to_string(target).expect("updated target"),
+        "phase: design\n"
+    );
+    assert_eq!(
+        fs::read_to_string(dependency).expect("unchanged dependency"),
+        "profile: issue-per-task\n"
+    );
+}
+
+#[test]
+fn conditional_write_rejects_a_precondition_for_another_target() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("tasks/state.yml");
+    let other = repo.path().join(AGENT_DIR).join("tasks/other.yml");
+    let precondition =
+        WritePrecondition::new(ObservedFile::observe(other).expect("observe other target"));
+
+    let error = write_under_agent_if_unchanged(repo.path(), rel, "phase: design\n", &precondition)
+        .expect_err("mismatched precondition");
+    match error {
+        WriteGuardError::Io { target, source } => {
+            assert!(target.ends_with(".agent/tasks/state.yml"));
+            assert_eq!(source.kind(), std::io::ErrorKind::InvalidInput);
+            assert!(source.to_string().contains("different target"));
+        }
+        other => panic!("expected invalid-input write error, got {other}"),
+    }
+    assert!(!repo.path().join(AGENT_DIR).join(rel).exists());
+}
+
+#[test]
+fn conditional_write_rejects_an_escaping_target_before_creating_files() {
+    let repo = TempDir::new().expect("temp repo");
+    let outside = repo.path().join("outside.yml");
+    let precondition =
+        WritePrecondition::new(ObservedFile::observe(&outside).expect("observe outside"));
+
+    let error = write_under_agent_if_unchanged(
+        repo.path(),
+        Path::new("../outside.yml"),
+        "escaped\n",
+        &precondition,
+    )
+    .expect_err("escaping target");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+    assert!(!outside.exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn conditional_write_rejects_a_symlinked_directory_escape() {
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    let outside = TempDir::new().expect("outside dir");
+    let agent = repo.path().join(AGENT_DIR);
+    fs::create_dir(&agent).expect("agent dir");
+    symlink(outside.path(), agent.join("link")).expect("escaping link");
+    let target = agent.join("link/state.yml");
+    let precondition =
+        WritePrecondition::new(ObservedFile::observe(&target).expect("observe escaped target"));
+
+    let error = write_under_agent_if_unchanged(
+        repo.path(),
+        Path::new("link/state.yml"),
+        "phase: design\n",
+        &precondition,
+    )
+    .expect_err("symlink escape");
+    assert!(matches!(error, WriteGuardError::OutsideAgent { .. }));
+    assert!(!outside.path().join("state.yml").exists());
+}
+
+#[test]
+fn conditional_write_reports_revision_read_failure_and_preserves_target_kind() {
+    let repo = TempDir::new().expect("temp repo");
+    let rel = Path::new("tasks/state.yml");
+    let target = repo.path().join(AGENT_DIR).join(rel);
+    fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
+    fs::write(&target, "phase: discover\n").expect("seed target");
+    let precondition =
+        WritePrecondition::new(ObservedFile::observe(&target).expect("observe target"));
+    fs::remove_file(&target).expect("remove target");
+    fs::create_dir(&target).expect("replace target with directory");
+
+    let error = write_under_agent_if_unchanged(repo.path(), rel, "phase: design\n", &precondition)
+        .expect_err("unreadable current revision");
+    match error {
+        WriteGuardError::Io {
+            target: error_target,
+            source,
+        } => {
+            assert_eq!(error_target, target.display().to_string());
+            assert!(source.to_string().contains("could not verify"));
+            assert_ne!(source.kind(), std::io::ErrorKind::NotFound);
+        }
+        other => panic!("expected revision I/O error, got {other}"),
+    }
+    assert!(target.is_dir());
+}
+
+#[test]
+fn observed_file_read_distinguishes_missing_invalid_utf8_and_io_errors() {
+    let repo = TempDir::new().expect("temp repo");
+    let missing = repo.path().join("missing.yml");
+    let (text, observed) = ObservedFile::read_string(&missing).expect("observe missing");
+    assert_eq!(text, None);
+    assert_eq!(observed.path(), missing);
+
+    let invalid = repo.path().join("invalid.yml");
+    fs::write(&invalid, [0xff, 0xfe]).expect("invalid UTF-8");
+    let error = ObservedFile::read_string(&invalid).expect_err("invalid UTF-8 rejected");
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+
+    let directory = repo.path().join("directory");
+    fs::create_dir(&directory).expect("directory");
+    assert!(ObservedFile::read_string(&directory).is_err());
+    assert!(ObservedFile::observe(&directory).is_err());
+}

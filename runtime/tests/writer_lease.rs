@@ -17,14 +17,18 @@ struct McpServer {
 
 impl McpServer {
     fn start(root: &Path) -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"))
+        let mut command = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"));
+        command
             .env_clear()
             .env("TRUENORTH_ROOT", root)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .expect("start MCP server");
+            .stderr(Stdio::piped());
+        // Keep instrumentation output outside the fixture without inheriting runtime config.
+        if let Some(profile_file) = std::env::var_os("LLVM_PROFILE_FILE") {
+            command.env("LLVM_PROFILE_FILE", profile_file);
+        }
+        let mut child = command.spawn().expect("start MCP server");
         let stdin = child.stdin.take().expect("server stdin");
         let stdout = BufReader::new(child.stdout.take().expect("server stdout"));
         let mut server = Self {

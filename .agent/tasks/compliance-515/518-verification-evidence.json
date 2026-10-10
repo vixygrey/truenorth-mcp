@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "task_id": "518",
+  "group_id": "515",
+  "observed_at": "2026-10-09T21:57:13.801630+00:00",
+  "status": "locally-verified",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "source_sha256": "c9d4ca4937f54ee7168567e6439037f5353b8a3c92c787c374e952cf81facafb",
+  "requirements": {
+    "MC-08": {
+      "passed": true,
+      "evidence": "Final actual mounted execute gate receipt; actual client verify command npm run preflight."
+    },
+    "MC-09": {
+      "passed": true,
+      "evidence": "Final native default/tree-sitter Rust and V8 Node reports; source sets and metric in 518-coverage-planning.json.",
+      "coverage": {
+        "schema_version": 1,
+        "metric": "native-mapped-lines-v1",
+        "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "source_sha256": "c9d4ca4937f54ee7168567e6439037f5353b8a3c92c787c374e952cf81facafb",
+        "rust": {
+          "covered": 7377,
+          "mapped": 7748,
+          "percent": 95.21166752710377
+        },
+        "node": {
+          "covered": 85,
+          "mapped": 107,
+          "percent": 79.4392523364486
+        },
+        "overall": {
+          "covered": 7462,
+          "mapped": 7855,
+          "percent": 94.99681731381285,
+          "minimum": 80
+        },
+        "business_logic": {
+          "covered": 6703,
+          "mapped": 6912,
+          "percent": 96.97627314814815,
+          "minimum": 95
+        },
+        "passed": true
+      }
+    },
+    "MC-10": {
+      "passed": true,
+      "evidence": "518-evaluator-smoke.json: actual checker accepted one current report and rejected all 14 invalid/insufficient variants. All 13 permanent CLI boundary tests passed, including independent exact/below-threshold cases."
+    },
+    "MC-11": {
+      "passed": true,
+      "evidence": "Coverage is in full preflight, required CI Gate, and release pre-build verification. Approved pinned tooling only; Python/Go setup reuses the existing check-job prerequisites."
+    }
+  },
+  "mounted_gate": {
+    "route": "xd://mcp__truenorth_verify_gate",
+    "arguments": {
+      "phase": "execute"
+    },
+    "result": {
+      "mode": "execute",
+      "passed": true,
+      "phase": "execute",
+      "receipt": {
+        "changes": [],
+        "correlation_id": "mcp-sha256:ed39e81f839511322544b7eab5bec6fe1c822c84099bb0b2be08d1c41618c26a",
+        "gate": {
+          "duration_ms": 143891,
+          "exit_code": 0,
+          "expectation": "zero",
+          "status": "pass"
+        },
+        "operation": "truenorth_verify_gate",
+        "runtime_version": "1.0.4",
+        "schema_version": 1
+      }
+    }
+  },
+  "commands": [
+    {
+      "command": "npm run coverage",
+      "exit_code": 0,
+      "scope": "Observed adopted native measurement before final parser/workflow corrections; final reviewed path re-executed through mounted full preflight."
+    },
+    {
+      "command": "npm run coverage:check",
+      "exit_code": 0,
+      "scope": "Current final report after final reviewed mounted gate."
+    },
+    {
+      "command": "npm run coverage:test",
+      "exit_code": 0,
+      "tests_passed": 13,
+      "scope": "Final malformed optional-field and Git-provenance regressions included."
+    },
+    {
+      "command": "actionlint .github/workflows/ci.yml .github/workflows/release.yml",
+      "exit_code": 0,
+      "scope": "Final Python/Go prerequisite changes included."
+    },
+    {
+      "command": "node_modules/.bin/prettier --check .github/workflows/ci.yml .github/workflows/release.yml README.md",
+      "exit_code": 0
+    }
+  ],
+  "retained_reports": [
+    "518-final-report.json",
+    "518-final-rust-default.lcov",
+    "518-final-rust.lcov",
+    "518-final-node.lcov"
+  ],
+  "independent_review": "518-review-evidence.json",
+  "workflow_replay": {
+    "user_selection": "Native command replay",
+    "docker_readiness": "docker info could not connect to the installed daemon socket",
+    "container_or_remote_ci_executed": false
+  },
+  "limits": [
+    "Local implementation and observed verification only. No commit, merge, tag, publication, or destructive Git cleanup.",
+    "Known ADR/bootstrap authority gap remains owned by #520.",
+    "The standalone wrapper coverage is 79.439 percent; policy applies to the combined overall source set, not a per-layer threshold."
+  ]
+}

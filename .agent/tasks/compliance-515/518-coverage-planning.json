@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "task_id": "518",
+  "status": "locally-verified",
+  "user_approvals": {
+    "dependency_question": "coverage-tool-approval",
+    "dependency_selection": "Approve pinned tooling",
+    "approved_dependencies": ["cargo-llvm-cov 0.9.1", "llvm-tools-preview for Rust 1.88.0"],
+    "scope_question": "overall-coverage-scope",
+    "scope_selection": "Rust runtime and Node wrapper",
+    "scope": "Both shipped layers. Exclude test code, dependencies, and build output. Business logic covers Rust methodology, rule, and mutation modules.",
+    "limits": "No runtime Cargo dependency or release-version change was approved."
+  },
+  "unchanged_policy": {
+    "source": ".agent/config/rules.yml",
+    "overall_minimum_percent": 80,
+    "business_logic_minimum_percent": 95
+  },
+  "tool_installation": {
+    "registry_install": {
+      "command": "cargo install cargo-llvm-cov --version 0.9.1 --locked",
+      "exit_code": 101,
+      "failure": "index.crates.io config.json download repeatedly timed out"
+    },
+    "successful_alternative": {
+      "source": "https://github.com/taiki-e/cargo-llvm-cov/releases/download/v0.9.1/cargo-llvm-cov-aarch64-apple-darwin.tar.gz",
+      "release": "https://github.com/taiki-e/cargo-llvm-cov/releases/tag/v0.9.1",
+      "upstream_digest": "sha256:7e821a6c90c0884f79f759f5d9be50799ade67bb82515186d922f26032ef43b8",
+      "observed_digest": "sha256:7e821a6c90c0884f79f759f5d9be50799ade67bb82515186d922f26032ef43b8",
+      "installation_directory": "/Users/greyvixfen/.cargo/bin",
+      "observed_version": "cargo-llvm-cov 0.9.1"
+    },
+    "llvm_component": {
+      "command": "rustup component add llvm-tools-preview --toolchain 1.88.0",
+      "exit_code": 0
+    },
+    "observed_rust_version": "1.88.0",
+    "observed_rust_llvm_version": "20.1.5",
+    "observed_node_version": "24.18.1"
+  },
+  "measurement_contract": {
+    "metric": "Unique native LCOV DA source-line records: covered distinct lines / mapped distinct lines. Sum line counts across layers, not layer percentages. LLVM LF/LH summaries can differ from unique DA records and do not define this metric.",
+    "overall_sources": [
+      "Rust runtime source lines compiled by the default and tree-sitter builds, excluding *_tests.rs and test-only inline blocks",
+      "npm/lib/runner.js",
+      "npm/bin/truenorth.js"
+    ],
+    "business_sources": [
+      "runtime/src/config.rs",
+      "runtime/src/config/**/*.rs",
+      "runtime/src/engine/**/*.rs",
+      "runtime/src/tools/**/*.rs"
+    ],
+    "rust_build_modes": ["default", "tree-sitter"],
+    "excluded_sources": [
+      "runtime/src/bin/*: developer-only graph regeneration and optional Jev benchmark entrypoints",
+      "Feature-only code absent from both default/tree-sitter builds. Compiled portions of Jev client_http.rs remain included.",
+      "Test code, dependencies, build output, and root development scripts"
+    ],
+    "inline_test_exclusions": {
+      "runtime/src/config/gate_environment.rs": "cfg(test) module through end of file",
+      "runtime/src/engine/backlog.rs": "cfg(test) module through end of file",
+      "runtime/src/engine/digest.rs": "cfg(test) module through end of file",
+      "runtime/src/engine/regex_util.rs": "cfg(test) module through end of file",
+      "runtime/src/tools/receipt.rs": "cfg(test) module through end of file",
+      "runtime/src/tools/result.rs": "cfg(test) module through end of file",
+      "runtime/src/server.rs": "cfg(test) impl TrueNorthServer, lines 231-242 in the measured snapshot"
+    },
+    "unloaded_wrapper_source": "Count every line of npm/bin/truenorth.js as uncovered when the test reporter omits it. Never silently drop an unexecuted shipped entrypoint.",
+    "measurement_commands": [
+      "cargo llvm-cov --locked --manifest-path runtime/Cargo.toml --lcov --output-path /tmp/truenorth-518-rust-default.lcov",
+      "cargo llvm-cov --locked --manifest-path runtime/Cargo.toml --features tree-sitter --no-clean --lcov --output-path /tmp/truenorth-518-rust-combined.lcov",
+      "node --experimental-test-coverage --test --test-reporter=lcov --test-reporter-destination=/tmp/truenorth-518-node.lcov npm/test/*.test.js"
+    ],
+    "adopted_command": "npm run coverage",
+    "adopted_checker": "npm run coverage:check",
+    "generated_report_directory": "runtime/target/coverage",
+    "clean_measurement": "Each run first uses cargo llvm-cov clean --workspace, then default and tree-sitter with --no-clean. Only generated instrumentation artifacts are cleared.",
+    "release_design": {
+      "source_binding": "Git HEAD resolved under a PATH-only child environment plus a digest of source, test, config, compiler/tooling manifests, lockfiles, and verification workflows.",
+      "raw_binding": "SHA-256 of each required native Rust and Node LCOV report.",
+      "freshness": "Current head and source digest, valid timestamp, at most 24 hours old, no more than 60 seconds in the future.",
+      "thresholds": "Exact integer count comparisons at 80 percent overall and 95 percent business logic. No rounding to pass."
+    }
+  },
+  "measured_coverage": {
+    "metric": "native mapped source lines",
+    "rust": { "covered": 6704, "mapped": 7748, "percent": 86.52555498193082 },
+    "node": { "covered": 85, "mapped": 107, "percent": 79.4392523364486 },
+    "overall": { "covered": 6789, "mapped": 7855, "percent": 86.42902609802674, "minimum": 80, "passed": true },
+    "business_logic": { "covered": 6030, "mapped": 6912, "percent": 87.23958333333333, "minimum": 95, "passed": false },
+    "raw_reports": ["518-rust-default.lcov", "518-rust-combined.lcov", "518-node.lcov"],
+    "test_results": "Both instrumented Rust build-mode suites and all 28 Node tests passed after harness repair.",
+    "snapshot_scope": "Baseline before the subsequently approved behavioral test expansion. Reports are historical evidence, not current-source release acceptance."
+  },
+  "evaluator_implemented": true,
+  "workflow_adopted": true,
+  "final_verification": "Passed. Final reviewed mounted npm run preflight exited 0 in 143891 ms. All 13 CLI boundary tests passed. One current report passed and all 14 actual-checker invalid/insufficient smoke variants failed. Both final independent reviews have no surviving blocker.",
+  "final_coverage": {
+    "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+    "source_sha256": "c9d4ca4937f54ee7168567e6439037f5353b8a3c92c787c374e952cf81facafb",
+    "overall": { "covered": 7462, "mapped": 7855, "percent": 94.99681731381285, "minimum": 80, "passed": true },
+    "business_logic": { "covered": 6703, "mapped": 6912, "percent": 96.97627314814815, "minimum": 95, "passed": true },
+    "node": { "covered": 85, "mapped": 107, "percent": 79.4392523364486 },
+    "report": "518-final-report.json",
+    "verification": "518-verification-evidence.json",
+    "negative_cases": "518-evaluator-smoke.json"
+  },
+  "instrumentation_harness_repair": {
+    "observed_failure": "Initial instrumented Rust tests exited 101. complete_configuration_reports_ready_without_mutation observed default_17856562570173285117_0_48376.profraw inside its fixture because env_clear removed LLVM_PROFILE_FILE.",
+    "approval": "User selected Repair and continue after the failed measurement checkpoint.",
+    "change": "Preserve only LLVM_PROFILE_FILE in the three isolated native subprocess test helpers. Keep environment isolation and the unchanged-workspace assertion.",
+    "verification": "Both complete instrumented Rust suites passed. The unchanged-workspace diagnostic assertion remains intact and passed."
+  },
+  "coverage_expansion_approval": {
+    "selection": "Add behavioral coverage",
+    "reason": "Measured business logic is below the unchanged 95 percent minimum.",
+    "scope": "Behavioral tests for measured runtime gaps. No threshold lowering, source narrowing, or runtime redesign."
+  },
+  "workflow_replay_approval": {
+    "selection": "Native command replay",
+    "limitation": "The installed Docker client could not reach its local daemon socket. The user approved native replay plus workflow validation rather than container execution.",
+    "observed_validation": "actionlint .github/workflows/ci.yml .github/workflows/release.yml exited 0.",
+    "unverified": "Ubuntu/container runner execution and remote GitHub Actions."
+  },
+  "pause_reason": null,
+  "acceptance": "MC-08 through MC-11 are locally verified. The combined overall and business-logic thresholds pass without lowering or source narrowing. User-approved native replay does not claim Ubuntu/container or remote CI execution."
+}

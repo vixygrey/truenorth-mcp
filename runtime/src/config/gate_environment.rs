@@ -248,4 +248,58 @@ mod tests {
             assert!(!error.to_string().contains("placeholder-secret-value"));
         }
     }
+
+    #[test]
+    fn invalid_and_credential_names_are_reported_together_without_values() {
+        let error = GateEnvironmentPolicy::parse(Some("PROJECT_TOKEN,bad-name,DATABASE_URL"))
+            .expect_err("all unsafe names must be rejected in one diagnostic");
+
+        assert_eq!(error.invalid_names(), ["bad-name"]);
+        assert_eq!(error.credential_names(), ["DATABASE_URL", "PROJECT_TOKEN"]);
+        assert_eq!(
+            error.to_string(),
+            "TRUENORTH_GATE_ENV_ALLOWLIST contains invalid names: bad-name; credential-like or reserved names: DATABASE_URL, PROJECT_TOKEN; use portable non-credential names only"
+        );
+    }
+
+    #[test]
+    fn built_in_names_may_be_configured_without_duplicate_inheritance() {
+        let policy = GateEnvironmentPolicy::parse(Some("PATH,BUILD_PROFILE")).unwrap();
+        assert_eq!(policy.configured_names(), ["BUILD_PROFILE", "PATH"]);
+        assert_eq!(
+            policy
+                .allowed_names()
+                .iter()
+                .filter(|name| name.as_str() == "PATH")
+                .count(),
+            1
+        );
+    }
+
+    #[test]
+    fn empty_name_is_not_portable() {
+        assert!(!is_portable_environment_name(""));
+        assert!(is_portable_environment_name("_"));
+        assert!(is_portable_environment_name("BUILD_2"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn process_policy_rejects_non_unicode_configuration() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+        if !crate::isolated_process_tests::in_child(
+            "config::gate_environment::tests::process_policy_rejects_non_unicode_configuration",
+            &[(
+                GATE_ENV_ALLOWLIST_ENV,
+                OsString::from_vec(vec![b'B', b'U', b'I', b'L', b'D', 0xff]),
+            )],
+        ) {
+            return;
+        }
+        let error = GateEnvironmentPolicy::from_process()
+            .expect_err("non-Unicode allowlist configuration must be rejected");
+        assert!(error.invalid_names().is_empty());
+        assert!(error.credential_names().is_empty());
+    }
 }

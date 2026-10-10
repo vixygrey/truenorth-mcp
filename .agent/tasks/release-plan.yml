@@ -303,6 +303,10 @@ tasks:
   group_kind: ticket
   task_name: Restore specification and writing authority (#517)
   verify_command: bash scripts/preflight.sh format
+- group_id: '515'
+  group_kind: ticket
+  task_name: Establish real verification and coverage gates (#518)
+  verify_command: npm run preflight
 groups:
   - group_id: '515'
     group_kind: ticket

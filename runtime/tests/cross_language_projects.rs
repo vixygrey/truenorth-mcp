@@ -335,6 +335,10 @@ fn seed_project(root: &Path, case: &ProjectCase) -> anyhow::Result<()> {
 fn run_binary(root: &Path, args: &[&str], verify_command: Option<&str>) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"));
     command.env_clear().current_dir(root).args(args);
+    // Keep instrumentation output outside the fixture without inheriting runtime config.
+    if let Some(profile_file) = std::env::var_os("LLVM_PROFILE_FILE") {
+        command.env("LLVM_PROFILE_FILE", profile_file);
+    }
     if let Some(command_value) = verify_command {
         command.env(VERIFY_CMD_ENV, command_value);
     }

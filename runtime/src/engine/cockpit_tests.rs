@@ -325,3 +325,44 @@ fn read_active_task_treats_an_empty_string_as_none() {
     seed_state(dir.path(), "active_task: \"   \"\nphase: null\n");
     assert_eq!(read_active_task(dir.path()).expect("reads"), None);
 }
+
+#[test]
+fn cockpit_reads_reject_directories_without_creating_replacement_files() {
+    for (relative, is_state) in [
+        (".agent/tasks/state.yml", true),
+        ("specs/state.yaml", true),
+        (".agent/tasks/release-plan.yml", false),
+        ("specs/release-plan.yaml", false),
+    ] {
+        let dir = tempdir().expect("temp repo");
+        let path = dir.path().join(relative);
+        fs::create_dir_all(&path).expect("directory at cockpit path");
+        let result = if is_state {
+            prepare_advance_phase(dir.path(), Phase::Discover, Phase::Design, "", "")
+        } else {
+            prepare_record_task(dir.path(), None, None, "task", "cargo test")
+        };
+        assert!(matches!(result, Err(CockpitError::Io { file, .. }) if file == relative));
+        assert!(path.is_dir());
+        assert!(!dir.path().join(".agent/tasks/state.yml").is_file());
+        assert!(!dir.path().join(".agent/tasks/release-plan.yml").is_file());
+    }
+}
+
+#[test]
+fn prepared_state_write_rejects_a_concurrent_edit() {
+    let dir = tempdir().expect("temp repo");
+    seed_state(dir.path(), "phase: discover\n");
+    let prepared = prepare_advance_phase(dir.path(), Phase::Discover, Phase::Design, "", "")
+        .expect("prepare phase transition");
+    let changed = "phase: discover\nactive_task: newer-task\n";
+    seed_state(dir.path(), changed);
+    assert!(matches!(
+        prepared.commit(dir.path()),
+        Err(CockpitError::Write(_))
+    ));
+    assert_eq!(
+        fs::read_to_string(state_path(dir.path())).expect("state retained"),
+        changed
+    );
+}

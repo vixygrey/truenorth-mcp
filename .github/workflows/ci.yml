@@ -78,6 +78,48 @@ jobs:
         if: steps.crate.outputs.present == 'true'
         run: bash scripts/preflight.sh check
 
+  coverage:
+    name: production coverage
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .node-version
+
+      - name: Set up Python for cross-language fixtures
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3"
+
+      - name: Set up Go for cross-language fixtures
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.1"
+
+      - name: Install the pinned Rust coverage toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
+          components: llvm-tools-preview
+
+      - name: Install approved coverage tooling
+        run: cargo install cargo-llvm-cov --version 0.9.1 --locked
+
+      - name: Run the coverage preflight group
+        run: bash scripts/preflight.sh coverage
+
+      - name: Retain native coverage evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: production-coverage
+          path: runtime/target/coverage/
+          if-no-files-found: error
+
   wrapper:
     name: wrapper test (Node ${{ matrix.node }})
     runs-on: ubuntu-24.04
@@ -265,7 +307,7 @@ jobs:
   gate:
     name: CI Gate
     runs-on: ubuntu-24.04
-    needs: [check, wrapper, artifact-smoke, format, shell, evals, action-pins, licenses]
+    needs: [check, wrapper, artifact-smoke, format, shell, evals, action-pins, licenses, coverage]
     if: always()
     steps:
       - name: Confirm every required CI job passed
@@ -278,6 +320,7 @@ jobs:
           evals_result="${{ needs.evals.result }}"
           action_pins_result="${{ needs.action-pins.result }}"
           licenses_result="${{ needs.licenses.result }}"
+          coverage_result="${{ needs.coverage.result }}"
           echo "check job result: ${check_result}"
           echo "wrapper job result: ${wrapper_result}"
           echo "artifact smoke job result: ${artifact_smoke_result}"
@@ -286,6 +329,7 @@ jobs:
           echo "methodology eval job result: ${evals_result}"
           echo "Action pin job result: ${action_pins_result}"
           echo "license policy job result: ${licenses_result}"
+          echo "production coverage job result: ${coverage_result}"
           if [ "${check_result}" != "success" ] \
             || [ "${wrapper_result}" != "success" ] \
             || [ "${artifact_smoke_result}" != "success" ] \
@@ -293,6 +337,7 @@ jobs:
             || [ "${shell_result}" != "success" ] \
             || [ "${evals_result}" != "success" ] \
             || [ "${action_pins_result}" != "success" ] \
+            || [ "${coverage_result}" != "success" ] \
             || [ "${licenses_result}" != "success" ]; then
             echo "A required job did not pass. Failing the gate."
             exit 1

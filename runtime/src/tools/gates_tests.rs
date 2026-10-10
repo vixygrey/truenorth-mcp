@@ -74,24 +74,57 @@ fn gate_result_failure_is_error_with_hints() {
     assert!(data.to_string().contains("fix the failure"));
 }
 
+#[tokio::test]
+async fn missing_verify_command_rejects_the_public_gate() {
+    if !crate::isolated_process_tests::in_child(
+        "tools::gates::tests::missing_verify_command_rejects_the_public_gate",
+        &[],
+    ) {
+        return;
+    }
+
+    let repo = tempfile::tempdir().expect("temp repo");
+    let server = TrueNorthServer::test_server(repo.path().to_path_buf());
+    let error = server
+        .truenorth_verify_gate(
+            Parameters(VerifyGateArgs {
+                phase: "review".to_string(),
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(3)),
+        )
+        .await
+        .expect_err("missing verify command");
+    assert!(error.message.contains(VERIFY_CMD_ENV));
+}
+
 #[test]
-fn verify_command_and_allowlist_env_serialized() {
-    // SAFETY: this test owns these env vars and restores them. No other test reads them.
-    unsafe {
-        std::env::set_var(VERIFY_CMD_ENV, "pnpm test");
-        std::env::set_var(ALLOWLIST_ENV, "node, npm");
-    }
+fn gate_result_timeout_uses_fallback_message_and_structured_receipt() {
+    let outcome = GateOutcome {
+        status: GateOutcomeStatus::Timeout,
+        exit_code: None,
+        duration_ms: 250,
+        error: None,
+        remediation_hints: vec!["reduce the command scope".to_string()],
+    };
+    let error = gate_result(
+        &outcome,
+        "integrate",
+        &rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(2)),
+        crate::engine::features::TokenCaps::default(),
+    )
+    .expect_err("timeout is an MCP error");
 
-    assert_eq!(verify_command().as_deref(), Some("pnpm test"));
-    let allow = allowlist("pnpm test");
-    assert!(allow.contains(&"pnpm".to_string()));
-    assert!(allow.contains(&"node".to_string()));
-    assert!(allow.contains(&"npm".to_string()));
+    assert_eq!(error.message, "the gate failed");
+    let data = error.data.expect("structured timeout data");
+    assert_eq!(data["receipt"]["gate"]["status"], "timeout");
+    assert_eq!(data["receipt"]["gate"]["duration_ms"], 250);
+    assert!(data["receipt"]["gate"]["exit_code"].is_null());
+    assert_eq!(data["remediation_hints"][0], "reduce the command scope");
+}
 
-    unsafe {
-        std::env::remove_var(VERIFY_CMD_ENV);
-        std::env::remove_var(ALLOWLIST_ENV);
-    }
-    // With the command unset, resolution yields None.
-    assert!(verify_command().is_none());
+#[test]
+fn gate_receipt_error_mapping_is_internal() {
+    let error = receipt_error("invalid receipt".to_string());
+    assert_eq!(error.code.0, -32603);
+    assert!(error.message.contains("gate receipt"));
 }

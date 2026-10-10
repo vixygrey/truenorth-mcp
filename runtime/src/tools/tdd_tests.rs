@@ -188,3 +188,144 @@ fn write_tdd_step_preserves_other_state_fields() {
         Some("red")
     );
 }
+
+fn cycle_args(step: &str, command: &str) -> TddCycleArgs {
+    TddCycleArgs {
+        step: step.to_string(),
+        failing_test_cmd: command.to_string(),
+        files_to_modify: vec!["src/lib.rs".to_string()],
+    }
+}
+
+#[tokio::test]
+async fn public_cycle_enforces_every_transition_and_preserves_rejected_state() {
+    use crate::engine::cockpit::read_tdd_step;
+    use crate::engine::tdd::TddStep;
+
+    let dir = tempdir().expect("temp dir");
+    let server = server_at(dir.path());
+    let request = || rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(7));
+
+    server
+        .truenorth_tdd_cycle(Parameters(cycle_args("red", "false")), request())
+        .await
+        .expect("none to red");
+    let state_path = dir.path().join(".agent/tasks/state.yml");
+    let red_state = fs::read(&state_path).expect("red state");
+
+    let error = server
+        .truenorth_tdd_cycle(Parameters(cycle_args("refactor", "ignored")), request())
+        .await
+        .expect_err("red to refactor is invalid");
+    assert!(error.message.contains("transition"));
+    assert_eq!(
+        fs::read(&state_path).expect("unchanged red state"),
+        red_state
+    );
+
+    server
+        .truenorth_tdd_cycle(
+            Parameters(cycle_args("green", "command is not run")),
+            request(),
+        )
+        .await
+        .expect("red to green");
+    assert_eq!(
+        read_tdd_step(dir.path()).expect("green state"),
+        Some(TddStep::Green)
+    );
+    server
+        .truenorth_tdd_cycle(
+            Parameters(cycle_args("refactor", "command is not run")),
+            request(),
+        )
+        .await
+        .expect("green to refactor");
+    assert_eq!(
+        read_tdd_step(dir.path()).expect("refactor state"),
+        Some(TddStep::Refactor)
+    );
+    server
+        .truenorth_tdd_cycle(Parameters(cycle_args("red", "false")), request())
+        .await
+        .expect("refactor to next red");
+    assert_eq!(
+        read_tdd_step(dir.path()).expect("new red state"),
+        Some(TddStep::Red)
+    );
+}
+
+#[tokio::test]
+async fn public_cycle_rejects_invalid_fields_without_creating_state() {
+    let invalid = [
+        cycle_args("blue", "false"),
+        cycle_args("red", ""),
+        TddCycleArgs {
+            step: "red".to_string(),
+            failing_test_cmd: "false".to_string(),
+            files_to_modify: vec![" ".to_string()],
+        },
+    ];
+
+    for args in invalid {
+        let dir = tempdir().expect("temp dir");
+        let error = server_at(dir.path())
+            .truenorth_tdd_cycle(
+                Parameters(args),
+                rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(8)),
+            )
+            .await
+            .expect_err("invalid request");
+        assert_eq!(error.code.0, -32602);
+        assert!(!dir.path().join(".agent/tasks/state.yml").exists());
+    }
+}
+
+#[test]
+fn gate_receipt_maps_pass_failure_and_both_expectations() {
+    let pass = GateOutcome {
+        status: GateOutcomeStatus::Pass,
+        exit_code: Some(0),
+        duration_ms: 1,
+        error: None,
+        remediation_hints: Vec::new(),
+    };
+    let receipt = gate_receipt(&pass, false);
+    assert_eq!(receipt.status, GateStatus::Pass);
+    assert_eq!(receipt.expectation, GateExpectation::Zero);
+
+    let failure = GateOutcome {
+        status: GateOutcomeStatus::Failure,
+        exit_code: Some(2),
+        duration_ms: 2,
+        error: None,
+        remediation_hints: Vec::new(),
+    };
+    let receipt = gate_receipt(&failure, true);
+    assert_eq!(receipt.status, GateStatus::Failure);
+    assert_eq!(receipt.expectation, GateExpectation::Nonzero);
+}
+
+#[test]
+fn cockpit_error_maps_transition_write_and_io_categories() {
+    let transition = cockpit_error(CockpitError::Transition {
+        current: "red",
+        from: "red",
+        to: "refactor",
+        expected: "green",
+    });
+    assert_eq!(transition.code.0, -32600);
+
+    let io = cockpit_error(CockpitError::Io {
+        file: "state.yml".to_string(),
+        source: std::io::Error::other("read failed"),
+    });
+    assert_eq!(io.code.0, -32603);
+
+    let write = cockpit_error(CockpitError::Write(
+        crate::engine::agent_ws::WriteGuardError::OutsideAgent {
+            target: "state.yml".to_string(),
+        },
+    ));
+    assert_eq!(write.code.0, -32603);
+}

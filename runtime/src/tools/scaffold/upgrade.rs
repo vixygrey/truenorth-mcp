@@ -241,3 +241,7 @@ fn normalized_mode(metadata: &fs::Metadata) -> String {
 fn normalized_mode(_metadata: &fs::Metadata) -> String {
     "0644".to_string()
 }
+
+#[cfg(test)]
+#[path = "upgrade_tests.rs"]
+mod tests;
