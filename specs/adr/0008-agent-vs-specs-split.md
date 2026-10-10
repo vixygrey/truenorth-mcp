@@ -30,3 +30,11 @@ a human document. The write guard makes the invariant testable once and hard to
 bypass. ADR-0002 assumed a single local-first `specs/` cockpit; this decision
 replaces that assumption. Existing bigpowers cockpits under `specs/` still read
 through a backward-compatible fallback.
+
+## Forward clarification
+
+[ADR-0019](0019-scoped-repository-seed-write-authority.md) supersedes only this
+decision's blanket write-confinement clauses. It authorizes the enumerated
+repository-seed paths for scaffolding, fresh initialization, and managed upgrades.
+The layer ownership and prohibition on mutation of existing human narrative remain
+in force.

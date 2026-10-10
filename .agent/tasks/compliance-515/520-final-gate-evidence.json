@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "group_id": "515",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "completed_at": "2026-10-10T01:21:17.893Z",
+  "completed_at_basis": "Actual mounted preflight gate passed after all fixes; both independent reviews confirmed no surviving finding.",
+  "steps": {
+    "1": {
+      "status": "done",
+      "requirement": "MC-16",
+      "evidence": [
+        "520-baseline-evidence.json",
+        "520-runtime-smoke.json"
+      ],
+      "outcome": "Real issue-first branch/baseline/TDD workflow observed: preserved checkpoint branch test/520-workflow-controls, actual mounted preflight pass, five real RED/GREEN TDD cycles through truenorth_tdd_cycle (new-version migration fix, specs-boundary enforcement, two independently-confirmed security fixes), and real native 1.0.5 CLI/MCP smokes (fresh init, read-only upgrade check, scaffold collision preservation, genuine 1.0.4-to-1.0.5 managed apply with local-edit and human-narrative preservation, and a real fault-injected transaction rollback)."
+    },
+    "2": {
+      "status": "done",
+      "requirement": "MC-17",
+      "evidence": [
+        "520-remote-controls.json",
+        "520-remote-sources.json"
+      ],
+      "outcome": "Authenticated read-only GitHub inspection confirmed protected main (legacy protection rule), two strict required Actions checks, PR-required with zero bypass allowances, squash-only merge, disabled force-push/delete, and an immutable v1.0.4 release. No remote #520 branch/PR/CI exists; base-head CI does not certify the uncommitted diff."
+    },
+    "3": {
+      "status": "partially-applicable",
+      "requirement": "MC-18/MC-19",
+      "evidence": [
+        "520-version-preparation.json"
+      ],
+      "outcome": "Route-inspection guard exercised (inspect succeeds; merge/tag/publish/cleanup correctly rejected exit 3 without --approved). No merge, tag, publication, or destructive cleanup was approved or performed. Published v1.0.4 assets verified byte-identical via the immutable Git tag and GitHub release; distribution metadata is prepared at unpublished 1.0.5 only."
+    }
+  },
+  "security_findings_resolved": [
+    {
+      "id": "case-insensitive-specs-alias",
+      "severity": "high",
+      "fixed_in": "runtime/src/engine/workspace_upgrade/manifest.rs",
+      "regression": [
+        "manifests_reject_escape_duplicate_hash_and_mode"
+      ]
+    },
+    {
+      "id": "unvalidated-transaction-journal-paths",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "fixed_in": "runtime/src/engine/workspace_upgrade/transaction.rs",
+      "regression": [
+        "resume_rejects_a_tampered_journal_path_and_mutates_nothing",
+        "resume_rejects_a_tampered_staged_reference_and_mutates_nothing"
+      ]
+    }
+  ],
+  "quality_findings_resolved": [
+    {
+      "id": "unjustified-test-pruning",
+      "fix": "git checkout -- scripts/build-bundle-manifest.test.js (full revert)"
+    },
+    {
+      "id": "scope-yml-fr06-blanket-claim",
+      "fix": ".agent/product/scope.yml fr-06 reworded to reference ADR-0019"
+    }
+  ],
+  "independent_reviews": {
+    "quality": {
+      "first_pass": "520-quality-review.json (FAIL, 3 findings)",
+      "recheck": "520-quality-recheck.json (PASS)"
+    },
+    "security": {
+      "first_pass": "520-security-review.json (FAIL, 2 HIGH)",
+      "recheck": "520-security-recheck.json (PASS)"
+    }
+  },
+  "final_gate": {
+    "route": "xd://mcp__truenorth_verify_gate",
+    "phase": "execute",
+    "exit_code": 0,
+    "duration_ms": 137886,
+    "correlation_id": "mcp-sha256:5de96682342ca6414a5a54a66b795fe00c630564fdb4cf6f8805bbedb21971cf"
+  },
+  "published_1_0_4_unchanged": {
+    "git_tag": "v1.0.4",
+    "tag_file": "npm/bundle/current.json",
+    "sha256": "e34c6bd16b1f898b772e4e8c9b4243e1d93df989f8d82a27f6d8620e857676bd",
+    "matches_preserved_history_file": "npm/bundle/history/1.0.4.json"
+  },
+  "traceability_verdict": "FAIL",
+  "traceability_scope": "77 historical release-plan entries still lack required local evidence (pre-existing, tracked gap unrelated to #520's own real execution). #520 itself has complete real baseline/TDD/verification/review evidence above. No exclusion or waiver applied.",
+  "completion_scope": "Local verified step 6 only. Real remote control inspection, real native 1.0.5 TDD cycles and smokes, two independently confirmed and fixed HIGH security findings, and both final independent reviews with no surviving finding. No commit, push, PR, merge, tag, publication, or destructive cleanup performed or authorized. Overall release/compliance remains blocked on historical traceability and separate irreversible approvals.",
+  "next_action": "Any merge, tag, publication, or destructive cleanup requires its own separate explicit approval per skills/release-branch/SKILL.md, after which the preserved checkout should be committed as Conventional Commits. Historical traceability gaps route to verify-work; scope/disposition decisions route to their planning owner."
+}

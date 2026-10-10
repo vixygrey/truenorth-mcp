@@ -311,6 +311,10 @@ tasks:
   group_kind: ticket
   task_name: Establish truthful execution and historical evidence (#519)
   verify_command: npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline
+- group_id: '515'
+  group_kind: ticket
+  task_name: Prove compliant workflow and GitHub controls (#520)
+  verify_command: npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline
 groups:
   - group_id: '515'
     group_kind: ticket

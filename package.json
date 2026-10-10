@@ -9,6 +9,9 @@
     "lint:verify-gate-docs": "node scripts/lint-verify-gate-docs.js",
     "eval:methodology": "node scripts/run-methodology-evals.js",
     "eval:methodology:model": "node scripts/run-methodology-evals.js --mode model",
+    "coverage": "node scripts/coverage.js run",
+    "coverage:check": "node scripts/coverage.js check",
+    "coverage:test": "node --test scripts/coverage.test.js",
     "preflight": "bash scripts/preflight.sh"
   },
   "devDependencies": {
@@ -16,5 +19,5 @@
     "prettier": "3.9.9",
     "puppeteer": "25.12.0"
   },
-  "version": "1.0.4"
+  "version": "1.0.5"
 }

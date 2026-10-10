@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "observed_at": "2026-10-10T00:34:29.625Z",
+  "binary_version": "1.0.5",
+  "actual_exit_code": 0,
+  "actual_stdout": {
+    "schema_version": 1,
+    "from_bundle_version": "1.0.5",
+    "to_bundle_version": "1.0.5",
+    "workspace_schema_version": "2",
+    "actions": [
+      {
+        "path": ".agent/config/rules.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/layout.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/memories/glossary.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/memories/lessons.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/product/scope.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/profile.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/spec/requirements.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/tasks/backlog.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/tasks/execution-status.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".agent/tasks/state.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".githooks/commit-msg",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".githooks/post-merge",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/bug.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/config.yml",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".github/ISSUE_TEMPLATE/feature.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".github/commit-template.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".github/pull-request-template.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": ".kiro/hooks/jev-guard.json",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": "AGENTS.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": "CONVENTIONS.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": "skills/using-truenorth/SKILL.md",
+        "action": "preserve",
+        "reason": "unchanged_managed_file"
+      },
+      {
+        "path": "specs/authority-probe.md",
+        "action": "add",
+        "reason": "new_managed_path"
+      }
+    ],
+    "counts": {
+      "add": 1,
+      "update": 0,
+      "preserve": 21,
+      "conflict": 0,
+      "remove": 0
+    }
+  },
+  "actual_stderr": "",
+  "package_manifest": {
+    "schema_version": 2,
+    "bundle_version": "1.0.5",
+    "workspace_schema_version": "2",
+    "supported_from": [],
+    "skill_sets": [
+      {
+        "name": "core",
+        "support": "supported",
+        "description": "Disposable authority probe only.",
+        "prerequisites": "none",
+        "skills": [
+          "using-truenorth"
+        ]
+      }
+    ],
+    "files": [
+      {
+        "path": "skills/using-truenorth/SKILL.md",
+        "sha256": "57b4a68c816469440c3d8085fa1a89a48bdac72414ef6502184871e70d4b8a00",
+        "mode": "0644"
+      },
+      {
+        "path": "specs/authority-probe.md",
+        "sha256": "158acb29681329aae438a4448bf7e6a704b8abc56ca810843ca1ad1d388c5917",
+        "mode": "0644"
+      }
+    ]
+  },
+  "unexpected_policy_target": {
+    "path": "specs/authority-probe.md",
+    "created_by_native_upgrade": true,
+    "sha256": "158acb29681329aae438a4448bf7e6a704b8abc56ca810843ca1ad1d388c5917"
+  },
+  "existing_human_narrative_preserved": true,
+  "interpretation": "A schema-valid operator-supplied same-runtime-version bundle can add narrative under specs through CLI managed upgrade. Supported current packaged manifests contain only skills, but the runtime does not enforce the universal no-specs policy for custom manifests. This is a disclosed existing enforcement gap, not approval to broaden repository-seed authority.",
+  "scope": "Only disposable fixture. No current repository or published package changed. A custom package root is a trusted/operator-controlled CLI input, so this is not evidence of an unauthenticated remote exploit or overwritten locally edited human content.",
+  "disposition": "New authority audit gap; do not certify whole-runtime specs confinement or silently broaden ADR0019. Runtime behavior change beyond the approved documentation-only reconciliation requires explicit scope approval."
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "task_id": 520,
+  "agent": "SecurityReview520",
+  "findings": [
+    {
+      "file": "runtime/src/engine/workspace_upgrade/transaction.rs",
+      "line": 120,
+      "severity": "high",
+      "cwe": "CWE-22: Improper Limitation of a Pathname to a Restricted Directory",
+      "finding": "Resume and rollback trust operation.path, staged, and backup values deserialized from .agent/runtime/upgrade/transaction.json: read_journal validates only schema_version, inspect joins operation.path directly, apply/restore do not call validate_relative_path, and the removal branches call fs::remove_file directly. A crafted persisted journal can therefore bypass the new specs prohibition, copy bytes from an absolute/traversing staged or backup path into the repository, or delete any accessible absolute/../ path whose supplied preimage matches; apply_workspace_upgrade resumes such a journal before its normal clean-worktree and bundle validation path.",
+      "fix": "Validate every deserialized operation path with validate_relative_path before inspect/apply/restore, constrain staged and backup to the transaction's generated relative names under its root, and add resume/rollback regressions for specs/, absolute paths, dot traversal, and staged/backup traversal."
+    },
+    {
+      "file": "runtime/src/engine/workspace_upgrade/manifest.rs",
+      "line": 299,
+      "severity": "high",
+      "cwe": "CWE-178: Improper Handling of Case Sensitivity",
+      "finding": "The specs boundary compares raw UTF-8 text case-sensitively. `Specs/evil` is correctly a distinct allowed path on a case-sensitive filesystem, but on a default case-insensitive macOS filesystem it aliases `specs/evil` and lets a custom package manifest bypass the intended specs/** prohibition; the repository-seed containment guard does not enforce this policy.",
+      "fix": "Reject a first component equal to specs under at least ASCII case folding for portable manifests, and add mixed-case manifest and CLI regressions on supported platforms."
+    },
+    {
+      "file": "runtime/src/engine/workspace_upgrade/manifest.rs",
+      "line": 288,
+      "severity": "info",
+      "cwe": null,
+      "finding": "Apart from filesystem case aliasing and the journal revalidation gap, validate_relative_path safely rejects empty, absolute, backslash-separated, CurDir/ParentDir, .agent/runtime, exact specs, specs/, and trailing-slash variants. ASCII `specs` has no Unicode normalization variant, Unicode lookalikes remain different names, and `specsx/evil` is correctly accepted because it is neither specs nor under specs/.",
+      "fix": "Confirmation of safe behavior; retain component validation and the exact-or-directory-prefix distinction."
+    },
+    {
+      "file": "runtime/src/tools/scaffold/bootstrap.rs",
+      "line": 22,
+      "severity": "info",
+      "cwe": null,
+      "finding": "Fresh init calls validate_fresh_target before any scaffold or package write, its target set includes specs, and the only direct specs seed call is the fixed empty specs/adr/.gitkeep at lines 111-115. Bundle files pass PackageBundle::load/load_files validation first. Scaffold sources contain no specs target, while legacy history is parsed through BundleManifest::read and workspace ownership through WorkspaceManifest::validate, both of which share validate_relative_path.",
+      "fix": "Confirmation of safe behavior for ordinary scaffold, fresh-init, package-manifest, and historical-adoption flows; the persisted transaction journal exception is covered by the first finding."
+    },
+    {
+      "file": "specs/adr/0019-scoped-repository-seed-write-authority.md",
+      "line": 42,
+      "severity": "medium",
+      "cwe": "CWE-693: Protection Mechanism Failure",
+      "finding": "The ADR and mirrored README/design/requirements claims that managed upgrade does not mutate specs/** and verifies every operation are broader than the current resume/rollback implementation because a persisted journal is not path-validated; the scoped version metadata is internally aligned at 1.0.5 and the reviewed changes contain no credential or secret value.",
+      "fix": "Fix journal validation and case-insensitive alias handling before retaining the categorical confinement claims, or explicitly qualify the claims until enforcement matches them."
+    }
+  ],
+  "disposition": {
+    "verdict": "FAIL",
+    "confirmed_critical": false,
+    "confirmed_high": true,
+    "summary": "Two confirmed HIGH path-boundary issues remain: a case-insensitive filesystem alias bypass in managed manifest validation and unvalidated persisted transaction journal paths that can bypass specs confinement and reach arbitrary reads/copies or file deletion. Fresh-init gating, direct seed call inventory, ordinary bundle/workspace manifest validation, version alignment, and secret review were otherwise safe."
+  }
+}

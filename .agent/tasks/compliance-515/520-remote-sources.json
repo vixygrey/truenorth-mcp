@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "scenario_id": "SC-520-P0-02",
+  "observed_at": "2026-10-10T00:04:21Z",
+  "observation_window": {
+    "started_at": "2026-10-10T00:02:28Z",
+    "ended_at": "2026-10-10T00:04:21Z"
+  },
+  "repository": "vixygrey/truenorth-mcp",
+  "api_version": "2022-11-28",
+  "redaction": "Selected response bodies only. Authentication headers, credentials, logs, and signed or transient redirect URLs are not retained.",
+  "sources": {
+    "planned_compound_rulesets": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/rulesets",
+      "http_status": 200,
+      "command_exit": 0,
+      "body": [
+        {
+          "id": 23805249,
+          "name": "Protect release tags",
+          "target": "tag",
+          "source_type": "Repository",
+          "source": "vixygrey/truenorth-mcp",
+          "enforcement": "active",
+          "node_id": "RRS_lACqUmVwb3NpdG9yec5RX80UzgFrPUE",
+          "self_url": "https://api.github.com/repos/vixygrey/truenorth-mcp/rulesets/23805249",
+          "html_url": "https://github.com/vixygrey/truenorth-mcp/rules/23805249",
+          "created_at": "2026-09-22T00:10:51.884-05:00",
+          "updated_at": "2026-09-22T00:10:51.910-05:00"
+        }
+      ]
+    },
+    "planned_compound_legacy_protection": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/branches/main/protection",
+      "http_status": 200,
+      "command_exit": 0,
+      "body": {
+        "required_status_checks": {
+          "strict": true,
+          "contexts": ["CI Gate", "External contribution review"],
+          "checks": [
+            {"context": "CI Gate", "app_id": 15368},
+            {"context": "External contribution review", "app_id": 15368}
+          ]
+        },
+        "required_pull_request_reviews": {
+          "dismiss_stale_reviews": true,
+          "require_code_owner_reviews": false,
+          "require_last_push_approval": false,
+          "required_approving_review_count": 0
+        },
+        "required_signatures": {"enabled": false},
+        "enforce_admins": {"enabled": true},
+        "required_linear_history": {"enabled": true},
+        "allow_force_pushes": {"enabled": false},
+        "allow_deletions": {"enabled": false},
+        "block_creations": {"enabled": false},
+        "required_conversation_resolution": {"enabled": true},
+        "lock_branch": {"enabled": false},
+        "allow_fork_syncing": {"enabled": false},
+        "restrictions": null
+      }
+    },
+    "rulesets_including_parents": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/rulesets?includes_parents=true",
+      "http_status": 200,
+      "body": [
+        {
+          "id": 23805249,
+          "name": "Protect release tags",
+          "target": "tag",
+          "source_type": "Repository",
+          "source": "vixygrey/truenorth-mcp",
+          "enforcement": "active"
+        }
+      ]
+    },
+    "effective_main_rulesets": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/rules/branches/main",
+      "http_status": 200,
+      "body": []
+    },
+    "release_tag_ruleset_definition": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/rulesets/23805249",
+      "http_status": 200,
+      "body": {
+        "id": 23805249,
+        "name": "Protect release tags",
+        "target": "tag",
+        "source_type": "Repository",
+        "source": "vixygrey/truenorth-mcp",
+        "enforcement": "active",
+        "conditions": {"ref_name": {"exclude": [], "include": ["refs/tags/v*"]}},
+        "rules": [{"type": "deletion"}, {"type": "non_fast_forward"}],
+        "bypass_actors": [],
+        "current_user_can_bypass": "never",
+        "html_url": "https://github.com/vixygrey/truenorth-mcp/rules/23805249"
+      }
+    },
+    "branch_protection_graphql": {
+      "request": "GraphQL repository.branchProtectionRules(first:100)",
+      "http_status": 200,
+      "body": {
+        "id": "BPR_kwDOUV_NFM4E84cD",
+        "pattern": "main",
+        "matching_refs": ["main"],
+        "allows_deletions": false,
+        "allows_force_pushes": false,
+        "blocks_creations": false,
+        "dismisses_stale_reviews": true,
+        "is_admin_enforced": true,
+        "require_last_push_approval": false,
+        "requires_approving_reviews": true,
+        "required_approving_review_count": 0,
+        "requires_code_owner_reviews": false,
+        "requires_commit_signatures": false,
+        "requires_conversation_resolution": true,
+        "requires_linear_history": true,
+        "requires_status_checks": true,
+        "requires_strict_status_checks": true,
+        "restricts_pushes": false,
+        "required_status_check_contexts": ["CI Gate", "External contribution review"],
+        "push_allowances": [],
+        "bypass_force_push_allowances": [],
+        "bypass_pull_request_allowances": []
+      }
+    },
+    "push_restrictions_probe": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/branches/main/protection/restrictions",
+      "http_status": 404,
+      "command_exit": 1,
+      "body": {
+        "message": "Push restrictions not enabled",
+        "documentation_url": "https://docs.github.com/rest/branches/branch-protection#get-access-restrictions",
+        "status": "404"
+      }
+    },
+    "repository_settings": {
+      "request": "GET /repos/vixygrey/truenorth-mcp",
+      "http_status": 200,
+      "body": {
+        "id": 1365232916,
+        "node_id": "R_kgDOUV_NFA",
+        "full_name": "vixygrey/truenorth-mcp",
+        "private": false,
+        "visibility": "public",
+        "default_branch": "main",
+        "archived": false,
+        "disabled": false,
+        "viewer_permission": "ADMIN",
+        "permissions": {"admin": true, "maintain": true, "pull": true, "push": true, "triage": true},
+        "allow_squash_merge": true,
+        "allow_merge_commit": false,
+        "allow_rebase_merge": false,
+        "allow_auto_merge": false,
+        "delete_branch_on_merge": true,
+        "use_squash_pr_title_as_default": false,
+        "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+        "squash_merge_commit_message": "COMMIT_MESSAGES",
+        "web_commit_signoff_required": false,
+        "created_at": "2026-09-11T02:57:13Z",
+        "updated_at": "2026-10-02T15:38:51Z",
+        "pushed_at": "2026-10-03T01:23:28Z"
+      }
+    },
+    "main_branch": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/branches/main",
+      "http_status": 200,
+      "body": {
+        "name": "main",
+        "protected": true,
+        "protection_enabled": true,
+        "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "head_node_id": "C_kwDOUV_NFNoAKGRlZTg4NmVjOWM5MjZlNjg3MzY1N2ZiZjFlNWUwYmZlNTI2NzhlM2Y",
+        "head_url": "https://github.com/vixygrey/truenorth-mcp/commit/dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "head_author_date": "2026-10-02T15:38:46Z",
+        "head_committer_date": "2026-10-02T15:38:46Z",
+        "head_message": "fix(skills): use createRequire for puppeteer resolution in tests (#506)"
+      }
+    },
+    "immutable_release_setting": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/immutable-releases",
+      "http_status": 200,
+      "body": {"enabled": true, "enforced_by_owner": false}
+    },
+    "release_v1_0_4": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/releases/tags/v1.0.4",
+      "http_status": 200,
+      "body": {
+        "id": 399518383,
+        "node_id": "RE_kwDOUV_NFM4X0Cqv",
+        "html_url": "https://github.com/vixygrey/truenorth-mcp/releases/tag/v1.0.4",
+        "tag_name": "v1.0.4",
+        "target_commitish": "main",
+        "draft": false,
+        "prerelease": false,
+        "immutable": true,
+        "created_at": "2026-09-29T20:39:03Z",
+        "published_at": "2026-09-29T20:56:27Z",
+        "author": {"login": "github-actions[bot]", "id": 41898282, "type": "Bot"},
+        "assets": [
+          {"id": 599205097, "name": "NPM-VERIFICATION.json", "state": "uploaded", "size": 2120, "created_at": "2026-09-29T20:56:24Z", "updated_at": "2026-09-29T20:56:25Z"},
+          {"id": 599193775, "name": "RELEASE-VERIFICATION.json", "state": "uploaded", "size": 6951, "created_at": "2026-09-29T20:50:55Z", "updated_at": "2026-09-29T20:50:56Z"},
+          {"id": 599193751, "name": "SHA256SUMS", "state": "uploaded", "size": 422, "created_at": "2026-09-29T20:50:55Z", "updated_at": "2026-09-29T20:50:55Z"},
+          {"id": 599193747, "name": "truenorth-mcp-v1.0.4-darwin-arm64.tar.gz", "state": "uploaded", "size": 3122728, "created_at": "2026-09-29T20:50:55Z", "updated_at": "2026-09-29T20:50:55Z"},
+          {"id": 599193753, "name": "truenorth-mcp-v1.0.4-darwin-x64.tar.gz", "state": "uploaded", "size": 3262919, "created_at": "2026-09-29T20:50:55Z", "updated_at": "2026-09-29T20:50:55Z"},
+          {"id": 599193752, "name": "truenorth-mcp-v1.0.4-linux-arm64.tar.gz", "state": "uploaded", "size": 3412126, "created_at": "2026-09-29T20:50:55Z", "updated_at": "2026-09-29T20:50:55Z"},
+          {"id": 599193749, "name": "truenorth-mcp-v1.0.4-linux-x64.tar.gz", "state": "uploaded", "size": 3535191, "created_at": "2026-09-29T20:50:55Z", "updated_at": "2026-09-29T20:50:55Z"}
+        ]
+      }
+    },
+    "main_head_required_check_runs": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/commits/dee886ec9c926e6873657fbf1e5e0bfe52678e3f/check-runs?per_page=100",
+      "http_status": 200,
+      "body": [
+        {
+          "id": 110909856947,
+          "node_id": "CR_kwDOUV_NFM8AAAAZ0r4csw",
+          "name": "CI Gate",
+          "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-02T15:41:15Z",
+          "completed_at": "2026-10-02T15:41:18Z",
+          "details_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37028445246/job/110909856947",
+          "check_suite_id": 100298038053,
+          "app": {"id": 15368, "slug": "github-actions"}
+        }
+      ],
+      "missing_configured_contexts": ["External contribution review"]
+    },
+    "main_head_combined_status": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/commits/dee886ec9c926e6873657fbf1e5e0bfe52678e3f/status",
+      "http_status": 200,
+      "body": {"state": "pending", "sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "total_count": 0, "statuses": []}
+    },
+    "main_head_workflow_runs": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/actions/runs?head_sha=dee886ec9c926e6873657fbf1e5e0bfe52678e3f&per_page=100",
+      "http_status": 200,
+      "total_count": 9,
+      "body": [
+        {"id": 37657779070, "name": "Scheduled", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-07T17:16:23Z", "updated_at": "2026-10-07T17:21:19Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37657779070", "path": "dynamic/github-code-scanning/codeql"},
+        {"id": 37367969532, "name": "Dependency security scan", "event": "schedule", "status": "completed", "conclusion": "failure", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-05T20:09:21Z", "updated_at": "2026-10-05T20:24:25Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37367969532", "path": ".github/workflows/security.yml"},
+        {"id": 37085818217, "name": "github_actions in /. - Update #1606127238", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-03T01:22:04Z", "updated_at": "2026-10-03T01:23:33Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37085818217"},
+        {"id": 37085817274, "name": "npm_and_yarn in /npm - Update #1606127218", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-03T01:22:03Z", "updated_at": "2026-10-03T01:23:25Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37085817274"},
+        {"id": 37085817235, "name": "npm_and_yarn in /. - Update #1606127237", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-03T01:22:03Z", "updated_at": "2026-10-03T01:22:59Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37085817235"},
+        {"id": 37085817217, "name": "cargo in /runtime - Update #1606127213", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-03T01:22:03Z", "updated_at": "2026-10-03T01:23:18Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37085817217"},
+        {"id": 37085817218, "name": "npm_and_yarn in /npm/packages/darwin-arm64, /npm/packages/darwin-x64, /npm/packages/linux-arm64, /npm/packages/linux-x64 - Update #1606127076", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-03T01:22:03Z", "updated_at": "2026-10-03T01:22:53Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37085817218"},
+        {"id": 37028445246, "name": "CI", "event": "push", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-02T15:38:50Z", "updated_at": "2026-10-02T15:41:18Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37028445246", "path": ".github/workflows/ci.yml", "run_number": 492, "run_attempt": 1},
+        {"id": 37028443629, "name": "Push on main", "event": "dynamic", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "created_at": "2026-10-02T15:38:49Z", "updated_at": "2026-10-02T15:44:07Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37028443629", "path": "dynamic/github-code-scanning/codeql"}
+      ]
+    },
+    "latest_run_state": {
+      "queued": {"request": "GET /repos/vixygrey/truenorth-mcp/actions/runs?status=queued&per_page=100", "http_status": 200, "total_count": 0, "workflow_runs": []},
+      "in_progress": {"request": "GET /repos/vixygrey/truenorth-mcp/actions/runs?status=in_progress&per_page=100", "http_status": 200, "total_count": 0, "workflow_runs": []},
+      "latest_observed": {"id": 37657779070, "name": "Scheduled", "status": "completed", "conclusion": "success", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "updated_at": "2026-10-07T17:21:19Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37657779070"},
+      "latest_observed_failure": {"id": 37367969532, "name": "Dependency security scan", "status": "completed", "conclusion": "failure", "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f", "updated_at": "2026-10-05T20:24:25Z", "html_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37367969532"}
+    },
+    "latest_merged_pr": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/pulls/506",
+      "http_status": 200,
+      "body": {
+        "id": 4718152481,
+        "node_id": "PR_kwDOUV_NFM8AAAABGTlLIQ",
+        "number": 506,
+        "state": "closed",
+        "title": "fix(skills): use createRequire for puppeteer resolution in tests",
+        "html_url": "https://github.com/vixygrey/truenorth-mcp/pull/506",
+        "draft": false,
+        "created_at": "2026-10-02T15:17:30Z",
+        "updated_at": "2026-10-02T15:38:50Z",
+        "closed_at": "2026-10-02T15:38:47Z",
+        "merged_at": "2026-10-02T15:38:47Z",
+        "merged": true,
+        "merge_commit_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "head_ref": "fix/codeql-parse-error",
+        "head_sha": "1e6cc8e8e55a6d3f12fedb681f805d236d0db26d",
+        "base_ref": "main",
+        "base_sha": "692edb9880866c7fb02e73fc66fbbea959a85544",
+        "commits": 1,
+        "requested_reviewers": [],
+        "requested_teams": [],
+        "reviews": []
+      }
+    },
+    "latest_pr_required_checks": {
+      "request": "GET /repos/vixygrey/truenorth-mcp/commits/1e6cc8e8e55a6d3f12fedb681f805d236d0db26d/check-runs?per_page=100",
+      "http_status": 200,
+      "body": [
+        {"id": 110906543772, "node_id": "CR_kwDOUV_NFM8AAAAZ0ouOnA", "name": "CI Gate", "status": "completed", "conclusion": "success", "head_sha": "1e6cc8e8e55a6d3f12fedb681f805d236d0db26d", "started_at": "2026-10-02T15:32:51Z", "completed_at": "2026-10-02T15:32:54Z", "details_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37027437900/job/110906543772", "check_suite_id": 100295220440, "app_id": 15368},
+        {"id": 110905548589, "node_id": "CR_kwDOUV_NFM8AAAAZ0nxfLQ", "name": "External contribution review", "status": "completed", "conclusion": "success", "head_sha": "1e6cc8e8e55a6d3f12fedb681f805d236d0db26d", "started_at": "2026-10-02T15:30:23Z", "completed_at": "2026-10-02T15:30:28Z", "details_url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37027436909/job/110905548589", "check_suite_id": 100295217777, "app_id": 15368}
+      ]
+    },
+    "uncommitted_520_remote_absence": {
+      "local_branch": "test/520-workflow-controls",
+      "local_head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+      "origin_main": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+      "local_status_counts": {"staged": 0, "unstaged": 77, "untracked": 15},
+      "remote_branch_ref": {
+        "request": "GET /repos/vixygrey/truenorth-mcp/git/ref/heads/test%2F520-workflow-controls",
+        "http_status": 404,
+        "command_exit": 1,
+        "body": {"message": "Not Found", "documentation_url": "https://docs.github.com/rest/git/refs#get-a-reference", "status": "404"}
+      },
+      "remote_pull_requests": {
+        "request": "GET /repos/vixygrey/truenorth-mcp/pulls?state=all&head=vixygrey%3Atest%2F520-workflow-controls&per_page=100",
+        "http_status": 200,
+        "body": []
+      },
+      "remote_workflow_runs": {
+        "request": "GET /repos/vixygrey/truenorth-mcp/actions/runs?branch=test%2F520-workflow-controls&per_page=100",
+        "http_status": 200,
+        "body": {"total_count": 0, "workflow_runs": []}
+      }
+    }
+  }
+}

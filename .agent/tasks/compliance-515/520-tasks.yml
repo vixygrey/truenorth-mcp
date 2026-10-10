@@ -1,0 +1,33 @@
+task_id: '520'
+title: "prove compliant workflow and GitHub controls"
+group_id: '515'
+issue: https://github.com/vixygrey/truenorth-mcp/issues/520
+status: failing
+risk: P0
+planning_owner: plan-work
+status_meaning: Initial unverified planning state, not an observed failing test.
+depends_on: ['519']
+verify_command: "npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+completion_rule: Supporting commands and every required observable smoke must pass with retained evidence.
+tasks:
+  - id: 1
+    description: "Observe the real remediation issue/branch/baseline/TDD/verification/review/traceability workflow and all required checks."
+    verify: "npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+    risk: P0
+    status: failing
+    scenarios: ["SC-520-P0-01"]
+    behavior_smoke: "Retain actual operator and MCP evidence for the changed path; deterministic fixture scenarios do not certify prose-skill execution."
+  - id: 2
+    description: "Inspect actual GitHub protection/ruleset settings, required checks, direct-push restrictions, squash policy, and immutable-release controls."
+    verify: "gh api repos/vixygrey/truenorth-mcp/rulesets && gh api repos/vixygrey/truenorth-mcp/branches/main/protection"
+    risk: P0
+    status: failing
+    scenarios: ["SC-520-P0-02"]
+    behavior_smoke: "Record interpreted remote control settings and required run identities. Missing or inaccessible controls remain a blocker, not an inferred pass."
+  - id: 3
+    description: "After separate explicit approval, integrate the passing branch and observe the landed squash commit/post-merge checks; preserve published 1.0.4 assets."
+    verify: "bash skills/release-branch/scripts/check-route.sh --mode team-pr --action inspect"
+    risk: P0
+    status: failing
+    scenarios: ["SC-520-P0-03"]
+    behavior_smoke: "Record the particular integration approval, then actual landed commit and required workflow outcomes. A route inspection never authorizes merge, tag, publication, or cleanup."

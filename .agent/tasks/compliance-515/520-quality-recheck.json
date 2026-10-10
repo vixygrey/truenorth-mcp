@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "task_id": 520,
+  "agent": "QualityRecheck520",
+  "findings": [
+    {
+      "id": "quality-build-manifest-test-pruning",
+      "summary": "scripts/build-bundle-manifest.test.js wrongly removed three valid invariant tests.",
+      "status": "fixed",
+      "evidence": [
+        "The current 130-line file contains all five tests, including the deterministic manifest/hash/mode/skill-set test at lines 17-39, the exact planning-artifact ownership test at lines 41-75, and the checked-in current-manifest equality test at lines 126-130.",
+        "git diff -- scripts/build-bundle-manifest.test.js produced no output, and git diff --exit-code returned exit 0.",
+        "The working-tree file and HEAD version have the same SHA-256: 6830aabe9e1e646eee155510b94032693954851c38b9d96ed635d7b49c587ad7.",
+        "node --test scripts/build-bundle-manifest.test.js passed all 5 tests with 0 failures."
+      ]
+    },
+    {
+      "id": "quality-scope-fr-06-blanket-guard",
+      "summary": ".agent/product/scope.yml FR-06 made a blanket single-guarded-write-path claim that contradicted ADR-0019.",
+      "status": "fixed",
+      "evidence": [
+        "scope.yml line 23 now limits the guarded-path statement to the .agent/ machine-facing workspace and explicitly assigns the separate scoped repository-seed exception to ADR-0019.",
+        "scope.yml constraint line 67 consistently says normal machine-state writes stay under .agent/ while ADR-0019 separately bounds repository-seed authority.",
+        "ADR-0019 lines 19-24 separates write_under_agent from explicit repository-seed paths; lines 54-61 expressly reject the former blanket every-runtime-write interpretation."
+      ]
+    },
+    {
+      "id": "quality-security-manifest-specs-case-alias",
+      "summary": "validate_relative_path rejected specs paths case-sensitively, allowing mixed-case aliases such as Specs/evil.md on case-insensitive filesystems.",
+      "status": "fixed",
+      "evidence": [
+        "manifest.rs lines 296-300 obtains the first path component and compares it with specs using eq_ignore_ascii_case; line 307 rejects an exact case-insensitive component match.",
+        "manifest_tests.rs lines 37-43 cover lowercase specs plus mixed-case Specs/evil.md, SPECS, and SpEcS/x rejection.",
+        "The comparison is component-exact, so specsx/evil.md does not equal specs and is not over-rejected.",
+        "skills/** remains allowed because its first component is not specs; the accepted bundle test at manifest_tests.rs lines 12-25 uses skills/using-truenorth/SKILL.md.",
+        "Ordinary .agent-relative paths remain allowed: validation rejects only .agent/runtime and .agent/runtime/** at manifest.rs lines 305-306, while the remaining normal components pass."
+      ]
+    }
+  ],
+  "verdict": "PASS"
+}

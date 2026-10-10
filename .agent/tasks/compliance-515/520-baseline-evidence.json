@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "group_id": "515",
+  "observed_at": "2026-10-10T00:00:14.039Z",
+  "observed_at_basis": "Observed checkpoint clock after approved preserved-checkout branch creation and actual mounted baseline. Not an invented gate start timestamp.",
+  "branch": "test/520-workflow-controls",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "approvals": {
+    "kickoff": "Continue preserved checkpoint",
+    "kickoff_scope": "Dependent520 only; preserve all prior uncommitted work, no commit/stash/integration/cleanup.",
+    "write_authority": "Document the audited exception",
+    "write_authority_scope": "New decision for narrow repository-seed exception, current authority references and scoped verification; no runtime behavior change or blanket confinement claim."
+  },
+  "mounted_gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "execute",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:11dfc34a1e78c065e8dd919dfbdd70457d4bbfb1a906674750a7c8a3efb86190",
+      "gate": {
+        "duration_ms": 134701,
+        "exit_code": 0,
+        "expectation": "zero",
+        "status": "pass"
+      },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "configured_verify_command": "npm run preflight",
+  "existing_release_verdict": "FAIL",
+  "scope": "Read-only remote control inspection and approved authority reconciliation/version preparation are reachable. No irreversible approval or passing traceability exists; integration/certification remain blocked."
+}

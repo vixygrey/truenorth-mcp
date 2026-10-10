@@ -11,6 +11,10 @@ use tempfile::TempDir;
 fn command(root: &Path) -> Command {
     let mut command = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"));
     command.env_clear().current_dir(root);
+    // Keep instrumentation output outside the fixture without inheriting runtime config.
+    if let Some(profile_file) = std::env::var_os("LLVM_PROFILE_FILE") {
+        command.env("LLVM_PROFILE_FILE", profile_file);
+    }
     command
 }
 
@@ -326,4 +330,49 @@ fn strict_mode_rejects_unknown_keys_and_legacy_unnamespaced_blocks() {
             .unwrap()
             .contains("unknown configuration key `unknown_section`")
     );
+}
+
+#[test]
+fn upgrade_rejects_specs_package_path() {
+    let repo = seed_complete_repo();
+    let bundle_dir = tempfile::tempdir().expect("create bundle dir");
+    fs::create_dir_all(bundle_dir.path().join("bundle")).expect("create bundle");
+    let manifest = serde_json::json!({
+        "schema_version": 2,
+        "bundle_version": env!("CARGO_PKG_VERSION"),
+        "workspace_schema_version": "2",
+        "supported_from": [],
+        "skill_sets": [{
+            "name": "core",
+            "support": "supported",
+            "description": "core",
+            "prerequisites": "none",
+            "skills": []
+        }],
+        "files": [{
+            "path": "specs/prohibited.md",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "mode": "0644"
+        }]
+    });
+    fs::write(
+        bundle_dir.path().join("bundle/current.json"),
+        manifest.to_string(),
+    )
+    .expect("write manifest");
+    let output = run(
+        repo.path(),
+        &[
+            "upgrade",
+            "--check",
+            "--bundle-dir",
+            bundle_dir.path().to_str().unwrap(),
+        ],
+        Some("true"),
+    );
+    assert!(
+        !output.status.success(),
+        "upgrade must reject bundle declaring specs files"
+    );
+    assert!(String::from_utf8_lossy(&output.stderr).contains("specs"));
 }

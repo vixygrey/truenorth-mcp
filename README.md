@@ -79,15 +79,20 @@ produced. Integrate advances to Discover, starting the next lifecycle loop.
 
 ## The two layers
 
-The repository has two layers. The machine-facing layer is `.agent/`. The runtime
-reads, watches, and writes only under `.agent/`. A single write guard rejects any
-write outside `.agent/`. The human-facing layer is `specs/`, which holds
-human-authored narrative such as Architecture Decision Records. The runtime reads a
-file under `specs/`, but it never writes there.
+The repository has two layers. The machine-facing layer is `.agent/`.
+Normal machine-state mutations use a shared guard and stay under `.agent/`.
+The human-facing layer is `specs/`, which holds human-authored narrative such as Architecture Decision Records.
+The runtime serves that narrative read-only.
 
-The `.agent/` tree holds the cockpit (`tasks/state.yml`, `tasks/release-plan.yml`),
-the ontology (`ontology.yml`), the config (`config/rules.yml`), the product scope, and
-the memories. The `truenorth://adr` resource serves `specs/adr/` read-only.
+[ADR-0019](specs/adr/0019-scoped-repository-seed-write-authority.md) defines narrow repository-seed paths outside the normal guard.
+Scaffolding can create absent generated workflow files at the repository root.
+Fresh initialization can also copy selected bundled skills and create an empty `specs/adr/.gitkeep` marker.
+It rejects an existing `specs/` target before that marker is created.
+Managed upgrades can change only ownership-planned generated and package-manifest paths.
+They preserve local edits and unowned collisions and do not manage `specs/**`.
+
+The `.agent/` tree holds the cockpit (`tasks/state.yml`, `tasks/release-plan.yml`), the ontology (`ontology.yml`), the config (`config/rules.yml`), the product scope, and the memories.
+The `truenorth://adr` resource serves `specs/adr/` read-only.
 
 ## Install
 
@@ -109,8 +114,9 @@ The `integrations` set needs configured external MCP or issue tracker services. 
 set may need Node.js, Python, Chrome, or Puppeteer. The `maintainer` set is for work on the
 TrueNorth repository and needs its versioned wiki sources. `core` is always selected.
 
-`init` refuses to overwrite `.agent/`, `specs/`, `skills/`, or its workflow files. It does
-not create a language manifest, source tree, CI workflow, or verify command.
+`init` refuses to overwrite `.agent/`, `specs/`, `skills/`, or its workflow files.
+It creates the exclusive empty `specs/adr/.gitkeep` seed only when `specs/` is absent.
+It does not create a language manifest, source tree, CI workflow, or verify command.
 
 Upgrade an initialized workspace with the same npm package:
 
@@ -219,6 +225,47 @@ cargo build --locked --release
 ```
 
 Run the tests with `cargo test`. Run the wrapper tests with `node --test` in `npm/`.
+
+Process tests isolate the native child environment. Instrumented runs preserve only
+`LLVM_PROFILE_FILE` in addition to each fixture's explicit settings. This keeps
+coverage profiles outside fixture workspaces without weakening read-only checks.
+
+### Coverage gate
+
+Install the approved measurement tools:
+
+```bash
+cargo install cargo-llvm-cov --version 0.9.1 --locked
+rustup component add llvm-tools-preview --toolchain 1.88.0
+```
+
+Cross-language process fixtures also require Python 3 and Go.
+
+Use Node.js 22 or newer. Run `npm run coverage` to measure both Rust build modes
+and the shipped Node wrapper. Run `npm run coverage:check` to evaluate the retained
+report without another measurement. Full `npm run preflight`, CI Gate, and the
+release workflow include this coverage gate.
+Each run clears only the coverage tool's generated workspace artifacts before measurement.
+
+Coverage uses native mapped source lines, not an average of layer percentages.
+The denominator combines LLVM LCOV lines from default and `tree-sitter` builds
+with V8 LCOV lines from `npm/lib/runner.js` and `npm/bin/truenorth.js`.
+An unloaded wrapper source counts as uncovered.
+The metric counts unique LCOV `DA` records. LLVM summary fields can differ from these records and do not replace them.
+
+Overall coverage must reach 80 percent. Business logic must reach 95 percent.
+The business set includes `runtime/src/config.rs` and production code under
+`runtime/src/config/`, `runtime/src/engine/`, and `runtime/src/tools/`.
+Test files, inline test modules, the test-only server implementation, dependencies,
+build output, and developer-only `runtime/src/bin/` entrypoints are excluded.
+Feature-only code absent from both measured builds is not part of their denominator.
+Compiled Jev code remains included. The `jev-http` build is not in this matrix.
+
+Native reports and metadata are retained in `runtime/target/coverage/`.
+The checker recomputes coverage from those reports and binds them to Git HEAD,
+source and test bytes, tool versions, and raw report digests.
+Missing, malformed, changed, expired, or insufficient reports fail.
+Reports expire after 24 hours. Threshold comparisons use exact counts without rounding.
 
 ## The tools
 

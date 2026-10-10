@@ -1,0 +1,281 @@
+{
+  "schema_version": 1,
+  "task_id": "520",
+  "group_id": "515",
+  "scenario_id": "SC-520-P0-02",
+  "requirement_id": "MC-17",
+  "observed_at": "2026-10-10T00:04:21Z",
+  "observation_window": {
+    "started_at": "2026-10-10T00:02:28Z",
+    "ended_at": "2026-10-10T00:04:21Z"
+  },
+  "repository": "vixygrey/truenorth-mcp",
+  "mode": "authenticated read-only remote inspection",
+  "scenario_verdict": "PASS_WITH_EXPLICIT_LIMITATIONS",
+  "verdict_scope": "The required remote control settings for MC-17 were observed enabled. This verdict covers remote configuration inspection only. It does not certify the uncommitted #520 modifications, does not assert a human-review requirement, and does not complete #520 integration or post-merge evidence.",
+  "source_file": ".agent/tasks/compliance-515/520-remote-sources.json",
+  "planned_verify_command": {
+    "command": "gh api repos/vixygrey/truenorth-mcp/rulesets && gh api repos/vixygrey/truenorth-mcp/branches/main/protection",
+    "execution": "Executed as equivalent sequential captures so the second request was retained regardless of the first outcome.",
+    "rulesets_outcome": {"http_status": 200, "exit_code": 0, "source": "sources.planned_compound_rulesets"},
+    "protection_outcome": {"http_status": 200, "exit_code": 0, "source": "sources.planned_compound_legacy_protection"},
+    "result": "PASS"
+  },
+  "controls": {
+    "repository_identity_and_authority": {
+      "result": "PASS",
+      "observed": {
+        "repository_id": 1365232916,
+        "repository_node_id": "R_kgDOUV_NFA",
+        "full_name": "vixygrey/truenorth-mcp",
+        "visibility": "public",
+        "default_branch": "main",
+        "viewer_permission": "ADMIN",
+        "viewer_permissions": {"admin": true, "maintain": true, "pull": true, "push": true, "triage": true}
+      },
+      "interpretation": "The authenticated viewer had administrative read visibility, so the returned settings include repository controls rather than only anonymous public metadata.",
+      "sources": ["sources.repository_settings"]
+    },
+    "protected_main": {
+      "result": "PASS",
+      "observed": {
+        "branch": "main",
+        "protected": true,
+        "legacy_protection_http_status": 200,
+        "legacy_rule_id": "BPR_kwDOUV_NFM4E84cD",
+        "legacy_rule_pattern": "main",
+        "matching_refs": ["main"],
+        "effective_rulesets_http_status": 200,
+        "effective_rulesets": []
+      },
+      "interpretation": "main is protected by a legacy branch-protection rule. The effective branch-ruleset endpoint returned an empty array; this is not interpreted as unprotected because the separate legacy protection endpoint and GraphQL rule both returned the active main rule.",
+      "sources": ["sources.planned_compound_legacy_protection", "sources.branch_protection_graphql", "sources.effective_main_rulesets", "sources.main_branch"]
+    },
+    "required_checks": {
+      "result": "PASS_CONFIGURED",
+      "observed": {
+        "enabled": true,
+        "strict": true,
+        "required_contexts": [
+          {"context": "CI Gate", "app_id": 15368, "app": "github-actions"},
+          {"context": "External contribution review", "app_id": 15368, "app": "github-actions"}
+        ]
+      },
+      "interpretation": "Both contexts are required and pinned to the GitHub Actions app. strict=true requires the protected branch to be up to date before merging. Configuration is proven; run evidence is evaluated separately and is commit-specific.",
+      "sources": ["sources.planned_compound_legacy_protection", "sources.branch_protection_graphql"]
+    },
+    "pull_request_and_review_requirement": {
+      "result": "PASS_PR_REQUIRED_WITH_ZERO_APPROVALS",
+      "observed": {
+        "requires_approving_reviews": true,
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews": true,
+        "require_code_owner_reviews": false,
+        "require_last_push_approval": false,
+        "requires_conversation_resolution": true
+      },
+      "interpretation": "A pull request is required before merge, which prevents an ordinary direct push to main. No approving human review, code-owner review, or last-push approval is required because the count is zero and those flags are false. This evidence does not claim independent human approval enforcement.",
+      "sources": ["sources.planned_compound_legacy_protection", "sources.branch_protection_graphql"]
+    },
+    "direct_push_and_bypass": {
+      "result": "PASS",
+      "observed": {
+        "requires_pull_request": true,
+        "admin_enforcement": true,
+        "push_allowances": [],
+        "bypass_pull_request_allowances": [],
+        "bypass_force_push_allowances": [],
+        "named_push_restrictions": false,
+        "named_push_restrictions_probe_http_status": 404,
+        "named_push_restrictions_probe_message": "Push restrictions not enabled"
+      },
+      "interpretation": "The PR requirement applies to administrators, and GraphQL returned no user, team, or GitHub App push or PR-bypass allowance. Therefore ordinary direct pushes, including owner/admin direct pushes, are restricted. The restrictions endpoint 404 specifically means no named push allowlist is configured; it is retained as failure evidence and is not itself treated as proof of protection.",
+      "sources": ["sources.branch_protection_graphql", "sources.push_restrictions_probe"]
+    },
+    "force_push_and_delete_restrictions": {
+      "result": "PASS",
+      "observed": {
+        "allow_force_pushes": false,
+        "allow_deletions": false,
+        "bypass_force_push_allowances": []
+      },
+      "interpretation": "Force pushes and branch deletion are disabled for main, with no returned force-push bypass actor.",
+      "sources": ["sources.planned_compound_legacy_protection", "sources.branch_protection_graphql"]
+    },
+    "linear_history": {
+      "result": "PASS",
+      "observed": {"required_linear_history": true},
+      "interpretation": "The main rule requires linear history.",
+      "sources": ["sources.planned_compound_legacy_protection", "sources.branch_protection_graphql"]
+    },
+    "squash_merge_policy": {
+      "result": "PASS",
+      "observed": {
+        "allow_squash_merge": true,
+        "allow_merge_commit": false,
+        "allow_rebase_merge": false,
+        "allow_auto_merge": false,
+        "latest_merged_pr": 506,
+        "latest_merge_commit_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "latest_pr_head_sha": "1e6cc8e8e55a6d3f12fedb681f805d236d0db26d"
+      },
+      "interpretation": "Squash is the only enabled repository merge method. The latest merged PR records a distinct landed commit SHA. This historical observation does not authorize or claim the future #520 merge.",
+      "sources": ["sources.repository_settings", "sources.latest_merged_pr"]
+    },
+    "release_tag_rules": {
+      "result": "PASS",
+      "observed": {
+        "ruleset_id": 23805249,
+        "name": "Protect release tags",
+        "target": "tag",
+        "enforcement": "active",
+        "include": ["refs/tags/v*"],
+        "rules": ["deletion", "non_fast_forward"],
+        "bypass_actors": [],
+        "current_user_can_bypass": "never"
+      },
+      "interpretation": "The active repository ruleset prevents deletion and non-fast-forward updates of v* tags and returns no bypass actor. It is a tag ruleset, not a main-branch ruleset.",
+      "sources": ["sources.rulesets_including_parents", "sources.release_tag_ruleset_definition"]
+    },
+    "immutable_release_setting": {
+      "result": "PASS",
+      "observed": {"enabled": true, "enforced_by_owner": false},
+      "interpretation": "The modern repository immutable-releases endpoint directly reports immutability enabled. enforced_by_owner=false means the repository setting is not inherited or locked by its owner; it does not negate enabled=true. No workflow or documentation text is used to infer this setting.",
+      "sources": ["sources.immutable_release_setting"]
+    },
+    "published_v1_0_4_immutable_state": {
+      "result": "PASS",
+      "observed": {
+        "release_id": 399518383,
+        "release_node_id": "RE_kwDOUV_NFM4X0Cqv",
+        "tag_name": "v1.0.4",
+        "html_url": "https://github.com/vixygrey/truenorth-mcp/releases/tag/v1.0.4",
+        "draft": false,
+        "prerelease": false,
+        "immutable": true,
+        "published_at": "2026-09-29T20:56:27Z",
+        "asset_count": 7
+      },
+      "interpretation": "The release object's own immutable field is true. This is recorded separately from the current repository setting and does not infer that the release is immutable merely from tag rules, docs, or workflow YAML.",
+      "sources": ["sources.release_v1_0_4"]
+    }
+  },
+  "run_evidence": {
+    "remote_main_head": {
+      "sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+      "url": "https://github.com/vixygrey/truenorth-mcp/commit/dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+      "committer_date": "2026-10-02T15:38:46Z",
+      "source": "sources.main_branch"
+    },
+    "required_contexts_on_main_head": {
+      "CI Gate": {
+        "result": "PASS_FOR_BASE_HEAD_ONLY",
+        "check_run_id": 110909856947,
+        "check_suite_id": 100298038053,
+        "workflow_run_id": 37028445246,
+        "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-02T15:41:18Z",
+        "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37028445246/job/110909856947"
+      },
+      "External contribution review": {
+        "result": "NOT_PRESENT_ON_LANDED_MAIN_HEAD",
+        "interpretation": "No check run with this name was returned for the landed main SHA. The context is configured for PR gating and a successful run is retained on PR #506's head instead; absence on the subsequent push SHA is not silently labeled PASS."
+      }
+    },
+    "required_contexts_on_latest_merged_pr_head": {
+      "pr": 506,
+      "head_sha": "1e6cc8e8e55a6d3f12fedb681f805d236d0db26d",
+      "CI Gate": {
+        "check_run_id": 110906543772,
+        "workflow_run_id": 37027437900,
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-02T15:32:54Z",
+        "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37027437900/job/110906543772"
+      },
+      "External contribution review": {
+        "check_run_id": 110905548589,
+        "workflow_run_id": 37027436909,
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-02T15:30:28Z",
+        "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37027436909/job/110905548589"
+      },
+      "scope": "Historical behavior evidence only; it is not #520 CI."
+    },
+    "latest_and_in_flight": {
+      "queued_count": 0,
+      "in_progress_count": 0,
+      "latest_observed_run": {
+        "id": 37657779070,
+        "name": "Scheduled",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "completed_or_updated_at": "2026-10-07T17:21:19Z",
+        "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37657779070"
+      },
+      "latest_observed_failure": {
+        "id": 37367969532,
+        "name": "Dependency security scan",
+        "status": "completed",
+        "conclusion": "failure",
+        "head_sha": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+        "completed_or_updated_at": "2026-10-05T20:24:25Z",
+        "url": "https://github.com/vixygrey/truenorth-mcp/actions/runs/37367969532",
+        "interpretation": "This scheduled run is not one of the two configured required contexts, but its real failure is retained and not recast as PASS."
+      },
+      "sources": ["sources.latest_run_state", "sources.main_head_workflow_runs"]
+    },
+    "legacy_commit_status_endpoint": {
+      "state": "pending",
+      "total_count": 0,
+      "statuses": [],
+      "interpretation": "The legacy combined-status endpoint has no statuses. Required GitHub Actions results are Checks API check runs, so this legacy pending value is retained but not substituted for check-run conclusions.",
+      "source": "sources.main_head_combined_status"
+    }
+  },
+  "uncommitted_520_diff": {
+    "result": "NO_REMOTE_CI_EXISTS",
+    "local_branch": "test/520-workflow-controls",
+    "local_head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+    "origin_main": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+    "local_status_counts": {"staged": 0, "unstaged": 77, "untracked": 15},
+    "remote_branch_ref": {"http_status": 404, "message": "Not Found"},
+    "remote_pull_requests": [],
+    "remote_workflow_run_count": 0,
+    "interpretation": "The work branch is local at the remote main base with uncommitted changes. No remote branch ref, PR, or workflow run exists for test/520-workflow-controls. Therefore no base-head check, historical PR check, scheduled check, or local/native quality result certifies the uncommitted #520 modifications.",
+    "source": "sources.uncommitted_520_remote_absence"
+  },
+  "limitations_and_blockers": [
+    {
+      "status": "LIMITATION",
+      "control": "human review",
+      "detail": "The PR-before-merge rule is enabled but requires zero approvals; code-owner and last-push approval are disabled. Independent human review is not enforced."
+    },
+    {
+      "status": "LIMITATION",
+      "control": "current main required contexts",
+      "detail": "CI Gate succeeded on the current main SHA. External contribution review was not present on the landed push SHA; its latest retained success is on PR #506's head SHA."
+    },
+    {
+      "status": "OPEN_FOR_520",
+      "control": "#520 CI",
+      "detail": "The #520 branch is not remote and its changes are uncommitted; no remote CI exists for the modifications. Base-head CI cannot certify them."
+    },
+    {
+      "status": "OBSERVED_FAILURE",
+      "control": "latest non-required scheduled scan",
+      "detail": "Dependency security scan run 37367969532 completed failure on the current base head. It is not configured as a required context, but remains real failure evidence."
+    }
+  ],
+  "non_actions": [
+    "No repository setting, rule, protection, release, tag, branch, pull request, workflow, or permission was changed.",
+    "No workflow was dispatched, rerun, watched, or otherwise triggered.",
+    "No commit, push, merge, tag, publication, cleanup, or GitHub settings mutation was performed.",
+    "No build, lint, test, formatter, or local quality command was run."
+  ],
+  "completion_boundary": "SC-520-P0-02 remote control inspection is evidenced. Actual #520 CI, squash integration, and post-merge checks remain outside this evidence and gated by separate approval."
+}
