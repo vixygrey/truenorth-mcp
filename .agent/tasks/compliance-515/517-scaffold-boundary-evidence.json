@@ -1,0 +1,53 @@
+{
+  "task_id": "517",
+  "observed_at": "2026-10-09T19:34:53.344Z",
+  "server_info": {
+    "name": "truenorth-mcp",
+    "version": "1.0.4"
+  },
+  "isolated_root": "/var/folders/ql/73y6dqj14lz_w8tyt47flj280000gn/T/truenorth-517-boundary-IBiy9i",
+  "before": [
+    {
+      "file": "AGENTS.md",
+      "exists": false
+    },
+    {
+      "file": "CONVENTIONS.md",
+      "exists": false
+    }
+  ],
+  "after": [
+    {
+      "file": "AGENTS.md",
+      "exists": true,
+      "bytes": 887
+    },
+    {
+      "file": "CONVENTIONS.md",
+      "exists": true,
+      "bytes": 322
+    }
+  ],
+  "call": {
+    "resultType": "complete",
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"next_step\":\"git config core.hooksPath .githooks\",\"profile\":\"issue-per-task\",\"receipt\":{\"changes\":[{\"path\":\".agent/config/rules.yml\",\"sha256\":\"39c7b0066a443765623442af64d85732867436d67817ebc5bc8e1aaf17c54a58\"},{\"path\":\".agent/layout.yml\",\"sha256\":\"beda664aeeebf583ba3d2d1bbf0eedc8f6e32f6c1881deaa939db69af1a73b51\"},{\"path\":\".agent/memories/glossary.md\",\"sha256\":\"2cc714cd8dc8ed3bacf17816666f88b860422a769b8592dd3042f64323e77046\"},{\"path\":\".agent/memories/lessons.md\",\"sha256\":\"cceaaecbe43ad02816b298f3a969bf01bd5de25e87866cdf08c757376d18a8dc\"},{\"path\":\".agent/product/scope.md\",\"sha256\":\"5e4f5e38b83c62f0a187b4d9905432abe19622ca8adfacb9b227b8fc0e897f4a\"},{\"path\":\".agent/profile.yml\",\"sha256\":\"808af4ce068a200dc888417b29fb2d6387cbada9aabbfc3d9e007783b1a6dae3\"},{\"path\":\".agent/spec/requirements.md\",\"sha256\":\"64be48535d7a5076f42a24296969a1fecec274eb495d6e58f1fc0995eae5bcdb\"},{\"path\":\".agent/tasks/backlog.yml\",\"sha256\":\"7736bb121311e099ca86205e5a9d6341707bfaebaeffdf5e6f64461cec0dd08c\"},{\"path\":\".agent/tasks/execution-status.yml\",\"sha256\":\"c7573c1e188a4f3720ca51e27d715055606b33ca6eadb6ac31b78546a022592a\"},{\"path\":\".agent/tasks/state.yml\",\"sha256\":\"cd45412c4456668dece162e948131cc749d9d4a8b1d2eaec6263e2fc562ffdf5\"},{\"path\":\".githooks/commit-msg\",\"sha256\":\"756b86449f90241048be3e1de7de1cb9f9c945c6f5a873b34c97c7c3ac482baa\"},{\"path\":\".githooks/post-merge\",\"sha256\":\"c127716675e7147c7a51a263788cef6e094f5f75117efcedc169ed12c92a31be\"},{\"path\":\".github/ISSUE_TEMPLATE/bug.md\",\"sha256\":\"eaa327c7dd445c58ac60edd779027a0e07fa02c778df8d5b841983e68fb8deba\"},{\"path\":\".github/ISSUE_TEMPLATE/config.yml\",\"sha256\":\"94e930bc10080986585fb97667dd46bf94c0c0825dd62e007213a5eb90f57c58\"},{\"path\":\".github/ISSUE_TEMPLATE/feature.md\",\"sha256\":\"8da0fc57ee6854dcf73b53033eca8fea31af2769b201f36095e101289c7811df\"},{\"path\":\".github/commit-template.md\",\"sha256\":\"a3940f2cacac601b1c273e6ed40be8e01a0af8c4051bbe8f820ed99544773ede\"},{\"path\":\".github/pull-request-template.md\",\"sha256\":\"2bfc1939b6e7e03560a1caf62df3d7bc8cac4cb6267974b32dd50df938fd1d3f\"},{\"path\":\".kiro/hooks/jev-guard.json\",\"sha256\":\"961deba14bc14be3ff69c5e730c2b192ee6d3b929744686377fa04650e64c18b\"},{\"path\":\"AGENTS.md\",\"sha256\":\"3ab5bf665553191ad569a3a70cd69e21f0191192e5d86d436366deeb7ca734ef\"},{\"path\":\"CONVENTIONS.md\",\"sha256\":\"922d41d334bf25048dac996acf68e1b2292a72c31c642af647a58bb582283663\"}],\"correlation_id\":\"mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc\",\"gate\":null,\"operation\":\"truenorth_scaffold_project\",\"runtime_version\":\"1.0.4\",\"schema_version\":1},\"skipped\":[],\"wrote\":[\".agent/layout.yml\",\".agent/profile.yml\",\".agent/config/rules.yml\",\".agent/spec/requirements.md\",\".agent/tasks/state.yml\",\".agent/tasks/execution-status.yml\",\".agent/memories/lessons.md\",\".agent/memories/glossary.md\",\".agent/product/scope.md\",\".agent/tasks/backlog.yml\",\"AGENTS.md\",\"CONVENTIONS.md\",\".githooks/commit-msg\",\".githooks/post-merge\",\".kiro/hooks/jev-guard.json\",\".github/commit-template.md\",\".github/pull-request-template.md\",\".github/ISSUE_TEMPLATE/bug.md\",\".github/ISSUE_TEMPLATE/feature.md\",\".github/ISSUE_TEMPLATE/config.yml\"]}"
+      }
+    ],
+    "isError": false
+  },
+  "observation": "Real native1.0.4 scaffold creates root workflow documents outside.agent, consistent with the explicitly documented historical repository-seed exception. ADR-0008 states an unqualified confinement rule, so the authority wording requires reconciliation.",
+  "scope": "Disposable project only; current repository configuration and source unchanged; root removed after proof.",
+  "disposition": "Unresolved authority-wording inconsistency, not a newly introduced unauthorized write exploit. Preserve documented bootstrap behavior and accepted ADR provenance. No runtime change or superseding ADR approved in517.",
+  "initial_interpretation": "Real native scaffold created root workflow documents outside .agent. ADR-0008 requires every runtime write to stay under .agent. This is a disclosed implementation discrepancy, not an approved architecture exception.",
+  "historical_exception_sources": [
+    "specs/archive/agent-workspace-profiles/design.md embedded ADR6/7, lines155-159 and175-177",
+    "runtime/src/engine/agent_ws/mod.rs lines9-11 and132-193"
+  ],
+  "additional_current_source_scope": [
+    "runtime/src/tools/scaffold/bootstrap.rs fresh-target validation and specs/adr/.gitkeep seed",
+    "runtime/src/engine/workspace_upgrade/transaction.rs managed bundle apply/rollback via repository-seed helper"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "task_id": "517",
+  "source_revision": "ad34e41974a58952da2ce4a6bf17042fc14b7920",
+  "removal_revision": "d6ebac734c3624efec775ce1ba27dc72b6ff2e62",
+  "source_kind": "Authentic versioned Git originals, not reconstructed historical text",
+  "destination_class": "Historical archive, non-normative for current behavior",
+  "byte_identity_verification": "Every recovered UTF-8 text was hashed as a Git blob and matched git rev-parse of the original revision:path before writing.",
+  "files": [
+    {
+      "member": ".kiro/specs/truenorth-mcp-refactor/requirements.md",
+      "destination": "specs/archive/truenorth-mcp-refactor/requirements.md",
+      "lines": 200,
+      "sha256": "c932cc6280fd75b84e9483b9f2b095ce3da639b3025580a5047ecc4d2ae6de2c",
+      "git_blob": "32b16d4f2673d93be022a38d5b59ba821da28d3b"
+    },
+    {
+      "member": ".kiro/specs/truenorth-mcp-refactor/design.md",
+      "destination": "specs/archive/truenorth-mcp-refactor/design.md",
+      "lines": 1024,
+      "sha256": "ff45dfd070ef8b493e420575a668ad0251e64a1499f641cacddc81e37d5f5980",
+      "git_blob": "fd774e804eb541b3142a063124e17ef25971da45"
+    },
+    {
+      "member": ".kiro/specs/truenorth-mcp-refactor/tasks.md",
+      "destination": "specs/archive/truenorth-mcp-refactor/tasks.md",
+      "lines": 314,
+      "sha256": "7d1ff9cbf273d80db200a9ede84011f49b282cdc07194930f38ab7b591144c00",
+      "git_blob": "ca32dd5846574ae15f4822df385682a54ca84e7b"
+    },
+    {
+      "member": ".kiro/specs/agent-workspace-profiles/requirements.md",
+      "destination": "specs/archive/agent-workspace-profiles/requirements.md",
+      "lines": 219,
+      "sha256": "d817a9936f11c72819e51d47f9387eab92dd695a708227b433e5937ee9366f8c",
+      "git_blob": "24fdd9e32df89e51d616fec178377b36277bd625"
+    },
+    {
+      "member": ".kiro/specs/agent-workspace-profiles/design.md",
+      "destination": "specs/archive/agent-workspace-profiles/design.md",
+      "lines": 1031,
+      "sha256": "d3ca7fbdbab92f1488057011ee5e98c89a3d06069d836ca07929c2778d0d34f5",
+      "git_blob": "de3a1e944fbb02bb22056b60c68791bddbb2ee60"
+    },
+    {
+      "member": ".kiro/specs/agent-workspace-profiles/tasks.md",
+      "destination": "specs/archive/agent-workspace-profiles/tasks.md",
+      "lines": 328,
+      "sha256": "29f5968cbf59524475dccf45e0c3f9750675e4710ac4ee75bf557c28654b6d05",
+      "git_blob": "169274f0f909e2123e500d10e1689462f1fd466d"
+    },
+    {
+      "member": ".kiro/specs/optional-ontology/requirements.md",
+      "destination": "specs/archive/optional-ontology/requirements.md",
+      "lines": 199,
+      "sha256": "5ed7c414bdceda5caabe5f8df75eca5f06bb8dc7ef72eb73e8d4f32cab814c83",
+      "git_blob": "862a51040a2a45f5079e5049753b7b52c11e5847"
+    },
+    {
+      "member": ".kiro/specs/optional-ontology/design.md",
+      "destination": "specs/archive/optional-ontology/design.md",
+      "lines": 558,
+      "sha256": "b9b9755c255eaa4ac1d1d20f2a11bf4a56699dbe04928e1c6b0b7e6b470fc845",
+      "git_blob": "d5b6b989f6fdea01dbd62bc317c26059e7d7696d"
+    },
+    {
+      "member": ".kiro/specs/optional-ontology/tasks.md",
+      "destination": "specs/archive/optional-ontology/tasks.md",
+      "lines": 148,
+      "sha256": "979b2909d652bef2adcd6f76d982fd6257453e3081a40436b604654d2bdfae49",
+      "git_blob": "4dfc4a222548bed915f2f8f5d0aad416079e0c2f"
+    }
+  ],
+  "current_derivation": {
+    "files": [
+      "specs/README.md",
+      "specs/requirements.md",
+      "specs/design.md",
+      "specs/tasks.md"
+    ],
+    "kind": "Newly authored current synthesis, not recovered original text",
+    "sources": [
+      "Recovered originals",
+      "Accepted ADRs 0008-0013",
+      "Current version 2 rules and CONVENTIONS executor boundary"
+    ],
+    "disclosed_authority_inconsistencies": [
+      {
+        "requirement": "ADR-0008/P6 unqualified runtime-write confinement",
+        "historical_contract": "Workspace design embedded ADR6/7 explicitly authorizes audited repository-seed scaffold exception",
+        "current_observation": "Native1.0.4 scaffold creates root workflow files outside.agent, matching that documented exception",
+        "evidence": ".agent/tasks/compliance-515/517-scaffold-boundary-evidence.json",
+        "disposition": "Authority wording remains unresolved; neither blanket P6 certification nor a newly discovered unauthorized exploit is claimed."
+      }
+    ]
+  },
+  "human_content_review": "approved",
+  "note": "Historical checked boxes are not present verification. Current contracts state later accepted decisions separately.",
+  "archive_integrity_after_format": "All nine destination SHA256 values matched the pre-write authenticated source hashes after final supporting format and full preflight.",
+  "human_review_evidence": ".agent/tasks/compliance-515/517-human-review.json"
+}

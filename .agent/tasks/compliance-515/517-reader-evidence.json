@@ -1,0 +1,138 @@
+{
+  "task_id": "517",
+  "observed_at": "2026-10-09T19:50:10.730Z",
+  "server_info": {
+    "name": "truenorth-mcp",
+    "version": "1.0.4"
+  },
+  "discovered_resources": [
+    {
+      "uri": "truenorth://state",
+      "name": "state",
+      "mimeType": "application/yaml"
+    },
+    {
+      "uri": "truenorth://cockpit",
+      "name": "cockpit",
+      "mimeType": "application/yaml"
+    },
+    {
+      "uri": "truenorth://conventions",
+      "name": "conventions",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "truenorth://adr",
+      "name": "adr",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "reads": [
+    {
+      "uri": "truenorth://conventions",
+      "ttl_ms": 0,
+      "sha256": "801872547487e7cb387084acd6040c63bbfa3b46510a6e081e184ec9c72263ed",
+      "cache_scope": "private"
+    },
+    {
+      "uri": "truenorth://adr",
+      "ttl_ms": 0,
+      "sha256": "99ec4cff62e6a756a4aee16c582f4bf5ebd0144ffdbc0a3e021a5b068d520767",
+      "cache_scope": "private"
+    },
+    {
+      "uri": "truenorth://state",
+      "ttl_ms": 0,
+      "sha256": "484822a95c4bf7042559ea55e5f978dd5392dfc805979138c775e52f1ec96b57",
+      "cache_scope": "private"
+    },
+    {
+      "uri": "truenorth://cockpit",
+      "ttl_ms": 0,
+      "sha256": "a3b7b12cfd74640699ef8b71efe37de4603b4063c28f73734aaf9f8484f3f1ff",
+      "cache_scope": "private"
+    }
+  ],
+  "skill_validation": {
+    "skill": "release-branch",
+    "pass": true,
+    "checks": [
+      {
+        "id": "verb-noun-naming",
+        "pass": true,
+        "message": "Skill name is verb-noun kebab-case or has a documented exception",
+        "remediation": "Rename to verb-noun kebab-case or add a nonempty name_exception"
+      },
+      {
+        "id": "frontmatter-name",
+        "pass": true,
+        "message": "Has frontmatter.name",
+        "remediation": "Add name to the YAML frontmatter block"
+      },
+      {
+        "id": "frontmatter-description",
+        "pass": true,
+        "message": "Has frontmatter.description",
+        "remediation": "Add description to the YAML frontmatter block"
+      },
+      {
+        "id": "skill-kind",
+        "pass": true,
+        "message": "Has supported skill kind `scripted`",
+        "remediation": "Set frontmatter.kind to `prose` or `scripted`"
+      },
+      {
+        "id": "verify-command",
+        "pass": true,
+        "message": "Scripted skill has a runnable verify command",
+        "remediation": "Set frontmatter.verify for a scripted skill, or declare the skill prose"
+      },
+      {
+        "id": "size-cap",
+        "pass": true,
+        "message": "Within size cap (150/150 lines)",
+        "remediation": "Split content into REFERENCE.md or reduce prose"
+      }
+    ]
+  },
+  "human_content_review": "approved",
+  "scope": "Real native resources and live skill consumer; no invented specification URI and no configuration changes.",
+  "filesystem_reader": {
+    "kind": "Actual assistant file-reader opens of current index, requirements, design, task narrative, machine entry point, product references, contributor guide, rules comments and Kiro adapter",
+    "human_review": "approved",
+    "current_files": [
+      "specs/README.md",
+      "specs/requirements.md",
+      "specs/design.md",
+      "specs/tasks.md",
+      ".agent/spec/requirements.md",
+      "CONVENTIONS.md",
+      "CONTRIBUTING.md",
+      ".agent/product/scope.yml",
+      ".agent/product/glossary.yml",
+      ".agent/config/rules.yml",
+      ".kiro/steering/authority.md",
+      ".github/COMMIT_TEMPLATE.md"
+    ],
+    "note": "No native specification resource URI was invented. Discovered native resources are used only for their actual contracts."
+  },
+  "convention_consumer_assertions": {
+    "required_sections": [
+      "## Writing",
+      "### Scope and tiers",
+      "## Document precedence"
+    ],
+    "observed_result": "All found in real resource text; driver exited zero",
+    "retained_content": "URI and SHA256 for each actual read; source text remains in authoritative project files"
+  },
+  "human_review_evidence": ".agent/tasks/compliance-515/517-human-review.json",
+  "post_approval_checkpoint": {
+    "recorded_at": "2026-10-09T20:01:58.465Z",
+    "actual_reader": "read mcp://truenorth://state through mounted native resource",
+    "observed_active_task": "517",
+    "observed_phase": "execute",
+    "observed_group_cycle": "checkpoint_after_517",
+    "observed_handoff": "User content/provenance approval recorded; local step3 complete and ledgerpassing; step4onlyonuserrequest.",
+    "actual_client_configuration_changed": false
+  }
+}

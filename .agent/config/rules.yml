@@ -1,5 +1,5 @@
 # The per-project runtime config. Version 2 separates enforced runtime settings
-# from advisory project conventions (ADR-0017, issue #432).
+# from advisory project conventions (issue #432; CONVENTIONS.md).
 version: 2
 
 features:
@@ -57,8 +57,8 @@ advisory:
     javascript:
       - prettier
     prose:
-      # All prose follows the house writing rules (ASD-STE100-based Simplified Technical
-      # English) in .kiro/steering/writing-rules.md.
+      # The single house writing policy is CONVENTIONS.md, section "Writing".
+      # It adapts ASD-STE100 principles; prose remains advisory, not runtime enforcement.
       - house-writing-rules
 
   secret_denylist:

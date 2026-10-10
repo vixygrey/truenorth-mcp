@@ -1,0 +1,82 @@
+{
+  "task_id": "517",
+  "observed_at": "2026-10-09T19:46:09.926Z",
+  "branch": "chore/517-specification-authority",
+  "evaluated_head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "scope": "Current uncommitted content reviewed as files; previous user/planning/516 changes are preserved and not attributed to517",
+  "files": [
+    {
+      "path": "specs/README.md",
+      "sha256": "064f526dfb75f37f957edacdba1b6fcba2c151791a5d33605f62e627eaa679be"
+    },
+    {
+      "path": "specs/requirements.md",
+      "sha256": "9a987bd036af023c4baed647520d53e74e0562f810f73672324192641a3b1b47"
+    },
+    {
+      "path": "specs/design.md",
+      "sha256": "16bf4c7bb96b2181205ee8d5d79e164e812a122ed80f0d6c5bcf29a13da2dab7"
+    },
+    {
+      "path": "specs/tasks.md",
+      "sha256": "2efe9d1f962791040c7ea40833d53e4bc74b7562721a0e93e56bc2e224d08c43"
+    },
+    {
+      "path": "CONVENTIONS.md",
+      "sha256": "801872547487e7cb387084acd6040c63bbfa3b46510a6e081e184ec9c72263ed"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "4aaadc1bdff29f9f6121c332dc8360fba7d3e8e232155a07ccfbe1f6c19f5b8e"
+    },
+    {
+      "path": ".github/COMMIT_TEMPLATE.md",
+      "sha256": "32af7c0ca6a7d74242d47bf939fcaaf7f16786628b2ca3cbd3ac3a7e393f346b"
+    },
+    {
+      "path": ".agent/spec/requirements.md",
+      "sha256": "413d2299cd696c31e80ace815525caec3d66b05d6b3558d10f623a1e3a79c07c"
+    },
+    {
+      "path": ".agent/product/scope.yml",
+      "sha256": "abba624306a38e8df0a1a75da009e393c33d6bab0678416c5cad27860797a52c"
+    },
+    {
+      "path": ".agent/product/glossary.yml",
+      "sha256": "f7349f9f0c7c5b8806e6468285e4b56832a24a420236683fe89bebfa2f164131"
+    },
+    {
+      "path": ".agent/config/rules.yml",
+      "sha256": "6210d03ca88e734f4340b3b6c6647ad2772f7cb339819440ff72b8dcd20fcd00"
+    },
+    {
+      "path": ".kiro/steering/authority.md",
+      "sha256": "e61f745b14f2bc55d76aab0fed4aab23dfedd53fe12f7e21730071c2b8a1d9df"
+    },
+    {
+      "path": ".prettierignore",
+      "sha256": "b43eb3b891fc5bc1e253df95fc788a1843c9f513449bb3c416e1d2dc4ad26934"
+    },
+    {
+      "path": "runtime/src/config/rules_schema.rs",
+      "sha256": "c0c070c8b5dbef9b3423d7f4e9224909399882b552a02066b4d670c36a7567d1"
+    },
+    {
+      "path": "runtime/src/tools/scaffold/scaffold_tests.rs",
+      "sha256": "75eab221af0348bac3168321010b6cf8e143a5cc9d2aebd097d1e7e3ab56e42e"
+    },
+    {
+      "path": "skills/release-branch/SKILL.md",
+      "sha256": "535459bf5abf96edca43e42332f6599966156ecc16be5b8ba38f21e06de4a16b"
+    },
+    {
+      "path": "npm/skills/release-branch/SKILL.md",
+      "sha256": "535459bf5abf96edca43e42332f6599966156ecc16be5b8ba38f21e06de4a16b"
+    },
+    {
+      "path": "npm/bundle/current.json",
+      "sha256": "b00ea6b3e4083f9d05b22f8edd6c7b292a19ea97323ffad31e26072a3eedbdc3"
+    }
+  ],
+  "human_content_review": "pending"
+}

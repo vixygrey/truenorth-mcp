@@ -299,6 +299,10 @@ tasks:
   group_kind: ticket
   task_name: Reconcile release and planning contracts (#516)
   verify_command: node --test scripts/build-bundle-manifest.test.js && node scripts/build-bundle-manifest.js --check && bash scripts/preflight.sh wrapper shell
+- group_id: '515'
+  group_kind: ticket
+  task_name: Restore specification and writing authority (#517)
+  verify_command: bash scripts/preflight.sh format
 groups:
   - group_id: '515'
     group_kind: ticket

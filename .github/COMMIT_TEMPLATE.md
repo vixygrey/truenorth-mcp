@@ -4,10 +4,9 @@ This project uses atomic, Conventional Commits. This guide gives the format, the
 types, and the scopes for truenorth-mcp. It also states how a commit type maps to
 the SemVer bump.
 
-All commit and PR prose follows the house writing rules in
-`.kiro/steering/writing-rules.md`: one word one meaning, active voice, short
-sentences, approved modals (`can`, `will`, `must`), American English, and no em
-dashes.
+All commit and PR prose follows the single [writing policy](../CONVENTIONS.md#writing).
+Apply the [project document precedence](../CONVENTIONS.md#document-precedence).
+This guide defines the message format, not a separate writing policy.
 
 ## Format
 
@@ -63,7 +62,7 @@ Use a runtime domain as the scope:
 - `wrapper` — the npm distribution wrapper under `npm/`.
 - `distribution` — packaging and the release workflow.
 - `ci` — the CI workflows.
-- `spec` — the spec and steering files under `.kiro/`.
+- `spec`: human narrative under `specs/` and machine specification under `.agent/spec/`.
 
 Be specific. Write `fix(engine)`, not `fix(core)`.
 

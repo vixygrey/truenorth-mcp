@@ -63,25 +63,22 @@ rehearsal and cross-platform publication remain CI release responsibilities.
 - Use atomic, Conventional Commits: `type(scope): description`.
 - The scope is a runtime domain: `engine`, `tools`, `resources`, `server`, `cli`,
   `wrapper`, `distribution`, `ci`, or `spec`.
-- No AI-attribution footer. The human author owns the commit.
+- Follow `CONVENTIONS.md` for attribution. A standard AI co-author trailer is
+  permitted. The human author owns the commit.
 
 ## Tests
 
 - Every new function gets a test. Every bug fix gets a regression test.
-- A property or golden test is required for anything a correctness property (P1 to
-  P5) covers.
+- A property or golden test is required for anything covered by the
+  [current design's correctness properties](specs/design.md#correctness-properties)
+  (P1 to P21).
 
 ## Writing
 
-All prose follows the house writing rules in
-`.kiro/steering/writing-rules.md`: short sentences, active voice, approved modals
-(`can`, `will`, `must`), American English, and no em dash.
-
-Markdown tables use the space-padded style: pad each cell to its column width
-and pad the delimiter row to match (`| --- |`, not `|---|`). A table inside a
-fenced code block stays verbatim. The repo checks in no editor config for this,
-because `.vscode/` is gitignored, so keep the style by hand or through your own
-formatter.
+The single house writing policy is [Writing in CONVENTIONS.md](CONVENTIONS.md#writing).
+It defines strict and loose prose, terminology, safety text, and Markdown tables.
+Apply its [document precedence](CONVENTIONS.md#document-precedence).
+This guide does not define another policy.
 
 ## Releases
 

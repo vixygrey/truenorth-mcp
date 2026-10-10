@@ -1,0 +1,32 @@
+{
+  "kind": "required-format-verification",
+  "task_id": "517",
+  "started_at": "2026-10-09T19:44:36.673Z",
+  "completed_at": "2026-10-09T19:44:39.152Z",
+  "command": "bash scripts/preflight.sh format",
+  "gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "execute",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:5a9be212833d44fa0bfc4516517b9f9bf018b5ae308b036fcbcb1b505a1770dc",
+      "gate": {
+        "duration_ms": 2471,
+        "exit_code": 0,
+        "expectation": "zero",
+        "status": "pass"
+      },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "scope": "Exact #517 supporting format command through the real executor. Immutable archive is excluded; formatting does not establish content approval. Actual mounted client configuration unchanged.",
+  "post_approval_checkpoint": {
+    "command": "bash scripts/preflight.sh format",
+    "observed_exit_code": 0,
+    "observed_output": "All matched files use Prettier code style; verify-gate documentation lint passed; all requested groups passed.",
+    "scope": "Approval/status metadata only after the independently reviewed full-gate scope; no behavior or policy changed."
+  }
+}

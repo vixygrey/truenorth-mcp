@@ -1,22 +1,29 @@
 # Requirements
 
-This file is the machine-facing entry point for the feature narrative. The authored
-requirements, design, and tasks live under `.kiro/specs/`. The runtime reads this file as
-part of the `.agent/` layout contract.
+This is the machine-facing entry point for the feature narrative. The runtime
+reads it as part of the `.agent/` layout contract. Human-authored current
+requirements, design, and task narratives live under `specs/`.
 
-## Active specs
+## Current specifications
 
-The project is built from three specs. Each spec holds a `requirements.md`, a `design.md`,
-and a `tasks.md`.
+- [Authority, provenance, and review status](../../specs/README.md).
+- [Current requirements](../../specs/requirements.md).
+- [Current design and correctness properties P1 to P21](../../specs/design.md).
+- [Current task and verification narrative](../../specs/tasks.md).
+- [Writing policy and document precedence](../../CONVENTIONS.md).
 
-- **TrueNorth-MCP refactor**: `.kiro/specs/truenorth-mcp-refactor/`. The passive
-  TypeScript catalog server becomes an active, protocol-first Rust MCP runtime. Correctness
-  properties P1 to P5.
-- **Agent Workspace Profiles**: `.kiro/specs/agent-workspace-profiles/`. The repository
-  splits into a human-facing `specs/` layer and a machine-facing `.agent/` layer behind one
-  write guard. Five methodology profiles as data. Correctness properties P6 to P15.
-- **Optional Ontology**: `.kiro/specs/optional-ontology/`. A per-project `features.ontology`
-  flag gates the ontology surface. Correctness properties P16 to P21.
+The user approved the current content and recovery provenance for work item #517.
+[The human review record](../tasks/compliance-515/517-human-review.json) retains that decision.
+Formatting remains supporting evidence, not content approval or overall compliance.
+
+## Historical provenance
+
+The specification index links nine authentic recovered originals for the runtime
+refactor, workspace profiles, and optional ontology. They come from Git revision
+`ad34e41974a58952da2ce4a6bf17042fc14b7920`, not a historical reconstruction.
+The archive preserves superseded paths and checked boxes without promoting them
+to current behavior or verification. Later accepted ADRs and the reviewed current
+contract determine applicability.
 
 ## Product scope
 
