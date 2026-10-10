@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_id": "519",
+  "risk": "P1",
+  "observed_at": "2026-10-09T22:48:51.326919+00:00",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "quality": {
+    "reviewer": "TraceQualityReview",
+    "verdict": "correct",
+    "blocking_findings": [],
+    "final_source_output": "{\n  \"overall_correctness\": \"correct\",\n  \"explanation\": \"Reviewed the full 519 diff (state.yml, execution-status.yml, new traceability.yml, and all 519-* capsule evidence files under .agent/tasks/compliance-515/). All 82 release-plan entries map 1:1 in order/title/verify_command to release-plan.yml with no duplicate or omitted entry_id; release_plan_sha256 (a3b7b12c...) matches the actual file hash. The gate section in traceability.yml is byte-identical to 519-review-report-mode.yml except for the appended gate fields (diff confirms only lines 6971-6977 differ), and its consumed_report_sha256 (475130020b...) matches the sha256 of that exact snapshot file, satisfying the trace-requirement 'gate reads only the exact report' contract. The embedded Python evaluator_source (hash-verified against evalu\u2026\n  \"confidence\": 0.85\n}\n\n[Some lines truncated to 768 chars]"
+  },
+  "security": {
+    "reviewer": "TraceSecurityReview",
+    "confirmed_findings": [],
+    "needs_investigation": [],
+    "final_source_output": "{\n  \"coverage_summary\": \"Final disposition: 519-REPORT-CI-OMISSION is resolved. This corrected-scope review supersedes my earlier surviving-finding verdict. No new blocker or surviving nonblocking/advisory finding was identified.\\n\\nConfirmed findings\\nNone remain. Independently inspected the corrected early normalization, regenerated inventory, corrected report-mode snapshot and live traceability report against the existing raw source records. All eight early non-success outcomes now propagate with matching source IDs, URLs, head SHAs, conclusions and external completion timestamps: release-plan:002 retains PR226's skipped check; release-plan:018 retains PR368's four failed and two skipped publication checks; release-plan:039 retains PR425's failed npm-finali\u2026\n  \"findings\": [],\n  \"reviewed_paths\": [\n    \".agent/tasks/compliance-515/519-spec.md\",\n    \".agent/tasks/compliance-515/519-tasks.yml\",\n    \".agent/tasks/compliance-515/test-plan.md\",\n    \"skills/trace-requirement/SKILL.md\",\n    \"CONVENTIONS.md\",\n    \".agent/tasks/state.yml\",\n    \".agent/tasks/execution-status.yml\",\n    \".agent/tasks/release-plan.yml\",\n    \".agent/tasks/traceability.yml\",\n    \".agent/tasks/compliance-515/519-baseline-evidence.json\",\n    \".agent/tasks/compliance-515/519-methodology-evidence.json\",\n    \".agent/tasks/compliance-515/519-audit-evidence.json\",\n    \".agent/tasks/compliance-515/519-quality-evidence.json\",\n    \".agent/tasks/compliance-515/519-cockpit-evidence.json\",\n    \".agent/tasks/compliance-515/519-git-context.json\",\n    \".agent/tasks/compliance-515/519-inventory-input.json\",\n    \".agent/tasks/compliance-515/519-inventory-evidence.json\",\n    \".agent/tasks/compliance-515/519-trace-policy-evidence.json\",\n    \".agent/tasks/compliance-515/519-gate-smoke.json\",\n    \".agent/tasks/compliance-515/519-boundary-failure.json\",\n    \".agent/tasks/compliance-515/519-initial-report-mode.yml\",\n    \".agent/tasks/compliance-515/519-review-report-mode.yml\",\n    \".agent/tasks/compliance-515/519-review-gate-evidence.json\",\n    \".agent/tasks/compliance-515/519-corrected-report-mode.yml\",\n    \".agent/tasks/compliance-515/519-ci-correction-evidence.json\",\n    \".agent/tasks/compliance-515/519-history-early-sources.json\",\n    \".agent/tasks/compliance-515/519-history-early.json\",\n    \".agent/tasks/compliance-515/519-history-recent-sources.json\",\n    \".agent/tasks/compliance-515/519-history-recent.json\",\n    \".agent/tasks/compliance-515/519-release104-records.json\",\n    \".agent/tasks/compliance-515/516-verification-evidence.json\",\n    \".agent/tasks/compliance-515/517-verification-evidence.json\",\n    \".agent/tasks/compliance-515/518-verification-evidence.json\",\n    \".git/HEAD\",\n    \".git/refs/heads/chore/519-truthful-execution-evidence\",\n    \".git/logs/HEAD\"\n  ],\n  \"deferred\": [\n    {\n      \"reason\": \"Historical local RED, timestamps, native receipts and acceptance evidence remain unavailable; #520 is not executed. These are existing explicit release-blocking obligations, not waived or newly certified by this review. Live command/network re-execution was intentionally excluded by the read-only assignment.\",\n      \"paths\": [\n        \".agent/tasks/traceability.yml\",\n        \".agent/tasks/compliance-515/519-inventory-evidence.json\"\n      ]\n    }\n  ]\n}\n\n[Some lines truncated to 768 chars]"
+  },
+  "dispositions": [
+    {
+      "id": "519-REPORT-CI-OMISSION",
+      "class": "non-blocking",
+      "severity": "low",
+      "status": "resolved",
+      "initial_finding": "Early normalization and report retained only a successful CI Gate for historical368/425 despite archived failed/skipped publication checks.",
+      "applied_change": "All eight non-success early checks propagate: entry002 PR226 one skipped; entry018 PR368 four failed/two skipped; entry039 PR425 one failed. Exact IDs/URLs/SHAs/conclusions/external timestamps retained.",
+      "proof": "519-ci-correction-evidence.json",
+      "quality_confirmation": "Correct, no blocker. Only added the8 non-success records/qualifiers; raw archives/evaluator/other rows unchanged.",
+      "security_confirmation": "Finding resolved. No new blocker or surviving nonblocking/advisory finding."
+    }
+  ],
+  "result": "pass",
+  "release_verdict": "FAIL",
+  "limits": [
+    "Independent reviews read artifacts and actual captured verification; no new tests/builds/API calls executed by reviewers.",
+    "Local519completion and subsequent status-only report/gate refresh permitted; historical gaps, source records, receipt outcomes and release FAIL must remain unchanged.",
+    "No exclusion, waiver, step6, integration or publication authorization supplied."
+  ]
+}

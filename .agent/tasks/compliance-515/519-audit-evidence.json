@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "task_id": "519",
+  "observed_at": "2026-10-09T22:36:03.436297+00:00",
+  "mode": "audit-code --gate",
+  "risk": "P1",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "story_scope": [
+    ".agent/tasks/state.yml",
+    ".agent/tasks/execution-status.yml",
+    ".agent/tasks/traceability.yml",
+    ".agent/tasks/compliance-515/519-*"
+  ],
+  "implementation_scope": "Execution/traceability evidence only. No runtime, wrapper, skill contract, release workflow, dependency, version, or published asset changed in this step.",
+  "sections": {
+    "correctness": {
+      "result": "pass",
+      "evidence": "82 exact indexed release-plan entries preserved once, including shared-issue stages; historical local statuses/timestamps remain unknown. Real supported current receipt/scenario evidence is separated from recorded planned commands and external event timestamps."
+    },
+    "security": {
+      "result": "pass",
+      "evidence": "YAML SafeLoader rejects unsupported/duplicate/malformed fields. GitHub metadata is never executed as shell/code. No waiver/exclusion or failure override. Read-only MCP consumer used in live worktree. Both published JSON assets bind to their actual SHA256; signed redirect URLs are not retained."
+    },
+    "performance": {
+      "result": "pass",
+      "evidence": "Only bounded82-entry report evaluation and captured historical metadata. No production hot path or compiled allocation behavior changes."
+    },
+    "clarity_and_ownership": {
+      "result": "pass",
+      "evidence": "Canonical handoff and execution-owned ledger remain separate from planning. Report/gate artifact owned by trace-requirement. Backlog pointer, source ledgers and promises unchanged. External GitHub state remains OPEN for locally complete unintegrated remediation."
+    },
+    "supply_chain": {
+      "result": "pass",
+      "evidence": "No installs or dependency/version/asset changes. Python/PyYAML already present; evaluator is an archived operator aid, not a new runtime capability or workflow framework."
+    },
+    "provenance": {
+      "result": "pass",
+      "evidence": "Observed quality receipts, execution timestamps, API events, asset bytes and source URLs retained. Historical RED/native receipts absent; not reconstructed. Current fixture-only failure retained with actual PASS-vs-FAIL result and diagnosed alias coupling."
+    },
+    "verification": {
+      "result": "pass",
+      "evidence": "Final actual mounted preflight exit0/136302ms; required deterministic command exit0, five scenarios pass. Actual cockpit01, full inventory02 and exact-report/22 isolated negative gate decisions03 observed. Temporary negative workspace removed; live report not mutated by fixtures."
+    },
+    "types_and_boundaries": {
+      "result": "pass",
+      "evidence": "No exported symbol or runtime schema change. Report schema1 typed fields, exact head and unique entry identifiers consumed. Original controller contract remains prose; no nonexistent MCP trace tool is claimed."
+    },
+    "maintainability": {
+      "result": "pass",
+      "evidence": "Generated report preserves exact-entry provenance. Alias-free final serialization separates required and observed scenario fields. Gate evidence retains reproducible evaluator source, version and SHA. No scaffolding or TODO implementation added."
+    }
+  },
+  "confirmed_findings": [],
+  "needs_investigation": [],
+  "excluded": [
+    {
+      "candidate": "Historical missing native receipts/RED and unexecuted520",
+      "basis": "Explicit report gaps and live release FAIL. These are not waived or disguised as successful verification and do not contradict the expected evidence-integrity scenarios."
+    },
+    {
+      "candidate": "Provisional staged_pending_approval in immutable1.0.4 release record",
+      "basis": "Original record retained byte-for-byte; separate actual NPM verification record proves later registry verification. No original asset edited."
+    },
+    {
+      "candidate": "Old unsuccessful CI outcomes",
+      "basis": "All actual failures/skips remain explicit external observations. No inferred supersession or conversion into current passing native receipts."
+    }
+  ],
+  "legacy_skill_api_rule_disposition": "Historical read-only API metadata queries are expressly required by519. No new or modified production skill/script contains REST calls and no remote mutation occurred. Repository-specific task requirements control the operator evidence recovery.",
+  "tdd_disposition": "Evidence-only work. Global refactor cursor is retained from518. No519 RED/GREEN receipt or historical execution was fabricated. The actual operator-fixture failure is separately retained, not labeled a native TDD receipt.",
+  "release_gate": "FAIL; release remains blocked. Supporting quality-command PASS is not traceability PASS.",
+  "result": "pass",
+  "rationalizations_caught": [
+    "Did not treat merged PRs, passing CI or checked source tests as historical acceptance/RED/native receipt evidence.",
+    "Did not blanket-exclude history to obtain a green release gate.",
+    "Did not hide the fixture failure or infer supersession of unsuccessful CI."
+  ],
+  "review_correction": {
+    "finding": "519-REPORT-CI-OMISSION",
+    "disposition": "resolved",
+    "change": "All eight recovered early non-success checks propagate into normalization, inventory and the gate-consumed report. Five failures and three skipped checks remain explicit, with no inferred supersession.",
+    "evidence": "519-ci-correction-evidence.json",
+    "independent_confirmation": "Both quality and security reviewers confirmed the corrected exact-report identity and no surviving finding. Original raw archives and earlier snapshots remain unchanged."
+  }
+}

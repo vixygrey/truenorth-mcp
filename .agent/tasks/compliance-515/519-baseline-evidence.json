@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "519",
+  "group_id": "515",
+  "observed_at": "2026-10-09T22:07:08.523Z",
+  "observation_basis": "Observed checkpoint clock after the branch and mounted baseline completed. This is not an invented gate start time.",
+  "branch": "chore/519-truthful-execution-evidence",
+  "branch_command": "git switch -c chore/519-truthful-execution-evidence",
+  "branch_exit_code": 0,
+  "kickoff_exception": {
+    "owner": "user",
+    "selection": "Continue preserved checkpoint",
+    "rationale": "Preserve uncommitted dependent steps 2–4 and prior user edits. Create the issue branch at the current HEAD and require a fresh green mounted baseline before implementation.",
+    "scope": "Dependent step 5 only. No commit, stash, cleanup, merge, tag, or publication."
+  },
+  "configured_verify_command": "npm run preflight",
+  "mounted_gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "execute",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:fb31de5bc5339d080f0c17672dd4ee14818e52fc1140bba7be4bce3a7f533d25",
+      "gate": { "duration_ms": 144097, "exit_code": 0, "expectation": "zero", "status": "pass" },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "historical_red": null,
+  "historical_red_basis": "This evidence work item has no newly implemented runtime behavior and no observed new RED-stage failure. Planning status failing is not a failed execution."
+}

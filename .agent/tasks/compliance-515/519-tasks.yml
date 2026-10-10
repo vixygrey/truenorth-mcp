@@ -1,0 +1,33 @@
+task_id: '519'
+title: "establish truthful execution and historical evidence"
+group_id: '515'
+issue: https://github.com/vixygrey/truenorth-mcp/issues/519
+status: failing
+risk: P1
+planning_owner: plan-work
+status_meaning: Initial unverified planning state, not an observed failing test.
+depends_on: ['517', '518']
+verify_command: "npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+completion_rule: Supporting commands and every required observable smoke must pass with retained evidence.
+tasks:
+  - id: 1
+    description: "Retain real remediation behavior-smoke results and gate receipts, and let execution ownership record observed status/timestamps."
+    verify: "npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+    risk: P1
+    status: failing
+    scenarios: ["SC-519-P1-01"]
+    behavior_smoke: "Read actual status through the cockpit and compare it to the retained receipts and observed execution; do not populate invented completion data."
+  - id: 2
+    description: "Inventory every release-plan entry and recover historical issue/PR/commit/CI/release evidence or record explicit gaps and legitimate dispositions."
+    verify: "npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+    risk: P1
+    status: failing
+    scenarios: ["SC-519-P1-02"]
+    behavior_smoke: "Account for every historical entry once; retain source URLs, unavailable evidence, and owner/rationale for every real exclusion."
+  - id: 3
+    description: "Produce current-head traceability and evaluate its gate plus isolated stale/unsupported/missing-evidence cases."
+    verify: "npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline"
+    risk: P1
+    status: failing
+    scenarios: ["SC-519-P1-03"]
+    behavior_smoke: "Run trace-requirement report then gate on the exact report. Retain its evaluated head and honest verdict; negative cases run outside the live capsule."

@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "task_id": "519",
+  "group_id": "515",
+  "risk": "P1",
+  "verifier": "verify-work / execute-group / trace-requirement",
+  "observed_at": "2026-10-09T22:51:47.059171+00:00",
+  "status": "locally-verified",
+  "started_at": "2026-10-09T22:07:08.523Z",
+  "started_at_basis": "Observed kickoff checkpoint clock after the approved preserved-checkout branch and successful actual mounted baseline.",
+  "completed_at": "2026-10-09T22:48:51.344Z",
+  "completed_at_basis": "Actual commands and all three required smoke scenarios passed. Both independent reviews confirmed the CI-omission correction and no surviving finding.",
+  "branch": "chore/519-truthful-execution-evidence",
+  "head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "declared_verify_command": ".agent/tasks/compliance-515/519-tasks.yml: npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline",
+  "requirements": {
+    "MC-12": {
+      "passed": true,
+      "evidence": [
+        "519-cockpit-evidence.json",
+        ".agent/tasks/execution-status.yml",
+        "519-quality-evidence.json"
+      ],
+      "qualification": "Actual timestamps, local status, command outcomes and task-specific real resource/report smokes. Local done is not GitHub issue closure or integration."
+    },
+    "MC-13": {
+      "passed": true,
+      "evidence": [
+        "519-inventory-input.json",
+        "519-inventory-evidence.json",
+        ".agent/tasks/traceability.yml"
+      ],
+      "entry_count": 82,
+      "unique_entry_count": 82,
+      "historical_entries": 77,
+      "exclusions": 0,
+      "qualification": "Every exact release-plan entry once, including separate shared-issue stages. Recoverable external sources or explicit gaps; no blanketed exclusion."
+    },
+    "MC-14": {
+      "passed": true,
+      "evidence": [
+        "519-history-early-sources.json",
+        "519-history-recent-sources.json",
+        "519-release104-records.json",
+        "519-boundary-failure.json",
+        "519-ci-correction-evidence.json"
+      ],
+      "qualification": "No historical RED, local execution timestamp or native receipt invented. External closure/merge/check/publication dates stay external. All recovered unsuccessful CI outcomes remain explicit; no inferred supersession."
+    },
+    "MC-15": {
+      "passed": true,
+      "evidence": [
+        "519-trace-policy-evidence.json",
+        "519-gate-smoke.json",
+        "519-final-report-mode.yml",
+        "519-final-gate-evidence.json"
+      ],
+      "actual_release_verdict": "FAIL",
+      "negative_cases_rejected": 22,
+      "positive_single_entry_fixture_passed": 1,
+      "qualification": "Existing prose report/gate operator execution, deterministic evaluator consumes exact report bytes and actual current HEAD. Missing evidence cannot waive itself. Positive fixture is not full release PASS."
+    }
+  },
+  "scenarios": {
+    "SC-519-P1-01": {
+      "passed": true,
+      "evidence": "519-cockpit-evidence.json"
+    },
+    "SC-519-P1-02": {
+      "passed": true,
+      "evidence": "519-inventory-evidence.json"
+    },
+    "SC-519-P1-03": {
+      "passed": true,
+      "evidence": [
+        "519-gate-smoke.json",
+        "519-ci-correction-evidence.json",
+        "519-final-gate-evidence.json"
+      ]
+    }
+  },
+  "mounted_quality_gate": {
+    "mode": "execute",
+    "passed": true,
+    "phase": "execute",
+    "receipt": {
+      "changes": [],
+      "correlation_id": "mcp-sha256:649a2c69d6b8a754b8d23eb06f3bc87ce8ba72d175f541cde3e6ecb354ec5a74",
+      "gate": {
+        "duration_ms": 136302,
+        "exit_code": 0,
+        "expectation": "zero",
+        "status": "pass"
+      },
+      "operation": "truenorth_verify_gate",
+      "runtime_version": "1.0.4",
+      "schema_version": 1
+    }
+  },
+  "quality_evidence": "519-quality-evidence.json",
+  "methodology_result": {
+    "exit_code": 0,
+    "summary": {
+      "pass": 5,
+      "fail": 0,
+      "skip": 0
+    },
+    "source": "519-quality-evidence.json"
+  },
+  "self_audit": "519-audit-evidence.json",
+  "independent_reviews": {
+    "source": "519-review-evidence.json",
+    "quality": "correct; no surviving finding",
+    "security": "no confirmed or unresolved finding; CI omission resolved"
+  },
+  "traceability": {
+    "artifact": ".agent/tasks/traceability.yml",
+    "schema_version": 1,
+    "source_head": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+    "report_mode_snapshot": "519-final-report-mode.yml",
+    "consumed_report_sha256": "521fa33f0ec4372a19f4c5f571fb6ac0ebf0e68a70e71a1cca2d52ef77981b98",
+    "gate_verdict": "FAIL",
+    "covered": 4,
+    "missing_required": 78,
+    "historical_missing": 77,
+    "not_executed": "520",
+    "deferred": 0,
+    "out_of_scope": 0,
+    "waiver": null
+  },
+  "limits": [
+    "Local step5 requirements/scenarios are satisfied. Release remains blocked; no blanket compliance claim.",
+    "Historical verification/acceptance gaps route to verify-work; any legitimate scope/disposition requires its actual planning owner and rationale.",
+    "No new runtime capability, workflow framework, dependency/version change, remote write, commit, stash, merge, tag, publication, destructive cleanup or step6 execution.",
+    "Current remediation issues remain externally OPEN. Initial issue prose is not rewritten as execution evidence.",
+    "Quality commands and deterministic fixtures alone are not proof of prose workflow compliance or traceability PASS."
+  ],
+  "final_checkpoint_runtime_smoke": {
+    "evidence": "519-final-cockpit-evidence.json",
+    "result": "pass",
+    "actual_checkpoint": "verified_519_checkpoint",
+    "actual_execution_status": "done",
+    "actual_completed_at": "2026-10-09T22:48:51.344Z",
+    "actual_release_verdict": "FAIL",
+    "step6_started": false
+  }
+}
