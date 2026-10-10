@@ -1,0 +1,61 @@
+{
+  "task_id": "516",
+  "type": "audit",
+  "context": "infra",
+  "risk": "P1",
+  "scope": [
+    "skills/release-branch/SKILL.md",
+    "skills/release-branch/REFERENCE.md",
+    "skills/commit-message/SKILL.md",
+    "skills/slice-tasks/SKILL.md",
+    "skills/plan-release/SKILL.md",
+    "skills/plan-work/SKILL.md",
+    "skills/plan-work/REFERENCE.md",
+    "skills/plan-tests/SKILL.md",
+    "skills/plan-tests/REFERENCE.md",
+    "skills/execute-group/SKILL.md",
+    "skills/trace-requirement/SKILL.md",
+    "skills/orchestrate-project/SKILL.md",
+    "skills/orchestrate-project/REFERENCE.md",
+    "npm/skills/release-branch/SKILL.md",
+    "npm/skills/release-branch/REFERENCE.md",
+    "npm/skills/commit-message/SKILL.md",
+    "npm/skills/slice-tasks/SKILL.md",
+    "npm/skills/plan-release/SKILL.md",
+    "npm/skills/plan-work/SKILL.md",
+    "npm/skills/plan-work/REFERENCE.md",
+    "npm/skills/plan-tests/SKILL.md",
+    "npm/skills/plan-tests/REFERENCE.md",
+    "npm/skills/execute-group/SKILL.md",
+    "npm/skills/trace-requirement/SKILL.md",
+    "npm/skills/orchestrate-project/SKILL.md",
+    "npm/skills/orchestrate-project/REFERENCE.md",
+    "skills/catalog.yml",
+    "wiki/Skills-Plan.md",
+    "wiki/Skills-Release.md",
+    "npm/bundle/current.json"
+  ],
+  "baseline_commit": "dee886ec9c926e6873657fbf1e5e0bfe52678e3f",
+  "decision_refs": [
+    "MC-01 and MC-02 in 516-spec.md, ADR-0017 / issue #432",
+    "MC-03 and MC-04 in 516-spec.md, issue #450"
+  ],
+  "reviewed_at": "2026-10-09T18:09:41.742Z",
+  "applicable_sections": {
+    "correctness": "PASS: v2 advisory coverage resolves to actual 80/95 thresholds; runtime enforcement not claimed. Exact issue/runtime/artifact binding resolves for real #516 and all five initialized profiles, including optional issue-per-task grouping.",
+    "security": "PASS self-audit: no executable/auth/network/sink changes, new dependencies, lowered thresholds, unsupported arguments or approval bypass. Missing metadata stops at its owner; independent security review still required before completion.",
+    "performance": "NOT APPLICABLE: prose/catalog/digest changes only; no runtime allocation or execution-path changes.",
+    "clarity_and_ownership": "PASS: existing group.yml reused as a neutral work-item manifest; group fields remain optional and owner-specific stops explicit. No alternate runtime schema or synthetic group.",
+    "supply_chain": "PASS: no repository dependency added; existing lockfile/tooling and actual local packed artifacts used. Published manifest hash and preserved user bug file hash unchanged.",
+    "verification": "PASS: real full gate plus bundle catalog tests; strict diagnostic/inspect route; actual packed skills and profile registrations. None certifies complete release readiness.",
+    "scope_and_compatibility": "PASS: source/package mirrors and current bundle refreshed; version remains 1.0.4. Published history, user bug changes, profile and backlog declaration preserved."
+  },
+  "skipped_or_inapplicable": [
+    "No new executable functions, abstractions, dependencies, SQL/auth/user-data implementation, or permanent source-wording/wiring tests. Runtime test source intentionally unchanged.",
+    "No fabricated RED test for prose: retained before-consumer conflict and after actual operator/delivery evidence.",
+    "No release/coverage/traceability completion inferred. #517-#520 and separate irreversible approvals remain outside this implementation."
+  ],
+  "rationalizations": "None accepted. Diagnostic validity is not coverage enforcement; tests are not proof of following prose; a fixture gate environment is not project verification.",
+  "blocking_findings": [],
+  "verdict": "PASS SELF-AUDIT; independent reviews pending"
+}

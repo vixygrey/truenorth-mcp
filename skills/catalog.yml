@@ -38,6 +38,7 @@ planning_artifacts:
       - assess-impact
       - execute-group
       - change-request
+      - orchestrate-project
       - plan-tests
       - plan-work
       - session-state

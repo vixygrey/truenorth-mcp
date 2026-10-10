@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "kind": "planning-bootstrap",
+  "recorded_at": "2026-10-09T17:35:35.285Z",
+  "initiative_issue": "https://github.com/vixygrey/truenorth-mcp/issues/515",
+  "planning_branch": "chore/515-compliance-planning",
+  "capsule": ".agent/tasks/compliance-515",
+  "desktop_plan": "/Users/greyvixfen/Desktop/truenorth-methodology-compliance-plan.md",
+  "scope": "Only step 1 planning establishment and its verification. No implementation, historical compliance certification, actual client configuration change, or integration.",
+  "artifact_consistency": {
+    "group_id": "515",
+    "historical_compliance_certified": false,
+    "implementation_started": false,
+    "live_github_issue_identity": "pass",
+    "next_skill": "kickoff-branch",
+    "next_task": "516",
+    "phase": "plan",
+    "planned_scenarios": 13,
+    "preserved_inputs": {
+      ".agent/profile.yml": "808af4ce068a200dc888417b29fb2d6387cbada9aabbfc3d9e007783b1a6dae3",
+      ".agent/tasks/backlog.yml": "97be984baf925f9017eaab778edc0ae96ed49d0e28060897a8dc8ee289cf714a",
+      ".agent/tasks/bugs.yml": "4ca067a528b2e7814ece438dbc64f379c3b59d86a503e59e7285370a11ae313a",
+      ".agent/tasks/execution-status.yml": "c7573c1e188a4f3720ca51e27d715055606b33ca6eadb6ac31b78546a022592a"
+    },
+    "requirements": 19,
+    "specifications": 5,
+    "status": "pass",
+    "task_ledgers": 5,
+    "unverified_implementation_tasks": 14,
+    "verify_command_syntax": "pass",
+    "work_items": 5
+  },
+  "live_runtime_readers": {
+    "status": "pass",
+    "state_resource": "truenorth://state",
+    "cockpit_resource": "truenorth://cockpit",
+    "phase": "plan",
+    "active_task": "516",
+    "recorded_work_items": 5,
+    "indexed_capsule": ".agent/tasks/compliance-515"
+  },
+  "strict_diagnostics": {
+    "command": "TRUENORTH_VERIFY_CMD='npm run preflight' cargo run --locked --quiet --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- --check-config --strict",
+    "exit_code": 0,
+    "report": {
+      "package": {
+        "name": "truenorth-mcp",
+        "version": "1.0.4"
+      },
+      "platform": {
+        "os": "macos",
+        "arch": "aarch64",
+        "family": "unix"
+      },
+      "repository_root": {
+        "status": "ok",
+        "path": "/Users/greyvixfen/Code/oss/truenorth-mcp",
+        "error": null
+      },
+      "layout": {
+        "status": "ok",
+        "error": null,
+        "reason": null
+      },
+      "backlog": {
+        "status": "ok",
+        "error": null,
+        "reason": null
+      },
+      "features": {
+        "status": "ok",
+        "ontology": false,
+        "jev": false,
+        "error": null,
+        "reason": null
+      },
+      "token_caps": {
+        "status": "ok",
+        "skill_lean_tokens": 1200,
+        "tool_payload_tokens": 4000,
+        "estimation": "ceil(characters / 4)",
+        "error": null,
+        "reason": null
+      },
+      "verify_gate": {
+        "status": "ok",
+        "configured": true,
+        "environment": {
+          "allowed_names": [
+            "PATH",
+            "HOME",
+            "TMPDIR",
+            "TMP",
+            "TEMP"
+          ],
+          "configured_names": [],
+          "rejected_names": [],
+          "invalid_names": []
+        },
+        "error": null
+      },
+      "rules_config": {
+        "version": 2,
+        "blocks": {
+          "advisory": "advisory",
+          "features": "enforced",
+          "protected_paths": "enforced",
+          "runtime": "enforced"
+        },
+        "warnings": [],
+        "errors": []
+      }
+    },
+    "setting_scope": "Diagnostic child process only; this does not configure or certify the actual mounted verify gate."
+  },
+  "work_items": [
+    {
+      "issue": 516,
+      "url": "https://github.com/vixygrey/truenorth-mcp/issues/516",
+      "risk": "P1",
+      "spec": ".agent/tasks/compliance-515/516-spec.md",
+      "tasks": ".agent/tasks/compliance-515/516-tasks.yml",
+      "implementation_status": "unverified"
+    },
+    {
+      "issue": 517,
+      "url": "https://github.com/vixygrey/truenorth-mcp/issues/517",
+      "risk": "P3",
+      "spec": ".agent/tasks/compliance-515/517-spec.md",
+      "tasks": ".agent/tasks/compliance-515/517-tasks.yml",
+      "implementation_status": "unverified"
+    },
+    {
+      "issue": 518,
+      "url": "https://github.com/vixygrey/truenorth-mcp/issues/518",
+      "risk": "P1",
+      "spec": ".agent/tasks/compliance-515/518-spec.md",
+      "tasks": ".agent/tasks/compliance-515/518-tasks.yml",
+      "implementation_status": "unverified"
+    },
+    {
+      "issue": 519,
+      "url": "https://github.com/vixygrey/truenorth-mcp/issues/519",
+      "risk": "P1",
+      "spec": ".agent/tasks/compliance-515/519-spec.md",
+      "tasks": ".agent/tasks/compliance-515/519-tasks.yml",
+      "implementation_status": "unverified"
+    },
+    {
+      "issue": 520,
+      "url": "https://github.com/vixygrey/truenorth-mcp/issues/520",
+      "risk": "P0",
+      "spec": ".agent/tasks/compliance-515/520-spec.md",
+      "tasks": ".agent/tasks/compliance-515/520-tasks.yml",
+      "implementation_status": "unverified"
+    }
+  ],
+  "operation_receipts": [
+    {
+      "operation": "truenorth_record_task",
+      "issue": 516,
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/release-plan.yml",
+        "sha256": "a3494a8fb1128dc63d5e732fc6b39d498a0ffd1b31a2440b1cd91fe2193be784"
+      },
+      "correlation_id": "mcp-sha256:14d75f1462404084e4c0c23ee86c1d2728419f65e7727d7bae44c31d373f4004"
+    },
+    {
+      "operation": "truenorth_record_task",
+      "issue": 517,
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/release-plan.yml",
+        "sha256": "6fc781093edbfea723c87c2242c3daf7a4d7ccffe650932a10fa7fa2945958b6"
+      },
+      "correlation_id": "mcp-sha256:66f315b03de0abccd2da4bb7ae47fca1d8836ec11776246676cf0e9231077565"
+    },
+    {
+      "operation": "truenorth_record_task",
+      "issue": 518,
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/release-plan.yml",
+        "sha256": "81ce36e9a3e695ca5c589840de5162eef1097a3d6411df86f60bcdb60b95682c"
+      },
+      "correlation_id": "mcp-sha256:cbd125cadc9ad23e61b6f19af4d5d4e1c4732bb3e95dc2b301563a1c9d67db93"
+    },
+    {
+      "operation": "truenorth_record_task",
+      "issue": 519,
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/release-plan.yml",
+        "sha256": "6b6b8e92b932f104111b7a66afdd1f72684a5643c4e8553ba678cedc9ad1019d"
+      },
+      "correlation_id": "mcp-sha256:88cae5897b4ecb2393999ed6453d175b882540716fc1066a9d34a8ebf2955756"
+    },
+    {
+      "operation": "truenorth_record_task",
+      "issue": 520,
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/release-plan.yml",
+        "sha256": "de68a31e7f9498c1831a7107b572d620d243315600e2e9d9e9a32b59dad86ffa"
+      },
+      "correlation_id": "mcp-sha256:2a0e22f326e3d92e242161ed3f5a0b0b78acb1f94dc2f75ca580144f4b11be0b"
+    },
+    {
+      "operation": "truenorth_advance_phase",
+      "from": "discover",
+      "to": "design",
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/state.yml",
+        "sha256": "e22fc511088cc4450f964521d6817130fa9a9243457afbf9231dbc1f1c1c7086"
+      },
+      "correlation_id": "mcp-sha256:d55bb614025273aeebf885a177a98aab6fccaf88e9c785169b10afa50e3e9757"
+    },
+    {
+      "operation": "truenorth_advance_phase",
+      "from": "design",
+      "to": "plan",
+      "runtime_version": "1.0.4",
+      "schema_version": 1,
+      "change": {
+        "path": ".agent/tasks/state.yml",
+        "sha256": "a15a188938437e91591819717b1ad190b3099d1ef82b6b22b108f885c4b18980"
+      },
+      "correlation_id": "mcp-sha256:dd250e9d6497c5a57e37878bbf925df5352c156671e6352ccfa18b1d75a48b1e"
+    }
+  ],
+  "interpretation": "Receipt digests describe the exact content immediately after each tool mutation, before subsequent metadata/handoff edits. No recorded task receipt is a verification gate pass.",
+  "verdict": {
+    "planning_consistent": true,
+    "next_task": "516",
+    "next_skill": "kickoff-branch",
+    "execution_phase_entered": false,
+    "implementation_tasks_passed": 0,
+    "historical_compliance_certified": false
+  }
+}

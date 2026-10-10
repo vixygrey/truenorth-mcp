@@ -34,7 +34,7 @@ kind: prose
    is a major.
 4. **Write the message**: `type(optional-scope)!: description`. Use `!` or a
    `BREAKING CHANGE:` footer when a behavior contract changes. See
-   [REFERENCE.md](REFERENCE.md#message-format).
+   [REFERENCE.md](./REFERENCE.md#message-format).
 5. **Note the defensive-code categories touched**: rate limit, retry with backoff,
    circuit breaker, timeout, graceful degradation.
 6. **Deliver**:
@@ -49,7 +49,9 @@ kind: prose
 - [ ] The scope is a short noun in parentheses when it helps, for example `fix(api): ...`.
 - [ ] A breaking change is explicit (`!` or a `BREAKING CHANGE:` footer).
 - [ ] The description is imperative, lowercase after the prefix, with no trailing period on the title line.
-- [ ] No `Co-authored-by` footer. Every commit appears authored solely by the human user.
+- [ ] Attribution follows `CONVENTIONS.md`. When the project permits AI co-authors,
+      a standard `Co-authored-by:` trailer is valid; the human author still owns
+      the commit. Never invent an author or attribution.
 
 ## Release mapping
 
@@ -59,7 +61,7 @@ triggers the release workflow. The commit message does not publish on its own. S
 
 ## Further reading
 
-- [REFERENCE.md](REFERENCE.md): the message shape, footers, release mapping, and squashing notes.
+- [REFERENCE.md](./REFERENCE.md): the message shape, footers, release mapping, and squashing notes.
 
 ## Handoff
 

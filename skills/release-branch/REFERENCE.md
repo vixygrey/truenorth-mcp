@@ -35,7 +35,7 @@ gh pr create \
 
 ## Verify
 - [ ] All tests pass
-- [ ] Coverage gates meet the minimums in `.agent/config/rules.yml`
+- [ ] Observed coverage meets `advisory.quality_gates.coverage` in version 2 `.agent/config/rules.yml`
 - [ ] CONVENTIONS.md compliance verified
 - [ ] PR Title follows Conventional Commits (for automated release)
 

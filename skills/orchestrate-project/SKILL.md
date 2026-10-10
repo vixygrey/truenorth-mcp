@@ -26,8 +26,8 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
 2. **DESIGN** (3-6 hours): Research solutions. Deliverables: prior art in scope
    YAML and ADRs in `specs/adr/`.
 3. **PLAN** (2-4 hours): Build the planning artifacts in owner order:
-   `.agent/tasks/release-plan.yml`, each optional capsule `group.yml`, optional
-   `test-plan.md`, then task specifications and ledgers.
+   `.agent/tasks/release-plan.yml`, each selected capsule's `group.yml` work-item
+   manifest, optional `test-plan.md`, then task specifications and ledgers.
 4. **EXECUTE** (1-8 hours): Run `execute-group` for the active execution scope
    and update `.agent/tasks/execution-status.yml`.
 5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables:
@@ -44,7 +44,7 @@ Track progress via `.agent/tasks/state.yml` `project_cycle`:
 - `handoff.next_skill`: skill for the current phase
 - On resume, read `project_cycle.current_phase` and continue from there
 
-See [REFERENCE.md](REFERENCE.md) for detailed phase specifications and gate types.
+See [REFERENCE.md](./REFERENCE.md) for detailed phase specifications and gate types.
 
 ## How Orchestrate Works
 
@@ -68,7 +68,7 @@ See [REFERENCE.md](REFERENCE.md) for detailed phase specifications and gate type
 - **Fast-Track**: Skip negotiable gates. Use for hotfixes and minor improvements.
 - **Ad-Hoc**: Warnings only. Use for prototyping and spikes (non-production).
 
-See [REFERENCE.md](REFERENCE.md) for full mode behaviors.
+See [REFERENCE.md](./REFERENCE.md) for full mode behaviors.
 
 ## Verification
 

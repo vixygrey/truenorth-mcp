@@ -22,18 +22,20 @@ bump it implies.
 - **Outputs**: a proposed commit message, the release bump it would drive, and the optional
   native commit command.
 - **Modes**: default, or `--fix-type` (force `type=fix`).
-- **Hard gate**: the message must follow `type(scope): description`. No vague message. No
-  `Co-authored-by` footer; the human author owns the commit.
+- **Hard gate**: the message must follow `type(scope): description`. No vague message.
+  Attribution follows `CONVENTIONS.md`; an allowed standard `Co-authored-by:` trailer
+  does not change the human author's ownership.
 - **Handoff**: gate READY, next `release-branch`.
 
 ## release-branch
 
 Validate and integrate a finished Git branch through the configured workflow mode.
 
-- **What it does**: validates the Git route, runs final verification, reads coverage
-  thresholds from project configuration, applies the security and traceability gates,
-  integrates through `solo-git` or `team-pr`, verifies the landed change, and cleans up
-  only after approval.
+- **What it does**: validates the Git route, runs final verification, reads version 2
+  coverage policy from `advisory.quality_gates.coverage` in project configuration,
+  applies the security and traceability gates, integrates through `solo-git` or
+  `team-pr`, verifies the landed change, and cleans up only after approval.
+  Coverage policy is advisory to the runtime; release checks require real measurements.
 - **When to use it**: when a feature is ready to ship, or on "release", "merge", or
   "open a PR".
 - **Inputs**: the finished Git branch and `workflow_mode` from state.

@@ -8,15 +8,17 @@ kind: prose
 
 > **Spine position:** `scope-work`, then `slice-tasks`, then `plan-work`.
 
-Read `.agent/profile.yml` first. Under a grouped profile, create the selected
-group's manifest at `.agent/tasks/<capsule>/group.yml`. Under `kanban`, `generic`,
-or an ungrouped `issue-per-task` workflow, update task boundaries directly in
-`.agent/tasks/release-plan.yml` through `truenorth_record_task`.
+Read `.agent/profile.yml` first. Every selected scope has a work-item manifest
+named `group.yml`; the filename does not require a methodology group.
+For grouped work, use the indexed `.agent/tasks/<capsule>/group.yml`.
+For ungrouped work, use `.agent/tasks/<task-id>/group.yml` with one work item
+and no `group_id` or `group_kind`.
 
 ## Artifact contract
 
-- **Grouped write**: `.agent/tasks/<capsule>/group.yml`.
-- **Ungrouped write**: task records through `truenorth_record_task`.
+- **Manifest write**: `group.yml` in the selected capsule, including boundaries
+  and reserved specification and ledger filenames.
+- **Task registration**: call `truenorth_record_task` for each work item.
 - **Reads**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, and
   `.agent/tasks/planning-context.yml` when present.
 - **Never writes**: test plans, detailed work-item specifications, task ledgers,
@@ -24,6 +26,30 @@ or an ungrouped `issue-per-task` workflow, update task boundaries directly in
 
 For grouped work, the release index must already contain the selected `group_id`,
 matching `group_kind`, and capsule path.
+
+## Runtime-to-artifact mapping
+
+`truenorth_record_task` accepts `task_name`, `verify_command`, and optional
+`group_id` and `group_kind`. Do not send `task_id`, `capsule_dir`, `spec`, or
+`tasks`; those belong to the planning artifacts, not the tool arguments.
+
+For `issue-per-task`, use the actual issue number as the manifest's string
+`task_id`. Other profiles use a stable declared task id. An ungrouped id must
+be one safe path component, not `.` or `..`.
+Copy the exact registered `task_name` and `verify_command` into its manifest
+entry. Resolve the runtime record by that exact name and selected grouping,
+not by parsing a title or treating `group_id` as the work-item id.
+
+For grouped work, `plan-release` owns `groups[].capsule_dir`; resolve the unique
+entry matching the selected `group_id` and `group_kind`.
+For ungrouped work, the selected `task_id` fixes the capsule at
+`.agent/tasks/<task-id>/`; omit grouping in the tool call, manifest, and state.
+Reserve `<task-id>-spec.md` and `<task-id>-tasks.yml` in the manifest before
+`plan-work` runs. Store filenames relative to that capsule.
+
+`slice-tasks` owns missing boundaries, registrations, and reservations.
+A missing group index or capsule path returns to `plan-release`.
+Neither `plan-tests` nor `plan-work` may reconstruct either owner's artifact.
 
 ## Process
 
@@ -33,8 +59,12 @@ matching `group_kind`, and capsule path.
    decomposition.
 4. Estimate BCP only when project policy or the user explicitly selects BCP.
    Otherwise omit it.
-5. Reserve detailed specification and task filenames without creating them.
-6. Reject horizontal-only layers and a work item that depends on a later item
+5. Register each work item through `truenorth_record_task` using only supported
+   arguments. If one exact matching record already exists, reuse it; duplicate
+   or conflicting matches block planning.
+6. Write the manifest with exact runtime names and commands, stable task ids,
+   and reserved specification and ledger filenames. Do not create those files.
+7. Reject horizontal-only layers and a work item that depends on a later item
    before it provides value.
 
 Grouped example:
@@ -48,16 +78,24 @@ work_items:
   - task_id: login
     title: Login
     status: todo
+    task_name: Add login behavior
+    verify_command: npm test -- login
     delta: ADDED
-    spec: login.md
-    tasks: login-tasks.yaml
+    spec: login-spec.md
+    tasks: login-tasks.yml
   - task_id: token-management
     title: Token management
     status: todo
+    task_name: Add token management
+    verify_command: npm test -- token-management
     delta: ADDED
-    spec: token-management.md
-    tasks: token-management-tasks.yaml
+    spec: token-management-spec.md
+    tasks: token-management-tasks.yml
 ```
+
+For ungrouped work, the same `work_items` entry is stored in
+`.agent/tasks/<task-id>/group.yml`, without the example's group fields.
+`active_task` selects that task id; it does not select a title.
 
 An `epic-based` project can call `work_items` stories in prose and preserve an
 existing `stories` key. Shared tooling must consume both as selected project
@@ -74,10 +112,12 @@ conventions, not assume stories universally.
 
 ## Verify
 
-For grouped work, confirm `group.yml` exists, uses the profile-derived grouping,
-contains unique work-item ids, and references the release-plan group. For
-ungrouped work, confirm each task was recorded through `truenorth_record_task`.
-Confirm no detailed specification, task ledger, or execution status changed.
+Confirm the selected manifest exists, each entry resolves to one exact runtime
+task record, and all ids, commands, and reserved filenames agree.
+For grouped work, confirm the index supplies the matching group kind and capsule.
+For ungrouped work, confirm the capsule follows the task-id path and no grouping
+was introduced. Confirm no detailed specification, task ledger, or execution
+status changed.
 
 ## Handoff
 
