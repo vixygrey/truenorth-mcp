@@ -4,7 +4,7 @@
   "clients": [
     {
       "name": "MCP Inspector CLI",
-      "version": "2.9.0",
+      "version": "2.10.1",
       "status": "certified",
       "evidence": "mcp-inspector.json"
     },

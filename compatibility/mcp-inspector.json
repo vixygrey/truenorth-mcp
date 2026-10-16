@@ -3,7 +3,7 @@
   "generated_on": "2026-10-16",
   "client": {
     "name": "MCP Inspector CLI",
-    "version": "2.9.0"
+    "version": "2.10.1"
   },
   "server": {
     "name": "truenorth-mcp",
