@@ -9,6 +9,8 @@
   "timeout_ms": 90000,
   "grader_timeout_ms": 10000,
   "declared_mutations": [
+    "old-package/bundle/current.json",
+    "new-package/bundle/current.json",
     "project/.agent/workspace-manifest.yml",
     "project/skills/using-truenorth/SKILL.md",
     "project/specs/contract.md"

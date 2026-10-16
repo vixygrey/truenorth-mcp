@@ -463,16 +463,18 @@ struct FeaturesReport {
     status: Status,
     ontology: Option<bool>,
     jev: Option<bool>,
+    senior_developer: Option<bool>,
     error: Option<ErrorReport>,
     reason: Option<&'static str>,
 }
 
 impl FeaturesReport {
-    fn ok(ontology: bool, jev: bool) -> Self {
+    fn ok(ontology: bool, jev: bool, senior_developer: bool) -> Self {
         Self {
             status: Status::Ok,
             ontology: Some(ontology),
             jev: Some(jev),
+            senior_developer: Some(senior_developer),
             error: None,
             reason: None,
         }
@@ -483,6 +485,7 @@ impl FeaturesReport {
             status: Status::Error,
             ontology: None,
             jev: None,
+            senior_developer: None,
             error: Some(ErrorReport::new(
                 message,
                 "Fix the named .agent/config/rules.yml file.",
@@ -496,6 +499,7 @@ impl FeaturesReport {
             status: Status::Skipped,
             ontology: None,
             jev: None,
+            senior_developer: None,
             error: None,
             reason: Some(reason),
         }
@@ -504,7 +508,9 @@ impl FeaturesReport {
 
 fn features_report(root: &std::path::Path) -> FeaturesReport {
     match features::resolve(root) {
-        Ok(features) => FeaturesReport::ok(features.ontology, features.jev),
+        Ok(features) => {
+            FeaturesReport::ok(features.ontology, features.jev, features.senior_developer)
+        }
         Err(error) => FeaturesReport::error(error.to_string()),
     }
 }

@@ -12,9 +12,13 @@ function grade({ evidence }) {
   const apply = cli.find((event) => event.args[0] === 'upgrade' && !event.args.includes('--check'));
   const config = cli.find((event) => event.args[0] === '--check-config');
   const plan = check ? JSON.parse(check.result.stdout) : null;
+  const recheck = cli.find(
+    (event) =>
+      event.args[0] === 'upgrade' && event.args.includes('--check') && event.index > apply?.index,
+  );
+  const updatedPlan = recheck ? JSON.parse(recheck.result.stdout) : null;
   const local = fs.readFileSync(path.join(project, 'skills/using-truenorth/SKILL.md'), 'utf8');
   const stable = fs.readFileSync(path.join(project, 'skills/stable-skill/SKILL.md'), 'utf8');
-  const manifest = fs.readFileSync(path.join(project, '.agent/workspace-manifest.yml'), 'utf8');
   const spec = fs.readFileSync(path.join(project, 'specs/contract.md'), 'utf8');
   const conflict = plan?.actions?.find((entry) => entry.path === 'skills/using-truenorth/SKILL.md');
   return [
@@ -40,8 +44,9 @@ function grade({ evidence }) {
     ),
     result(
       'upgrade-manifest-advanced',
-      manifest.includes('bundle_version: 1.0.5') &&
-        manifest.includes(conflict ? conflict.path : 'missing'),
+      updatedPlan?.from_bundle_version === plan?.to_bundle_version &&
+        updatedPlan?.to_bundle_version === plan?.to_bundle_version &&
+        plan?.from_bundle_version !== plan?.to_bundle_version,
       'workspace manifest advances the target bundle baseline',
     ),
     result(

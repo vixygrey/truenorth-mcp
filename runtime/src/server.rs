@@ -28,6 +28,10 @@ use crate::engine::mutation::MutationCoordinator;
 use crate::resources::{ResourceCache, ResourceReadError, served_from_uri, served_resources};
 use crate::tools::mutation_error::mutation_error;
 
+const SERVER_INTRODUCTION: &str =
+    "TrueNorth-MCP: spec-driven engineering discipline as active MCP tools and resources.";
+const SENIOR_DEVELOPER_BASELINE: &str = include_str!("../../skills/senior-developer/SKILL.md");
+
 /// The shared context: repository root, resource cache, feature flags, token caps,
 /// mutation coordinator, and the last-good layout contract.
 #[derive(Debug, Default)]
@@ -207,10 +211,22 @@ impl TrueNorthServer {
     }
 
     /// The server config reported at the MCP `initialize` handshake.
-    pub fn server_info() -> ServerConfig {
+    pub fn server_info(&self) -> ServerConfig {
         let mut implementation = Implementation::from_build_env();
         implementation.name = env!("CARGO_PKG_NAME").to_string();
         implementation.version = env!("CARGO_PKG_VERSION").to_string();
+
+        let instructions = if self.ctx.features.senior_developer {
+            let mut instructions = String::with_capacity(
+                SERVER_INTRODUCTION.len() + 2 + SENIOR_DEVELOPER_BASELINE.len(),
+            );
+            instructions.push_str(SERVER_INTRODUCTION);
+            instructions.push_str("\n\n");
+            instructions.push_str(SENIOR_DEVELOPER_BASELINE);
+            instructions
+        } else {
+            SERVER_INTRODUCTION.to_string()
+        };
 
         ServerConfig::new(
             ServerCapabilities::builder()
@@ -220,11 +236,7 @@ impl TrueNorthServer {
         )
         .with_server_info(implementation)
         .with_protocol_version(ProtocolVersion::LATEST)
-        .with_instructions(
-            "TrueNorth-MCP: spec-driven engineering discipline as active MCP tools \
-                 and resources."
-                .to_string(),
-        )
+        .with_instructions(instructions)
     }
 }
 
@@ -244,7 +256,7 @@ impl TrueNorthServer {
 #[rmcp::tool_handler(router = self.tool_router)]
 impl ServerHandler for TrueNorthServer {
     fn get_info(&self) -> ServerConfig {
-        Self::server_info()
+        self.server_info()
     }
 
     /// List the five served resources: the cockpit set and the read-only ADR resource

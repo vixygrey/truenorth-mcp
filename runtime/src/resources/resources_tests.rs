@@ -278,10 +278,12 @@ fn one_broken_resource_does_not_block_others() {
 const ENABLED: Features = Features {
     ontology: true,
     jev: false,
+    senior_developer: true,
 };
 const DISABLED: Features = Features {
     ontology: false,
     jev: false,
+    senior_developer: true,
 };
 
 #[test]

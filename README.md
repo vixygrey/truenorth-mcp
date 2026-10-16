@@ -32,11 +32,11 @@ rewritten files.
 
 ## What it is
 
-truenorth-mcp is a Model Context Protocol server. It delivers engineering discipline
-through typed MCP tools and resources, not through a large instruction file dumped
-into a context window. An agent connects over stdio, calls a tool to advance a
-lifecycle phase, verify a gate, or check an ontology, and reads the project cockpit
-through a resource.
+truenorth-mcp is a Model Context Protocol server. It delivers a concise Senior
+Developer baseline in initialization instructions and exposes detailed engineering
+discipline through typed MCP tools and resources. An agent connects over stdio,
+calls a tool to advance a lifecycle phase, verify a gate, or check an ontology,
+and reads the project cockpit through a resource.
 
 ## Why
 
@@ -103,7 +103,10 @@ versioned skill bundle, and creates the language-agnostic TrueNorth workspace:
 npx -y truenorth-mcp init --profile generic
 ```
 
-New workspaces install the `core` set by default. Inspect the catalog or add optional sets:
+New workspaces install the `core` set by default, including the explicitly
+retrievable `senior-developer` skill. The same canonical baseline is also delivered
+automatically in MCP initialization instructions unless the repository opts out.
+Inspect the catalog or add optional sets:
 
 ```bash
 npx -y truenorth-mcp skills list
@@ -198,8 +201,9 @@ enforce schema compliance and reject unknown or deprecated configuration keys.
 Set `runtime.token_caps.skill_lean_tokens` and `runtime.token_caps.tool_payload_tokens` in
 `.agent/config/rules.yml` (version 2 schema). Legacy top-level `token_caps` is supported for backward compatibility.
 Both values must be positive integers. Token counts are estimated as
-`ceil(characters / 4)`. The Lean cap is a rendering target: a single long line
-may be retained whole rather than cut mid-line. The payload cap applies to
+`ceil(characters / 4)`. The Lean cap is a rendering target: whole lines are not
+cut, and protected invariant or acceptance-criterion lines are always retained,
+so load-bearing content can exceed the target. The payload cap applies to
 the text of every successful MCP tool response; oversized responses fail
 without truncation. If `get_skill` exceeds the payload cap, request `tier: "lean"`
 or raise the configured cap. This does not prevent a client from following
@@ -297,6 +301,26 @@ Catalog tools serve the skill library:
 
 A resource reflects the current on-disk content. A disk edit emits a
 `notifications/resources/updated` for the affected resource.
+
+## Senior Developer baseline
+
+The server includes the canonical `senior-developer` skill in initialization
+instructions by default, including for repositories that do not yet have a local
+skill copy. A user can opt out for one conversation without modifying files. To
+disable automatic delivery for a repository, explicitly authorize setting this in
+`.agent/config/rules.yml`, then reconnect the MCP client:
+
+```yaml
+features:
+  senior_developer: false
+```
+
+An absent file, `features` block, or key means enabled. Set the key to `true` and
+reconnect to enable delivery again. Invalid typed configuration remains an error.
+The setting controls automatic delivery only. Catalog listing and explicit skill
+retrieval remain available. Independent project requirements and runtime safeguards
+still apply. The server supplies instructions but cannot guarantee client exposure
+or model compliance.
 
 ## The ontology feature
 

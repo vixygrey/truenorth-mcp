@@ -19,7 +19,7 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
   const paths = manifest.files.map((entry) => entry.path);
   assert.deepStrictEqual(paths, [...paths].sort());
   assert.strictEqual(new Set(paths).size, paths.length);
-  assert.ok(paths.includes('skills/using-truenorth/SKILL.md'));
+  assert.ok(paths.includes('skills/senior-developer/SKILL.md'));
   assert.ok(paths.every((entry) => !entry.endsWith('.DS_Store')));
   assert.ok(manifest.files.every((entry) => /^[a-f0-9]{64}$/.test(entry.sha256)));
   assert.ok(manifest.files.every((entry) => entry.mode === '0644' || entry.mode === '0755'));
@@ -30,12 +30,18 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
     ['core', 'integrations', 'maintainer', 'visual'],
   );
   const coreSkills = manifest.skill_sets.find((set) => set.name === 'core').skills;
-  assert.strictEqual(coreSkills.length, 63);
-  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 69);
+  assert.strictEqual(coreSkills.length, 64);
+  assert.strictEqual(manifest.skill_sets.flatMap((set) => set.skills).length, 70);
+  assert.ok(coreSkills.includes('senior-developer'));
   assert.ok(coreSkills.includes('execute-group'));
   assert.ok(!coreSkills.includes('build-group'));
   assert.ok(!coreSkills.includes('execute-plan'));
   assert.ok(!coreSkills.includes('run-planning'));
+});
+
+test('current bundle supports the previous release for managed upgrades', () => {
+  const manifest = buildManifest(root);
+  assert.ok(manifest.supported_from.includes('1.0.5'));
 });
 
 test('planning artifacts have one canonical writer and path', () => {

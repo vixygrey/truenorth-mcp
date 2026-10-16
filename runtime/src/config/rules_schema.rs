@@ -220,7 +220,7 @@ fn validate_features_block(
         for (k, v) in map {
             if let Some(k_str) = k.as_str() {
                 match k_str {
-                    "ontology" | "jev" => {
+                    "ontology" | "jev" | "senior_developer" => {
                         if !v.is_bool() {
                             errors.push(format!(
                                 "`features.{k_str}` must be a boolean (true or false)"
@@ -228,10 +228,10 @@ fn validate_features_block(
                         }
                     }
                     unknown => {
-                        let sug = if unknown == "ontolgy" {
-                            Some("ontology")
-                        } else {
-                            None
+                        let sug = match unknown {
+                            "ontolgy" => Some("ontology"),
+                            "senior-developr" | "senior_developr" => Some("senior_developer"),
+                            _ => None,
                         };
                         let msg = if let Some(s) = sug {
                             format!(

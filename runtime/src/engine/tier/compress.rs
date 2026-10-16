@@ -3,8 +3,8 @@
 //!
 //! `compress_for_local_context` runs over the reasoning-tier output. It drops the bodies
 //! of low-value sections, converts headings to imperative bullets, dedupes repeated
-//! directives, and truncates to the lean token budget, while keeping every line that
-//! encodes an invariant or an acceptance criterion (Requirement 6.8, Property 4).
+//! directives, and applies the lean token budget to ordinary content while retaining
+//! every line that encodes an invariant or an acceptance criterion (Requirement 6.8).
 //!
 //! The shared helpers `encodes_invariant_or_ac`, `heading_level`, and
 //! `collapse_blank_runs` live in the parent `tier` module, because both the reasoning
@@ -24,9 +24,10 @@ pub fn compress_for_local_context(md: &str, budget: usize) -> String {
     let without_prose = drop_low_value_sections(md);
     let compact = compact_tables(&without_prose);
     let plain = strip_decoration(&compact);
-    let bulleted = headings_to_bullets(&plain);
-    let deduped = dedupe_directives(&bulleted);
-    truncate_to_budget(&deduped, budget)
+    // Preserve heading markers until invariant-aware filtering finishes.
+    let deduped = dedupe_directives(&plain);
+    let truncated = truncate_to_budget(&deduped, budget);
+    headings_to_bullets(&truncated)
 }
 
 /// Strip decorative formatting from lean markdown (#62).
@@ -190,25 +191,24 @@ fn dedupe_directives(md: &str) -> String {
     collapse_blank_runs(&out.join("\n"))
 }
 
-/// Truncate text to at most `budget` estimated tokens (lean tier, #83).
+/// Truncate ordinary text to an estimated-token budget while retaining every invariant.
 ///
-/// The truncation keeps whole lines. It stops adding a line once the running text would
-/// exceed the budget under [`estimate_tokens`], the single measurement unit the lean tier
-/// and its tests share. A single line longer than the budget is kept whole, so a
-/// load-bearing directive is never cut mid-line.
+/// Whole lines are kept. Ordinary lines that no longer fit are omitted, but later
+/// invariant and acceptance-criterion lines still survive. The result may exceed the
+/// requested budget when the load-bearing lines alone exceed it; preserving rules takes
+/// precedence over compression.
 fn truncate_to_budget(md: &str, budget: usize) -> String {
     let mut out: Vec<&str> = Vec::new();
-    // The running character count of the joined output. Estimating tokens from this once
-    // per candidate matches `estimate_tokens` over the final joined text, rather than
-    // summing per-line estimates, which would drift by a line through rounding.
     let mut chars = 0usize;
 
-    for (index, line) in md.lines().enumerate() {
-        // Account for the newline that rejoins this line to the previous one.
-        let separator = usize::from(index > 0);
+    for line in md.lines() {
+        let separator = usize::from(!out.is_empty());
         let candidate_chars = chars + line.chars().count() + separator;
-        if super::estimate_tokens_from_chars(candidate_chars) > budget && !out.is_empty() {
-            break;
+        if super::estimate_tokens_from_chars(candidate_chars) > budget
+            && !out.is_empty()
+            && !encodes_invariant_or_ac(line)
+        {
+            continue;
         }
         chars = candidate_chars;
         out.push(line);

@@ -17,7 +17,10 @@ From an empty project directory, run:
 npx -y truenorth-mcp init --profile generic
 ```
 
-`core` is always installed. List the catalog and select independent optional sets with:
+`core` is always installed, including the explicitly retrievable
+`senior-developer` skill. Its canonical baseline is also delivered automatically
+in MCP initialization instructions unless the repository opts out. List the
+catalog and select independent optional sets with:
 
 ```bash
 npx -y truenorth-mcp skills list
@@ -72,6 +75,16 @@ Register the wrapper as a stdio MCP server:
 The server reads and writes the governed project's `.agent/` workspace. Bootstrap before
 connecting, then configure the project's own `TRUENORTH_VERIFY_CMD` in the MCP client
 environment before using lifecycle, task, and quality-gate tools.
+
+By default, initialization instructions include the Senior Developer baseline.
+A conversation opt-out lasts only for that conversation. Persist a repository
+opt-out only with explicit user authorization. Set `features.senior_developer: false`
+in `.agent/config/rules.yml` and reconnect to disable automatic delivery.
+Set the field to `true` and reconnect to enable delivery again.
+Missing configuration defaults to enabled. Invalid typed configuration remains
+an error. Catalog listing and explicit retrieval remain available.
+Independent project requirements and runtime safeguards still apply. The server
+cannot guarantee client exposure or model compliance.
 
 ## Supported environments
 
