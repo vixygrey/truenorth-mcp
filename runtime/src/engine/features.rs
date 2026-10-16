@@ -1,18 +1,14 @@
 //! Per-project feature flags and token caps, as data and their resolution.
 //!
-//! A feature flag turns a runtime capability on or off for one project. The ontology
-//! feature is the first flag: it gates the ontology tools, the ontology resource, and the
-//! ontology backing file. The flags are read from `.agent/config/rules.yml` under a
-//! `features` block. The default is enabled, so a project with no config, no `config/`
-//! directory, and no `.agent/` directory all resolve to an enabled ontology feature.
+//! Feature flags gate runtime capabilities or automatic instruction delivery per project.
+//! They are read from `.agent/config/rules.yml` under a `features` block. Ontology and
+//! Senior Developer delivery default on; the optional Jev integration defaults off.
 //!
 //! `resolve` reads the flags once at startup. An absent `.agent/`, an absent
-//! `.agent/config/`, or an absent `rules.yml` resolve to the default (Requirement 1.3). A
-//! present file with no `features` block or no `ontology` key resolves the flag to enabled
-//! (Requirement 1.4). A present file that cannot be read or parsed returns a typed error
-//! with no partial value (Requirement 1.7, 1.8). The reader never consults the `.agent/`
-//! layout contract, so a project with no layout contract still resolves the flag
-//! (Requirement 1.10).
+//! `.agent/config/`, or an absent `rules.yml` resolves every flag to its documented
+//! default. Missing blocks and keys do the same. A present file that cannot be read or
+//! parsed returns a typed error with no partial value. The reader never consults the
+//! `.agent/` layout contract, so a project with no layout contract still resolves flags.
 //!
 //! The feature reader deserializes only `features`; the token-cap reader deserializes only
 //! `token_caps`. Other `rules.yml` keys remain compatible. Both blocks use typed structs,
@@ -41,15 +37,18 @@ pub struct Features {
     /// 1). Unlike `ontology`, the default is off: Jev is an optional network dependency on
     /// an external service, so a project must opt in (jev-integration-eval ADR-J1).
     pub jev: bool,
+    /// Whether the Senior Developer baseline is delivered during MCP initialization.
+    pub senior_developer: bool,
 }
 
 impl Default for Features {
-    /// The default resolution: the ontology feature is enabled (Requirement 1.3, 1.4) and
-    /// the Jev feature is off (jev-integration-eval Requirement 1.2, 1.3).
+    /// The default resolution enables ontology and Senior Developer instruction delivery,
+    /// while the optional Jev integration remains off.
     fn default() -> Self {
         Self {
             ontology: true,
             jev: false,
+            senior_developer: true,
         }
     }
 }
@@ -162,15 +161,18 @@ struct FeaturesBlock {
     /// applies (jev-integration-eval Requirement 1.2).
     #[serde(default)]
     jev: bool,
+    /// Senior Developer instruction delivery. An absent key resolves to enabled.
+    #[serde(default = "default_true")]
+    senior_developer: bool,
 }
 
 impl Default for FeaturesBlock {
-    /// An absent `features` block resolves the ontology feature to enabled (Requirement
-    /// 1.4) and the Jev feature to off (jev-integration-eval Requirement 1.3).
+    /// An absent `features` block preserves each feature's documented default.
     fn default() -> Self {
         Self {
             ontology: true,
             jev: false,
+            senior_developer: true,
         }
     }
 }
@@ -219,6 +221,7 @@ pub fn resolve(repo_root: &Path) -> Result<Features, FeaturesError> {
     Ok(Features {
         ontology: view.features.ontology,
         jev: view.features.jev,
+        senior_developer: view.features.senior_developer,
     })
 }
 

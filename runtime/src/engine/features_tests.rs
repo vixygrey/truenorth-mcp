@@ -38,7 +38,8 @@ fn absent_agent_dir_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -53,7 +54,8 @@ fn absent_config_dir_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -68,7 +70,8 @@ fn absent_rules_file_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -83,7 +86,8 @@ fn no_features_block_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -96,7 +100,8 @@ fn features_block_without_ontology_key_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -109,7 +114,8 @@ fn ontology_true_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -122,9 +128,36 @@ fn ontology_false_resolves_disabled() {
         resolved,
         Features {
             ontology: false,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
+}
+
+#[test]
+fn senior_developer_true_and_false_resolve_explicitly() {
+    let enabled = seed_rules("features:\n  senior_developer: true\n");
+    assert!(
+        resolve(enabled.path())
+            .expect("true resolves")
+            .senior_developer
+    );
+
+    let disabled = seed_rules("features:\n  senior_developer: false\n");
+    assert!(
+        !resolve(disabled.path())
+            .expect("false resolves")
+            .senior_developer
+    );
+}
+
+#[test]
+fn senior_developer_invalid_type_returns_parse_error() {
+    let repo = seed_rules("features:\n  senior_developer: disabled\n");
+    assert!(matches!(
+        resolve(repo.path()),
+        Err(FeaturesError::Parse { .. })
+    ));
 }
 
 // ── Tolerance and errors ───────────────────────────────────────────────────────────────
@@ -138,7 +171,8 @@ fn unrelated_key_alongside_ontology_still_resolves_and_is_left_on_disk() {
         resolved,
         Features {
             ontology: false,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
     // The reader never writes, so the file is byte-for-byte unchanged (Requirement 1.9).
@@ -185,7 +219,8 @@ fn resolve_needs_no_layout_contract() {
         resolved,
         Features {
             ontology: false,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -196,7 +231,8 @@ fn default_features_are_enabled() {
         Features::default(),
         Features {
             ontology: true,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }
@@ -251,7 +287,8 @@ fn ontology_and_jev_resolve_independently() {
         resolved,
         Features {
             ontology: false,
-            jev: true
+            jev: true,
+            senior_developer: true,
         }
     );
 }
@@ -289,7 +326,8 @@ fn token_caps_reject_zero_and_preserve_unrelated_keys() {
         resolve(repo.path()).expect("features still resolve"),
         Features {
             ontology: false,
-            jev: false
+            jev: false,
+            senior_developer: true,
         }
     );
 }

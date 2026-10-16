@@ -198,6 +198,29 @@ features:
 }
 
 #[test]
+fn senior_developer_is_recognized_and_strictly_typed() {
+    let valid = RulesConfigInspection::inspect_yaml("features:\n  senior_developer: false\n", true);
+    assert!(valid.errors.is_empty());
+    assert!(valid.warnings.is_empty());
+
+    let invalid = RulesConfigInspection::inspect_yaml(
+        "features:\n  senior_developer: disabled\n  senior_developr: true\n",
+        true,
+    );
+    assert!(
+        invalid
+            .errors
+            .contains(&"`features.senior_developer` must be a boolean (true or false)".to_string())
+    );
+    assert!(
+        invalid.errors.contains(
+            &"unknown key `features.senior_developr`; did you mean `features.senior_developer`?"
+                .to_string()
+        )
+    );
+}
+
+#[test]
 fn non_string_nested_yaml_keys_do_not_become_configuration_names() {
     let inspected = RulesConfigInspection::inspect_yaml(
         r#"

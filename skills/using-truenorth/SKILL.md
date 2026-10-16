@@ -11,6 +11,17 @@ kind: prose
 Welcome. This is a lifecycle of agent skills for production-ready, TDD-driven
 software. Find the live catalog with the `search_skills` and `index_skills` tools.
 
+The `senior-developer` baseline arrives in MCP initialization instructions and
+applies throughout repository work by default. A user can opt out for one
+conversation without changing files. Persist a repository opt-out only with
+explicit user authorization. Set `features.senior_developer: false` in
+`.agent/config/rules.yml`, then reconnect the MCP client.
+Set the field to `true` and reconnect to re-enable delivery.
+The setting controls automatic delivery only. Catalog listing and explicit
+`get_skill` retrieval remain available. Independent project requirements and
+runtime safeguards still apply. The server supplies instructions but cannot
+guarantee client exposure or model compliance.
+
 ## Install
 
 Install the npm wrapper for the project, which resolves the platform binary and

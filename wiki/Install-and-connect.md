@@ -99,9 +99,9 @@ on a shared network filesystem to coordinate writers; that mutation model is uns
 
 ## Confirm the handshake
 
-On `initialize`, the server reports its identity. A correct handshake returns the server
-name `truenorth-mcp`, the version, the protocol version, and the `resources` and `tools`
-capabilities.
+On `initialize`, the server reports its identity and capabilities. By default,
+its instructions also contain the canonical Senior Developer baseline, even when
+the target repository has no local copy of that skill.
 
 To confirm by hand, send one `initialize` request over stdio:
 
@@ -110,6 +110,25 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 ```
 
 The result names `truenorth-mcp` and lists the two capabilities.
+
+### Senior Developer baseline
+
+The baseline applies by default. A user can opt out for one conversation without
+changing repository files. To persist a repository opt-out, the user must
+explicitly authorize this change to `.agent/config/rules.yml`:
+
+```yaml
+features:
+  senior_developer: false
+```
+
+Restart or reconnect the MCP client after changing the setting. Instructions
+already delivered to a client are not replaced live. An absent file, `features`
+block, or key means enabled, and `true` enables delivery again. Invalid typed
+configuration is reported as an error. The setting controls only automatic
+delivery. Catalog listing and explicit `get_skill` retrieval remain available.
+Separate project requirements and runtime safeguards still apply. The server
+delivers instructions but cannot guarantee client exposure or model compliance.
 
 ## Diagnose setup
 

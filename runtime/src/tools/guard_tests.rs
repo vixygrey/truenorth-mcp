@@ -20,6 +20,7 @@ fn server_with_jev(root: &std::path::Path) -> TrueNorthServer {
     let features = crate::engine::features::Features {
         ontology: false,
         jev: true,
+        senior_developer: true,
     };
     TrueNorthServer {
         ctx: Arc::new(crate::server::ServerContext::with_features(

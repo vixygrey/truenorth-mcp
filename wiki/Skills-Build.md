@@ -121,6 +121,18 @@ Set up pre-commit hooks for Node.js projects with Husky, lint-staged (Prettier),
 
 ## Project setup and production readiness
 
+### senior-developer
+
+The default engineering judgment and working baseline for repository work.
+
+- **What it does**: supplies the canonical principles, safeguards, and working process.
+  MCP initialization delivers the complete baseline automatically unless the user opts out.
+- **When to use it**: throughout repository work, or explicitly through `get_skill` when
+  automatic delivery is disabled.
+- **Scope**: opt-out controls automatic delivery only. Independent project requirements
+  and runtime safeguards remain active, and instruction delivery does not guarantee model
+  compliance.
+
 ### setup-environment
 
 Pre-install dependencies and configure tools before development begins.

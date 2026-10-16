@@ -315,10 +315,14 @@ tasks:
   group_kind: ticket
   task_name: Prove compliant workflow and GitHub controls (#520)
   verify_command: npm run preflight && node scripts/run-methodology-evals.js --mode deterministic --check-baseline
+- group_id: '536'
+  group_kind: ticket
+  task_name: Add default-active Senior Developer baseline (#536)
+  verify_command: bash scripts/preflight.sh check && node scripts/build-bundle-manifest.js --check && node scripts/check-release-version.js 1.1.0
 groups:
-  - group_id: '515'
-    group_kind: ticket
-    title: TrueNorth methodology compliance remediation
-    capsule_dir: .agent/tasks/compliance-515
-    status: planning
-    external_link: https://github.com/vixygrey/truenorth-mcp/issues/515
+- group_id: '515'
+  group_kind: ticket
+  title: TrueNorth methodology compliance remediation
+  capsule_dir: .agent/tasks/compliance-515
+  status: planning
+  external_link: https://github.com/vixygrey/truenorth-mcp/issues/515

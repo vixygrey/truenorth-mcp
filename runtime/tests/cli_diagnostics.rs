@@ -112,6 +112,7 @@ fn complete_configuration_reports_ready_without_mutation() {
     assert_eq!(report["backlog"]["status"], "ok");
     assert_eq!(report["features"]["status"], "ok");
     assert_eq!(report["features"]["ontology"], false);
+    assert_eq!(report["features"]["senior_developer"], true);
     assert_eq!(report["token_caps"]["status"], "ok");
     assert_eq!(report["token_caps"]["skill_lean_tokens"], 1500);
     assert_eq!(report["token_caps"]["tool_payload_tokens"], 4000);
@@ -275,6 +276,7 @@ fn token_cap_overrides_are_reported_and_invalid_values_fail() {
     assert!(output.status.success());
     let report = parse_report(&output);
     assert_eq!(report["features"]["ontology"], false);
+    assert_eq!(report["features"]["senior_developer"], true);
     assert_eq!(report["token_caps"]["skill_lean_tokens"], 1200);
     assert_eq!(report["token_caps"]["tool_payload_tokens"], 3000);
     assert_eq!(report["rules_config"]["version"], 2);
@@ -295,6 +297,33 @@ fn token_cap_overrides_are_reported_and_invalid_values_fail() {
             .as_str()
             .expect("token cap error")
             .contains("runtime.token_caps.tool_payload_tokens")
+    );
+}
+
+#[test]
+fn senior_developer_flag_is_reported_and_invalid_values_fail() {
+    let repo = seed_complete_repo();
+    let rules = repo.path().join(".agent/config/rules.yml");
+
+    fs::write(&rules, "features:\n  senior_developer: false\n").expect("write opt-out");
+    let output = run(repo.path(), &["--check-config"], Some("true"));
+    let report = parse_report(&output);
+    assert!(output.status.success());
+    assert_eq!(report["features"]["senior_developer"], false);
+
+    fs::write(&rules, "features:\n  senior_developer: disabled\n").expect("write invalid flag");
+    let output = run(repo.path(), &["--check-config", "--strict"], Some("true"));
+    let report = parse_report(&output);
+    assert!(!output.status.success());
+    assert_eq!(report["features"]["status"], "error");
+    assert!(
+        report["rules_config"]["errors"]
+            .as_array()
+            .expect("rules errors")
+            .iter()
+            .any(|error| error
+                .as_str()
+                .is_some_and(|message| message.contains("features.senior_developer")))
     );
 }
 

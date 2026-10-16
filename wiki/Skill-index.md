@@ -1,7 +1,7 @@
 # Skill index
 
 Every skill, alphabetical, with a one-line purpose and its phase page. The runtime serves
-71 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
+72 skills. Open a phase page for the deep per-skill entry (what it does, when to use it,
 inputs, outputs, hard gates, and handoffs).
 
 For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
@@ -60,6 +60,7 @@ For the skill-to-skill flow, see [The skill workflow](The-skill-workflow).
 | `scope-work`          | Define what is in and out of scope (spine step 1)               | [Plan](Skills-Plan)         |
 | `security-review`     | Security analysis of code changes across files                  | [Verify](Skills-Verify)     |
 | `seed-conventions`    | Generate the agent guide and conventions for a new project      | [Plan](Skills-Plan)         |
+| `senior-developer`    | Apply the default engineering judgment and working baseline     | [Build](Skills-Build)       |
 | `session-state`       | Track decisions and progress to prevent context rot             | [Sustain](Skills-Sustain)   |
 | `setup-environment`   | Pre-install dependencies and configure tools                    | [Build](Skills-Build)       |
 | `simple-english`      | Write technical text with Simplified Technical English          | [Utility](Skills-Utility)   |

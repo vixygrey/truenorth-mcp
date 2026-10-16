@@ -50,3 +50,23 @@ fn strip_decoration_trims_trailing_whitespace() {
     assert!(!out.contains("spaces   "), "trailing space kept: {out:?}");
     assert!(out.contains("text with trailing spaces"));
 }
+
+#[test]
+fn truncation_keeps_rules_after_ordinary_text_exhausts_the_budget() {
+    let md = "# Rule set\nordinary text that consumes the budget\nmore ordinary text\n- MUST preserve this late rule.\n- NEVER drop this later safeguard.";
+    let out = truncate_to_budget(md, 4);
+
+    assert!(out.contains("MUST preserve this late rule"), "{out}");
+    assert!(out.contains("NEVER drop this later safeguard"), "{out}");
+    assert!(!out.contains("more ordinary text"), "{out}");
+}
+
+#[test]
+fn compression_keeps_late_headings_and_rules_after_budget_exhaustion() {
+    let md =
+        "# First\nordinary text that exceeds the budget\n## Last\n- MUST retain the safeguard.";
+    assert_eq!(
+        compress_for_local_context(md, 1),
+        "- First\n- Last\n- MUST retain the safeguard."
+    );
+}

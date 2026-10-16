@@ -27,8 +27,9 @@ overrides it for the one call.
   complete guidance, including rationale and examples.
 - `reasoning`: the directive content with the meta scaffolding stripped. Use it for a
   native reasoning model that does not need hand-held chain-of-thought.
-- `lean`: the directives compressed to a tight token budget. Use it for a local model with
-  a small context window.
+- `lean`: the directives compressed toward a tight token target. Whole protected invariant
+  and acceptance-criterion lines are retained even when they exceed that target. Use it for
+  a local model with a small context window.
 
 A tier transform never alters the directive content that encodes an invariant or an
 acceptance criterion. It strips or compresses only meta and guardrail scaffolding. `full`

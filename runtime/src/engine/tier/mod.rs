@@ -8,8 +8,8 @@
 //!   (Requirement 6.7).
 //! - `lean`: `compress_for_local_context` over the reasoning output, which additionally
 //!   drops rationale, background, and verbose-example section bodies, converts headings
-//!   to imperative bullets, dedupes directives, and truncates to the lean token budget,
-//!   while keeping every invariant or acceptance-criterion line (Requirement 6.8).
+//!   to imperative bullets, dedupes directives, and applies the lean token budget to
+//!   ordinary prose while retaining every invariant or acceptance-criterion line.
 //!
 //! The lean passes live in the `compress` submodule. The shared helpers
 //! `encodes_invariant_or_ac`, `heading_level`, and `collapse_blank_runs` stay here,
@@ -32,8 +32,8 @@ mod tables;
 
 pub use compress::compress_for_local_context;
 
-/// The lean token budget. The lean transform truncates its output to at most this many
-/// estimated tokens (design §4, #83). [`estimate_tokens`] defines the estimate.
+/// The lean token budget. The lean transform limits ordinary content to this estimate
+/// (design §4, #83); protected invariant lines may exceed it rather than being dropped.
 pub const TIER_LEAN_TOKEN_BUDGET: usize = 1500;
 
 /// The number of characters that approximate one model token (#83).
