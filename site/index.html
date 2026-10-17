@@ -6,7 +6,7 @@
     <title>TrueNorth-MCP: spec-driven engineering discipline for AI agents</title>
     <meta
       name="description"
-      content="TrueNorth-MCP is a protocol-first MCP execution runtime for spec-driven engineering discipline. Token-lean, model-agnostic, written in Rust."
+      content="TrueNorth-MCP is a local, protocol-first MCP runtime that makes engineering workflow state, verification, and safety boundaries observable."
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -15,102 +15,236 @@
 
     <header class="site-header">
       <nav class="site-nav" aria-label="Primary">
-        <span class="wordmark">TrueNorth-MCP</span>
+        <a class="wordmark" href="#main">TrueNorth-MCP</a>
         <ul class="nav-links">
-          <li><a href="https://github.com/vixygrey/truenorth-mcp">Source on GitHub</a></li>
+          <li><a href="#workflow">Workflow</a></li>
+          <li><a href="#capabilities">Capabilities</a></li>
+          <li><a href="#start">Get started</a></li>
           <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Home">Manual</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp">Source</a></li>
         </ul>
       </nav>
     </header>
 
     <main id="main">
       <section class="hero" aria-labelledby="hero-heading">
-        <h1 id="hero-heading">Spec-driven engineering discipline for AI agents.</h1>
+        <p class="eyebrow">Local MCP runtime for spec-driven engineering</p>
+        <h1 id="hero-heading">Make disciplined engineering observable.</h1>
         <p class="lede">
-          TrueNorth-MCP is a protocol-first Model Context Protocol runtime. It delivers
-          engineering discipline through typed tools and live resources, not a large instruction
-          file dumped into a context window. Protocol-first, token-lean, and model-agnostic.
+          TrueNorth-MCP is a protocol-first runtime for AI-assisted engineering. It keeps a
+          repository’s workflow state on disk, exposes it through typed MCP tools and live
+          resources, and verifies work from real command results instead of model claims.
         </p>
         <p class="credit">
-          Forked from
-          <a href="https://github.com/danielvm-git/bigpowers">bigpowers</a>
-          by danielvm-git. The skill set is the foundation this project builds on.
+          Forked from <a href="https://github.com/danielvm-git/bigpowers">bigpowers</a> by
+          danielvm-git. The inherited skill set is the foundation this project builds on; the
+          Rust runtime is a clean-room implementation.
         </p>
         <div class="cta-row">
-          <a class="button button-primary" href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect">
+          <a class="button button-primary" href="#start">Get started</a>
+          <a
+            class="button button-secondary"
+            href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect"
+          >
             Install and connect
-          </a>
-          <a class="button button-secondary" href="https://github.com/vixygrey/truenorth-mcp/wiki/Home">
-            Read the manual
           </a>
         </div>
       </section>
 
-      <section class="install" aria-labelledby="install-heading">
-        <h2 id="install-heading">Install</h2>
-        <p>Install the npm wrapper. It resolves the platform binary and runs the server over stdio.</p>
-        <div class="code-card">
-          <pre><code>npm install truenorth-mcp</code></pre>
+      <section aria-labelledby="model-heading">
+        <h2 id="model-heading">More than a prompt</h2>
+        <div class="model-grid">
+          <article class="model-card">
+            <h3>Runtime-enforced</h3>
+            <p>
+              Typed tools record lifecycle transitions and tasks, run bounded verification,
+              return operation receipts, and protect the machine-owned workspace with a writer
+              lease and guarded write path.
+            </p>
+          </article>
+          <article class="model-card">
+            <h3>Human-guided</h3>
+            <p>
+              Skills, specifications, architecture decisions, and review judgment help agents
+              choose sound work. They stay readable, model-agnostic guidance rather than a
+              claim that every recommendation is server-enforced.
+            </p>
+          </article>
         </div>
-        <p class="install-note">
-          Then connect it as an MCP server in your client. The
-          <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect">install and connect guide</a>
-          has the per-client steps.
+        <p class="section-note">
+          The runtime is a local MCP stdio server for one repository worktree. It is designed
+          for individuals and small teams, not a centralized policy service.
         </p>
       </section>
 
-      <section class="features" aria-labelledby="features-heading">
-        <h2 id="features-heading">What it does</h2>
+      <section id="workflow" aria-labelledby="workflow-heading">
+        <h2 id="workflow-heading">One loop, from context to integration</h2>
+        <p>
+          TrueNorth records the lifecycle so an agent can resume from current repository state,
+          not a remembered conversation. The full process is documented in the
+          <a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-lifecycle">lifecycle guide</a>.
+        </p>
+        <ol class="lifecycle-list">
+          <li>
+            <h3>Discover</h3>
+            <p>Read the live cockpit, current handoff, conventions, and repository context.</p>
+          </li>
+          <li>
+            <h3>Design</h3>
+            <p>Work from human-authored requirements and architecture decisions.</p>
+          </li>
+          <li>
+            <h3>Plan</h3>
+            <p>Record a task with a real command that will later verify the work.</p>
+          </li>
+          <li>
+            <h3>Execute</h3>
+            <p>Follow Red-Green-Refactor and preserve observable test evidence.</p>
+          </li>
+          <li>
+            <h3>Review</h3>
+            <p>A gate passes only when the server observed the configured command exit zero.</p>
+          </li>
+          <li>
+            <h3>Integrate</h3>
+            <p>Record the handoff, advance the phase, and begin the next engineering loop.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="surfaces-heading">
+        <h2 id="surfaces-heading">A small protocol surface with durable state</h2>
+        <div class="table-wrap" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Surface</th>
+                <th scope="col">What it provides</th>
+                <th scope="col">Canonical detail</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Typed tools</th>
+                <td>State changes, verification, validation, and bounded operation receipts.</td>
+                <td><a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-lifecycle">Lifecycle</a></td>
+              </tr>
+              <tr>
+                <th scope="row">Live resources</th>
+                <td><code>truenorth://</code> reads of the cockpit, conventions, ADRs, and optional ontology.</td>
+                <td><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Resources">Resources</a></td>
+              </tr>
+              <tr>
+                <th scope="row">Skill library</th>
+                <td>Full, reasoning, and lean guidance with declared handoffs and validation.</td>
+                <td><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Skills-and-tiers">Skills and tiers</a></td>
+              </tr>
+              <tr>
+                <th scope="row">Two-layer workspace</th>
+                <td><code>.agent/</code> holds machine state while <code>specs/</code> remains human-authored narrative.</td>
+                <td><a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-agent-workspace">Workspace</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="capabilities" aria-labelledby="capabilities-heading">
+        <h2 id="capabilities-heading">Capabilities that keep work grounded</h2>
         <ul class="feature-list">
           <li>
-            <h3>Active tools, not markdown blobs</h3>
+            <h3>Declared skill contracts</h3>
             <p>
-              Tools advance a lifecycle phase, record a task, and run a quality gate through a
-              bounded executor. The server observes the exit code, so a gate cannot be faked.
+              Skills carry structured scope, side-effect, risk, and handoff information so the
+              catalog and workflow can reason about their responsibilities.
             </p>
           </li>
           <li>
-            <h3>Live resources</h3>
+            <h3>Safe workspace lifecycle</h3>
             <p>
-              The project cockpit is served as <code>truenorth://</code> resources that reflect the
-              current on-disk state, with an update notification when a file changes.
+              Initialization is non-destructive. Managed upgrades plan, validate, and apply
+              owned changes transactionally while preserving local edits and <code>specs/</code>.
             </p>
           </li>
           <li>
-            <h3>Model and harness agnostic</h3>
+            <h3>One writer per worktree</h3>
             <p>
-              Skills render at a full, reasoning, or lean tier, so the same discipline drops into a
-              hosted model or a local weight, across Kiro, Cursor, Claude Code, Zed, and Neovim.
+              A writer lease serializes mutations. Parallel mutating work uses separate Git
+              worktrees and a separate MCP connection with its own <code>TRUENORTH_ROOT</code>.
             </p>
           </li>
           <li>
-            <h3>Two-layer workspace</h3>
+            <h3>Actionable gate failures</h3>
             <p>
-              The runtime writes only under <code>.agent/</code>, behind a single write guard. The
-              human-authored <code>specs/</code> layer stays read-only to the runtime.
+              Verification returns a bounded, redacted diagnostic excerpt. Truncated output is
+              explicit, so callers know when to rerun the configured command locally.
+            </p>
+          </li>
+          <li>
+            <h3>Optional ontology tooling</h3>
+            <p>
+              Projects can opt into a domain ontology resource and tools. It stays absent by
+              default and never blocks a standard adoption path.
+            </p>
+          </li>
+          <li>
+            <h3>Compatibility by discovery</h3>
+            <p>
+              Clients discover the available tools and resources, including feature-gated
+              surfaces, instead of assuming every project enables every capability.
             </p>
           </li>
         </ul>
       </section>
 
-      <section class="taste" aria-labelledby="taste-heading">
-        <h2 id="taste-heading">A taste of the loop</h2>
+      <section id="start" class="start" aria-labelledby="start-heading">
+        <h2 id="start-heading">Start with a governed workspace</h2>
         <p>
-          An agent connects over stdio, reads the cockpit, and drives the lifecycle from Discover to
-          Integrate. A gate passes only on a real exit 0.
+          Bootstrap from an empty project directory, then inspect the available skill sets before
+          connecting an MCP client.
         </p>
         <div class="code-card">
-          <pre><code>read  truenorth://state          # the active phase and handoff
-call  truenorth_record_task      # register a task with a verify command
-call  truenorth_verify_gate      # run the verify command through the bounded executor
-call  truenorth_advance_phase    # move the lifecycle forward</code></pre>
+          <pre><code>npx -y truenorth-mcp init --profile generic
+npx -y truenorth-mcp skills list</code></pre>
+        </div>
+        <p class="install-note">
+          Next, configure the wrapper as an MCP stdio server and set your project’s
+          <code>TRUENORTH_VERIFY_CMD</code>. The
+          <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect">install and connect guide</a>
+          has client configuration, platform support, and first-run details.
+        </p>
+      </section>
+
+      <section id="boundaries" aria-labelledby="boundaries-heading">
+        <h2 id="boundaries-heading">Clear boundaries</h2>
+        <div class="boundary-callout">
+          <p>TrueNorth-MCP is not:</p>
+          <ul>
+            <li>a centralized policy, authentication, or multi-user authorization service;</li>
+            <li>a hostile-command sandbox or a substitute for repository access controls;</li>
+            <li>a retained audit or compliance-record system; or</li>
+            <li>a coordinator for mutation over a shared network filesystem.</li>
+          </ul>
         </div>
         <p>
-          The <a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-lifecycle">lifecycle guide</a>
-          walks a full run, and
+          Git remains the durable collaboration and history boundary. See
+          <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Compatibility">compatibility</a>
+          and
           <a href="https://github.com/vixygrey/truenorth-mcp/wiki/Troubleshooting">troubleshooting</a>
-          covers repo-root resolution and a broken layout.
+          for supported operating and recovery paths.
         </p>
+      </section>
+
+      <section class="next-links" aria-labelledby="next-heading">
+        <h2 id="next-heading">Continue reading</h2>
+        <ul>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect">Install and connect</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-lifecycle">The lifecycle</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Resources">Resources</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Skill-index">Skill index</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/The-agent-workspace">The .agent workspace</a></li>
+          <li><a href="https://github.com/vixygrey/truenorth-mcp/wiki/Compatibility">Compatibility</a></li>
+        </ul>
       </section>
     </main>
 

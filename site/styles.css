@@ -253,6 +253,139 @@ section:last-of-type {
   color: var(--text-muted);
 }
 
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--cyan);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wordmark {
+  text-decoration: none;
+}
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.model-card,
+.boundary-callout {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  padding: 1.25rem 1.4rem;
+}
+
+.model-card h3 {
+  margin: 0 0 0.5rem;
+  color: var(--rose);
+}
+
+.model-card p,
+.section-note {
+  color: var(--text-muted);
+}
+
+.section-note {
+  margin: 1.25rem 0 0;
+}
+
+.lifecycle-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 0;
+  padding-left: 1.75rem;
+}
+
+.lifecycle-list li {
+  padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+}
+
+.lifecycle-list li::marker {
+  color: var(--lilac);
+  font-weight: 700;
+}
+
+.lifecycle-list h3 {
+  margin: 0 0 0.35rem;
+  color: var(--rose);
+  font-size: 1.1rem;
+}
+
+.lifecycle-list p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.table-wrap {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+}
+
+.table-wrap:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+table {
+  width: 100%;
+  min-width: 42rem;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+thead {
+  background-color: var(--surface-raised);
+}
+
+tbody tr:last-child th,
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody th {
+  color: var(--rose);
+  font-weight: 650;
+}
+
+.boundary-callout {
+  border-left: 3px solid var(--lilac);
+}
+
+.boundary-callout p {
+  margin: 0;
+  color: var(--rose);
+  font-weight: 700;
+}
+
+.boundary-callout ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+}
+
+.next-links ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 1.25rem 0 0;
+  padding-left: 1.25rem;
+}
+
 .taste code {
   color: var(--cyan);
   line-height: 1.5;
@@ -281,6 +414,17 @@ section:last-of-type {
 
   section {
     padding: 2rem 0;
+  }
+
+  .nav-links {
+    gap: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .model-grid,
+  .lifecycle-list,
+  .next-links ul {
+    grid-template-columns: 1fr;
   }
 }
 
