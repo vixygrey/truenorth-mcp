@@ -6,7 +6,7 @@ kind: prose
 
 # Change Request
 
-> **HARD GATE**: `.agent/tasks/release-plan.yml` must exist. Run `plan-release`
+> **HARD GATE**: `.agent/tasks/release-plan.json` must exist. Run `plan-release`
 > first when it does not.
 
 Capture and route a mid-release change without taking ownership of planning

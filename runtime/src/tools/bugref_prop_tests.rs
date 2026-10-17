@@ -26,14 +26,14 @@ fn repo_with_task() -> TempDir {
     fs::create_dir_all(plan.parent().unwrap()).expect("tasks dir");
     fs::write(
         &plan,
-        "tasks:\n- group_id: e80\n  task_name: A task\n  verify_command: cargo test\n",
+        r#"{"tasks": [{"group_id": "e80", "task_name": "A task", "verify_command": "cargo test"}]}"#,
     )
     .expect("seed plan");
     repo
 }
 
 fn bugs_path(repo: &TempDir) -> std::path::PathBuf {
-    repo.path().join(".agent").join("tasks").join("bugs.yml")
+    repo.path().join(".agent").join("tasks").join("bugs.json")
 }
 
 /// Map an index to a status, so the generator covers the whole enum.
@@ -94,11 +94,11 @@ proptest! {
         if expected_ok {
             // Tags round-trip on acceptance (Requirement 8.3).
             let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
-            let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse");
-            let entry = &doc.get("bugs").and_then(|v| v.as_sequence()).expect("bugs")[0];
+            let doc: serde_json::Value = serde_json::from_str(&text).expect("parse");
+            let entry = &doc.get("bugs").and_then(|v| v.as_array()).expect("bugs")[0];
             let stored: Vec<String> = entry
                 .get("tags")
-                .and_then(|v| v.as_sequence())
+                .and_then(|v| v.as_array())
                 .expect("tags")
                 .iter()
                 .filter_map(|v| v.as_str().map(str::to_string))
@@ -146,16 +146,16 @@ proptest! {
         .expect("update");
 
         let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
-        let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse");
-        let bugs = doc.get("bugs").and_then(serde_yaml::Value::as_sequence).expect("bugs");
+        let doc: serde_json::Value = serde_json::from_str(&text).expect("parse");
+        let bugs = doc.get("bugs").and_then(serde_json::Value::as_array).expect("bugs");
         prop_assert_eq!(bugs.len(), 1);
         prop_assert_eq!(
-            bugs[0].get("status").and_then(serde_yaml::Value::as_str),
+            bugs[0].get("status").and_then(serde_json::Value::as_str),
             Some(status_of(status_idx).as_str())
         );
         let stored: Vec<String> = bugs[0]
             .get("tags")
-            .and_then(serde_yaml::Value::as_sequence)
+            .and_then(serde_json::Value::as_array)
             .expect("tags")
             .iter()
             .filter_map(|value| value.as_str().map(str::to_string))

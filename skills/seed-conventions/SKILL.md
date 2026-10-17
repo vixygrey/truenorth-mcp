@@ -66,10 +66,10 @@ skill confirms the workspace and the agent guide.
 ```bash
 mkdir -p .agent/product/snapshots .agent/tasks .agent/config specs/adr
 touch .agent/product/scope.yml .agent/product/vision.yml .agent/product/glossary.yml
-touch .agent/tasks/release-plan.yml .agent/tasks/execution-status.yml .agent/tasks/state.yml
+touch .agent/tasks/release-plan.json .agent/tasks/execution-status.yml .agent/tasks/state.json
 ```
 
-`.agent/tasks/state.yml` carries a top-level `workflow_mode` (`team-pr` or `solo-git`,
+`.agent/tasks/state.json` carries a top-level `workflow_mode` (`team-pr` or `solo-git`,
 default `solo-git`). This is the canonical integrate-mode signal for every skill.
 Set it once here.
 

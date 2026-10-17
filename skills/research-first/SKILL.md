@@ -32,6 +32,6 @@ kind: prose
 
 ## Verify
 
-→ verify: `grep -rq 'Prior Art' .agent/product .agent/tasks/release-plan.yml 2>/dev/null`
+→ verify: `grep -rq 'Prior Art' .agent/product .agent/tasks/release-plan.json 2>/dev/null`
 
 See [REFERENCE.md](REFERENCE.md) for search commands and registry checklist.

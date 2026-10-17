@@ -1,6 +1,6 @@
 //! External-tracker bug reference tool: `truenorth_record_bug`.
 //!
-//! The tool inserts or updates a lean bug reference in `.agent/tasks/bugs.yml` through
+//! The tool inserts or updates a lean bug reference in `.agent/tasks/bugs.json` through
 //! the single write guard (Requirement 8.1). An existing id keeps its external link while
 //! its lifecycle fields can change. The external tracker is the source of truth: the
 //! runtime stores no bug narrative directory or tracker credential, makes no network
@@ -9,7 +9,7 @@
 //! Validation runs before any write (Requirements 8.6, 8.7): the id is 1 to 200 chars,
 //! the external link is an absolute URL, the status is one of the enum, and the linked
 //! reference resolves to an existing task or group id under `.agent/tasks/`. A missing or
-//! invalid field returns an error naming the offending field, and `.agent/tasks/bugs.yml`
+//! invalid field returns an error naming the offending field, and `.agent/tasks/bugs.json`
 //! stays in its pre-invocation state.
 //!
 //! Requirements: 8.1, 8.2, 8.3, 8.4, 8.6, 8.7. Design: agent-workspace-profiles §9.
@@ -21,7 +21,7 @@ use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
 use rmcp::model::{CallToolResult, ContentBlock};
 use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::{Deserialize, Serialize};
-use serde_yaml::Value;
+use serde_json::{Map, Value};
 
 use crate::engine::agent_ws::{ObservedFile, WritePrecondition, write_under_agent_if_unchanged};
 use crate::engine::cockpit::release_plan_path;
@@ -31,9 +31,9 @@ use crate::tools::receipt::{self, ChangedContent, OperationReceipt};
 
 /// The maximum length of a bug id (Requirement 8.6).
 const MAX_BUG_ID: usize = 200;
-/// The `bugs.yml` path relative to `.agent/`, for the write guard.
-const BUGS_REL_PATH: &str = "tasks/bugs.yml";
-const BUGS_REPO_PATH: &str = ".agent/tasks/bugs.yml";
+/// The `bugs.json` path relative to `.agent/`, for the write guard.
+const BUGS_REL_PATH: &str = "tasks/bugs.json";
+const BUGS_REPO_PATH: &str = ".agent/tasks/bugs.json";
 
 /// The bounded bug status enumeration (Requirement 8.6, design §9).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
@@ -52,7 +52,7 @@ pub enum BugStatus {
 }
 
 impl BugStatus {
-    /// The kebab-case label stored in `bugs.yml`.
+    /// The kebab-case label stored in `bugs.json`.
     fn as_str(self) -> &'static str {
         match self {
             BugStatus::Open => "open",
@@ -84,7 +84,7 @@ pub struct RecordBugArgs {
 impl TrueNorthServer {
     /// Record or update a lean bug reference backed by an external tracker.
     #[tool(
-        description = "Record or update a bug reference (id, external link, status, linked task or group, tags) in .agent/tasks/bugs.yml."
+        description = "Record or update a bug reference (id, external link, status, linked task or group, tags) in .agent/tasks/bugs.json."
     )]
     pub async fn truenorth_record_bug(
         &self,
@@ -128,10 +128,14 @@ impl TrueNorthServer {
         // external issue is rejected before the guarded write.
         let (mut doc, precondition) = self.read_bugs_for_write()?;
         upsert_bug(&mut doc, &args)?;
-        let yaml = serde_yaml::to_string(&doc).map_err(|e| {
+        let json = crate::engine::cockpit_json::to_string(
+            doc.as_object()
+                .expect("validated bug document is an object"),
+        )
+        .map_err(|e| {
             ErrorData::internal_error(format!("could not serialize the bug references: {e}"), None)
         })?;
-        let change = ChangedContent::new(BUGS_REPO_PATH, yaml.as_bytes()).map_err(receipt_error)?;
+        let change = ChangedContent::new(BUGS_REPO_PATH, json.as_bytes()).map_err(receipt_error)?;
         let receipt =
             OperationReceipt::new("truenorth_record_bug", &request_id, vec![change], None)
                 .map_err(receipt_error)?;
@@ -152,7 +156,7 @@ impl TrueNorthServer {
         write_under_agent_if_unchanged(
             &self.ctx.repo_root,
             Path::new(BUGS_REL_PATH),
-            &yaml,
+            &json,
             &precondition,
         )
         .map_err(write_error)?;
@@ -167,20 +171,14 @@ fn receipt_error(error: String) -> ErrorData {
 }
 
 impl TrueNorthServer {
-    /// Read the current `bugs.yml` document, or an empty document when it is absent.
+    /// Read the current `bugs.json` document, or an empty document when it is absent.
     fn read_bugs(&self) -> Value {
         let path = self.ctx.repo_root.join(".agent").join(BUGS_REL_PATH);
-        let parsed = match std::fs::read_to_string(&path) {
-            Ok(text) => serde_yaml::from_str(&text).unwrap_or_else(|_| empty_bugs_doc()),
+        match std::fs::read_to_string(&path) {
+            Ok(text) => crate::engine::cockpit_json::parse_object(&text)
+                .map(Value::Object)
+                .unwrap_or_else(|_| empty_bugs_doc()),
             Err(_) => empty_bugs_doc(),
-        };
-        // Guarantee a mapping shape. A hand-edited `bugs.yml` that parses as a non-mapping
-        // (a bare list or a scalar) falls back to an empty document, so the append path
-        // never needs to unwrap the shape.
-        if parsed.is_mapping() {
-            parsed
-        } else {
-            empty_bugs_doc()
         }
     }
 
@@ -188,37 +186,31 @@ impl TrueNorthServer {
         let path = self.ctx.repo_root.join(".agent").join(BUGS_REL_PATH);
         let (text, observed) = ObservedFile::read_string(path).map_err(|error| {
             ErrorData::internal_error(
-                format!("could not read .agent/tasks/bugs.yml: {error}"),
+                format!("could not read .agent/tasks/bugs.json: {error}"),
                 None,
             )
         })?;
         let parsed = text
             .as_deref()
-            .map(serde_yaml::from_str)
+            .map(crate::engine::cockpit_json::parse_object)
             .transpose()
             .map_err(|error| {
                 ErrorData::invalid_request(
                     format!(
-                        ".agent/tasks/bugs.yml failed to parse: {error}. Fix the YAML and retry."
+                        ".agent/tasks/bugs.json failed to parse: {error}. Fix the JSON and retry."
                     ),
                     None,
                 )
             })?
+            .map(Value::Object)
             .unwrap_or_else(empty_bugs_doc);
-        if !parsed.is_mapping() {
-            return Err(ErrorData::invalid_request(
-                ".agent/tasks/bugs.yml must contain a YAML mapping. Fix the file and retry."
-                    .to_string(),
-                None,
-            ));
-        }
         Ok((parsed, WritePrecondition::new(observed)))
     }
 
     /// Report whether `linked_ref` resolves to an existing task or group id.
     ///
     /// The reference resolves when it matches a `group_id` or a `task_name` in the release
-    /// plan under `.agent/tasks/`, or an existing bug id in `bugs.yml`. This keeps the
+    /// plan under `.agent/tasks/`, or an existing bug id in `bugs.json`. This keeps the
     /// reference honest without a tracker call (Requirement 8.6).
     fn linked_ref_resolves(&self, linked_ref: &str) -> bool {
         self.release_plan_has_ref(linked_ref) || self.bugs_have_id(linked_ref)
@@ -230,10 +222,10 @@ impl TrueNorthServer {
         let Ok(text) = std::fs::read_to_string(&path) else {
             return false;
         };
-        let Ok(value) = serde_yaml::from_str::<Value>(&text) else {
+        let Ok(value) = crate::engine::cockpit_json::parse_object(&text).map(Value::Object) else {
             return false;
         };
-        let Some(tasks) = value.get("tasks").and_then(Value::as_sequence) else {
+        let Some(tasks) = value.get("tasks").and_then(Value::as_array) else {
             return false;
         };
         tasks
@@ -241,20 +233,20 @@ impl TrueNorthServer {
             .any(|task| field_eq(task, "group_id", needle) || field_eq(task, "task_name", needle))
     }
 
-    /// Whether `bugs.yml` already carries a bug with the given id.
+    /// Whether `bugs.json` already carries a bug with the given id.
     fn bugs_have_id(&self, needle: &str) -> bool {
         let doc = self.read_bugs();
         doc.get("bugs")
-            .and_then(Value::as_sequence)
+            .and_then(Value::as_array)
             .is_some_and(|bugs| bugs.iter().any(|bug| field_eq(bug, "id", needle)))
     }
 }
 
 /// An empty bug-references document: `{ bugs: [] }`.
 fn empty_bugs_doc() -> Value {
-    let mut map = serde_yaml::Mapping::new();
-    map.insert(Value::String("bugs".to_string()), Value::Sequence(vec![]));
-    Value::Mapping(map)
+    let mut map = Map::new();
+    map.insert("bugs".to_string(), Value::Array(vec![]));
+    Value::Object(map)
 }
 
 /// Insert a bug reference or update its lifecycle fields when the id already exists.
@@ -263,20 +255,19 @@ fn empty_bugs_doc() -> Value {
 /// different external issue because recurrence and resolution must target the original
 /// tracker record.
 fn upsert_bug(doc: &mut Value, args: &RecordBugArgs) -> Result<(), ErrorData> {
-    if !doc.is_mapping() {
+    if !doc.is_object() {
         *doc = empty_bugs_doc();
     }
-    let key = Value::String("bugs".to_string());
-    let Some(mapping) = doc.as_mapping_mut() else {
+    let Some(mapping) = doc.as_object_mut() else {
         return Ok(());
     };
     let bugs = mapping
-        .entry(key)
-        .or_insert_with(|| Value::Sequence(Vec::new()));
-    if !bugs.is_sequence() {
-        *bugs = Value::Sequence(Vec::new());
+        .entry("bugs".to_string())
+        .or_insert_with(|| Value::Array(Vec::new()));
+    if !bugs.is_array() {
+        *bugs = Value::Array(Vec::new());
     }
-    let Some(bugs) = bugs.as_sequence_mut() else {
+    let Some(bugs) = bugs.as_array_mut() else {
         return Ok(());
     };
 
@@ -295,27 +286,27 @@ fn upsert_bug(doc: &mut Value, args: &RecordBugArgs) -> Result<(), ErrorData> {
                 None,
             ));
         }
-        if let Some(entry) = existing.as_mapping_mut() {
+        if let Some(entry) = existing.as_object_mut() {
             entry.insert("status".into(), args.status.as_str().into());
             entry.insert("linked_ref".into(), args.linked_ref.clone().into());
             entry.insert(
                 "tags".into(),
-                Value::Sequence(args.tags.iter().cloned().map(Value::String).collect()),
+                Value::Array(args.tags.iter().cloned().map(Value::String).collect()),
             );
         }
         return Ok(());
     }
 
-    let mut entry = serde_yaml::Mapping::new();
+    let mut entry = Map::new();
     entry.insert("id".into(), args.id.clone().into());
     entry.insert("external_link".into(), args.external_link.clone().into());
     entry.insert("status".into(), args.status.as_str().into());
     entry.insert("linked_ref".into(), args.linked_ref.clone().into());
     entry.insert(
         "tags".into(),
-        Value::Sequence(args.tags.iter().cloned().map(Value::String).collect()),
+        Value::Array(args.tags.iter().cloned().map(Value::String).collect()),
     );
-    bugs.push(Value::Mapping(entry));
+    bugs.push(Value::Object(entry));
     Ok(())
 }
 

@@ -11,7 +11,7 @@ function grade({ evidence, mode }) {
   const events = evidence.events;
   if (mode === 'model') {
     const statusPath = path.join(evidence.workspace, '.agent/tasks/execution-status.yml');
-    const statePath = path.join(evidence.workspace, '.agent/tasks/state.yml');
+    const statePath = path.join(evidence.workspace, '.agent/tasks/state.json');
     const status = fs.existsSync(statusPath) ? fs.readFileSync(statusPath, 'utf8') : '';
     const state = fs.existsSync(statePath) ? fs.readFileSync(statePath, 'utf8') : '';
     const verification = events.some((event) => event.type === 'model' && event.result.code === 0);
@@ -23,7 +23,7 @@ function grade({ evidence, mode }) {
       ),
       result(
         'small-feature-model-handoff',
-        /last_step_completed:|next_skill:/.test(state),
+        /"last_step_completed":|"next_skill":/.test(state),
         'handoff is recorded',
       ),
       result(
@@ -42,7 +42,7 @@ function grade({ evidence, mode }) {
     .filter((event) => event.tool === 'truenorth_tdd_cycle')
     .map((event) => event.args.step);
   const plan = fs.readFileSync(
-    path.join(evidence.workspace, '.agent/tasks/release-plan.yml'),
+    path.join(evidence.workspace, '.agent/tasks/release-plan.json'),
     'utf8',
   );
   const red = tools.find(

@@ -53,5 +53,5 @@ modify upstream planning artifacts.
 
 ## Handoff
 
-Write the canonical `.agent/tasks/state.yml` handoff with
+Write the canonical `.agent/tasks/state.json` handoff with
 `next_skill: plan-work`.

@@ -1,61 +1,28 @@
-//! Tests for the cockpit serde models (task 3.3, 3.4).
-//!
-//! Included from `spec.rs` via `#[path]`, so `super` is the spec module. The state
-//! preservation test (Property 3) round-trips and mutates fixtures, then asserts every
-//! field, including `null`-valued fields and any unknown field a legacy file carries,
-//! survives verbatim.
-//!
-//! Requirements: 9.3, 9.4, 4.3.
-
+//! Tests for the cockpit serde models.
 use super::*;
 use std::path::PathBuf;
 
-/// An observed `state.yaml` shape with `null`-valued fields and an unmodeled
-/// `active_flow`. Every one of these must survive a round-trip unchanged.
-const STATE_FIXTURE: &str = r#"
-active_flow: null
-active_epic: null
-active_story: null
-bug_id: null
-bigpowers_version: 2.88.2
-handoff:
-  next_skill: null
-  context: 'some handoff context'
-  epic: null
-metrics:
-  story_start: null
-  story_end: null
-  skill_timings:
-    verify-work:
-      calls: 1
-      total_seconds: 1052.0
-release:
-  ci_verified: true
-  last_commit: 3daf6225
-git:
-  branch: main
-"#;
+const STATE_FIXTURE: &str = r#"{
+  "active_flow": null,
+  "active_epic": null,
+  "active_story": null,
+  "bug_id": null,
+  "bigpowers_version": "2.88.2",
+  "handoff": {"next_skill": null, "context": "some handoff context", "epic": null},
+  "metrics": {"story_start": null, "story_end": null, "skill_timings": {"verify-work": {"calls": 1, "total_seconds": 1052.0}}},
+  "release": {"ci_verified": true, "last_commit": "3daf6225"},
+  "git": {"branch": "main"}
+}"#;
 
-/// An observed `release-plan.yaml` shape carrying an unmodeled `epics` array.
-const RELEASE_PLAN_FIXTURE: &str = r#"
-release:
-  version: 2.88.2
-  codename: Foundation
-  status: released
-build_order:
-- e45
-- e48
-done_epics_summary:
-  count: 67
-epics:
-- id: e82
-  title: Fork Innovations
-  status: scoped
-"#;
+const RELEASE_PLAN_FIXTURE: &str = r#"{
+  "release": {"version": "2.88.2", "codename": "Foundation", "status": "released"},
+  "build_order": ["e45", "e48"],
+  "done_epics_summary": {"count": 67},
+  "epics": [{"id": "e82", "title": "Fork Innovations", "status": "scoped"}]
+}"#;
 
-/// Parse `state.yaml` content into the model. A parse failure fails the test loudly.
-fn parse_state(yaml: &str) -> StateFile {
-    serde_yaml::from_str(yaml).expect("parse state fixture")
+fn parse_state(json: &str) -> StateFile {
+    crate::engine::validate::validate_state(json).expect("parse state fixture")
 }
 
 #[test]
@@ -74,56 +41,33 @@ fn phase_successors_form_the_lifecycle_loop() {
 
 #[test]
 fn state_exposes_typed_accessors() {
-    let state = parse_state(STATE_FIXTURE);
-    assert_eq!(state.git_branch(), Some("main"));
+    assert_eq!(parse_state(STATE_FIXTURE).git_branch(), Some("main"));
 }
 
 #[test]
 fn state_preserves_an_arbitrary_unknown_field() {
-    // The map-backed model preserves any unknown field a legacy file carries, read through
-    // the generic `get`. The fixture's `bigpowers_version` is one such legacy field; the
-    // model preserves it as data, with no field named for it in the model (Requirement 9.4).
-    let state = parse_state(STATE_FIXTURE);
     assert_eq!(
-        state.get("bigpowers_version"),
-        Some(&serde_yaml::Value::String("2.88.2".to_string())),
-        "an unknown legacy field is preserved as data"
+        parse_state(STATE_FIXTURE).get("bigpowers_version"),
+        Some(&serde_json::json!("2.88.2"))
     );
 }
 
 #[test]
-fn state_roundtrip_is_byte_stable() {
-    // Property 3: a round-trip through the model preserves the document as a value,
-    // including key order, `null` fields, and unmodeled fields.
-    let before: serde_yaml::Value =
-        serde_yaml::from_str(STATE_FIXTURE).expect("parse fixture as value");
+fn state_roundtrip_is_value_stable() {
+    let before: serde_json::Value = serde_json::from_str(STATE_FIXTURE).unwrap();
     let state = parse_state(STATE_FIXTURE);
-    let serialized = serde_yaml::to_string(&state).expect("serialize state");
-    let after: serde_yaml::Value =
-        serde_yaml::from_str(&serialized).expect("re-parse serialized state");
+    let serialized = crate::engine::cockpit_json::to_string(&state.root).unwrap();
+    let after: serde_json::Value = serde_json::from_str(&serialized).unwrap();
     assert_eq!(before, after);
 }
 
 #[test]
 fn state_mutation_preserves_every_other_field() {
-    // Property 3: mutate one field, then assert every other field survives, including
-    // the `null`-valued ones the design's field list names.
     let mut state = parse_state(STATE_FIXTURE);
-    state.set("git", {
-        let mut git = serde_yaml::Mapping::new();
-        git.insert(
-            serde_yaml::Value::String("branch".to_string()),
-            serde_yaml::Value::String("feat/new-work".to_string()),
-        );
-        serde_yaml::Value::Mapping(git)
-    });
-
-    let serialized = serde_yaml::to_string(&state).expect("serialize mutated state");
+    state.set("git", serde_json::json!({"branch": "feat/new-work"}));
+    let serialized = crate::engine::cockpit_json::to_string(&state.root).unwrap();
     let reparsed = parse_state(&serialized);
-
-    // The mutation took effect.
     assert_eq!(reparsed.git_branch(), Some("feat/new-work"));
-    // Every field the design names is still present, including the `null` ones.
     for key in [
         "active_flow",
         "active_epic",
@@ -134,55 +78,45 @@ fn state_mutation_preserves_every_other_field() {
         "metrics",
         "release",
     ] {
-        assert!(
-            reparsed.get(key).is_some(),
-            "mutation dropped the `{key}` field"
-        );
+        assert!(reparsed.get(key).is_some(), "mutation dropped `{key}`");
     }
-    // The `null` value of a present field is retained, not dropped.
-    assert_eq!(reparsed.get("active_epic"), Some(&serde_yaml::Value::Null));
+    assert_eq!(reparsed.get("active_epic"), Some(&serde_json::Value::Null));
 }
 
 #[test]
 fn release_plan_preserves_unknown_epics_field() {
-    // Property 3: the unmodeled `epics` array survives, and `build_order` reads back.
-    let plan: ReleasePlanFile =
-        serde_yaml::from_str(RELEASE_PLAN_FIXTURE).expect("parse release-plan fixture");
+    let plan = crate::engine::validate::validate_release_plan(RELEASE_PLAN_FIXTURE).unwrap();
     assert!(plan.get("epics").is_some());
     assert_eq!(plan.build_order().map(Vec::len), Some(2));
-
-    let serialized = serde_yaml::to_string(&plan).expect("serialize plan");
-    let reparsed: ReleasePlanFile = serde_yaml::from_str(&serialized).expect("re-parse plan");
-    assert!(reparsed.get("epics").is_some());
+    let serialized = crate::engine::cockpit_json::to_string(&plan.root).unwrap();
+    assert!(
+        crate::engine::validate::validate_release_plan(&serialized)
+            .unwrap()
+            .get("epics")
+            .is_some()
+    );
 }
 
 #[test]
 fn release_plan_append_preserves_other_fields() {
-    let mut plan: ReleasePlanFile =
-        serde_yaml::from_str(RELEASE_PLAN_FIXTURE).expect("parse release-plan fixture");
-    plan.push_build_order(serde_yaml::Value::String("e99".to_string()));
-
+    let mut plan = crate::engine::validate::validate_release_plan(RELEASE_PLAN_FIXTURE).unwrap();
+    plan.push_build_order(serde_json::json!("e99"));
     assert_eq!(plan.build_order().map(Vec::len), Some(3));
-    // The append did not disturb the unmodeled `epics` field or the release block.
     assert!(plan.get("epics").is_some());
     assert!(plan.get("release").is_some());
 }
 
 #[test]
 fn real_state_fixture_roundtrips_when_present() {
-    // Property 3 against the real repo cockpit, relocated under `.agent/tasks/`. The
-    // fixture lives at the repo root, one level above the crate. Skip when it is absent,
-    // so the test is portable.
-    let Some(path) = repo_root_file(".agent/tasks/state.yml") else {
+    let Some(path) = repo_root_file(".agent/tasks/state.json") else {
         return;
     };
-    let yaml = std::fs::read_to_string(&path).expect("read real state.yml");
-
-    let before: serde_yaml::Value = serde_yaml::from_str(&yaml).expect("parse real state");
-    let state: StateFile = serde_yaml::from_str(&yaml).expect("parse real state model");
-    let serialized = serde_yaml::to_string(&state).expect("serialize real state");
-    let after: serde_yaml::Value = serde_yaml::from_str(&serialized).expect("re-parse real state");
-    assert_eq!(before, after, "real state.yml must round-trip verbatim");
+    let json = std::fs::read_to_string(&path).expect("read real state.json");
+    let before: serde_json::Value = serde_json::from_str(&json).unwrap();
+    let state = parse_state(&json);
+    let serialized = crate::engine::cockpit_json::to_string(&state.root).unwrap();
+    let after: serde_json::Value = serde_json::from_str(&serialized).unwrap();
+    assert_eq!(before, after, "real state.json must round-trip");
 }
 
 #[test]
@@ -211,7 +145,7 @@ constraints:
   - id: C-02
     rule: 'Boolean state flags (is_*) are prohibited; model states explicitly.'
 "#;
-    let ontology: Ontology = serde_yaml::from_str(yaml).expect("parse ontology fixture");
+    let ontology: Ontology = crate::engine::yaml::from_str(yaml).expect("parse ontology fixture");
     assert_eq!(ontology.domain, "order-fulfillment");
     assert_eq!(ontology.entities.len(), 1);
     assert_eq!(
@@ -221,8 +155,8 @@ constraints:
     assert_eq!(ontology.constraints[0].id, "C-01");
 
     // Round-trip preserves the model.
-    let serialized = serde_yaml::to_string(&ontology).expect("serialize ontology");
-    let reparsed: Ontology = serde_yaml::from_str(&serialized).expect("re-parse ontology");
+    let serialized = crate::engine::yaml::to_string(&ontology).expect("serialize ontology");
+    let reparsed: Ontology = crate::engine::yaml::from_str(&serialized).expect("re-parse ontology");
     assert_eq!(ontology, reparsed);
 }
 
@@ -247,8 +181,8 @@ fn empty_stub_round_trips_as_the_empty_stub() {
     // The serialized stub, re-parsed, is still the empty stub. This pins the resource seed
     // (which serializes empty_stub) to the generate-tool stub check (which parses and calls
     // is_empty_stub), so the two cannot drift.
-    let yaml = serde_yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
-    let parsed: Ontology = serde_yaml::from_str(&yaml).expect("parse stub");
+    let yaml = crate::engine::yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
+    let parsed: Ontology = crate::engine::yaml::from_str(&yaml).expect("parse stub");
     assert!(parsed.is_empty_stub());
 }
 

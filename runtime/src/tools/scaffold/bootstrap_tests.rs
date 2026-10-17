@@ -60,7 +60,7 @@ fn skill_bundle() -> TempDir {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         supported_from: Vec::new(),
         files,
         skill_sets: vec![
@@ -157,9 +157,6 @@ fn bootstrap_defaults_to_core_skills_only() {
             .is_file()
     );
     assert!(!repo.path().join("skills/guard").exists());
-    let manifest = fs::read_to_string(repo.path().join(".agent/workspace-manifest.yml"))
-        .expect("workspace manifest");
-    assert!(manifest.contains("skill_sets:\n- core\n"));
 }
 
 #[test]

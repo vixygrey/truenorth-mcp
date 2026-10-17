@@ -127,9 +127,11 @@ pub fn load_fixtures(path: &Path) -> Result<Vec<Fixture>, JevError> {
         path: path.display().to_string(),
         detail: error.to_string(),
     })?;
-    serde_yaml::from_str::<Vec<Fixture>>(&text).map_err(|error| JevError::InvalidFixtureSet {
-        path: path.display().to_string(),
-        detail: error.to_string(),
+    crate::engine::yaml::from_str::<Vec<Fixture>>(&text).map_err(|error| {
+        JevError::InvalidFixtureSet {
+            path: path.display().to_string(),
+            detail: error.to_string(),
+        }
     })
 }
 
@@ -180,7 +182,7 @@ pub fn cost_estimate(
 /// fails.
 #[cfg_attr(not(test), allow(dead_code))]
 pub fn write_report(repo_root: &Path, metrics: &[AspectMetrics]) -> Result<String, JevError> {
-    let yaml = serde_yaml::to_string(metrics).map_err(|error| JevError::Config {
+    let yaml = crate::engine::yaml::to_string(metrics).map_err(|error| JevError::Config {
         path: REPORT_REL_PATH.to_string(),
         detail: format!("could not serialize the benchmark report: {error}"),
     })?;

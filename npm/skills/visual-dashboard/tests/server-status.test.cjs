@@ -15,14 +15,22 @@ function writeFixture(root) {
   fs.mkdirSync(path.join(root, '.agent', 'tasks'), { recursive: true });
   fs.writeFileSync(path.join(root, '.agent', 'profile.yml'), 'profile: epic-based\n');
   fs.writeFileSync(
-    path.join(root, '.agent', 'tasks', 'state.yml'),
-    'phase: execute\nactive_task: task-1\nactive_group: epic-1\n',
+    path.join(root, '.agent', 'tasks', 'state.json'),
+    '{"phase": "execute", "active_task": "task-1", "active_group": "epic-1"}',
   );
   fs.writeFileSync(
-    path.join(root, '.agent', 'tasks', 'release-plan.yml'),
-    'groups:\n- group_id: epic-1\n  group_kind: epic\n  title: Epic one\n' +
-      'tasks:\n- group_id: epic-1\n  group_kind: epic\n  task_name: Task one\n' +
-      '  verify_command: true\n',
+    path.join(root, '.agent', 'tasks', 'release-plan.json'),
+    JSON.stringify({
+      groups: [{ group_id: 'epic-1', group_kind: 'epic', title: 'Epic one' }],
+      tasks: [
+        {
+          group_id: 'epic-1',
+          group_kind: 'epic',
+          task_name: 'Task one',
+          verify_command: true,
+        },
+      ],
+    }),
   );
   fs.writeFileSync(
     path.join(root, '.agent', 'tasks', 'execution-status.yml'),

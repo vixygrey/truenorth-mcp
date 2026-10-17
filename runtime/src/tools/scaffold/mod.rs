@@ -151,7 +151,7 @@ pub fn scaffold_sources(profile: Profile) -> Vec<ScaffoldSource> {
             "version: 2\n# Runtime configuration.\n# Token estimates use ceil(characters / 4). Oversized tool responses fail without truncation.\nruntime:\n  token_caps:\n    skill_lean_tokens: 1500\n    tool_payload_tokens: 4000\n",
         ),
         source(".agent/spec/requirements.md", "# Requirements\n"),
-        source(".agent/tasks/state.yml", STATE_SEED),
+        source(".agent/tasks/state.json", STATE_SEED),
         source(".agent/tasks/execution-status.yml", EXECUTION_STATUS_SEED),
         source(".agent/memories/lessons.md", "# Lessons\n"),
         source(".agent/memories/glossary.md", "# Glossary\n"),

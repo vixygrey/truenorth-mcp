@@ -16,7 +16,7 @@ Investigate a reported problem, find its root cause, and record a TDD fix plan i
 
 Before starting diagnosis:
 
-1. Read the bug references under `.agent/tasks/bugs.yml` (if it exists). Check for prior bugs in the same `scope` or with similar symptoms.
+1. Read the bug references under `.agent/tasks/bugs.json` (if it exists). Check for prior bugs in the same `scope` or with similar symptoms.
 2. If a relevant prior bug is found, read its detail in the external tracker to understand previous root cause analysis and fix approach.
 3. Note in your investigation whether this is a recurrence, a related issue, or novel.
 
@@ -107,7 +107,7 @@ Add the final refactor step and acceptance criteria. Avoid file paths and line n
 
 </external-tracker-update>
 
-Call `truenorth_record_bug` with the same canonical id and `external_link`, status `in-progress`, the linked task or group, and the current tags. The tool updates the existing lean reference. Never edit `.agent/tasks/bugs.yml` directly.
+Call `truenorth_record_bug` with the same canonical id and `external_link`, status `in-progress`, the linked task or group, and the current tags. The tool updates the existing lean reference. Never edit `.agent/tasks/bugs.json` directly.
 
 After updating the issue, print a one-line summary of the root cause and suggest running `kickoff-branch` next to create a fix branch.
 

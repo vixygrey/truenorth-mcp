@@ -111,7 +111,7 @@ pub enum SkillContractError {
     Parse {
         name: String,
         #[source]
-        source: serde_yaml::Error,
+        source: saneyaml::Error,
     },
 }
 
@@ -175,7 +175,7 @@ pub fn read_skill_contract(
             actual_bytes: bytes.len(),
         });
     }
-    serde_yaml::from_slice(&bytes).map_err(|source| SkillContractError::Parse {
+    crate::engine::yaml::from_slice(&bytes).map_err(|source| SkillContractError::Parse {
         name: name.to_string(),
         source,
     })

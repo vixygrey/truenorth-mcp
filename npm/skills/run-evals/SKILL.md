@@ -33,7 +33,7 @@ overrides a failed code grader.
 
    Promote `EXPERIMENTAL` to `USUALLY_PASSES` after 3 consecutive passes. Promote
    `USUALLY_PASSES` to `ALWAYS_PASSES` after 5 consecutive passes with zero flakes
-   documented in `.agent/tasks/state.yml`.
+   documented in `.agent/tasks/state.json`.
 
 5. Run the evals. Log the results table with pass@k (for example 3 of 3 runs) and
    the tier per eval. Run a code grader through the `truenorth_verify_gate` tool.

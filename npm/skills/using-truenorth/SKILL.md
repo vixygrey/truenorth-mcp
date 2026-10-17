@@ -104,8 +104,8 @@ UTILITY     craft-skill, write-document (any phase)
 
 The operational source of truth, served through the `truenorth://` resources:
 
-- `.agent/tasks/state.yml`: the session, active task, optional group, and canonical handoff.
-- `.agent/tasks/release-plan.yml`: release metadata, `tasks[]`, and optional profile-derived `groups[]`.
+- `.agent/tasks/state.json`: the session, active task, optional group, and canonical handoff.
+- `.agent/tasks/release-plan.json`: release metadata, `tasks[]`, and optional profile-derived `groups[]`.
 - Optional task-group artifacts when the active profile groups work.
 - `.agent/tasks/execution-status.yml`: task and optional group status.
 

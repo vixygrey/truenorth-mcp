@@ -16,7 +16,7 @@ See [REFERENCE-GSD.md](./REFERENCE-GSD.md) for the full GSD mapping.
 | Output formats (ADR, decision log, migration audit) |
 | `in_scope` format with ID tracking                  |
 | `REQUIREMENTS_TRACE.yaml` format                    |
-| `.agent/tasks/state.yml` template format            |
+| `.agent/tasks/state.json` template format           |
 | Step 5 — Surface learnings (optional)               |
 | Step 6 — Adversarial review (optional)              |
 | Step 7 — Two-pass spec writing gate (optional)      |
@@ -54,7 +54,7 @@ Transform:
 - Domain terms and the glossary become `.agent/product/glossary.yml`.
 - The problem statement and vision become `.agent/product/vision.yml`.
 
-### `plan.md` → `.agent/spec/architecture.md` + `.agent/tasks/release-plan.yml` + `.agent/tasks/<group>/`
+### `plan.md` → `.agent/spec/architecture.md` + `.agent/tasks/release-plan.json` + `.agent/tasks/<group>/`
 
 spec-kit `plan.md` covers the technology stack, the architectural patterns, and the
 implementation constraints.
@@ -64,7 +64,7 @@ Transform:
 - Technology decisions become the Technology section of `.agent/spec/architecture.md`.
 - Architecture patterns become the Architecture section.
 - A hard decision with a trade-off becomes `specs/adr/NNNN-{slug}.md`.
-- A phased approach or milestones become task-group entries in `.agent/tasks/release-plan.yml`.
+- A phased approach or milestones become task-group entries in `.agent/tasks/release-plan.json`.
 - Implementation steps become the task list under `.agent/tasks/<group>/` with
   `verify:`.
 
@@ -77,7 +77,7 @@ Transform:
 
 - Copy the tasks into the task group's `tasks[]`. Preserve the task numbers.
 - Add a `verify:` line when a spec-kit task has an acceptance criterion.
-- Group the tasks under the task groups that match the `.agent/tasks/release-plan.yml` entries.
+- Group the tasks under the task groups that match the `.agent/tasks/release-plan.json` entries.
 
 ### `.specify/` state
 
@@ -149,7 +149,7 @@ Transform:
 - API contracts stay at `docs/api.md` or similar and are linked from
   `architecture.md`.
 
-### `epic-*.md` → `.agent/tasks/release-plan.yml` + `.agent/tasks/<group>/`
+### `epic-*.md` → `.agent/tasks/release-plan.json` + `.agent/tasks/<group>/`
 
 Each epic becomes one release-plan entry with `group_kind: epic` plus one task
 group. Acceptance criteria become story tasks with `verify:`.
@@ -174,7 +174,7 @@ Optional enhancements to offer the user after migration. Present them as checkbo
 
 - [x] **`.agent/spec/methodology.md`** — standing analytical lenses. Agents read it
       before planning. (adopted: optional Step 8 template scaffold)
-- [x] **`handoff` block in `.agent/tasks/state.yml`** — last skill, last step, and required
+- [x] **`handoff` block in `.agent/tasks/state.json`** — last skill, last step, and required
       reading for the next session. (adopted: mandatory in Step 4 output)
 - [x] **ID tracking in `scope.yml`** — FR and UJ IDs for spec-to-plan-to-verification
       traceability. (adopted in the Step 3 transform)
@@ -263,7 +263,7 @@ The post-migration adversarial review report. Written to
   **Issue:** Story e02s01 has no verify: commands in tasks
   **Recommendation:** Add a runnable verify command before develop-tdd
 
-- **Artifact:** .agent/tasks/state.yml
+- **Artifact:** .agent/tasks/state.json
   **Issue:** open_decisions list empty without a comment
   **Recommendation:** Add a # comment when all decisions were resolved during migration
 
@@ -338,13 +338,13 @@ metadata:
 ```
 
 **When the source has no FR-XX/UJ-XX:** skip `REQUIREMENTS_TRACE.yaml`. Add a note
-to the `.agent/tasks/state.yml` handoff: "No FR-XX/UJ-XX IDs found, traceability file skipped".
+to the `.agent/tasks/state.json` handoff: "No FR-XX/UJ-XX IDs found, traceability file skipped".
 
 **Existing trace file:** when `REQUIREMENTS_TRACE.yaml` exists, prompt the user:
 "Overwrite? [yes / merge / skip]". Merge appends new entries. Skip leaves the
 existing file intact.
 
-### `.agent/tasks/state.yml` template format
+### `.agent/tasks/state.json` template format
 
 Generated during Step 4 of migration. Regenerate it from scratch in the TrueNorth
 YAML format. The **handoff block is mandatory**:
@@ -386,7 +386,7 @@ handoff:
     - .agent/product/vision.yml
     - .agent/product/scope.yml
     - .agent/spec/architecture.md
-    - .agent/tasks/release-plan.yml
+    - .agent/tasks/release-plan.json
   group_id: null
   artifacts_summary: null
   git_context: null
@@ -442,7 +442,7 @@ that TrueNorth does not have yet.
 Use the learnings table above. Present it as checkboxes so the user can decide which
 to adopt.
 
-→ verify: `grep -c "\- \[ \]" .agent/tasks/state.yml 2>/dev/null && echo "pending items recorded" || echo "no pending items in state file"`
+→ verify: `grep -c "\- \[ \]" .agent/tasks/state.json 2>/dev/null && echo "pending items recorded" || echo "no pending items in state file"`
 
 ---
 
@@ -458,7 +458,7 @@ If yes, perform these checks:
 
 1. Scan for incomplete markers. Find TODO, FIXME, and MISSING under `.agent/`.
 2. Verify every task group has `verify:` commands. Parse the task-group files.
-3. Check the `.agent/tasks/state.yml` handoff. Make sure that `open_decisions` is documented,
+3. Check the `.agent/tasks/state.json` handoff. Make sure that `open_decisions` is documented,
    even when empty.
 
 Collect the findings and write them to `.agent/spec/migration-audit.md`:
@@ -499,7 +499,7 @@ After Steps 1 through 6, offer the user an optional two-pass spec-writing workfl
 
 Prompt: "Use two-pass spec writing (user journeys first, then technical)? [yes / no]"
 
-If **yes**, initialize the gate in `.agent/tasks/state.yml`:
+If **yes**, initialize the gate in `.agent/tasks/state.json`:
 
 ```yaml
 two_pass_spec:
@@ -520,11 +520,11 @@ two_pass_spec:
 
 Inform the user: "The journey pass is pending. Run `elaborate-spec` for the user
 journeys, get stakeholder approval, then update `two_pass_spec.journey_pass` to
-`complete` in `.agent/tasks/state.yml` before you proceed to the technical specs."
+`complete` in `.agent/tasks/state.json` before you proceed to the technical specs."
 
 If **no**, skip the two-pass gate. Proceed directly to plan-work.
 
-→ verify: `grep -q 'two_pass_spec:' .agent/tasks/state.yml && echo "two-pass gate initialized" || echo "two-pass gate not activated"`
+→ verify: `grep -q 'two_pass_spec:' .agent/tasks/state.json && echo "two-pass gate initialized" || echo "two-pass gate not activated"`
 
 ---
 
@@ -566,22 +566,22 @@ later by copying `migrate-spec/templates/methodology.md` to `.agent/spec/`".
 Full mapping tables: [REFERENCE-GSD.md](./REFERENCE-GSD.md) (GSD), this file
 (spec-kit, BMAD, learnings).
 
-| Source                    | Target                                                                        |
-| ------------------------- | ----------------------------------------------------------------------------- |
-| GSD `ROADMAP.md`          | `.agent/tasks/release-plan.yml` + task groups                                 |
-| GSD `REQUIREMENTS.md`     | `.agent/product/scope.yml`                                                    |
-| GSD `CONTEXT.md` (phases) | `.agent/spec/architecture.md` + `specs/adr/`                                  |
-| GSD `PLAN.md`             | `.agent/tasks/<group>/` (tasks with verify)                                   |
-| GSD `METHODOLOGY.md`      | `.agent/spec/methodology.md`                                                  |
-| spec-kit `spec.md`        | `.agent/product/scope.yml` + `.agent/spec/architecture.md`                    |
-| spec-kit `plan.md`        | `.agent/spec/architecture.md` + `.agent/tasks/release-plan.yml` + task groups |
-| spec-kit `tasks.md`       | `.agent/tasks/<group>/` (see slice-tasks)                                     |
-| BMAD `prd.md`             | `.agent/product/scope.yml`                                                    |
-| BMAD `architecture.md`    | `.agent/spec/architecture.md` + `specs/adr/`                                  |
-| BMAD `epic-*.md`          | `.agent/tasks/release-plan.yml` + task groups                                 |
-| BMAD `story-*.md`         | `.agent/tasks/<group>/` (see slice-tasks)                                     |
-| BMAD `project-context.md` | the project agent guide (append a project-specific section)                   |
-| BMAD `decision-log.md`    | `specs/adr/` (one ADR per logged decision) or `.agent/spec/decision-log.md`   |
+| Source                    | Target                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| GSD `ROADMAP.md`          | `.agent/tasks/release-plan.json` + task groups                                 |
+| GSD `REQUIREMENTS.md`     | `.agent/product/scope.yml`                                                     |
+| GSD `CONTEXT.md` (phases) | `.agent/spec/architecture.md` + `specs/adr/`                                   |
+| GSD `PLAN.md`             | `.agent/tasks/<group>/` (tasks with verify)                                    |
+| GSD `METHODOLOGY.md`      | `.agent/spec/methodology.md`                                                   |
+| spec-kit `spec.md`        | `.agent/product/scope.yml` + `.agent/spec/architecture.md`                     |
+| spec-kit `plan.md`        | `.agent/spec/architecture.md` + `.agent/tasks/release-plan.json` + task groups |
+| spec-kit `tasks.md`       | `.agent/tasks/<group>/` (see slice-tasks)                                      |
+| BMAD `prd.md`             | `.agent/product/scope.yml`                                                     |
+| BMAD `architecture.md`    | `.agent/spec/architecture.md` + `specs/adr/`                                   |
+| BMAD `epic-*.md`          | `.agent/tasks/release-plan.json` + task groups                                 |
+| BMAD `story-*.md`         | `.agent/tasks/<group>/` (see slice-tasks)                                      |
+| BMAD `project-context.md` | the project agent guide (append a project-specific section)                    |
+| BMAD `decision-log.md`    | `specs/adr/` (one ADR per logged decision) or `.agent/spec/decision-log.md`    |
 
 ---
 
@@ -596,7 +596,7 @@ Full mapping tables: [REFERENCE-GSD.md](./REFERENCE-GSD.md) (GSD), this file
 - **ADRs are opt-in.** Create an ADR only when the decision is hard to reverse,
   surprising without context, and the result of a real trade-off. A lightweight
   decision goes to `.agent/spec/decision-log.md`.
-- **`.agent/tasks/state.yml` is always regenerated.** Never migrate the source STATE verbatim.
+- **`.agent/tasks/state.json` is always regenerated.** Never migrate the source STATE verbatim.
   TrueNorth state needs its own format.
 - **`.agent/` and `specs/adr/` are the only outputs.** Runtime state and the
   product concept go under `.agent/`. An ADR goes to `specs/adr/`. No file is

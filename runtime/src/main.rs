@@ -53,6 +53,9 @@ fn main() -> ExitCode {
             add_skill_sets,
             remove_skill_sets,
         }) => cli::upgrade(check, bundle_dir, add_skill_sets, remove_skill_sets),
+        Ok(cli::Mode::MigrateCockpitJsonCheck) => cli::migrate_cockpit_json_check(),
+        Ok(cli::Mode::MigrateCockpitJsonResume) => cli::recover_cockpit_json_migration(false),
+        Ok(cli::Mode::MigrateCockpitJsonRollback) => cli::recover_cockpit_json_migration(true),
         Ok(cli::Mode::SkillsList { bundle_dir }) => cli::list_skills(bundle_dir),
         Err(usage) => {
             eprintln!("truenorth-mcp: {usage}");

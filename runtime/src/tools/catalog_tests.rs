@@ -415,14 +415,14 @@ fn catalog_error_and_scalar_helpers_preserve_semantics() {
     let mut frontmatter = std::collections::BTreeMap::new();
     frontmatter.insert(
         "string".to_string(),
-        serde_yaml::Value::String("x".to_string()),
+        saneyaml::Value::String("x".to_string()),
     );
     frontmatter.insert(
         "number".to_string(),
-        serde_yaml::Value::Number(serde_yaml::Number::from(4)),
+        saneyaml::Value::Number(saneyaml::Number::from(4)),
     );
-    frontmatter.insert("bool".to_string(), serde_yaml::Value::Bool(true));
-    frontmatter.insert("list".to_string(), serde_yaml::Value::Sequence(Vec::new()));
+    frontmatter.insert("bool".to_string(), saneyaml::Value::Bool(true));
+    frontmatter.insert("list".to_string(), saneyaml::Value::Sequence(Vec::new()));
     assert_eq!(fm_str(&frontmatter, "string"), "x");
     assert_eq!(fm_str(&frontmatter, "number"), "4");
     assert_eq!(fm_str(&frontmatter, "bool"), "true");

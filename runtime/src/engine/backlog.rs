@@ -7,7 +7,7 @@
 use std::fs;
 use std::path::Path;
 
-use serde_yaml::{Mapping, Value};
+use saneyaml::{Mapping, Value};
 use thiserror::Error;
 
 const BACKLOG_PATH: &str = ".agent/tasks/backlog.yml";
@@ -29,7 +29,7 @@ pub enum BacklogError {
         /// The malformed file.
         path: String,
         /// The YAML parser error.
-        source: serde_yaml::Error,
+        source: saneyaml::Error,
     },
     /// The ownership declaration violates its mode contract.
     #[error("invalid `{path}`: {message}")]
@@ -58,10 +58,11 @@ pub fn validate_optional(root: &Path) -> Result<(), BacklogError> {
             });
         }
     };
-    let value: Value = serde_yaml::from_str(&content).map_err(|source| BacklogError::Parse {
-        path: path.display().to_string(),
-        source,
-    })?;
+    let value: Value =
+        crate::engine::yaml::from_str(&content).map_err(|source| BacklogError::Parse {
+            path: path.display().to_string(),
+            source,
+        })?;
     let document = value
         .as_mapping()
         .ok_or_else(|| contract(&path, "expected a YAML mapping"))?;

@@ -218,9 +218,9 @@ function buildManifest(repoRoot) {
         .map(([skill]) => skill),
     }));
   return {
-    schema_version: 2,
+    schema_version: 3,
     bundle_version: packageJson.version,
-    workspace_schema_version: '2',
+    workspace_schema_version: '3',
     supported_from: ['1.0.2', '1.0.4', '1.0.5'],
     skill_sets: skillSets,
     files: trackedSkillPaths(repoRoot).map((relative) => fileRecord(packageRoot, relative)),

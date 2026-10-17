@@ -26,18 +26,18 @@ The orchestrate skill coordinates projects through a prescriptive 6-phase core l
 2. **DESIGN** (3-6 hours): Research solutions. Deliverables: prior art in scope
    YAML and ADRs in `specs/adr/`.
 3. **PLAN** (2-4 hours): Build the planning artifacts in owner order:
-   `.agent/tasks/release-plan.yml`, each selected capsule's `group.yml` work-item
+   `.agent/tasks/release-plan.json`, each selected capsule's `group.yml` work-item
    manifest, optional `test-plan.md`, then task specifications and ledgers.
 4. **EXECUTE** (1-8 hours): Run `execute-group` for the active execution scope
    and update `.agent/tasks/execution-status.yml`.
 5. **REVIEW** (1-3 hours): Validate success criteria. Deliverables:
    risk-scaled behavior evidence and the review report when used.
 6. **INTEGRATE** (30 min - 2 hours): Ship to production. Deliverables: release tag
-   and `.agent/tasks/state.yml` `release.last_tag`.
+   and `.agent/tasks/state.json` `release.last_tag`.
 
 ### Checkpoint / resume
 
-Track progress via `.agent/tasks/state.yml` `project_cycle`:
+Track progress via `.agent/tasks/state.json` `project_cycle`:
 
 - `project_cycle.current_phase`: current phase (1–6)
 - `project_cycle.completed_phases`: completed phase numbers
@@ -49,9 +49,9 @@ See [REFERENCE.md](./REFERENCE.md) for detailed phase specifications and gate ty
 ## How Orchestrate Works
 
 1. **Maintains the state**: tracks the current phase, `active_group`, `active_flow`,
-   decisions, and risks in `.agent/tasks/state.yml`.
+   decisions, and risks in `.agent/tasks/state.json`.
 2. **Routes to the phase skill**: selects the skill for the current phase. A
-   decision passes only through the `handoff` block in `.agent/tasks/state.yml` between
+   decision passes only through the `handoff` block in `.agent/tasks/state.json` between
    steps.
 3. **Applies methodology lenses**: when a test plan or an ADR exists, apply it at
    the phase gates.

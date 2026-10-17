@@ -25,7 +25,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
 ### PHASE 3: PLAN
 
 - **Goal**: Write a verifiable implementation plan with success criteria.
-- **Deliverables**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, each
+- **Deliverables**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.json`, each
   `.agent/tasks/<capsule>/group.yml`, optional
   `.agent/tasks/<capsule>/test-plan.md`, and per-work-item specification and task
   ledger files.
@@ -48,7 +48,7 @@ Detailed documentation for the `orchestrate-project` meta-skill.
   `commit-message`, and `release-branch`.
 - **Estimation**: `slice-tasks` records BCP only when project policy selects it.
 - **next_skill**: Each critical-path skill writes `handoff.next_skill` to
-  `.agent/tasks/state.yml`. Agents resume by reading that file.
+  `.agent/tasks/state.json`. Agents resume by reading that file.
 - **Dashboard**: `npm run dashboard` (TUI) or `npm run dashboard:web` (browser, port 7742)
   shows live task and optional group status.
 - **Gate**: Integration tests PASS; all required execute-group gates completed for each work item.
@@ -121,7 +121,7 @@ _The gate types and the checkpoint keys are defined in this reference._
 
 ## Error Recovery & State
 
-Orchestrate maintains `.agent/tasks/state.yml` to track:
+Orchestrate maintains `.agent/tasks/state.json` to track:
 
 - **Current flow / task group**: `active_flow`, `active_group_id`, `group_cycle`.
 - **Handoff**: `last_step_completed`, `open_decisions`, `required_reading`, `next_skill`.

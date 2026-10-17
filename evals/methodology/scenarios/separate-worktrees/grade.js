@@ -7,11 +7,11 @@ const result = (id, passed, evidence) => ({ id, passed, evidence });
 
 function grade({ evidence }) {
   const first = fs.readFileSync(
-    path.join(evidence.workspace, '.agent/tasks/release-plan.yml'),
+    path.join(evidence.workspace, '.agent/tasks/release-plan.json'),
     'utf8',
   );
   const second = fs.readFileSync(
-    path.join(evidence.scenario_root, 'agent-two/.agent/tasks/release-plan.yml'),
+    path.join(evidence.scenario_root, 'agent-two/.agent/tasks/release-plan.json'),
     'utf8',
   );
   const tools = evidence.events.filter((event) => event.type === 'mcp_tool');

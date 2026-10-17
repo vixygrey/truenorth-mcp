@@ -26,7 +26,7 @@ verify: node skills/extract-design/tests/test-extraction.js --require-browser
    overview and the do's-and-don'ts with an agent note.
 5. **Write and validate**: serialize to the project design artifact, run the linter,
    and report to the terminal.
-6. **Handoff**: write `handoff.next_skill: grill-me` to `.agent/tasks/state.yml` with the
+6. **Handoff**: write `handoff.next_skill: grill-me` to `.agent/tasks/state.json` with the
    uncertain-decisions context.
 
 ## Inputs
@@ -43,7 +43,7 @@ verify: node skills/extract-design/tests/test-extraction.js --require-browser
 - A terminal summary: the token counts, the component count, the lint result, and
   the uncertain decisions.
 - A structured JSON log to stderr: the extraction events, timing, and counts.
-- `.agent/tasks/state.yml` `handoff.next_skill: grill-me` with the context.
+- `.agent/tasks/state.json` `handoff.next_skill: grill-me` with the context.
 
 ## Error tiers
 

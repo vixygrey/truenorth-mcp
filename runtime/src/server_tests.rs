@@ -96,7 +96,7 @@ const LAYOUT_FILES: [&str; 7] = [
     "profile.yml",
     "config/rules.yml",
     "spec/requirements.md",
-    "tasks/state.yml",
+    "tasks/state.json",
     "memories/lessons.md",
     "memories/glossary.md",
 ];
@@ -152,7 +152,7 @@ fn resolve_is_non_fatal_on_an_incomplete_layout_contract() {
     // A present-but-incomplete contract logs a warning and keeps serving, retaining the
     // last valid contract (here, none). Resolve still succeeds (Requirement 1.12).
     let repo = seed_valid_layout();
-    fs::remove_file(repo.path().join(".agent").join("tasks").join("state.yml"))
+    fs::remove_file(repo.path().join(".agent").join("tasks").join("state.json"))
         .expect("remove a required file");
     let ctx = ServerContext::resolve(repo.path().to_path_buf()).expect("resolves");
     assert!(ctx.layout.last_valid().is_none());

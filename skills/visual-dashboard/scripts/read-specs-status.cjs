@@ -92,30 +92,27 @@ function readSpecsStatus(projectDir) {
   const agentDir = path.join(projectDir, '.agent');
   const tasksDir = path.join(agentDir, 'tasks');
   const profileText = readFileSafe(path.join(agentDir, 'profile.yml')) || '';
-  const stateText = readFileSafe(path.join(tasksDir, 'state.yml')) || '';
-  const releaseText = readFileSafe(path.join(tasksDir, 'release-plan.yml')) || '';
+  const stateText = readFileSafe(path.join(tasksDir, 'state.json')) || '{}';
+  const releaseText = readFileSafe(path.join(tasksDir, 'release-plan.json')) || '{}';
   const executionText = readFileSafe(path.join(tasksDir, 'execution-status.yml')) || '';
 
   const profile = parseTopLevelScalars(profileText).profile || 'issue-per-task';
-  const stateScalars = parseTopLevelScalars(stateText);
+  const stateDoc = JSON.parse(stateText);
+  const releaseDoc = JSON.parse(releaseText);
   const activeGroupId =
-    stateScalars.active_group || stateScalars.active_group_id || stateScalars.active_epic || null;
+    stateDoc.active_group || stateDoc.active_group_id || stateDoc.active_epic || null;
   const state = {
-    active_flow: stateScalars.active_flow || null,
-    active_task: stateScalars.active_task || stateScalars.active_story || null,
+    active_flow: stateDoc.active_flow || null,
+    active_task: stateDoc.active_task || stateDoc.active_story || null,
     active_group: activeGroupId,
-    git: parseNestedBlock(stateText, 'git'),
-    handoff: parseNestedBlock(stateText, 'handoff'),
-    group_cycle: parseNestedBlock(stateText, 'group_cycle'),
+    git: stateDoc.git || {},
+    handoff: stateDoc.handoff || {},
+    group_cycle: stateDoc.group_cycle || {},
   };
 
-  const tasks = parseSequence(releaseText, 'tasks').map(normalizeTask);
-  const currentGroups = parseSequence(releaseText, 'groups').map((group) =>
-    normalizeGroup(group, false),
-  );
-  const legacyGroups = parseSequence(releaseText, 'epics').map((group) =>
-    normalizeGroup(group, true),
-  );
+  const tasks = (releaseDoc.tasks || []).map(normalizeTask);
+  const currentGroups = (releaseDoc.groups || []).map((group) => normalizeGroup(group, false));
+  const legacyGroups = (releaseDoc.epics || []).map((group) => normalizeGroup(group, true));
   const groups = currentGroups.length > 0 ? currentGroups : legacyGroups;
   const developmentStatus = parseNestedBlock(executionText, 'development_status');
   const taskStatus = parseNestedBlock(executionText, 'tasks');
@@ -125,7 +122,7 @@ function readSpecsStatus(projectDir) {
     projectDir,
     profile,
     state,
-    release: parseNestedBlock(releaseText, 'release'),
+    release: releaseDoc.release || {},
     tasks: tasks.map((task) => ({
       ...task,
       status: taskStatus[task.id] || developmentStatus[task.id] || 'pending',

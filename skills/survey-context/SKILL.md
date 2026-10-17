@@ -63,7 +63,7 @@ Identify the current phase from what you found.
 | **Integrate** | PR open, tests passing                                |
 | **Sustain**   | Ongoing, no active task                               |
 
-Prefer the `active_flow` and `handoff.next_skill` from `.agent/tasks/state.yml` when present.
+Prefer the `active_flow` and `handoff.next_skill` from `.agent/tasks/state.json` when present.
 
 ### 6. Suggest the next skill
 
@@ -82,12 +82,12 @@ priority order.
 
 Report a blocker before a recommendation: a broken baseline test, an open external bug
 issue with no active fix branch, a group task with no verify command, or a git hash in
-`.agent/tasks/state.yml` that is stale versus the working tree.
+`.agent/tasks/state.json` that is stale versus the working tree.
 
 ### 8. Record the task-start timestamp
 
 At work-item start, write `metrics.started_at` with the current ISO-8601 timestamp to
-`.agent/tasks/state.yml` as an informational progress marker only, not a measurement input.
+`.agent/tasks/state.json` as an informational progress marker only, not a measurement input.
 
 ## Utility outputs
 
@@ -99,4 +99,4 @@ At work-item start, write `metrics.started_at` with the current ISO-8601 timesta
 ## Handoff
 
 Gate: READY. Next: plan-work.
-Writes: `.agent/tasks/state.yml` `handoff.next_skill = plan-work`.
+Writes: `.agent/tasks/state.json` `handoff.next_skill = plan-work`.

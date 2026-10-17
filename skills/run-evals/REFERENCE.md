@@ -37,4 +37,4 @@ Add a `tier:` column to each eval row:
 
 ## pass@k
 
-Run capability evals k times (default k=3). Ship when all k pass or document known flake in `.agent/tasks/state.yml` `handoff.open_decisions`.
+Run capability evals k times (default k=3). Ship when all k pass or document known flake in `.agent/tasks/state.json` `handoff.open_decisions`.

@@ -14,6 +14,8 @@ use serde::Serialize;
 use truenorth_mcp::config;
 use truenorth_mcp::engine::agent_ws::read_layout;
 use truenorth_mcp::engine::backlog;
+use truenorth_mcp::engine::cockpit_json_migration::analyze as analyze_cockpit_json_migration;
+use truenorth_mcp::engine::cockpit_json_transaction;
 use truenorth_mcp::engine::features;
 use truenorth_mcp::engine::jev::config::resolve_protected_paths;
 use truenorth_mcp::engine::jev::drift::path_is_protected;
@@ -23,7 +25,7 @@ use truenorth_mcp::tools::scaffold::{
     apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
 };
 
-const USAGE: &str = "usage: truenorth-mcp [--version | --check-config [--strict] | guard [--staged | --range <base>..<head>] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | skills list --bundle-dir <path>]";
+const USAGE: &str = "usage: truenorth-mcp [--version | --check-config [--strict] | guard [--staged | --range <base>..<head>] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | migrate-cockpit-json (--check | --resume | --rollback) | skills list --bundle-dir <path>]";
 
 /// The operation requested by the process arguments.
 #[derive(Debug, PartialEq, Eq)]
@@ -62,6 +64,12 @@ pub enum Mode {
         /// Skill sets to deselect.
         remove_skill_sets: Vec<String>,
     },
+    /// Analyze the explicit cockpit JSON migration without changing disk.
+    MigrateCockpitJsonCheck,
+    /// Resume a previously staged cockpit JSON migration.
+    MigrateCockpitJsonResume,
+    /// Roll back a previously staged cockpit JSON migration.
+    MigrateCockpitJsonRollback,
     /// Print the package skill-set catalog.
     SkillsList {
         /// Root of the installed package, containing `bundle/` and `skills/`.
@@ -102,6 +110,15 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
         [command, ..] if command == "guard" => Err(USAGE.to_string()),
         [command, rest @ ..] if command == "init" => parse_init(rest),
         [command, rest @ ..] if command == "upgrade" => parse_upgrade(rest),
+        [command, option] if command == "migrate-cockpit-json" && option == "--check" => {
+            Ok(Mode::MigrateCockpitJsonCheck)
+        }
+        [command, option] if command == "migrate-cockpit-json" && option == "--resume" => {
+            Ok(Mode::MigrateCockpitJsonResume)
+        }
+        [command, option] if command == "migrate-cockpit-json" && option == "--rollback" => {
+            Ok(Mode::MigrateCockpitJsonRollback)
+        }
         [skills, list, rest @ ..] if skills == "skills" && list == "list" => {
             parse_skills_list(rest)
         }
@@ -304,6 +321,55 @@ pub fn upgrade(
                 ExitCode::FAILURE
             }
         },
+        Err(error) => {
+            eprintln!("truenorth-mcp: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+/// Analyze the explicit cockpit JSON migration without changing disk.
+pub fn migrate_cockpit_json_check() -> ExitCode {
+    let repo_root = match std::env::current_dir() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("truenorth-mcp: could not resolve the current directory: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    match analyze_cockpit_json_migration(&repo_root) {
+        Ok(plan) => match serde_json::to_string(&plan) {
+            Ok(plan) => {
+                println!("{plan}");
+                ExitCode::SUCCESS
+            }
+            Err(error) => {
+                eprintln!("truenorth-mcp: could not serialize the migration plan: {error}");
+                ExitCode::FAILURE
+            }
+        },
+        Err(error) => {
+            eprintln!("truenorth-mcp: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+pub fn recover_cockpit_json_migration(rollback: bool) -> ExitCode {
+    let root = match std::env::current_dir() {
+        Ok(root) => root,
+        Err(error) => {
+            eprintln!("truenorth-mcp: could not resolve the current directory: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let result = if rollback {
+        cockpit_json_transaction::rollback(&root)
+    } else {
+        cockpit_json_transaction::resume(&root)
+    };
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             eprintln!("truenorth-mcp: {error}");
             ExitCode::FAILURE

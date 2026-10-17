@@ -86,7 +86,7 @@ impl TrueNorthServer {
             ErrorData::internal_error(format!("could not read .agent/ontology.yml: {error}"), None)
         })?;
         if let Some(text) = existing.as_deref() {
-            let ontology: Ontology = serde_yaml::from_str(text).map_err(|error| {
+            let ontology: Ontology = crate::engine::yaml::from_str(text).map_err(|error| {
                 ErrorData::invalid_request(
                     format!(".agent/ontology.yml failed to parse: {error}"),
                     None,
@@ -104,7 +104,7 @@ impl TrueNorthServer {
         let precondition = WritePrecondition::new(observed);
 
         let ontology = seed_ontology(&args.domain, &args.source_paths);
-        let yaml = serde_yaml::to_string(&ontology).map_err(|e| {
+        let yaml = crate::engine::yaml::to_string(&ontology).map_err(|e| {
             ErrorData::internal_error(format!("could not serialize the ontology: {e}"), None)
         })?;
         let change =
@@ -261,7 +261,7 @@ fn read_and_parse(path: &Path) -> Result<Ontology, ErrorData> {
             None,
         )
     })?;
-    serde_yaml::from_str(&text).map_err(|e| {
+    crate::engine::yaml::from_str(&text).map_err(|e| {
         ErrorData::invalid_request(format!(".agent/ontology.yml failed to parse: {e}"), None)
     })
 }

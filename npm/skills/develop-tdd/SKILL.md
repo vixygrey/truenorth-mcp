@@ -130,4 +130,4 @@ Run the verify command from the active group task or external bug issue through 
 ## Handoff
 
 Gate: READY. Next: verify-work.
-Writes: `.agent/tasks/state.yml` `handoff.next_skill = verify-work`.
+Writes: `.agent/tasks/state.json` `handoff.next_skill = verify-work`.

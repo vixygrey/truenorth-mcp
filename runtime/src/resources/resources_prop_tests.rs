@@ -1,14 +1,8 @@
-//! Property tests for cockpit relocation backward-compat.
+//! Property tests for cockpit state preservation.
 //!
-//! Included from `resources/mod.rs` via `#[path]`, so `super` is the resources module.
-//!
-//! Feature: agent-workspace-profiles, Property 7: cockpit relocation preserves unknown
-//! fields. For every legacy cockpit read under `specs/` with an arbitrary set of unknown
-//! fields, mapping that content onto the `.agent/` model preserves every unknown field with
-//! its original key and value. A legacy version marker, such as an old-tool version key, is
-//! just one more unknown field the model preserves; the model names no field for it. A
-//! malformed legacy file yields a read error naming the file, leaves `.agent/` unchanged, and
-//! retains the last good content.
+//! Property 7: an unknown field in `.agent/tasks/state.json` survives a resource read
+//! with its original key and value. A malformed state document yields a read error
+//! naming the file, leaves the last good content retained, and does not mutate disk.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -20,9 +14,8 @@ use super::*;
 
 /// Generate a set of unknown scalar fields with distinct keys and string values.
 ///
-/// The generated keys cover any unknown field a legacy file can carry, including a version
-/// marker such as an old-tool version key. The model names no field for any of them; they are
-/// all preserved through the same catch-all.
+/// The generated keys cover any unknown field a hand-edited document can carry. The model
+/// names no field for any of them; they are all preserved through the same catch-all.
 fn unknown_fields() -> impl Strategy<Value = BTreeMap<String, String>> {
     prop::collection::btree_map("[a-z][a-z0-9_]{0,11}", "[a-zA-Z0-9 ._-]{0,23}", 0..8)
 }
@@ -30,32 +23,29 @@ fn unknown_fields() -> impl Strategy<Value = BTreeMap<String, String>> {
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(200))]
 
-    /// A legacy specs/state.yaml read preserves every unknown field, whatever its key.
+    /// A `state.json` read preserves every unknown field, whatever its key.
     #[test]
-    fn legacy_state_read_preserves_fields(fields in unknown_fields()) {
+    fn state_read_preserves_unknown_fields(fields in unknown_fields()) {
         let repo = TempDir::new().expect("temp repo");
-        let specs = repo.path().join("specs");
-        fs::create_dir_all(&specs).expect("specs dir");
+        let tasks = repo.path().join(".agent/tasks");
+        fs::create_dir_all(&tasks).expect("tasks dir");
 
-        // Build a legacy document as a mapping, so serialization is always valid YAML.
-        // Keys the state schema validates as mappings. A string value under these would
-        // be a genuinely invalid legacy file, not a preservation case, so exclude them.
+        // Build the document as a mapping, so serialization is always valid JSON. Keys
+        // the state schema validates as mappings would make a string value genuinely
+        // invalid, not a preservation case, so exclude them.
         let reserved = ["git", "handoff", "metrics"];
-        let mut map = serde_yaml::Mapping::new();
+        let mut map = serde_json::Map::new();
         for (key, value) in &fields {
             if reserved.contains(&key.as_str()) {
                 continue;
             }
-            map.insert(key.clone().into(), value.clone().into());
+            map.insert(key.clone(), serde_json::Value::String(value.clone()));
         }
-        let doc = serde_yaml::to_string(&serde_yaml::Value::Mapping(map)).expect("serialize");
-        fs::write(specs.join("state.yaml"), &doc).expect("write legacy state");
+        let doc = crate::engine::cockpit_json::to_string(&map).expect("serialize");
+        fs::write(tasks.join("state.json"), &doc).expect("write state");
 
-        // Read through the resource, which falls back to the legacy file.
-        let content = ResourceDoc::State
-            .read_current(repo.path())
-            .expect("legacy read");
-        let parsed: serde_yaml::Value = serde_yaml::from_str(&content).expect("parse read");
+        let content = ResourceDoc::State.read_current(repo.path()).expect("read");
+        let parsed: serde_json::Value = serde_json::from_str(&content).expect("parse read");
 
         // Every unknown field survives with its original key and value.
         for (key, value) in &fields {
@@ -69,27 +59,27 @@ proptest! {
                 key
             );
         }
-
-        // The read never wrote a .agent/ state file; the legacy read does not mutate.
-        prop_assert!(!repo.path().join(".agent/tasks/state.yml").exists());
     }
 
-    /// A malformed legacy file yields an Invalid read error and retains the last good.
+    /// A malformed state document yields an Invalid read error and retains the last good.
     #[test]
-    fn malformed_legacy_retains_last_good(good_epic in "[a-z0-9]{1,8}") {
+    fn malformed_state_retains_last_good(good_epic in "[a-z0-9]{1,8}") {
         let repo = TempDir::new().expect("temp repo");
-        let specs = repo.path().join("specs");
-        fs::create_dir_all(&specs).expect("specs dir");
+        let tasks = repo.path().join(".agent/tasks");
+        fs::create_dir_all(&tasks).expect("tasks dir");
         let cache = ResourceCache::new();
 
         // A first good read populates the last-good cache.
-        fs::write(specs.join("state.yaml"), format!("active_epic: {good_epic}\n"))
-            .expect("write good");
+        fs::write(
+            tasks.join("state.json"),
+            format!("{{\"active_epic\": \"{good_epic}\"}}"),
+        )
+        .expect("write good");
         let good = cache.read(ResourceDoc::State, repo.path()).expect("good read");
         prop_assert!(good.contains(&good_epic));
 
-        // Break the legacy file. The read errors, and the cache keeps the last good.
-        fs::write(specs.join("state.yaml"), "git: not-a-mapping\n").expect("write broken");
+        // Break the state document. The read errors, and the cache keeps the last good.
+        fs::write(tasks.join("state.json"), "{\"git\": \"not-a-mapping\"}").expect("write broken");
         let error = cache
             .read(ResourceDoc::State, repo.path())
             .expect_err("broken read");

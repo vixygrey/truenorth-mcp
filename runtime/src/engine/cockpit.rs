@@ -10,7 +10,7 @@
 
 use std::path::{Path, PathBuf};
 
-use serde_yaml::Value;
+use serde_json::{Map, Value};
 use thiserror::Error;
 
 use crate::engine::agent_ws::{ObservedFile, WritePrecondition, write_under_agent_if_unchanged};
@@ -50,7 +50,7 @@ pub enum CockpitError {
          The state file was left unchanged."
     )]
     InvalidPhase {
-        /// The unsupported YAML value.
+        /// The unsupported JSON value.
         actual: String,
     },
 
@@ -79,12 +79,12 @@ pub fn release_plan_path(repo_root: &Path) -> PathBuf {
 }
 
 /// The state file path relative to `.agent/`, for the write guard.
-const STATE_REL: &str = "tasks/state.yml";
-const STATE_REPO_REL: &str = ".agent/tasks/state.yml";
+const STATE_REL: &str = "tasks/state.json";
+const STATE_REPO_REL: &str = ".agent/tasks/state.json";
 
 /// The release-plan file path relative to `.agent/`, for the write guard.
-const RELEASE_PLAN_REL: &str = "tasks/release-plan.yml";
-const RELEASE_PLAN_REPO_REL: &str = ".agent/tasks/release-plan.yml";
+const RELEASE_PLAN_REL: &str = "tasks/release-plan.json";
+const RELEASE_PLAN_REPO_REL: &str = ".agent/tasks/release-plan.json";
 
 /// A validated cockpit mutation whose exact bytes are ready for a guarded commit.
 pub struct PreparedCockpitWrite {
@@ -114,18 +114,7 @@ impl PreparedCockpitWrite {
     }
 }
 
-/// The legacy bigpowers state path under `specs/`, for the fallback read (Requirement 2.9).
-fn legacy_state_path(repo_root: &Path) -> PathBuf {
-    repo_root.join("specs").join("state.yaml")
-}
-
-/// The legacy bigpowers release-plan path under `specs/`, for the fallback read
-/// (Requirement 2.9).
-fn legacy_release_plan_path(repo_root: &Path) -> PathBuf {
-    repo_root.join("specs").join("release-plan.yaml")
-}
-
-/// Advance the lifecycle phase in `state.yaml` and record the git context
+/// Advance the lifecycle phase in `state.json` and record the git context
 /// (Requirement 2.3).
 ///
 /// The requested source must match the recorded phase, and the target must be its immediate
@@ -233,7 +222,7 @@ pub fn prepare_record_task(
     })
 }
 
-/// Read the unscoped TDD step from `state.yaml`, or `None` when unset.
+/// Read the unscoped TDD step from `state.json`, or `None` when unset.
 ///
 /// # Errors
 ///
@@ -298,7 +287,7 @@ pub fn read_active_task(repo_root: &Path) -> Result<Option<String>, CockpitError
     Ok(task)
 }
 
-/// Write the recorded TDD step into `state.yaml`, preserving every other field
+/// Write the recorded TDD step into `state.json`, preserving every other field
 /// (Requirements 2.8, 9.3).
 ///
 /// On any failure the file is left unchanged (Requirement 2.12).
@@ -328,30 +317,24 @@ pub fn prepare_tdd_step(
     let mut tdd = mutation
         .state
         .get("tdd")
-        .and_then(|value| value.as_mapping().cloned())
+        .and_then(|value| value.as_object().cloned())
         .unwrap_or_default();
     if let Some(group_id) = mutation.group_id {
         let mut scopes = tdd
             .get("scopes")
-            .and_then(|value| value.as_mapping().cloned())
+            .and_then(|value| value.as_object().cloned())
             .unwrap_or_default();
         let mut scope = scopes
-            .get(Value::String(group_id.clone()))
-            .and_then(|value| value.as_mapping().cloned())
+            .get(&group_id)
+            .and_then(|value| value.as_object().cloned())
             .unwrap_or_default();
-        scope.insert(
-            Value::String("step".to_string()),
-            Value::String(step.as_str().to_string()),
-        );
-        scopes.insert(Value::String(group_id), Value::Mapping(scope));
-        tdd.insert(Value::String("scopes".to_string()), Value::Mapping(scopes));
+        scope.insert("step".to_string(), Value::String(step.as_str().to_string()));
+        scopes.insert(group_id, Value::Object(scope));
+        tdd.insert("scopes".to_string(), Value::Object(scopes));
     } else {
-        tdd.insert(
-            Value::String("step".to_string()),
-            Value::String(step.as_str().to_string()),
-        );
+        tdd.insert("step".to_string(), Value::String(step.as_str().to_string()));
     }
-    mutation.state.set("tdd", Value::Mapping(tdd));
+    mutation.state.set("tdd", Value::Object(tdd));
 
     let contents = validate_state_for_write(&mutation.state)?;
     Ok(PreparedCockpitWrite {
@@ -378,31 +361,18 @@ fn read_state(repo_root: &Path) -> Result<StateFile, CockpitError> {
 }
 
 fn read_state_versioned(repo_root: &Path) -> Result<VersionedState, CockpitError> {
-    let agent = state_path(repo_root);
-    let legacy = legacy_state_path(repo_root);
-    let (agent_text, agent_observed) =
-        ObservedFile::read_string(&agent).map_err(|source| CockpitError::Io {
-            file: ".agent/tasks/state.yml".to_string(),
-            source,
-        })?;
-    if let Some(text) = agent_text {
-        return Ok(VersionedState {
-            value: validate_state(&text)?,
-            precondition: WritePrecondition::new(agent_observed),
-        });
-    }
-
-    let (legacy_text, legacy_observed) =
-        ObservedFile::read_string(&legacy).map_err(|source| CockpitError::Io {
-            file: "specs/state.yaml".to_string(),
-            source,
-        })?;
+    let path = state_path(repo_root);
+    let (text, observed) = ObservedFile::read_string(&path).map_err(|source| CockpitError::Io {
+        file: STATE_REPO_REL.to_string(),
+        source,
+    })?;
     Ok(VersionedState {
-        value: match legacy_text {
-            Some(text) => validate_state(&text)?,
-            None => StateFile::default(),
-        },
-        precondition: WritePrecondition::new(agent_observed).with_dependency(legacy_observed),
+        value: text
+            .as_deref()
+            .map(validate_state)
+            .transpose()?
+            .unwrap_or_default(),
+        precondition: WritePrecondition::new(observed),
     })
 }
 
@@ -413,10 +383,8 @@ fn current_phase(state: &StateFile) -> Result<Phase, CockpitError> {
         Some(value) => {
             let Some(phase) = value.as_str() else {
                 return Err(CockpitError::InvalidPhase {
-                    actual: serde_yaml::to_string(value)
-                        .unwrap_or_else(|_| "<unserializable YAML value>".to_string())
-                        .trim()
-                        .to_string(),
+                    actual: serde_json::to_string(value)
+                        .unwrap_or_else(|_| "<unserializable JSON value>".to_string()),
                 });
             };
             map_legacy_phase(phase).map_err(CockpitError::Validation)
@@ -425,31 +393,18 @@ fn current_phase(state: &StateFile) -> Result<Phase, CockpitError> {
 }
 
 fn read_release_plan_versioned(repo_root: &Path) -> Result<VersionedPlan, CockpitError> {
-    let agent = release_plan_path(repo_root);
-    let legacy = legacy_release_plan_path(repo_root);
-    let (agent_text, agent_observed) =
-        ObservedFile::read_string(&agent).map_err(|source| CockpitError::Io {
-            file: ".agent/tasks/release-plan.yml".to_string(),
-            source,
-        })?;
-    if let Some(text) = agent_text {
-        return Ok(VersionedPlan {
-            value: validate_release_plan(&text)?,
-            precondition: WritePrecondition::new(agent_observed),
-        });
-    }
-
-    let (legacy_text, legacy_observed) =
-        ObservedFile::read_string(&legacy).map_err(|source| CockpitError::Io {
-            file: "specs/release-plan.yaml".to_string(),
-            source,
-        })?;
+    let path = release_plan_path(repo_root);
+    let (text, observed) = ObservedFile::read_string(&path).map_err(|source| CockpitError::Io {
+        file: RELEASE_PLAN_REPO_REL.to_string(),
+        source,
+    })?;
     Ok(VersionedPlan {
-        value: match legacy_text {
-            Some(text) => validate_release_plan(&text)?,
-            None => ReleasePlanFile::default(),
-        },
-        precondition: WritePrecondition::new(agent_observed).with_dependency(legacy_observed),
+        value: text
+            .as_deref()
+            .map(validate_release_plan)
+            .transpose()?
+            .unwrap_or_default(),
+        precondition: WritePrecondition::new(observed),
     })
 }
 
@@ -461,17 +416,17 @@ fn apply_phase(state: &mut StateFile, to_phase: Phase, artifacts_summary: &str, 
     // existing handoff fields.
     let mut handoff = state
         .get("handoff")
-        .and_then(|v| v.as_mapping().cloned())
+        .and_then(|v| v.as_object().cloned())
         .unwrap_or_default();
     handoff.insert(
-        Value::String("artifacts_summary".to_string()),
+        "artifacts_summary".to_string(),
         Value::String(artifacts_summary.to_string()),
     );
     handoff.insert(
-        Value::String("git_context".to_string()),
+        "git_context".to_string(),
         Value::String(git_context.to_string()),
     );
-    state.set("handoff", Value::Mapping(handoff));
+    state.set("handoff", Value::Object(handoff));
 }
 
 /// Append a task entry to the release plan's `tasks` sequence, preserving other fields.
@@ -485,34 +440,27 @@ fn apply_task(
     task_name: &str,
     verify_command: &str,
 ) {
-    let mut task = serde_yaml::Mapping::new();
+    let mut task = Map::new();
     if let Some(id) = group_id {
-        task.insert(
-            Value::String("group_id".to_string()),
-            Value::String(id.to_string()),
-        );
+        task.insert("group_id".to_string(), Value::String(id.to_string()));
     }
     if let Some(kind) = group_kind {
-        task.insert(
-            Value::String("group_kind".to_string()),
-            Value::String(kind.to_string()),
-        );
+        task.insert("group_kind".to_string(), Value::String(kind.to_string()));
     }
     task.insert(
-        Value::String("task_name".to_string()),
+        "task_name".to_string(),
         Value::String(task_name.to_string()),
     );
     task.insert(
-        Value::String("verify_command".to_string()),
+        "verify_command".to_string(),
         Value::String(verify_command.to_string()),
     );
 
-    let key = Value::String("tasks".to_string());
-    match plan.root.get_mut(&key).and_then(Value::as_sequence_mut) {
-        Some(tasks) => tasks.push(Value::Mapping(task)),
+    match plan.root.get_mut("tasks").and_then(Value::as_array_mut) {
+        Some(tasks) => tasks.push(Value::Object(task)),
         None => {
             plan.root
-                .insert(key, Value::Sequence(vec![Value::Mapping(task)]));
+                .insert("tasks".to_string(), Value::Array(vec![Value::Object(task)]));
         }
     }
 }

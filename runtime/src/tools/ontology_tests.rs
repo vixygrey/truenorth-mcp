@@ -24,7 +24,7 @@ fn seed_ontology_file(root: &Path) {
     let ontology = seed_ontology("orders", &["src/order.rs".to_string()]);
     let mut with_alias = ontology;
     with_alias.entities[0].prohibited_aliases = vec!["is_deleted".to_string()];
-    let yaml = serde_yaml::to_string(&with_alias).expect("serialize");
+    let yaml = crate::engine::yaml::to_string(&with_alias).expect("serialize");
     let path = ontology_path(root);
     fs::create_dir_all(path.parent().expect("parent")).expect("agent dir");
     fs::write(path, yaml).expect("write ontology");
@@ -133,7 +133,7 @@ use rmcp::handler::server::wrapper::Parameters;
 /// Parse the `.agent/ontology.yml` file at a root into an Ontology.
 fn read_agent_ontology(root: &Path) -> Ontology {
     let text = fs::read_to_string(root.join(".agent/ontology.yml")).expect("read .agent ontology");
-    serde_yaml::from_str(&text).expect("parse")
+    crate::engine::yaml::from_str(&text).expect("parse")
 }
 
 #[test]
@@ -142,7 +142,7 @@ fn read_ontology_falls_back_to_legacy_specs() {
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
     let ontology = seed_ontology("legacy-orders", &["src/order.rs".to_string()]);
-    let yaml = serde_yaml::to_string(&ontology).expect("serialize");
+    let yaml = crate::engine::yaml::to_string(&ontology).expect("serialize");
     fs::create_dir_all(root.join("specs")).expect("specs dir");
     fs::write(root.join("specs/ontology.yaml"), yaml).expect("write legacy");
 
@@ -188,7 +188,7 @@ async fn generate_overwrites_the_empty_stub() {
     // deadlock the generate tool.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    let stub = serde_yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
+    let stub = crate::engine::yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
     fs::create_dir_all(root.join(".agent")).expect("agent dir");
     fs::write(root.join(".agent/ontology.yml"), stub).expect("seed stub");
 
@@ -237,7 +237,7 @@ async fn verify_notes_the_empty_stub() {
     // Requirement 4.10: verify against the empty stub passes with the not-yet-defined note.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    let stub = serde_yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
+    let stub = crate::engine::yaml::to_string(&Ontology::empty_stub()).expect("serialize stub");
     fs::create_dir_all(root.join(".agent")).expect("agent dir");
     fs::write(root.join(".agent/ontology.yml"), stub).expect("seed stub");
 
@@ -440,7 +440,7 @@ fn primary_ontology_takes_precedence_over_legacy_and_parse_io_is_typed() {
     fs::create_dir_all(dir.path().join("specs")).expect("specs dir");
     fs::write(
         legacy_ontology_path(dir.path()),
-        serde_yaml::to_string(&legacy).expect("serialize"),
+        crate::engine::yaml::to_string(&legacy).expect("serialize"),
     )
     .expect("legacy ontology");
     assert_eq!(

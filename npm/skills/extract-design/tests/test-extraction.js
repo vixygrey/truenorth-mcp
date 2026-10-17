@@ -895,7 +895,7 @@ const { writeGrillMeHandoff } = await import('../scripts/lib/state.js');
 const nodeOs = await import('node:os');
 const nodePath = await import('node:path');
 
-// writeGrillMeHandoff writes to a cwd-relative `.agent/tasks/state.yml`, so run it inside
+// writeGrillMeHandoff writes to a cwd-relative `.agent/tasks/state.json`, so run it inside
 // a fresh temp repo and restore the cwd afterward.
 function inTempRepo(fn) {
   const prev = process.cwd();
@@ -909,7 +909,7 @@ function inTempRepo(fn) {
   }
 }
 
-t('writeGrillMeHandoff writes the canonical handoff to .agent/tasks/state.yml', () => {
+t('writeGrillMeHandoff writes the canonical handoff to .agent/tasks/state.json', () => {
   inTempRepo(() => {
     writeGrillMeHandoff({
       tokenCount: 100,
@@ -917,37 +917,38 @@ t('writeGrillMeHandoff writes the canonical handoff to .agent/tasks/state.yml', 
       uncertainCount: 1,
       uncertainDecisions: ['Choose a focus treatment'],
     });
-    const statePath = '.agent/tasks/state.yml';
-    assert(nodeFs.existsSync(statePath), 'the handoff created .agent/tasks/state.yml');
+    const statePath = '.agent/tasks/state.json';
+    assert(nodeFs.existsSync(statePath), 'the handoff created .agent/tasks/state.json');
     const c = nodeFs.readFileSync(statePath, 'utf8');
-    includes(c, 'next_skill: grill-me', 'the handoff names grill-me as the next skill');
-    includes(c, 'open_decisions:', 'the handoff uses canonical open decisions');
-    includes(c, '- Choose a focus treatment', 'the handoff records the uncertainty');
-    assert(!c.includes('uncertain_decisions:'), 'the legacy uncertainty field is absent');
-    includes(c, 'context:', 'the canonical context field is present');
+    includes(c, '"next_skill": "grill-me"', 'the handoff names grill-me as the next skill');
+    includes(c, '"open_decisions":', 'the handoff uses canonical open decisions');
+    includes(c, 'Choose a focus treatment', 'the handoff records the uncertainty');
+    assert(!c.includes('uncertain_decisions'), 'the legacy uncertainty field is absent');
+    includes(c, '"context":', 'the canonical context field is present');
+    JSON.parse(c);
   });
 });
 
 t('writeGrillMeHandoff does not write a second handoff when one is present', () => {
   inTempRepo(() => {
-    const statePath = '.agent/tasks/state.yml';
+    const statePath = '.agent/tasks/state.json';
     writeGrillMeHandoff({ tokenCount: 1 });
     writeGrillMeHandoff({ tokenCount: 2 });
     const c = nodeFs.readFileSync(statePath, 'utf8');
-    const count = (c.match(/next_skill:/g) || []).length;
+    const count = (c.match(/"next_skill":/g) || []).length;
     assert(count === 1, `expected one handoff, found ${count}`);
   });
 });
 
 t('writeGrillMeHandoff appends the handoff, preserving existing state content', () => {
   inTempRepo(() => {
-    const statePath = '.agent/tasks/state.yml';
+    const statePath = '.agent/tasks/state.json';
     nodeFs.mkdirSync('.agent/tasks', { recursive: true });
-    nodeFs.writeFileSync(statePath, 'active_group: e01\nphase: execute\n', 'utf8');
+    nodeFs.writeFileSync(statePath, '{"active_group": "e01", "phase": "execute"}', 'utf8');
     writeGrillMeHandoff({ tokenCount: 1 });
     const c = nodeFs.readFileSync(statePath, 'utf8');
-    includes(c, 'active_group: e01', 'the existing state content is preserved');
-    includes(c, 'next_skill: grill-me', 'the handoff was appended');
+    includes(c, '"active_group": "e01"', 'the existing state content is preserved');
+    includes(c, '"next_skill": "grill-me"', 'the handoff was appended');
   });
 });
 

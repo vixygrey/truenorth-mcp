@@ -16,7 +16,7 @@ Invoke `trace-requirement report` after `verify-work`. Invoke
 
 Both modes own `.agent/tasks/traceability.yml`. No other skill writes it.
 
-> **HARD GATE**: `.agent/tasks/release-plan.yml` must exist. Missing, unreadable,
+> **HARD GATE**: `.agent/tasks/release-plan.json` must exist. Missing, unreadable,
 > unsupported, or stale traceability evidence is a failure, never a waiver.
 
 ## Report mode

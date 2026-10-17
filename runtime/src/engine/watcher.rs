@@ -25,7 +25,7 @@ pub const DEBOUNCE_WINDOW: Duration = Duration::from_millis(200);
 /// A cockpit resource URI backed by a file on disk (design §5 resources).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ResourceUri {
-    /// `truenorth://state`, backed by `.agent/tasks/state.yml`.
+    /// `truenorth://state`, backed by `.agent/tasks/state.json`.
     State,
     /// `truenorth://cockpit`, backed by the release plan and product boundary.
     Cockpit,
@@ -58,7 +58,7 @@ impl ResourceUri {
 pub fn map_path_to_uri(path: &Path) -> Option<ResourceUri> {
     let text = path.to_string_lossy().replace('\\', "/");
 
-    if text.ends_with(".agent/tasks/state.yml") {
+    if text.ends_with(".agent/tasks/state.json") {
         return Some(ResourceUri::State);
     }
     if text.ends_with(".agent/ontology.yml") {
@@ -66,7 +66,7 @@ pub fn map_path_to_uri(path: &Path) -> Option<ResourceUri> {
     }
     // The release plan or the relocated product path (Requirements 2.6, 2.12). The
     // watcher no longer watches `specs/product/`; the product path is `.agent/product/`.
-    if text.ends_with(".agent/tasks/release-plan.yml") || text.contains(".agent/product/") {
+    if text.ends_with(".agent/tasks/release-plan.json") || text.contains(".agent/product/") {
         return Some(ResourceUri::Cockpit);
     }
     if text.ends_with("CONVENTIONS.md") || text.ends_with("conventions.md") {

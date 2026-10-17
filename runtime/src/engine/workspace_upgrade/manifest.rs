@@ -8,8 +8,8 @@ use thiserror::Error;
 pub use crate::engine::digest::sha256;
 
 pub const MANIFEST_REL_PATH: &str = ".agent/workspace-manifest.yml";
-pub const MANIFEST_VERSION: &str = "2";
-pub const BUNDLE_SCHEMA_VERSION: u32 = 2;
+pub const MANIFEST_VERSION: &str = "3";
+pub const BUNDLE_SCHEMA_VERSION: u32 = 3;
 pub const CORE_SKILL_SET: &str = "core";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -86,13 +86,17 @@ impl BundleManifest {
     }
 
     pub fn validate(&self, path: &Path) -> Result<(), ManifestError> {
-        if !matches!(self.schema_version, 1 | BUNDLE_SCHEMA_VERSION) {
+        if !matches!(self.schema_version, 1 | 2 | BUNDLE_SCHEMA_VERSION) {
             return invalid(
                 path,
                 format!("unsupported schema version `{}`", self.schema_version),
             );
         }
-        let expected_workspace_schema = if self.schema_version == 1 { "1" } else { "2" };
+        let expected_workspace_schema = match self.schema_version {
+            1 => "1",
+            2 => "2",
+            _ => "3",
+        };
         if self.bundle_version.trim().is_empty()
             || self.workspace_schema_version != expected_workspace_schema
         {
@@ -172,7 +176,10 @@ fn validate_skill_sets(
         }
     }
     if !set_names.contains(CORE_SKILL_SET) {
-        return invalid(path, "bundle schema v2 must declare the `core` skill set");
+        return invalid(
+            path,
+            "bundle schema v2 or v3 must declare the `core` skill set",
+        );
     }
     let file_skills: BTreeSet<&str> = files
         .iter()
@@ -217,25 +224,26 @@ impl WorkspaceManifest {
                 });
             }
         };
-        let value: Self = serde_yaml::from_str(&text).map_err(|source| ManifestError::Parse {
-            path: path.display().to_string(),
-            detail: source.to_string(),
-        })?;
+        let value: Self =
+            crate::engine::yaml::from_str(&text).map_err(|source| ManifestError::Parse {
+                path: path.display().to_string(),
+                detail: source.to_string(),
+            })?;
         value.validate(&path)?;
         Ok(Some(value))
     }
 
     pub fn validate(&self, path: &Path) -> Result<(), ManifestError> {
-        if !matches!(self.manifest_version.as_str(), "1" | MANIFEST_VERSION) {
+        if !matches!(self.manifest_version.as_str(), "1" | "2" | MANIFEST_VERSION) {
             return invalid(
                 path,
                 format!("unsupported manifest version `{}`", self.manifest_version),
             );
         }
-        let expected_workspace_schema = if self.manifest_version == "1" {
-            "1"
-        } else {
-            "2"
+        let expected_workspace_schema = match self.manifest_version.as_str() {
+            "1" => "1",
+            "2" => "2",
+            _ => "3",
         };
         if self.bundle_version.trim().is_empty()
             || self.workspace_schema_version != expected_workspace_schema
@@ -278,7 +286,7 @@ impl WorkspaceManifest {
     }
 
     pub fn to_yaml(&self) -> Result<String, ManifestError> {
-        serde_yaml::to_string(self).map_err(|source| ManifestError::Parse {
+        crate::engine::yaml::to_string(self).map_err(|source| ManifestError::Parse {
             path: MANIFEST_REL_PATH.to_string(),
             detail: source.to_string(),
         })

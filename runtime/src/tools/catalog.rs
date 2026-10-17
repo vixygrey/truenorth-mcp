@@ -421,11 +421,11 @@ fn skills_json(
 }
 
 /// A frontmatter field as a display string, or empty when absent or non-scalar.
-fn fm_str(fm: &std::collections::BTreeMap<String, serde_yaml::Value>, key: &str) -> String {
+fn fm_str(fm: &std::collections::BTreeMap<String, saneyaml::Value>, key: &str) -> String {
     match fm.get(key) {
-        Some(serde_yaml::Value::String(s)) => s.clone(),
-        Some(serde_yaml::Value::Number(n)) => n.to_string(),
-        Some(serde_yaml::Value::Bool(b)) => b.to_string(),
+        Some(saneyaml::Value::String(s)) => s.clone(),
+        Some(saneyaml::Value::Number(n)) => n.to_string(),
+        Some(saneyaml::Value::Bool(b)) => b.to_string(),
         _ => String::new(),
     }
 }

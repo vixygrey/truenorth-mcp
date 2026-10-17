@@ -36,20 +36,17 @@ async fn resource_results(
     let tasks = repo.path().join(".agent/tasks");
     fs::create_dir_all(&tasks)?;
     fs::write(
-        tasks.join("state.yml"),
+        tasks.join("state.json"),
         concat!(
-            "active_flow: null\n",
-            "active_group: null\n",
-            "active_task: null\n",
-            "phase: null\n",
-            "tdd:\n",
-            "  step: refactor\n",
-            "handoff:\n",
-            "  next_skill: null\n",
-            "  context: null\n",
-            "  group: null\n",
-            "git:\n",
-            "  branch: main\n",
+            "{",
+            "\"active_flow\": null,",
+            "\"active_group\": null,",
+            "\"active_task\": null,",
+            "\"phase\": null,",
+            "\"tdd\": {\"step\": \"refactor\"},",
+            "\"handoff\": {\"next_skill\": null, \"context\": null, \"group\": null},",
+            "\"git\": {\"branch\": \"main\"}",
+            "}",
         ),
     )?;
 
@@ -112,7 +109,7 @@ fn assert_resource_payloads(
         panic!("state resource must return one text content block");
     };
     assert_eq!(uri, "truenorth://state");
-    assert!(text.contains("phase: null"));
+    assert!(text.contains("\"phase\":null") || text.contains("\"phase\": null"));
 }
 
 #[tokio::test]

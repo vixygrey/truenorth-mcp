@@ -13,7 +13,7 @@ Finalize a completed Git branch through the configured mode. Clean up only after
 
 ## Integration mode
 
-Read `workflow_mode` from `.agent/tasks/state.yml`. The only valid values are
+Read `workflow_mode` from `.agent/tasks/state.json`. The only valid values are
 `solo-git` and `team-pr`. A missing or unknown value blocks release. Never infer
 or silently change the mode.
 

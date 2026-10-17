@@ -17,28 +17,14 @@ version: '1'
 areas:
   config: [rules.yml]
   spec: [requirements.md]
-  tasks: [state.yml]
+  tasks: [state.json]
   memories: [lessons.md, glossary.md]
 "
     .to_string()
 }
 
 /// The methodology-neutral state cockpit shared by every profile.
-pub(super) const STATE_SEED: &str = "\
-phase: discover
-active_flow: null
-active_task: null
-active_group: null
-handoff:
-  next_skill: null
-  last_step_completed: null
-  context: null
-  open_decisions: []
-  required_reading: []
-  group_id: null
-  artifacts_summary: null
-  git_context: null
-";
+pub(super) const STATE_SEED: &str = "{\n  \"phase\": \"discover\",\n  \"active_flow\": null,\n  \"active_task\": null,\n  \"active_group\": null,\n  \"handoff\": {\n    \"next_skill\": null,\n    \"last_step_completed\": null,\n    \"context\": null,\n    \"open_decisions\": [],\n    \"required_reading\": [],\n    \"group_id\": null,\n    \"artifacts_summary\": null,\n    \"git_context\": null\n  }\n}\n";
 
 /// The empty methodology-neutral execution-status cockpit.
 pub(super) const EXECUTION_STATUS_SEED: &str = "tasks: {}\ngroups: {}\ndevelopment_status: {}\n";
@@ -46,7 +32,7 @@ pub(super) const EXECUTION_STATUS_SEED: &str = "tasks: {}\ngroups: {}\ndevelopme
 /// The seed body for a profile starter file.
 pub(super) fn starter_seed(rel: &str) -> String {
     match rel {
-        "tasks/release-plan.yml" => "tasks: []\n".to_string(),
+        "tasks/release-plan.json" => "{\n  \"tasks\": []\n}\n".to_string(),
         "tasks/backlog.yml" => "version: '1'\nownership:\n  mode: local\nbacklog: []\n".to_string(),
         _ => "{}\n".to_string(),
     }

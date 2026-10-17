@@ -18,7 +18,7 @@ sets:
     prerequisites: A checkout containing the versioned TrueNorth wiki sources.
 planning_artifacts:
   release-index:
-    path: .agent/tasks/release-plan.yml
+    path: .agent/tasks/release-plan.json
     writer: plan-release
     readers:
       - assess-impact

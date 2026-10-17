@@ -40,8 +40,16 @@ async function smokeCommand(
     const tasks = path.join(root, '.agent', 'tasks');
     fs.mkdirSync(tasks);
     fs.writeFileSync(
-      path.join(tasks, 'state.yml'),
-      'active_flow: null\nactive_group: null\nactive_task: null\nphase: null\ntdd:\n  step: refactor\nhandoff:\n  next_skill: null\n  context: null\n  group: null\ngit:\n  branch: main\n',
+      path.join(tasks, 'state.json'),
+      JSON.stringify({
+        active_flow: null,
+        active_group: null,
+        active_task: null,
+        phase: null,
+        tdd: { step: 'refactor' },
+        handoff: { next_skill: null, context: null, group: null },
+        git: { branch: 'main' },
+      }),
     );
   }
   const session = startSession(command, args, root);

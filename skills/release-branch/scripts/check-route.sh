@@ -38,7 +38,7 @@ done
 case "$mode" in
   solo-git | team-pr) ;;
   "")
-    printf 'release route error: workflow_mode is missing. Set it to solo-git or team-pr in .agent/tasks/state.yml.\n' >&2
+    printf 'release route error: workflow_mode is missing. Set it to solo-git or team-pr in .agent/tasks/state.json.\n' >&2
     exit 2
     ;;
   *)

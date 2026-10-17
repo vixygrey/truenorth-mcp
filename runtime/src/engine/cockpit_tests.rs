@@ -12,85 +12,18 @@ use tempfile::tempdir;
 fn seed_state(root: &Path, content: &str) {
     let path = state_path(root);
     fs::create_dir_all(path.parent().expect("state parent")).expect("create tasks dir");
-    fs::write(path, content).expect("write state file");
+    let value: saneyaml::Value = crate::engine::yaml::from_str(content).expect("parse seed");
+    let json = serde_json::to_string(&value).expect("serialize seed");
+    fs::write(path, json).expect("write state file");
 }
 
 /// Seed the relocated release-plan file with the given content.
 fn seed_plan(root: &Path, content: &str) {
     let path = release_plan_path(root);
     fs::create_dir_all(path.parent().expect("plan parent")).expect("create tasks dir");
-    fs::write(path, content).expect("write release-plan file");
-}
-
-/// Seed a legacy bigpowers file under `specs/` with the given content.
-fn seed_legacy(root: &Path, name: &str, content: &str) {
-    let dir = root.join("specs");
-    fs::create_dir_all(&dir).expect("create specs dir");
-    fs::write(dir.join(name), content).expect("write legacy file");
-}
-
-#[test]
-fn advance_phase_reads_legacy_state_and_writes_to_agent() {
-    // Requirement 2.9: a legacy specs/ cockpit is read, and the write goes to .agent/.
-    let dir = tempdir().expect("temp dir");
-    let root = dir.path();
-    seed_legacy(
-        root,
-        "state.yaml",
-        "active_epic: e01\nbigpowers_version: 2.88.2\n",
-    );
-
-    advance_phase(
-        root,
-        Phase::Discover,
-        Phase::Design,
-        "Modeled the domain.",
-        "",
-    )
-    .expect("advance");
-
-    // The write landed under .agent/, carrying the legacy fields (Requirements 2.11, 2.13).
-    let written = fs::read_to_string(state_path(root)).expect("read agent state");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
-    assert_eq!(value.get("phase").and_then(|v| v.as_str()), Some("design"));
-    assert_eq!(
-        value.get("active_epic").and_then(|v| v.as_str()),
-        Some("e01")
-    );
-    assert_eq!(
-        value.get("bigpowers_version").and_then(|v| v.as_str()),
-        Some("2.88.2")
-    );
-
-    // The legacy file is never mutated (Requirement 1.4).
-    let legacy = fs::read_to_string(legacy_state_path(root)).expect("read legacy");
-    assert_eq!(legacy, "active_epic: e01\nbigpowers_version: 2.88.2\n");
-}
-
-#[test]
-fn record_task_reads_legacy_plan_and_writes_to_agent() {
-    let dir = tempdir().expect("temp dir");
-    let root = dir.path();
-    seed_legacy(root, "release-plan.yaml", "build_order:\n- e01\n");
-
-    record_task(
-        root,
-        Some("e80"),
-        Some("epic"),
-        "Wire the gate",
-        "cargo test",
-    )
-    .expect("record");
-
-    let written = fs::read_to_string(release_plan_path(root)).expect("read agent plan");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
-    assert!(value.get("tasks").and_then(|v| v.as_sequence()).is_some());
-    // The legacy build_order carried over into the .agent/ file.
-    assert!(value.get("build_order").is_some());
-
-    // The legacy file is never mutated (Requirement 1.4).
-    let legacy = fs::read_to_string(root.join("specs").join("release-plan.yaml")).expect("legacy");
-    assert_eq!(legacy, "build_order:\n- e01\n");
+    let value: saneyaml::Value = crate::engine::yaml::from_str(content).expect("parse seed");
+    let json = serde_json::to_string(&value).expect("serialize seed");
+    fs::write(path, json).expect("write release-plan file");
 }
 
 #[test]
@@ -109,7 +42,7 @@ fn advance_phase_writes_target_phase() {
     .expect("advance");
 
     let written = fs::read_to_string(state_path(root)).expect("read state");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse state");
+    let value: saneyaml::Value = crate::engine::yaml::from_str(&written).expect("parse state");
     assert_eq!(value.get("phase").and_then(|v| v.as_str()), Some("design"));
     assert_eq!(
         value
@@ -128,20 +61,20 @@ fn advance_phase_bootstraps_null_and_maps_legacy_phases() {
     seed_state(root, "phase: null\n");
     advance_phase(root, Phase::Discover, Phase::Design, "modeled", "").expect("bootstrap");
     let null_bootstrap = fs::read_to_string(state_path(root)).expect("read state");
-    assert!(null_bootstrap.contains("phase: design"));
+    assert!(null_bootstrap.contains("\"phase\": \"design\""));
 
     seed_state(root, "phase: build\n");
     advance_phase(root, Phase::Execute, Phase::Review, "built", "").expect("legacy mapping");
     let legacy_advance = fs::read_to_string(state_path(root)).expect("read state");
-    assert!(legacy_advance.contains("phase: review"));
+    assert!(legacy_advance.contains("\"phase\": \"review\""));
 }
 
 #[test]
 fn advance_phase_rejects_stale_and_nonadjacent_transitions_without_writing() {
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    let original = "phase: design\nactive_epic: e01\n";
-    seed_state(root, original);
+    seed_state(root, "phase: design\nactive_epic: e01\n");
+    let original = fs::read_to_string(state_path(root)).expect("read seeded state");
 
     for (from, to) in [
         (Phase::Discover, Phase::Plan),
@@ -170,7 +103,7 @@ fn advance_phase_preserves_other_fields() {
     advance_phase(root, Phase::Discover, Phase::Design, "Built the slice.", "").expect("advance");
 
     let written = fs::read_to_string(state_path(root)).expect("read state");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse state");
+    let value: saneyaml::Value = crate::engine::yaml::from_str(&written).expect("parse state");
     assert_eq!(
         value.get("active_epic").and_then(|v| v.as_str()),
         Some("e01")
@@ -206,7 +139,7 @@ fn record_task_appends_to_release_plan() {
     .expect("record");
 
     let written = fs::read_to_string(release_plan_path(root)).expect("read plan");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse plan");
+    let value: saneyaml::Value = crate::engine::yaml::from_str(&written).expect("parse");
     let tasks = value
         .get("tasks")
         .and_then(|v| v.as_sequence())
@@ -236,7 +169,7 @@ fn record_task_appends_second_task() {
     record_task(root, None, None, "Second", "make b").expect("second");
 
     let written = fs::read_to_string(release_plan_path(root)).expect("read plan");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse plan");
+    let value: saneyaml::Value = crate::engine::yaml::from_str(&written).expect("parse");
     let tasks = value
         .get("tasks")
         .and_then(|v| v.as_sequence())
@@ -250,8 +183,8 @@ fn read_rejects_malformed_state_leaving_file_unchanged() {
     // Requirement 2.12 / 9.2: a malformed existing file is rejected and left unchanged.
     let dir = tempdir().expect("temp dir");
     let root = dir.path();
-    let malformed = "git: not-a-mapping\n";
-    seed_state(root, malformed);
+    seed_state(root, "git: not-a-mapping\n");
+    let malformed = fs::read_to_string(state_path(root)).expect("read seeded state");
 
     let outcome = advance_phase(root, Phase::Review, Phase::Integrate, "summary", "");
     assert!(matches!(outcome, Err(CockpitError::Validation(_))));
@@ -284,13 +217,10 @@ fn write_atomic_leaves_no_temp_residue() {
 
 #[test]
 fn phase_value_is_kebab_case() {
-    assert_eq!(
-        phase_value(Phase::Review),
-        serde_yaml::Value::String("review".to_string())
-    );
+    assert_eq!(phase_value(Phase::Review), serde_json::json!("review"));
     assert_eq!(
         phase_value(Phase::Integrate),
-        serde_yaml::Value::String("integrate".to_string())
+        serde_json::json!("integrate")
     );
 }
 
@@ -329,10 +259,8 @@ fn read_active_task_treats_an_empty_string_as_none() {
 #[test]
 fn cockpit_reads_reject_directories_without_creating_replacement_files() {
     for (relative, is_state) in [
-        (".agent/tasks/state.yml", true),
-        ("specs/state.yaml", true),
-        (".agent/tasks/release-plan.yml", false),
-        ("specs/release-plan.yaml", false),
+        (".agent/tasks/state.json", true),
+        (".agent/tasks/release-plan.json", false),
     ] {
         let dir = tempdir().expect("temp repo");
         let path = dir.path().join(relative);
@@ -344,8 +272,8 @@ fn cockpit_reads_reject_directories_without_creating_replacement_files() {
         };
         assert!(matches!(result, Err(CockpitError::Io { file, .. }) if file == relative));
         assert!(path.is_dir());
-        assert!(!dir.path().join(".agent/tasks/state.yml").is_file());
-        assert!(!dir.path().join(".agent/tasks/release-plan.yml").is_file());
+        assert!(!dir.path().join(".agent/tasks/state.json").is_file());
+        assert!(!dir.path().join(".agent/tasks/release-plan.json").is_file());
     }
 }
 
@@ -355,8 +283,8 @@ fn prepared_state_write_rejects_a_concurrent_edit() {
     seed_state(dir.path(), "phase: discover\n");
     let prepared = prepare_advance_phase(dir.path(), Phase::Discover, Phase::Design, "", "")
         .expect("prepare phase transition");
-    let changed = "phase: discover\nactive_task: newer-task\n";
-    seed_state(dir.path(), changed);
+    seed_state(dir.path(), "phase: discover\nactive_task: newer-task\n");
+    let changed = fs::read_to_string(state_path(dir.path())).expect("read concurrent edit");
     assert!(matches!(
         prepared.commit(dir.path()),
         Err(CockpitError::Write(_))

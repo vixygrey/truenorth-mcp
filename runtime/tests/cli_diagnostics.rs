@@ -52,7 +52,7 @@ fn seed_complete_repo() -> TempDir {
     )
     .expect("write rules");
     fs::write(agent.join("spec/requirements.md"), "# Requirements\n").expect("write requirements");
-    fs::write(agent.join("tasks/state.yml"), "phase: discover\n").expect("write state");
+    fs::write(agent.join("tasks/state.json"), "phase: discover\n").expect("write state");
     fs::write(agent.join("memories/lessons.md"), "# Lessons\n").expect("write lessons");
     fs::write(agent.join("memories/glossary.md"), "# Glossary\n").expect("write glossary");
 
@@ -204,7 +204,7 @@ fn missing_root_reports_actionable_remediation() {
 #[test]
 fn incomplete_layout_names_the_missing_entry() {
     let repo = seed_complete_repo();
-    fs::remove_file(repo.path().join(".agent/tasks/state.yml")).expect("remove state");
+    fs::remove_file(repo.path().join(".agent/tasks/state.json")).expect("remove state");
 
     let output = run(repo.path(), &["--check-config"], Some("cargo test"));
     let report = parse_report(&output);
@@ -215,7 +215,7 @@ fn incomplete_layout_names_the_missing_entry() {
         report["layout"]["error"]["message"]
             .as_str()
             .expect("layout message")
-            .contains(".agent/tasks/state.yml")
+            .contains(".agent/tasks/state.json")
     );
 }
 

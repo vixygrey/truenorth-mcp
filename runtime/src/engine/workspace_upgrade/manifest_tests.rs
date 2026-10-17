@@ -126,7 +126,7 @@ fn valid_workspace() -> WorkspaceManifest {
     WorkspaceManifest {
         manifest_version: MANIFEST_VERSION.to_string(),
         bundle_version: "2.0.0".to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         profile: "generic".to_string(),
         skill_sets: vec!["core".to_string()],
         managed: BTreeMap::from([(

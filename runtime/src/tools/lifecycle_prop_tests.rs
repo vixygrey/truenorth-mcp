@@ -75,21 +75,25 @@ proptest! {
         fs::create_dir_all(plan.parent().unwrap()).expect("tasks dir");
 
         // Build the legacy plan through the serializer, so any generated value is a valid
-        // scalar. This isolates the property to field preservation, not YAML quoting.
-        let mut seed_map = serde_yaml::Mapping::new();
-        seed_map.insert("active_epic".into(), active_epic.clone().into());
-        seed_map.insert(extra.clone().into(), extra_val.clone().into());
-        let seeded = serde_yaml::Value::Mapping(seed_map);
-        fs::write(&plan, serde_yaml::to_string(&seeded).expect("serialize seed")).expect("seed");
+        // scalar. This isolates the property to field preservation, not JSON quoting.
+        let mut seed_map = serde_json::Map::new();
+        seed_map.insert("active_epic".to_string(), active_epic.clone().into());
+        seed_map.insert(extra.clone(), extra_val.clone().into());
+        let seeded = serde_json::Value::Object(seed_map.clone());
+        fs::write(
+            &plan,
+            crate::engine::cockpit_json::to_string(&seed_map).expect("serialize seed"),
+        )
+        .expect("seed");
 
         record_task(repo.path(), Some("e80"), Some("epic"), "A task", "cargo test")
             .expect("record");
 
         let written = fs::read_to_string(&plan).expect("read plan");
-        let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
+        let value: serde_json::Value = serde_json::from_str(&written).expect("parse");
         prop_assert_eq!(value.get("active_epic"), seeded.get("active_epic"));
         prop_assert_eq!(value.get(extra.as_str()), seeded.get(extra.as_str()));
-        prop_assert!(value.get("tasks").and_then(|v| v.as_sequence()).is_some());
+        prop_assert!(value.get("tasks").and_then(|v| v.as_array()).is_some());
     }
 
     /// Property 9: validation accepts or rejects per the rule, and a reject leaves the

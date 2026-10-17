@@ -22,7 +22,7 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Process
 
-1. **Read state** — `.agent/tasks/state.yml`: `handoff.next_skill`, `active_flow`, `metrics.story_start`, open decisions.
+1. **Read state** — `.agent/tasks/state.json`: `handoff.next_skill`, `active_flow`, `metrics.story_start`, open decisions.
 2. **Check for contention**: inspect a `writer_lease_conflict` and the writer lock metadata named in the error. Do not delete the file. Close the owning server, or configure another MCP server connection with `TRUENORTH_ROOT` set to the parallel worktree and use that connection.
 3. **Inspect terminals** — list background shells; note PIDs, last output timestamp, exit codes.
 4. **Classify stall type:**
@@ -46,9 +46,9 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 
 ## Verify
 
-→ verify: `test -f .agent/tasks/state.yml`
+→ verify: `test -f .agent/tasks/state.json`
 
 ## Handoff
 
-Gate: READY → next: survey-context (if state unclear) or resume the prior skill from `.agent/tasks/state.yml`
+Gate: READY → next: survey-context (if state unclear) or resume the prior skill from `.agent/tasks/state.json`
 Writes: the verification note

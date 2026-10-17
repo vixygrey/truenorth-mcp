@@ -24,9 +24,9 @@ pub use cache::ResourceCache;
 /// A served resource, identified by its `truenorth://` URI.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ResourceDoc {
-    /// `truenorth://state`, backed by `.agent/tasks/state.yml`.
+    /// `truenorth://state`, backed by `.agent/tasks/state.json`.
     State,
-    /// `truenorth://cockpit`, backed by `.agent/tasks/release-plan.yml`.
+    /// `truenorth://cockpit`, backed by `.agent/tasks/release-plan.json`.
     Cockpit,
     /// `truenorth://conventions`, backed by `CONVENTIONS.md`.
     Conventions,
@@ -106,8 +106,9 @@ impl ResourceDoc {
     /// The resource's MIME type.
     pub fn mime_type(self) -> &'static str {
         match self {
+            ResourceDoc::State | ResourceDoc::Cockpit => "application/json",
             ResourceDoc::Conventions | ResourceDoc::Adr => "text/markdown",
-            _ => "application/yaml",
+            ResourceDoc::Ontology => "application/yaml",
         }
     }
 
@@ -117,11 +118,11 @@ impl ResourceDoc {
     /// stays at the repository root.
     pub fn backing_path(self, repo_root: &std::path::Path) -> PathBuf {
         match self {
-            ResourceDoc::State => repo_root.join(".agent").join("tasks").join("state.yml"),
+            ResourceDoc::State => repo_root.join(".agent").join("tasks").join("state.json"),
             ResourceDoc::Cockpit => repo_root
                 .join(".agent")
                 .join("tasks")
-                .join("release-plan.yml"),
+                .join("release-plan.json"),
             ResourceDoc::Conventions => repo_root.join("CONVENTIONS.md"),
             ResourceDoc::Ontology => repo_root.join(".agent").join("ontology.yml"),
             // The ADR resource is backed by a directory of human-authored files under
@@ -130,25 +131,18 @@ impl ResourceDoc {
         }
     }
 
-    /// The legacy `specs/` backing path a bigpowers cockpit used, for the fallback read.
-    ///
-    /// When a cockpit file is absent under `.agent/` and present at this legacy path, the
-    /// read falls back to it (Requirement 2.9). Conventions has no legacy relocation, so
-    /// it returns `None`.
+    /// The legacy ontology backing path.
     pub fn legacy_backing_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
         match self {
-            ResourceDoc::State => Some(repo_root.join("specs").join("state.yaml")),
-            ResourceDoc::Cockpit => Some(repo_root.join("specs").join("release-plan.yaml")),
             ResourceDoc::Ontology => Some(repo_root.join("specs").join("ontology.yaml")),
-            ResourceDoc::Conventions | ResourceDoc::Adr => None,
+            ResourceDoc::State
+            | ResourceDoc::Cockpit
+            | ResourceDoc::Conventions
+            | ResourceDoc::Adr => None,
         }
     }
 
-    /// Resolve the read path, preferring `.agent/` and falling back to a legacy `specs/`
-    /// file when the `.agent/` file is absent (Requirement 2.9).
-    ///
-    /// A subsequent runtime write always targets the `.agent/` path, so the legacy file is
-    /// never mutated (Requirement 1.4).
+    /// Resolve the read path. Only ontology retains its legacy YAML fallback.
     fn read_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
         let primary = self.backing_path(repo_root);
         if primary.is_file() {
@@ -167,10 +161,8 @@ impl ResourceDoc {
 
     /// Read and validate the backing file's current content (Requirement 5.5).
     ///
-    /// The read prefers the `.agent/` path and falls back to a legacy `specs/` file when
-    /// the `.agent/` file is absent (Requirement 2.9). State and release-plan validate
-    /// against the observed schemas; ontology parses as a YAML document; conventions is
-    /// returned as raw markdown.
+    /// State and release-plan are JSON-only; ontology may fall back to its legacy YAML
+    /// path. Conventions is returned as raw markdown.
     ///
     /// # Errors
     ///
@@ -223,7 +215,7 @@ impl ResourceDoc {
                 return Ok(text);
             }
             ResourceDoc::Ontology => {
-                serde_yaml::from_str::<serde_yaml::Value>(&text).map_err(|e| {
+                crate::engine::yaml::from_str::<saneyaml::Value>(&text).map_err(|e| {
                     ResourceReadError::Invalid(format!(".agent/ontology.yml failed to parse: {e}"))
                 })?;
                 return Ok(text);
@@ -251,7 +243,7 @@ impl ResourceDoc {
 /// full ontology. The resource parses it as a YAML document, so this stub reads back
 /// cleanly.
 fn ontology_seed() -> Result<String, ResourceReadError> {
-    serde_yaml::to_string(&crate::engine::spec::Ontology::empty_stub()).map_err(|e| {
+    crate::engine::yaml::to_string(&crate::engine::spec::Ontology::empty_stub()).map_err(|e| {
         ResourceReadError::Invalid(format!("could not serialize the ontology stub: {e}"))
     })
 }
@@ -312,8 +304,8 @@ fn reject_excluded_or_secret(
 /// The backing file name for an error message.
 fn display_backing(doc: ResourceDoc) -> String {
     match doc {
-        ResourceDoc::State => ".agent/tasks/state.yml".to_string(),
-        ResourceDoc::Cockpit => ".agent/tasks/release-plan.yml".to_string(),
+        ResourceDoc::State => ".agent/tasks/state.json".to_string(),
+        ResourceDoc::Cockpit => ".agent/tasks/release-plan.json".to_string(),
         ResourceDoc::Conventions => "CONVENTIONS.md".to_string(),
         ResourceDoc::Ontology => ".agent/ontology.yml".to_string(),
         ResourceDoc::Adr => "specs/adr/".to_string(),

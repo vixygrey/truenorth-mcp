@@ -109,7 +109,7 @@ async fn public_red_step_records_only_an_observed_failure() {
     assert_eq!(response["receipt"]["gate"]["status"], "failure");
     assert_eq!(response["receipt"]["gate"]["expectation"], "nonzero");
     let state =
-        fs::read(failed_test_dir.path().join(".agent/tasks/state.yml")).expect("read state bytes");
+        fs::read(failed_test_dir.path().join(".agent/tasks/state.json")).expect("read state bytes");
     assert_eq!(
         response["receipt"]["changes"][0]["sha256"],
         crate::engine::digest::sha256(&state)
@@ -143,9 +143,9 @@ async fn public_red_step_records_only_an_observed_failure() {
 #[tokio::test]
 async fn scoped_cycle_starts_without_mutating_legacy_state() {
     let dir = tempdir().expect("temp dir");
-    let state_path = dir.path().join(".agent/tasks/state.yml");
+    let state_path = dir.path().join(".agent/tasks/state.json");
     fs::create_dir_all(state_path.parent().expect("state parent")).expect("create state parent");
-    fs::write(&state_path, "tdd:\n  step: green\n").expect("seed legacy state");
+    fs::write(&state_path, r#"{"tdd": {"step": "green"}}"#).expect("seed state");
 
     let server = server_at(dir.path());
     let result = server
@@ -208,8 +208,8 @@ async fn scoped_cycle_starts_without_mutating_legacy_state() {
         before_rejected_transition
     );
 
-    let state: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(&state_path).expect("read state")).expect("parse");
+    let state: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(&state_path).expect("read state")).expect("parse");
     assert_eq!(state["tdd"]["step"], "green");
     assert_eq!(state["tdd"]["scopes"]["552"]["step"], "green");
     assert_eq!(state["tdd"]["scopes"]["515"]["step"], "red");
@@ -250,12 +250,16 @@ fn write_tdd_step_preserves_other_state_fields() {
     let root = dir.path();
     let state = state_path(root);
     std::fs::create_dir_all(state.parent().expect("state parent")).expect("tasks dir");
-    std::fs::write(&state, "active_epic: e01\nbigpowers_version: 2.88.2\n").expect("seed state");
+    std::fs::write(
+        &state,
+        r#"{"active_epic": "e01", "bigpowers_version": "2.88.2"}"#,
+    )
+    .expect("seed state");
 
     write_tdd_step(root, TddStep::Red).expect("write step");
 
     let written = std::fs::read_to_string(state_path(root)).expect("read state");
-    let value: serde_yaml::Value = serde_yaml::from_str(&written).expect("parse");
+    let value: serde_json::Value = serde_json::from_str(&written).expect("parse");
     assert_eq!(
         value.get("active_epic").and_then(|v| v.as_str()),
         Some("e01")
@@ -295,7 +299,7 @@ async fn public_cycle_enforces_every_transition_and_preserves_rejected_state() {
         .truenorth_tdd_cycle(Parameters(cycle_args("red", "false")), request())
         .await
         .expect("none to red");
-    let state_path = dir.path().join(".agent/tasks/state.yml");
+    let state_path = dir.path().join(".agent/tasks/state.json");
     let red_state = fs::read(&state_path).expect("red state");
 
     let error = server
@@ -369,7 +373,7 @@ async fn public_cycle_rejects_invalid_fields_without_creating_state() {
             .await
             .expect_err("invalid request");
         assert_eq!(error.code.0, -32602);
-        assert!(!dir.path().join(".agent/tasks/state.yml").exists());
+        assert!(!dir.path().join(".agent/tasks/state.json").exists());
     }
 }
 
