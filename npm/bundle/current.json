@@ -481,12 +481,12 @@
     },
     {
       "path": "skills/guard-git/scripts/pre-commit-secret-scan.sh",
-      "sha256": "fd4d0da24ad28a5e4daa0da717e47be3405d205341c1d0f9ff1c0337f9ff9ef5",
+      "sha256": "680a5e6f602d8c6a85cfed857e9672ea1d5489edb64c169c83f08e05e99a06f0",
       "mode": "0755"
     },
     {
       "path": "skills/guard-git/scripts/tests/run.sh",
-      "sha256": "59893ee59113dfe79e6d4b60b635b1a7e968a9700e0124088edac4b8e59720b7",
+      "sha256": "c77e52dc5644f00739c832a2ab85856ba2350f5c5eab22c2b3679ee93efb7957",
       "mode": "0755"
     },
     {

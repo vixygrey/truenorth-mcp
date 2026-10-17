@@ -29,17 +29,26 @@ SECRET_PATTERNS=(
   "-----BEGIN [A-Z ]*PRIVATE KEY-----"
 )
 
-# Read the staged diff. Added lines only, so an unchanged pre-existing match does not block
-# an unrelated commit. `--no-color` keeps the output plain for grep.
 staged_added_lines() {
-  # Limit to added lines (leading +) in the staged diff, dropping the +++ file headers.
-  git diff --cached --no-color -U0 2>/dev/null | grep -E '^\+' | grep -Ev '^\+\+\+ '
+  local -a diff_args=(--cached)
+  if [ "${1:-}" = "--range" ]; then
+    [ -n "${2:-}" ] || {
+      echo "usage: pre-commit-secret-scan.sh [--range <base>..<head>]" >&2
+      return 2
+    }
+    diff_args=("$2")
+  elif [ "$#" -ne 0 ]; then
+    echo "usage: pre-commit-secret-scan.sh [--range <base>..<head>]" >&2
+    return 2
+  fi
+  # Limit to added lines (leading +), dropping the +++ file headers.
+  git diff "${diff_args[@]}" --no-color -U0 2>/dev/null | grep -E '^\+' | grep -Ev '^\+\+\+ '
 }
 
 main() {
   # Fail open outside a repo or when there is nothing staged: nothing to scan.
   local diff
-  diff=$(staged_added_lines) || exit 0
+  diff=$(staged_added_lines "$@") || exit 0
   [ -n "$diff" ] || exit 0
 
   local i hit=0

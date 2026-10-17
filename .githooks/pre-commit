@@ -45,4 +45,5 @@ if [ -x "$secret_scan" ]; then
     exit 1
   fi
 fi
+
 exit 0

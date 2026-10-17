@@ -78,6 +78,41 @@ jobs:
         if: steps.crate.outputs.present == 'true'
         run: bash scripts/preflight.sh check
 
+  guardrail:
+    name: commit-boundary guardrail
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the repository with diff history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Install the pinned Rust toolchain
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
+      - name: Report protected paths and block added credential patterns
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            exit 0
+          fi
+          range="$BASE_SHA..$HEAD_SHA"
+          git show "$BASE_SHA:.agent/config/rules.yml" > .agent/config/rules.yml
+          if ! guard_output=$(cargo run --locked --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- guard --range "$range" 2>&1); then
+            printf '%s\n' "$guard_output"
+            case "$guard_output" in
+              *"guard blocked protected path"*)
+                echo "::notice title=Protected path change::$guard_output"
+                ;;
+              *)
+                exit 1
+                ;;
+            esac
+          fi
+          bash skills/guard-git/scripts/pre-commit-secret-scan.sh --range "$range"
+
   coverage:
     name: production coverage
     runs-on: ubuntu-24.04
@@ -307,12 +342,25 @@ jobs:
   gate:
     name: CI Gate
     runs-on: ubuntu-24.04
-    needs: [check, wrapper, artifact-smoke, format, shell, evals, action-pins, licenses, coverage]
+    needs:
+      [
+        check,
+        guardrail,
+        wrapper,
+        artifact-smoke,
+        format,
+        shell,
+        evals,
+        action-pins,
+        licenses,
+        coverage,
+      ]
     if: always()
     steps:
       - name: Confirm every required CI job passed
         run: |
           check_result="${{ needs.check.result }}"
+          guardrail_result="${{ needs.guardrail.result }}"
           wrapper_result="${{ needs.wrapper.result }}"
           artifact_smoke_result="${{ needs.artifact-smoke.result }}"
           format_result="${{ needs.format.result }}"
@@ -321,6 +369,7 @@ jobs:
           action_pins_result="${{ needs.action-pins.result }}"
           licenses_result="${{ needs.licenses.result }}"
           coverage_result="${{ needs.coverage.result }}"
+          echo "guardrail job result: ${guardrail_result}"
           echo "check job result: ${check_result}"
           echo "wrapper job result: ${wrapper_result}"
           echo "artifact smoke job result: ${artifact_smoke_result}"
@@ -331,6 +380,7 @@ jobs:
           echo "license policy job result: ${licenses_result}"
           echo "production coverage job result: ${coverage_result}"
           if [ "${check_result}" != "success" ] \
+            || [ "${guardrail_result}" != "success" ] \
             || [ "${wrapper_result}" != "success" ] \
             || [ "${artifact_smoke_result}" != "success" ] \
             || [ "${format_result}" != "success" ] \

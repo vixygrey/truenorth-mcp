@@ -110,7 +110,7 @@ tasks:
     status: done
     group_id: "515"
     issue: https://github.com/vixygrey/truenorth-mcp/issues/520
-    branch: test/520-workflow-controls
+    branch: "chore/515-methodology-compliance (merged; pull request 525)"
     started_at: "2026-10-10T00:00:14.039Z"
     started_at_basis: Observed checkpoint clock after the approved preserved-checkout branch and actual successful mounted baseline, not an invented gate start time.
     baseline_evidence: .agent/tasks/compliance-515/520-baseline-evidence.json
@@ -129,18 +129,23 @@ tasks:
       authority_reconciliation: Document the audited exception
       boundary_enforcement_extension: Extend step 6 to enforce the boundary
       irreversible_actions: Not approved
-    traceability_verdict: FAIL
-    traceability_scope: 77 historical release-plan entries still lack required local evidence; this is a pre-existing tracked gap, not introduced or waived by #520. #520 itself has complete real baseline/TDD/verification/review evidence.
-    completion_scope: Local verified step 6 only. Real remote-control inspection, real native 1.0.5 TDD cycles (version migration, specs-boundary enforcement, two independently confirmed HIGH security fixes), real fault-injected rollback, and both final independent reviews with no surviving finding. Published v1.0.4 assets verified byte-identical and unchanged. No commit, push, PR, merge, tag, publication, or destructive cleanup performed or authorized.
-    next_action: Any merge, tag, publication, or destructive cleanup requires its own separate explicit approval per skills/release-branch/SKILL.md. Historical traceability gaps route to verify-work; scope/disposition decisions route to their planning owner.
+    traceability_verdict: PASS
+    traceability_scope: ADR-0020 (owner-approved prospective cutover at v1.0.4) disposed all 77 pre-cutover historical release-plan entries out_of_scope with preserved evidence. Issue 520 itself has complete real baseline/TDD/verification/review evidence.
+    completion_scope: Step 6 fully complete and merged. Real remote-control inspection, real native 1.0.5 TDD cycles (version migration, specs-boundary enforcement, two independently confirmed HIGH security fixes), real fault-injected rollback, and both final independent reviews with no surviving finding. Published v1.0.4 assets verified byte-identical and unchanged. Committed as part of pull request 525, squash-merged to main at 39810ee7 on 2026-10-10T05:07:20Z, with all post-merge checks passing. Tag, publication, and branch cleanup remain separately gated.
+    next_action: Any tag, publication, or destructive cleanup requires its own separate explicit approval per skills/release-branch/SKILL.md.
+    merged_at: "2026-10-10T05:07:20Z"
+    merge_commit: 39810ee732a7dcc28bde72df46c8b5dade1a1d24
+    pull_request: https://github.com/vixygrey/truenorth-mcp/pull/525
 groups:
   "515":
     status: done
     current_task: "520"
     started_at: "2026-10-09T17:43:19.910Z"
-    completed_at: "2026-10-10T04:21:33.918114Z"
-    completed_at_basis: All five work items (#516-#520) locally complete; traceability gate reads PASS under ADR-0020's explicit owner-approved historical cutover (track 1 of the historical-evidence remediation plan), with track 2 independently re-verifying all 77 historical entries' evidence first.
-    completion_scope: Local implementation and verification complete. No commit, integration, merge, tag, publication, or destructive cleanup performed or authorized; those remain separately gated per skills/release-branch/SKILL.md.
+    completed_at: "2026-10-10T05:07:20Z"
+    completed_at_basis: Pull request 525 (6 commits across issue 516 through issue 520) squash-merged to main as 39810ee7; all 33 PR checks and all 15 post-merge workflow runs passed.
+    completion_scope: Merged to main. No tag, publication, or destructive cleanup performed or authorized; those remain separately gated per skills/release-branch/SKILL.md.
     traceability_verdict: PASS
     traceability_evidence: .agent/tasks/traceability.yml
+    pull_request: https://github.com/vixygrey/truenorth-mcp/pull/525
+    merge_commit: 39810ee732a7dcc28bde72df46c8b5dade1a1d24
 development_status: {}
