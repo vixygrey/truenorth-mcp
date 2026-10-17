@@ -27,67 +27,12 @@ function trackedSkillPaths(repoRoot) {
 }
 
 function parseCatalog(repoRoot) {
-  const source = fs.readFileSync(path.join(repoRoot, 'skills', 'catalog.yml'), 'utf8');
-  const catalog = { schema_version: null, sets: {}, planning_artifacts: {}, skills: {} };
-  let section = null;
-  let currentSet = null;
-  let currentArtifact = null;
-  for (const [index, line] of source.split('\n').entries()) {
-    if (!line.trim()) continue;
-    let match = line.match(/^schema_version: (\d+)$/);
-    if (match) {
-      catalog.schema_version = Number(match[1]);
-      continue;
-    }
-    match = line.match(/^(sets|planning_artifacts|skills):$/);
-    if (match) {
-      section = match[1];
-      currentSet = null;
-      currentArtifact = null;
-      continue;
-    }
-    if (section === 'sets' && (match = line.match(/^  ([a-z][a-z0-9-]*):$/))) {
-      currentSet = match[1];
-      catalog.sets[currentSet] = {};
-      continue;
-    }
-    if (
-      section === 'sets' &&
-      currentSet &&
-      (match = line.match(/^    (support|description|prerequisites): (.+)$/))
-    ) {
-      catalog.sets[currentSet][match[1]] = match[2];
-      continue;
-    }
-    if (section === 'planning_artifacts' && (match = line.match(/^  ([a-z][a-z0-9-]*):$/))) {
-      currentArtifact = match[1];
-      catalog.planning_artifacts[currentArtifact] = { readers: [] };
-      continue;
-    }
-    if (
-      section === 'planning_artifacts' &&
-      currentArtifact &&
-      (match = line.match(/^    (path|writer): (.+)$/))
-    ) {
-      catalog.planning_artifacts[currentArtifact][match[1]] = match[2];
-      continue;
-    }
-    if (
-      section === 'planning_artifacts' &&
-      currentArtifact &&
-      (match = line.match(/^      - ([a-z][a-z0-9-]*)$/))
-    ) {
-      catalog.planning_artifacts[currentArtifact].readers.push(match[1]);
-      continue;
-    }
-    if (section === 'planning_artifacts' && currentArtifact && line === '    readers:') {
-      continue;
-    }
-    if (section === 'skills' && (match = line.match(/^  ([a-z][a-z0-9-]*): ([a-z][a-z0-9-]*)$/))) {
-      catalog.skills[match[1]] = match[2];
-      continue;
-    }
-    throw new Error(`skills/catalog.yml:${index + 1}: unsupported catalog syntax`);
+  const catalogPath = path.join(repoRoot, 'skills', 'catalog.json');
+  let catalog;
+  try {
+    catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`skills/catalog.json: ${error.message}`);
   }
   validateCatalog(repoRoot, catalog);
   return catalog;
@@ -95,11 +40,11 @@ function parseCatalog(repoRoot) {
 
 function validateCatalog(repoRoot, catalog) {
   if (catalog.schema_version !== 2)
-    throw new Error('skills/catalog.yml: unsupported schema version');
-  if (!catalog.sets.core) throw new Error('skills/catalog.yml: missing core set');
+    throw new Error('skills/catalog.json: unsupported schema version');
+  if (!catalog.sets.core) throw new Error('skills/catalog.json: missing core set');
   for (const [name, metadata] of Object.entries(catalog.sets)) {
     for (const field of ['support', 'description', 'prerequisites']) {
-      if (!metadata[field]) throw new Error(`skills/catalog.yml: set ${name} is missing ${field}`);
+      if (!metadata[field]) throw new Error(`skills/catalog.json: set ${name} is missing ${field}`);
     }
   }
   const rootFiles = trackedPaths(repoRoot, 'skills');
@@ -109,17 +54,17 @@ function validateCatalog(repoRoot, catalog) {
   const declared = Object.keys(catalog.skills).sort();
   if (JSON.stringify(rootSkills) !== JSON.stringify(declared)) {
     throw new Error(
-      'skills/catalog.yml: declared skills do not exactly match tracked skill directories',
+      'skills/catalog.json: declared skills do not exactly match tracked skill directories',
     );
   }
   for (const [skill, set] of Object.entries(catalog.skills)) {
     if (!catalog.sets[set])
-      throw new Error(`skills/catalog.yml: ${skill} names unknown set ${set}`);
+      throw new Error(`skills/catalog.json: ${skill} names unknown set ${set}`);
   }
   validatePlanningArtifacts(catalog);
   validateMirror(
     repoRoot,
-    rootFiles.filter((entry) => entry !== 'skills/catalog.yml'),
+    rootFiles.filter((entry) => entry !== 'skills/catalog.json' && entry !== 'skills/catalog.yml'),
   );
 }
 
@@ -127,45 +72,45 @@ function validatePlanningArtifacts(catalog) {
   const names = Object.keys(catalog.planning_artifacts).sort();
   if (JSON.stringify(names) !== JSON.stringify(REQUIRED_PLANNING_ARTIFACTS)) {
     throw new Error(
-      'skills/catalog.yml: planning artifacts must declare exactly the required ownership contract',
+      'skills/catalog.json: planning artifacts must declare exactly the required ownership contract',
     );
   }
   const paths = new Map();
   for (const [name, artifact] of Object.entries(catalog.planning_artifacts)) {
     if (!artifact.path) {
-      throw new Error(`skills/catalog.yml: planning artifact ${name} is missing path`);
+      throw new Error(`skills/catalog.json: planning artifact ${name} is missing path`);
     }
     if (!artifact.writer) {
-      throw new Error(`skills/catalog.yml: planning artifact ${name} is missing writer`);
+      throw new Error(`skills/catalog.json: planning artifact ${name} is missing writer`);
     }
     if (!catalog.skills[artifact.writer]) {
       throw new Error(
-        `skills/catalog.yml: planning artifact ${name} names unknown writer ${artifact.writer}`,
+        `skills/catalog.json: planning artifact ${name} names unknown writer ${artifact.writer}`,
       );
     }
     if (paths.has(artifact.path)) {
       throw new Error(
-        `skills/catalog.yml: planning artifacts ${paths.get(artifact.path)} and ${name} share path ${artifact.path}`,
+        `skills/catalog.json: planning artifacts ${paths.get(artifact.path)} and ${name} share path ${artifact.path}`,
       );
     }
     paths.set(artifact.path, name);
     if (!Array.isArray(artifact.readers) || artifact.readers.length === 0) {
-      throw new Error(`skills/catalog.yml: planning artifact ${name} must name readers`);
+      throw new Error(`skills/catalog.json: planning artifact ${name} must name readers`);
     }
     const readers = new Set();
     for (const reader of artifact.readers) {
       if (!catalog.skills[reader]) {
         throw new Error(
-          `skills/catalog.yml: planning artifact ${name} names unknown reader ${reader}`,
+          `skills/catalog.json: planning artifact ${name} names unknown reader ${reader}`,
         );
       }
       if (reader === artifact.writer) {
         throw new Error(
-          `skills/catalog.yml: planning artifact ${name} lists its writer as a reader`,
+          `skills/catalog.json: planning artifact ${name} lists its writer as a reader`,
         );
       }
       if (readers.has(reader)) {
-        throw new Error(`skills/catalog.yml: planning artifact ${name} repeats reader ${reader}`);
+        throw new Error(`skills/catalog.json: planning artifact ${name} repeats reader ${reader}`);
       }
       readers.add(reader);
     }

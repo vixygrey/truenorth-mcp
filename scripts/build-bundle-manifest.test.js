@@ -2,6 +2,7 @@
 
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { test } = require('node:test');
 
@@ -23,8 +24,8 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
   assert.ok(paths.every((entry) => !entry.endsWith('.DS_Store')));
   assert.ok(manifest.files.every((entry) => /^[a-f0-9]{64}$/.test(entry.sha256)));
   assert.ok(manifest.files.every((entry) => entry.mode === '0644' || entry.mode === '0755'));
-  assert.strictEqual(manifest.schema_version, 2);
-  assert.strictEqual(manifest.workspace_schema_version, '2');
+  assert.strictEqual(manifest.schema_version, 3);
+  assert.strictEqual(manifest.workspace_schema_version, '3');
   assert.deepStrictEqual(
     manifest.skill_sets.map((set) => set.name),
     ['core', 'integrations', 'maintainer', 'visual'],
@@ -37,6 +38,22 @@ test('current bundle manifest is deterministic and matches tracked skills', () =
   assert.ok(!coreSkills.includes('build-group'));
   assert.ok(!coreSkills.includes('execute-plan'));
   assert.ok(!coreSkills.includes('run-planning'));
+});
+
+test('catalog is JSON build metadata and is not packaged', () => {
+  const catalogPath = path.join(root, 'skills', 'catalog.json');
+  assert.ok(fs.existsSync(catalogPath));
+  assert.ok(!fs.existsSync(path.join(root, 'skills', 'catalog.yml')));
+  assert.deepStrictEqual(JSON.parse(fs.readFileSync(catalogPath, 'utf8')), parseCatalog(root));
+  assert.ok(!fs.existsSync(path.join(root, 'npm', 'skills', 'catalog.json')));
+});
+
+test('catalog JSON diagnostics name the canonical source', (t) => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'truenorth-catalog-'));
+  t.after(() => fs.rmSync(fixtureRoot, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(fixtureRoot, 'skills'));
+  fs.writeFileSync(path.join(fixtureRoot, 'skills', 'catalog.json'), '{');
+  assert.throws(() => parseCatalog(fixtureRoot), /skills\/catalog\.json:/);
 });
 
 test('current bundle supports the previous release for managed upgrades', () => {
@@ -54,7 +71,7 @@ test('planning artifacts have one canonical writer and path', () => {
   );
   assert.deepStrictEqual(ownership, {
     'release-index': {
-      path: '.agent/tasks/release-plan.yml',
+      path: '.agent/tasks/release-plan.json',
       writer: 'plan-release',
     },
     'group-manifest': {
