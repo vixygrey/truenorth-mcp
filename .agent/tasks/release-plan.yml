@@ -323,6 +323,14 @@ tasks:
   group_kind: ticket
   task_name: 'Plan git-side Jev guardrail enforcement for issue #320'
   verify_command: git diff --check
+- group_id: '551'
+  group_kind: ticket
+  task_name: Plan YAML contracts for all skills
+  verify_command: bash scripts/preflight.sh check shell
+- group_id: '551'
+  group_kind: ticket
+  task_name: Implement skill contract foundation
+  verify_command: bash scripts/preflight.sh check shell
 groups:
 - group_id: '515'
   group_kind: ticket

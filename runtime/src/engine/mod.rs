@@ -20,6 +20,7 @@ pub mod phase;
 pub mod profile;
 pub mod regex_util;
 pub mod skill;
+pub mod skill_contract;
 pub mod skill_parser;
 pub mod skill_validate;
 pub mod spec;
