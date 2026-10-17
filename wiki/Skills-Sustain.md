@@ -13,7 +13,7 @@ alphabetical list, see [Skill index](Skill-index).
 
 ### session-state
 
-Track decisions and progress in `.agent/tasks/state.yml` to prevent context rot.
+Track decisions and progress in `.agent/tasks/state.json` to prevent context rot.
 
 - **What it does**: maintains a single source of truth for the session (the active flow,
   the git block, the handoff, the cycle counters), reads and writes it through the

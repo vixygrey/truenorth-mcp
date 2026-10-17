@@ -29,7 +29,7 @@ an optional grouping key.
 
 The `verify_command` is the command that proves the task done. Record a real command, so
 the verify gate can run it later. The tool appends the task to
-`.agent/tasks/release-plan.yml`.
+`.agent/tasks/release-plan.json`.
 
 ## Execute
 
@@ -92,10 +92,10 @@ advances to Discover to begin the next loop.
 }
 ```
 
-The tool writes `.agent/tasks/state.yml` and records the git context, then the watcher
+The tool writes `.agent/tasks/state.json` and records the git context, then the watcher
 emits a resource update for `truenorth://state`.
 
 ## Record a bug
 
 Record an external-tracker bug reference with `truenorth_record_bug`. The external tracker
-owns the bug detail. The runtime stores the reference in `.agent/tasks/bugs.yml` (ADR-0010).
+owns the bug detail. The runtime stores the reference in `.agent/tasks/bugs.json` (ADR-0010, ADR-0021).

@@ -91,7 +91,7 @@ It rejects an existing `specs/` target before that marker is created.
 Managed upgrades can change only ownership-planned generated and package-manifest paths.
 They preserve local edits and unowned collisions and do not manage `specs/**`.
 
-The `.agent/` tree holds the cockpit (`tasks/state.yml`, `tasks/release-plan.yml`), the ontology (`ontology.yml`), the config (`config/rules.yml`), the product scope, and the memories.
+The `.agent/` tree holds the cockpit (`tasks/state.json`, `tasks/release-plan.json`), the ontology (`ontology.yml`), the config (`config/rules.yml`), the product scope, and the memories.
 The `truenorth://adr` resource serves `specs/adr/` read-only.
 
 ## Install
@@ -279,7 +279,7 @@ Active tools drive the workflow:
 - `truenorth_verify_gate`: run a project gate command through the bounded gate executor, pass only on exit 0.
 - `truenorth_tdd_cycle`: enforce the red-green-refactor order.
 - `truenorth_scaffold_project`: seed a new project's `.agent/` tree for a methodology profile.
-- `truenorth_record_bug`: record an external-tracker bug reference in `.agent/tasks/bugs.yml`.
+- `truenorth_record_bug`: record an external-tracker bug reference in `.agent/tasks/bugs.json`.
 - `truenorth_generate_ontology`, `truenorth_verify_ontology`: seed and enforce a
   domain ontology. These two are present only when the ontology feature is enabled (see below).
 
@@ -292,8 +292,8 @@ Catalog tools serve the skill library:
 
 ## The resources
 
-- `truenorth://state`: the cockpit state (`.agent/tasks/state.yml`).
-- `truenorth://cockpit`: the release plan (`.agent/tasks/release-plan.yml`).
+- `truenorth://state`: the cockpit state (`.agent/tasks/state.json`).
+- `truenorth://cockpit`: the release plan (`.agent/tasks/release-plan.json`).
 - `truenorth://conventions`: the engineering conventions (`CONVENTIONS.md`).
 - `truenorth://ontology`: the domain ontology (`.agent/ontology.yml`), present only when
   the ontology feature is enabled.

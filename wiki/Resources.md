@@ -6,13 +6,13 @@ scheme. A `resources/read` reflects the current on-disk content. A disk edit emi
 
 ## The resources
 
-| URI                       | Backing file                    | Contents                          |
-| ------------------------- | ------------------------------- | --------------------------------- |
-| `truenorth://state`       | `.agent/tasks/state.yml`        | The phase, the TDD step, handoff  |
-| `truenorth://cockpit`     | `.agent/tasks/release-plan.yml` | The recorded tasks                |
-| `truenorth://conventions` | `CONVENTIONS.md`                | The engineering conventions       |
-| `truenorth://adr`         | `specs/adr/`                    | The Architecture Decision Records |
-| `truenorth://ontology`    | `.agent/ontology.yml`           | The domain ontology               |
+| URI                       | Backing file                     | Contents                          |
+| ------------------------- | -------------------------------- | --------------------------------- |
+| `truenorth://state`       | `.agent/tasks/state.json`        | The phase, the TDD step, handoff  |
+| `truenorth://cockpit`     | `.agent/tasks/release-plan.json` | The recorded tasks                |
+| `truenorth://conventions` | `CONVENTIONS.md`                 | The engineering conventions       |
+| `truenorth://adr`         | `specs/adr/`                     | The Architecture Decision Records |
+| `truenorth://ontology`    | `.agent/ontology.yml`            | The domain ontology               |
 
 The `truenorth://adr` resource is read-only. It serves the human-authored ADRs, which the
 runtime never mutates.

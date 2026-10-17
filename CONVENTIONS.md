@@ -206,9 +206,10 @@ Managed upgrades can change ownership-planned generated and package-manifest pat
 They preserve local edits and unowned collisions and do not manage `specs/**`.
 These paths do not authorize mutation of existing human narrative or prove blanket runtime write confinement.
 
-The cockpit lives under `.agent/tasks/`: `state.yml` carries the phase and the TDD
-loop, `release-plan.yml` carries the recorded tasks, `execution-status.yml` carries
-story status, and `bugs.yml` carries external-tracker bug references. `backlog.yml`
+The cockpit lives under `.agent/tasks/`: `state.json` carries the phase and the TDD
+loop, `release-plan.json` carries the recorded tasks, `execution-status.yml` carries
+story status, and `bugs.json` carries external-tracker bug references. The three are
+JSON, not YAML; see [ADR-0021](specs/adr/0021-cockpit-json-migration.md). `backlog.yml`
 declares backlog ownership independently from the methodology profile. In `local`
 mode its `backlog` list is authoritative. In `external` mode it contains only the
 provider pointer, and consumers must read current work from that tracker. The

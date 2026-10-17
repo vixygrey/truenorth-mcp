@@ -1,6 +1,6 @@
 # ADR-0010: The External Tracker Owns Bug Detail
 
-**Status:** Accepted
+**Status:** Accepted. The `bugs.yml` path and format are superseded by [ADR-0021](0021-cockpit-json-migration.md); the lean-reference decision stands.
 **Date:** 2026-09-13
 
 ## Context
