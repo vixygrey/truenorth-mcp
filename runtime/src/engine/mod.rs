@@ -10,6 +10,7 @@ pub mod backlog;
 pub mod cockpit;
 pub mod digest;
 pub mod features;
+pub mod gate_diagnostics;
 pub mod gate_runner;
 pub mod git;
 pub mod graph;

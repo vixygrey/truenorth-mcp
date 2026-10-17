@@ -34,6 +34,7 @@ fn gate_result_pass_is_success() {
         duration_ms: 12,
         error: None,
         remediation_hints: Vec::new(),
+        diagnostic: None,
     };
     let result = gate_result(
         &outcome,
@@ -59,6 +60,7 @@ fn gate_result_failure_is_error_with_hints() {
         duration_ms: 9,
         error: Some("the gate command exited with code 1".to_string()),
         remediation_hints: vec!["fix the failure".to_string()],
+        diagnostic: None,
     };
     let error = gate_result(
         &outcome,
@@ -72,6 +74,38 @@ fn gate_result_failure_is_error_with_hints() {
     assert_eq!(data["receipt"]["gate"]["status"], "failure");
     assert_eq!(data["receipt"]["gate"]["exit_code"], 1);
     assert!(data.to_string().contains("fix the failure"));
+}
+
+#[test]
+fn gate_result_exposes_bounded_diagnostic_metadata() {
+    let outcome = GateOutcome {
+        status: GateOutcomeStatus::Failure,
+        exit_code: Some(1),
+        duration_ms: 9,
+        error: Some("the gate command exited with code 1".to_string()),
+        remediation_hints: vec!["re-run the configured gate locally".to_string()],
+        diagnostic: Some(crate::engine::gate_diagnostics::DiagnosticExcerpt {
+            text: "error[E0308]: mismatched types\n".to_string(),
+            truncated: true,
+            captured_bytes: 4096,
+            returned_bytes: 31,
+        }),
+    };
+    let error = gate_result(
+        &outcome,
+        "review",
+        &rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
+        crate::engine::features::TokenCaps::default(),
+    )
+    .expect_err("failure is an MCP error");
+    let data = error.data.expect("structured error data");
+    assert_eq!(
+        data["diagnostic_excerpt"],
+        "error[E0308]: mismatched types\n"
+    );
+    assert_eq!(data["stderr_truncated"], true);
+    assert_eq!(data["stderr_bytes_captured"], 4096);
+    assert_eq!(data["stderr_bytes_returned"], 31);
 }
 
 #[tokio::test]
@@ -105,6 +139,7 @@ fn gate_result_timeout_uses_fallback_message_and_structured_receipt() {
         duration_ms: 250,
         error: None,
         remediation_hints: vec!["reduce the command scope".to_string()],
+        diagnostic: None,
     };
     let error = gate_result(
         &outcome,

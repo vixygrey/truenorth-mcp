@@ -54,6 +54,10 @@ The default runtime request path does not call the external tracker.
 The caller does not supply the shell command or replace execution with a claimed result.
 A gate passes only when its executed command returns the expected zero status within the configured bounds.
 Timeout, disallowed command, invalid configuration, and nonzero exit are failure outcomes.
+For a nonzero exit, the server returns a bounded, line-aware stderr diagnostic excerpt and its
+captured, returned, and truncation metadata. A truncated excerpt does not claim to be a full
+command log and directs the caller to rerun the configured gate locally.
+The executor does not persist full stderr or provide a diagnostic artifact retrieval surface.
 The leading command allowlist is not containment for the remaining shell expression.
 The executor is not a filesystem, network, or hostile command sandbox.
 Environment inheritance and stderr redaction follow the exact-name policy in the conventions.

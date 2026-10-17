@@ -135,10 +135,16 @@ fn gate_result(
         .error
         .clone()
         .unwrap_or_else(|| "the gate failed".to_string());
-    let data = serde_json::json!({
+    let mut data = serde_json::json!({
         "remediation_hints": outcome.remediation_hints,
         "receipt": receipt,
     });
+    if let Some(diagnostic) = &outcome.diagnostic {
+        data["diagnostic_excerpt"] = serde_json::Value::String(diagnostic.text.clone());
+        data["stderr_truncated"] = serde_json::Value::Bool(diagnostic.truncated);
+        data["stderr_bytes_captured"] = serde_json::json!(diagnostic.captured_bytes);
+        data["stderr_bytes_returned"] = serde_json::json!(diagnostic.returned_bytes);
+    }
     Err(ErrorData::invalid_request(message, Some(data)))
 }
 

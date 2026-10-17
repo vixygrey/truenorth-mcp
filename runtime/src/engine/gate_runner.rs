@@ -30,9 +30,7 @@ use std::time::{Duration, Instant};
 use wait_timeout::ChildExt;
 
 use crate::config::GateExecutionConfig;
-
-/// The maximum stderr tail returned on a gate failure (Requirement 3.3).
-const MAX_STDERR_TAIL_BYTES: usize = 2 * 1024;
+use crate::engine::gate_diagnostics::{DiagnosticExcerpt, diagnostic_excerpt};
 
 /// The structured outcome class retained for tool receipts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,6 +52,8 @@ pub struct GateOutcome {
     pub error: Option<String>,
     /// Actionable remediation hints on failure.
     pub remediation_hints: Vec<String>,
+    /// The bounded stderr diagnostic for a non-zero exit.
+    pub diagnostic: Option<DiagnosticExcerpt>,
 }
 
 impl GateOutcome {
@@ -68,6 +68,7 @@ impl GateOutcome {
             duration_ms,
             error: None,
             remediation_hints: Vec::new(),
+            diagnostic: None,
         }
     }
 
@@ -84,6 +85,7 @@ impl GateOutcome {
             duration_ms,
             error: Some(error.into()),
             remediation_hints: hints.iter().map(|hint| hint.to_string()).collect(),
+            diagnostic: None,
         }
     }
 }
@@ -116,8 +118,9 @@ pub trait CommandRunner {
 ///
 /// The steps are: reject when the first token is not in the command allowlist without
 /// executing (Requirement 3.5), then run the command and map the result. The gate passes
-/// only on exit code 0 within the timeout (Requirement 3.2). A non-zero exit returns the
-/// stderr tail (Requirement 3.3). A timeout returns a timeout error (Requirement 3.4).
+/// only on exit code 0 within the timeout (Requirement 3.2). A non-zero exit returns a
+/// bounded, line-aware diagnostic excerpt (Requirement 3.3). A timeout returns a timeout
+/// error (Requirement 3.4).
 ///
 /// # Example
 ///
@@ -185,21 +188,36 @@ fn map_result(result: CommandResult, timeout: Duration, duration_ms: u64) -> Gat
         return GateOutcome::pass(0, duration_ms);
     }
 
-    let tail = stderr_tail(&result.stderr);
+    let diagnostic = diagnostic_excerpt(&result.stderr);
     let code = result
         .exit_code
         .map(|code| code.to_string())
         .unwrap_or_else(|| "unknown (killed by signal)".to_string());
-    GateOutcome::failed(
-        GateOutcomeStatus::Failure,
-        result.exit_code,
-        duration_ms,
-        format!("the gate command exited with code {code}:\n{tail}"),
-        &[
-            "read the stderr tail above and fix the reported failure",
+    let remediation_hints = if diagnostic.truncated {
+        [
+            "fix the diagnostic excerpt above",
+            "re-run the configured gate locally for the complete command output",
+        ]
+    } else {
+        [
+            "read the diagnostic above and fix the reported failure",
             "re-run the gate after the fix",
-        ],
-    )
+        ]
+    };
+    GateOutcome {
+        status: GateOutcomeStatus::Failure,
+        exit_code: result.exit_code,
+        duration_ms,
+        error: Some(format!(
+            "the gate command exited with code {code}:\n{}",
+            diagnostic.text
+        )),
+        remediation_hints: remediation_hints
+            .iter()
+            .map(|hint| (*hint).to_string())
+            .collect(),
+        diagnostic: Some(diagnostic),
+    }
 }
 
 fn elapsed_ms(started: Instant) -> u64 {
@@ -209,14 +227,6 @@ fn elapsed_ms(started: Instant) -> u64 {
 /// The first whitespace-separated token of a command, when present.
 fn first_token(command: &str) -> Option<&str> {
     command.split_whitespace().next()
-}
-
-/// Return at most the final [`MAX_STDERR_TAIL_BYTES`] of stderr as a lossy string.
-///
-/// The cut lands on a UTF-8 boundary, so the tail is always valid text.
-fn stderr_tail(stderr: &[u8]) -> String {
-    let start = stderr.len().saturating_sub(MAX_STDERR_TAIL_BYTES);
-    String::from_utf8_lossy(&stderr[start..]).into_owned()
 }
 
 /// The real command runner. It spawns the command with `std::process`, pins the working
