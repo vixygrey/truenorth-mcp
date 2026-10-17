@@ -1,0 +1,17 @@
+schema_version: 1
+name: elaborate-spec
+description: Refine a rough idea into a confirmed specification through focused dialogue.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_write]
+risk_categories: []
+preconditions: [user_problem_statement]
+handoffs:
+  - skill: model-domain
+    when: domain-decisions-needed
+    required: false
+  - skill: plan-work
+    when: specification-confirmed
+    required: false
+outputs: [planning_context, confirmed_problem_statement]

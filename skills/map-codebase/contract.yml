@@ -1,0 +1,14 @@
+schema_version: 1
+name: map-codebase
+description: Analyze a codebase and persist its technology and architecture context.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [repository_available]
+handoffs:
+  - skill: survey-context
+    when: context-note-created
+    required: false
+outputs: [tech_stack_note, architecture_map]

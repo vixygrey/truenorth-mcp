@@ -1,0 +1,14 @@
+schema_version: 1
+name: design-interface
+description: Compare radically different module interface designs before selecting one.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [process_execution]
+risk_categories: []
+preconditions: [module_requirements_available]
+handoffs:
+  - skill: grill-me
+    when: design-needs-stress-test
+    required: false
+outputs: [interface_design_options, tradeoff_comparison]

@@ -335,6 +335,10 @@ tasks:
   group_kind: ticket
   task_name: Integrate skill contracts with catalog and graph
   verify_command: bash scripts/preflight.sh check shell
+- group_id: '551'
+  group_kind: ticket
+  task_name: Add Discover and Design skill contracts
+  verify_command: bash scripts/preflight.sh check shell
 groups:
 - group_id: '515'
   group_kind: ticket

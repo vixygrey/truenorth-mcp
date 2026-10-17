@@ -1,0 +1,14 @@
+schema_version: 1
+name: research-first
+description: Research repository and external prior art before implementation decisions.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, network]
+risk_categories: []
+preconditions: [task_statement_available]
+handoffs:
+  - skill: elaborate-spec
+    when: research-needs-specification
+    required: false
+outputs: [prior_art_evidence, adoption_verdict]
