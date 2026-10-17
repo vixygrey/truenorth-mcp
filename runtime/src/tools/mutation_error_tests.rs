@@ -16,11 +16,11 @@ fn contended_lease_is_a_typed_retryable_conflict() {
     assert_eq!(data["type"], "writer_lease_conflict");
     assert_eq!(data["lock_path"], ".agent/.writer.lock");
     assert_eq!(data["holder_pid"], 4242);
-    assert!(
-        data["remediation"]
-            .as_str()
-            .is_some_and(|text| !text.is_empty())
-    );
+    let remediation = data["remediation"]
+        .as_str()
+        .expect("contention remediation");
+    assert!(remediation.contains("TRUENORTH_ROOT"));
+    assert!(remediation.contains("connection"));
 }
 
 #[test]
@@ -44,6 +44,11 @@ fn unavailable_lease_is_an_internal_error_without_exposing_detail_in_data() {
     let data = error.data.expect("structured unavailable error");
     assert_eq!(data["type"], "writer_lease_unavailable");
     assert_eq!(data["lock_path"], ".agent/.writer.lock");
+    let remediation = data["remediation"]
+        .as_str()
+        .expect("unavailable remediation");
+    assert!(remediation.contains("TRUENORTH_ROOT"));
+    assert!(remediation.contains("connection"));
     assert!(data.get("detail").is_none());
 }
 

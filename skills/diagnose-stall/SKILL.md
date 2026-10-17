@@ -23,7 +23,7 @@ Explicit handler for silent stalls in long-running agent workflows (`/loop`, `di
 ## Process
 
 1. **Read state** — `.agent/tasks/state.yml`: `handoff.next_skill`, `active_flow`, `metrics.story_start`, open decisions.
-2. **Check for contention**: inspect a `writer_lease_conflict` and the writer lock metadata named in the error. Do not delete the file. Close the owning server or move the parallel agent to a separate Git worktree.
+2. **Check for contention**: inspect a `writer_lease_conflict` and the writer lock metadata named in the error. Do not delete the file. Close the owning server, or configure another MCP server connection with `TRUENORTH_ROOT` set to the parallel worktree and use that connection.
 3. **Inspect terminals** — list background shells; note PIDs, last output timestamp, exit codes.
 4. **Classify stall type:**
    - **waiting_approval** — tool blocked on user consent
