@@ -16,7 +16,7 @@ async function run(ctx) {
     return;
   }
 
-  await ctx.command('node', ['regression.js'], {
+  await ctx.node(['regression.js'], {
     expectFailure: true,
     label: 'pre-fix regression',
   });
@@ -51,7 +51,7 @@ async function run(ctx) {
     });
   }
   await ctx.callTool('bug', 'truenorth_verify_gate', { phase: 'execute' });
-  await ctx.command('node', ['regression.js'], { label: 'post-fix regression' });
+  await ctx.node(['regression.js'], { label: 'post-fix regression' });
   await ctx.callTool('bug', 'truenorth_record_bug', {
     id: 'fixture-435',
     external_link: 'https://example.test/issues/435',

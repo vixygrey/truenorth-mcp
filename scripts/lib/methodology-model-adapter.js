@@ -16,4 +16,13 @@ function configuration(env = process.env) {
   return { available: true, reason: null, provider, model, command };
 }
 
-module.exports = { configuration };
+function shellInvocation(model) {
+  if (!model?.available || !model.command) throw new Error('model command is unavailable');
+  return { executable: '/bin/sh', args: ['-c', model.command] };
+}
+
+function modelEnvironment(workspace, env = process.env) {
+  return { ...env, TRUENORTH_ROOT: workspace };
+}
+
+module.exports = { configuration, modelEnvironment, shellInvocation };

@@ -8,6 +8,7 @@ const { test } = require('node:test');
 
 const {
   baselineProjection,
+  executeScenarioDriver,
   runProcess,
   stableStringify,
   validateManifest,
@@ -109,6 +110,75 @@ test('runProcess hard-times out a child process', async () => {
     }),
     /hung child timed out/,
   );
+});
+
+async function executeDriverSource(source, setup = () => {}) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'methodology-driver-'));
+  const directory = path.join(root, 'scenario');
+  const fixture = path.join(directory, 'fixture');
+  const scenarioRoot = path.join(root, 'run');
+  try {
+    fs.mkdirSync(fixture, { recursive: true });
+    fs.writeFileSync(path.join(directory, 'driver.js'), source);
+    setup({ fixture, root });
+    return {
+      report: await executeScenarioDriver({
+        binary: process.execPath,
+        git_binary: process.execPath,
+        mode: 'deterministic',
+        scenario: {
+          driver: 'driver.js',
+          fixture: 'fixture',
+          workspace_subdir: 'workspace',
+          timeout_ms: 1_000,
+          declared_mutations: [],
+        },
+        scenario_directory: directory,
+        scenario_root: scenarioRoot,
+        repo_root: root,
+      }),
+      root,
+    };
+  } catch (error) {
+    fs.rmSync(root, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+test('deterministic drivers cannot select arbitrary executables or invoke model commands', async () => {
+  const { report, root } = await executeDriverSource(
+    "'use strict';\nmodule.exports = { async run(ctx) { if ('command' in ctx || 'runModel' in ctx) throw new Error('unbounded command exposed'); } };\n",
+  );
+  try {
+    assert.equal(report.driver_error, null);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('deterministic drivers reject environment overrides', async () => {
+  const { report, root } = await executeDriverSource(
+    "'use strict';\nmodule.exports = { async run(ctx) { await ctx.cli(['-e', ''], { env: { PATH: '/tmp/attacker' } }); } };\n",
+  );
+  try {
+    assert.match(report.driver_error.message, /environment override PATH is not permitted/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('deterministic drivers reject symlinked working directories outside the scenario root', async () => {
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'methodology-outside-'));
+  const { report, root } = await executeDriverSource(
+    "'use strict';\nconst path = require('node:path');\nmodule.exports = { async run(ctx) { await ctx.node(['-e', ''], { cwd: path.join(ctx.workspace, 'outside') }); } };\n",
+    ({ fixture }) => fs.symlinkSync(outside, path.join(fixture, 'outside')),
+  );
+  try {
+    assert.match(report.driver_error.message, /scenario path escapes disposable root/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outside, { recursive: true, force: true });
+  }
 });
 
 test('baseline projection excludes volatile metadata and preserves definition digests', () => {

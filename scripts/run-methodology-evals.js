@@ -10,7 +10,9 @@ const {
   baselineProjection,
   definitionDigests,
   diffSnapshots,
+  evaluatorEnvironment,
   readJson,
+  resolveExecutable,
   runProcess,
   sha256,
   snapshotTree,
@@ -34,11 +36,12 @@ async function main() {
   if (entries.length === 0) throw new Error('no scenarios matched the requested mode and filters');
 
   const binary = await resolveBinary(options.binary);
+  const gitBinary = resolveExecutable('git');
   const sourceBefore = snapshotTree(REPO_ROOT, { exclude: SOURCE_EXCLUDES });
   const model = modelConfiguration();
   const scenarios = [];
   for (const entry of entries) {
-    scenarios.push(await runScenario(entry, options.mode, binary, model));
+    scenarios.push(await runScenario(entry, options.mode, binary, gitBinary, model));
   }
   const sourceAfter = snapshotTree(REPO_ROOT, { exclude: SOURCE_EXCLUDES });
   const sourceChanges = diffSnapshots(sourceBefore, sourceAfter);
@@ -48,14 +51,14 @@ async function main() {
     );
   }
 
-  const report = buildReport(options.mode, binary, scenarios, model);
+  const report = buildReport(options.mode, binary, gitBinary, scenarios, model);
   if (options.checkBaseline) checkBaseline(report);
   if (options.updateBaseline) updateBaseline(report);
   process.stdout.write(stableStringify(report));
   if (report.summary.fail > 0) process.exitCode = 1;
 }
 
-async function runScenario(entry, mode, binary, model) {
+async function runScenario(entry, mode, binary, gitBinary, model) {
   const digests = definitionDigests(entry);
   const expected = [...entry.scenario.expected_assertions[mode]].sort();
   if (mode === 'model' && !model.available) {
@@ -80,7 +83,9 @@ async function runScenario(entry, mode, binary, model) {
       inputPath,
       stableStringify({
         binary,
+        git_binary: gitBinary,
         mode,
+        model,
         repo_root: REPO_ROOT,
         scenario: entry.scenario,
         scenario_directory: entry.directory,
@@ -93,7 +98,7 @@ async function runScenario(entry, mode, binary, model) {
       [path.join(__dirname, 'lib', 'methodology-driver-child.js'), inputPath, evidencePath],
       {
         cwd: REPO_ROOT,
-        env: process.env,
+        env: evaluatorEnvironment(REPO_ROOT),
         timeoutMs: entry.scenario.timeout_ms,
         label: `${entry.scenario.id} driver`,
       },
@@ -131,6 +136,7 @@ async function runScenario(entry, mode, binary, model) {
       ],
       {
         cwd: REPO_ROOT,
+        env: evaluatorEnvironment(REPO_ROOT),
         timeoutMs: entry.scenario.grader_timeout_ms ?? entry.scenario.timeout_ms,
         label: `${entry.scenario.id} grader`,
       },
@@ -204,7 +210,7 @@ function validateAssertions(scenario, assertions, expected) {
   return normalized;
 }
 
-function buildReport(mode, binary, scenarios, model) {
+function buildReport(mode, binary, gitBinary, scenarios, model) {
   const pass = scenarios.filter((scenario) => scenario.status === 'pass').length;
   const fail = scenarios.filter((scenario) => scenario.status === 'fail').length;
   const skip = scenarios.filter((scenario) => scenario.status === 'skip').length;
@@ -212,8 +218,8 @@ function buildReport(mode, binary, scenarios, model) {
     schema_version: REPORT_SCHEMA_VERSION,
     suite_schema_version: 1,
     source: {
-      commit: git(['rev-parse', 'HEAD']).trim(),
-      dirty: git(['status', '--porcelain', '--untracked-files=all']).trim().length > 0,
+      commit: git(gitBinary, ['rev-parse', 'HEAD']).trim(),
+      dirty: git(gitBinary, ['status', '--porcelain', '--untracked-files=all']).trim().length > 0,
     },
     runtime: {
       version: execFileSync(binary, ['--version'], { encoding: 'utf8' }).trim(),
@@ -260,11 +266,20 @@ function updateBaseline(report) {
 }
 
 async function resolveBinary(explicit) {
-  if (explicit) return path.resolve(explicit);
+  if (explicit) {
+    const binary = path.resolve(explicit);
+    fs.accessSync(binary, fs.constants.X_OK);
+    return fs.realpathSync.native(binary);
+  }
   const build = await runProcess(
-    'cargo',
+    resolveExecutable('cargo'),
     ['build', '--locked', '--manifest-path', 'runtime/Cargo.toml', '--bin', 'truenorth-mcp'],
-    { cwd: REPO_ROOT, timeoutMs: 600_000, label: 'runtime build' },
+    {
+      cwd: REPO_ROOT,
+      env: evaluatorEnvironment(REPO_ROOT),
+      timeoutMs: 600_000,
+      label: 'runtime build',
+    },
   );
   if (build.code !== 0) throw new Error(`runtime build failed: ${build.stderr.trim()}`);
   return path.join(REPO_ROOT, 'runtime', 'target', 'debug', 'truenorth-mcp');
@@ -302,8 +317,12 @@ function requiredValue(argv, index, flag) {
   return argv[index];
 }
 
-function git(args) {
-  return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
+function git(binary, args) {
+  return execFileSync(binary, args, {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    env: evaluatorEnvironment(REPO_ROOT),
+  });
 }
 
 if (require.main === module) {
