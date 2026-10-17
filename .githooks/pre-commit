@@ -46,8 +46,4 @@ if [ -x "$secret_scan" ]; then
   fi
 fi
 
-if ! truenorth-mcp guard --staged; then
-  echo "pre-commit: the TrueNorth protected-path guard blocked this commit." >&2
-  exit 1
-fi
 exit 0

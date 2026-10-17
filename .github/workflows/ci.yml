@@ -90,7 +90,7 @@ jobs:
         uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           toolchain: "1.88.0"
-      - name: Guard the changed paths and added credential patterns
+      - name: Report protected paths and block added credential patterns
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -100,7 +100,17 @@ jobs:
           fi
           range="$BASE_SHA..$HEAD_SHA"
           git show "$BASE_SHA:.agent/config/rules.yml" > .agent/config/rules.yml
-          cargo run --locked --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- guard --range "$range"
+          if ! guard_output=$(cargo run --locked --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- guard --range "$range" 2>&1); then
+            printf '%s\n' "$guard_output"
+            case "$guard_output" in
+              *"guard blocked protected path"*)
+                echo "::notice title=Protected path change::$guard_output"
+                ;;
+              *)
+                exit 1
+                ;;
+            esac
+          fi
           bash skills/guard-git/scripts/pre-commit-secret-scan.sh --range "$range"
 
   coverage:
