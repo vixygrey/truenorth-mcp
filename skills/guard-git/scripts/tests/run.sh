@@ -253,6 +253,25 @@ else
   no "secret: staged private key blocked" "code=$(cat /tmp/sc.$$) err=$(cat /tmp/se.$$)"
 fi
 
+# A committed range with an added secret is blocked.
+(
+  cd "$SREPO" || exit 1
+  git reset --hard -q
+  echo "base" > range.txt
+  git add range.txt
+  git commit -qm "test: establish range base"
+  printf 'token = "ghp_%s"\n' "0123456789abcdefghijABCDEF" > range.txt
+  git add range.txt
+  git commit -qm "test: add range secret"
+  "$SECRET_HOOK" --range HEAD~1..HEAD 2>/tmp/se.$$
+  echo $? > /tmp/sc.$$
+)
+if [ "$(cat /tmp/sc.$$)" = "1" ] && grep -q "GitHub token" /tmp/se.$$; then
+  ok "secret: range GitHub token blocked"
+else
+  no "secret: range GitHub token blocked" "code=$(cat /tmp/sc.$$) err=$(cat /tmp/se.$$)"
+fi
+
 rm -f /tmp/sc.$$ /tmp/se.$$
 rm -rf "$SREPO"
 

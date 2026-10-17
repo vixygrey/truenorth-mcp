@@ -171,12 +171,36 @@ fn skill_set_options_are_repeatable_and_catalog_is_read_only() {
 }
 
 #[test]
+fn guard_selects_each_supported_source() {
+    assert_eq!(
+        parse_args(["guard".to_string()]).expect("parse stdin guard"),
+        Mode::Guard {
+            source: GuardSource::Stdin
+        }
+    );
+    assert_eq!(
+        parse_args(["guard".to_string(), "--staged".to_string()]).expect("parse staged guard"),
+        Mode::Guard {
+            source: GuardSource::Staged
+        }
+    );
+    assert_eq!(
+        parse_args([
+            "guard".to_string(),
+            "--range".to_string(),
+            "base..head".to_string()
+        ])
+        .expect("parse range guard"),
+        Mode::Guard {
+            source: GuardSource::Range("base..head".to_string())
+        }
+    );
+    assert!(parse_args(["guard".to_string(), "--range".to_string()]).is_err());
+}
+
+#[test]
 fn unsupported_or_combined_arguments_return_usage() {
-    for args in [
-        vec!["guard".to_string()],
-        vec!["--version".to_string(), "--check-config".to_string()],
-    ] {
-        let error = parse_args(args).expect_err("arguments must be rejected");
-        assert_eq!(error, USAGE);
-    }
+    let error = parse_args(["--version".to_string(), "--check-config".to_string()])
+        .expect_err("must reject combined arguments");
+    assert_eq!(error, USAGE);
 }

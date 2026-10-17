@@ -41,6 +41,7 @@ fn main() -> ExitCode {
             ExitCode::SUCCESS
         }
         Ok(cli::Mode::CheckConfig { strict }) => cli::check_config(strict),
+        Ok(cli::Mode::Guard { source }) => cli::guard(source),
         Ok(cli::Mode::Init {
             profile,
             bundle_dir,
