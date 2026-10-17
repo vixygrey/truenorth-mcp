@@ -26,7 +26,7 @@ function main() {
   }
 
   const beforeStatus = gitStatus(repoRoot);
-  const beforePlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml'));
+  const beforePlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'));
   const fixture = createPackedWrapperFixture(
     options.platformPackage,
     'tn-mcp-inspector-certification-',
@@ -50,11 +50,11 @@ function main() {
     const invocations = [tools, resources, state, mutation];
     const protocolVersion = protocolVersionFrom(invocations);
     const plan = fs.readFileSync(
-      path.join(fixture.project, '.agent', 'tasks', 'release-plan.yml'),
+      path.join(fixture.project, '.agent', 'tasks', 'release-plan.json'),
       'utf8',
     );
     const afterStatus = gitStatus(repoRoot);
-    const afterPlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml'));
+    const afterPlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'));
 
     const operations = {
       install: pass('packed wrapper installed with scripts disabled'),

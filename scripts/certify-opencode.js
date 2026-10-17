@@ -23,7 +23,7 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const repoRoot = path.resolve(__dirname, '..');
   const beforeStatus = gitStatus(repoRoot);
-  const beforePlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml'));
+  const beforePlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'));
   const fixture = createPackedWrapperFixture(options.platformPackage, 'tn-opencode-certification-');
   const home = path.join(fixture.work, 'home');
   const transcript = path.join(fixture.work, 'mcp-transcript.jsonl');
@@ -144,12 +144,12 @@ async function main() {
     const operationEvents = parseEventLines(operationResult.stdout);
     const resourceCatalog = parseJsonOutput(resourceResult.stdout);
     const catalogResources = resourceUris(resourceCatalog);
-    const disposablePlanPath = path.join(fixture.project, '.agent', 'tasks', 'release-plan.yml');
+    const disposablePlanPath = path.join(fixture.project, '.agent', 'tasks', 'release-plan.json');
     const disposablePlan = fs.existsSync(disposablePlanPath)
       ? fs.readFileSync(disposablePlanPath, 'utf8')
       : '';
     const afterStatus = gitStatus(repoRoot);
-    const afterPlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml'));
+    const afterPlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'));
 
     const {
       methods,

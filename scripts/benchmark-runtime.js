@@ -177,7 +177,7 @@ function assertFile(file, label) {
 function initializeWorkspace(binary, workspace) {
   execFileSync(
     binary,
-    ['init', '--skills-dir', path.join(REPO_ROOT, 'skills'), '--profile', 'generic'],
+    ['init', '--bundle-dir', path.join(REPO_ROOT, 'npm'), '--profile', 'generic'],
     {
       cwd: workspace,
       env: { ...process.env, TRUENORTH_ROOT: workspace, TRUENORTH_VERIFY_CMD: 'true' },
@@ -308,7 +308,7 @@ function measureShellTrue(sampleCount) {
 }
 
 async function measureWatcher(session, workspace, sampleCount) {
-  const statePath = path.join(workspace, '.agent', 'tasks', 'state.yml');
+  const statePath = path.join(workspace, '.agent', 'tasks', 'state.json');
   const samples = [];
   for (let index = 0; index < sampleCount; index += 1) {
     const notification = session.waitForNotification(
@@ -316,8 +316,10 @@ async function measureWatcher(session, workspace, sampleCount) {
         message.method === 'notifications/resources/updated' &&
         message.params?.uri === 'truenorth://state',
     );
+    const state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+    state.benchmark_tick = index;
     const started = process.hrtime.bigint();
-    fs.writeFileSync(statePath, `phase: discover\nbenchmark_tick: ${index}\n`);
+    fs.writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
     await notification;
     samples.push(elapsedMs(started));
   }
@@ -464,4 +466,11 @@ if (require.main === module) {
   });
 }
 
-module.exports = { buildReport, parseArgs, parseLinuxRss, parseMacRss, renderMarkdown };
+module.exports = {
+  buildReport,
+  measureWatcher,
+  parseArgs,
+  parseLinuxRss,
+  parseMacRss,
+  renderMarkdown,
+};

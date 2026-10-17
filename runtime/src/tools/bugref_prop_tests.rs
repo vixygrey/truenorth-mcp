@@ -6,7 +6,7 @@
 //! preservation. A call is accepted if and only if the id is 1 to 200 characters, the
 //! external link is an absolute URL, the status is one of the enum, and the linked
 //! reference resolves to an existing id. On acceptance the stored tags equal the supplied
-//! tags. On rejection bugs.yml is unchanged.
+//! tags. On rejection bugs.json is unchanged.
 
 use std::fs;
 
@@ -51,7 +51,7 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(200))]
 
     /// A bug reference is accepted iff every field rule holds, tags round-trip on accept,
-    /// and bugs.yml is unchanged on reject.
+    /// and bugs.json is unchanged on reject.
     #[test]
     fn record_bug_accepts_iff_valid_and_preserves_state(
         id in "[A-Za-z0-9-]{0,205}",

@@ -12,7 +12,7 @@ tracker already owns, and the sidecar format added a second copy of every bug.
 ## Decision
 
 The external tracker is the source of truth for bug detail. The runtime stores a
-lean bug reference in the cockpit file `.agent/tasks/bugs.yml` through the
+lean bug reference in the cockpit file `.agent/tasks/bugs.json` through the
 `truenorth_record_bug` tool. A reference carries an id, an external link, a
 status, the linked task or group, and optional tags. The runtime makes no network
 request, integrates no tracker API, and stores no tracker credential.

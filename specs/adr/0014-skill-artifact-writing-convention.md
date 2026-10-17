@@ -15,7 +15,7 @@ fixed-shape, so none accepts an arbitrary output path.
 Two skills write artifacts today, and each rolls its own path handling:
 
 - `extract-design` writes the committed design note to `.agent/product/design.md`
-  through the `OUTPUT_PATH` constant, and writes a handoff to `.agent/tasks/state.yml`
+  through the `OUTPUT_PATH` constant, and writes a handoff to `.agent/tasks/state.json`
   through the `STATE_PATH` constant. Both paths are under `.agent/`.
 - `visual-dashboard` writes a transient render tree to an out-of-repo session dir
   (`/tmp/truenorth-dashboard`), or to `${PROJECT_DIR}/.truenorth/dashboard/${SESSION_ID}`
@@ -49,7 +49,7 @@ The convention has two rules, one per artifact class:
 - **Machine artifacts go under `.agent/`.** A skill that writes a committed,
   machine-owned artifact writes it under `.agent/`, matching the write guard's
   invariant. The design note at `.agent/product/design.md` and the handoff at
-  `.agent/tasks/state.yml` are the current examples.
+  `.agent/tasks/state.json` are the current examples.
 - **Transient render output goes to an out-of-repo session dir, or a gitignored
   in-repo session dir.** A skill that writes a throwaway render (a served dashboard,
   a scratch tree) writes it outside the repo, for example under a temp dir. When a

@@ -37,11 +37,12 @@ TrueNorth-MCP keeps the HARD GATE mandate unchanged. Skills across the catalog c
 `plan-release`, `audit-code`, `grill-me`, and `security-review`. The convention is also
 documented in the domain glossary (`.agent/product/glossary.yml`).
 
-One detail moved with ADR-0011. The original ADR said a skipped gate must be logged in
-`STATE.md`; the cockpit state file is now `.agent/tasks/state.yml`, so a documented skip is
-recorded there. The runtime reinforces the same intent at the protocol layer: the
-`truenorth_verify_gate` tool passes only on exit 0, so a gate backed by a runnable command
-is enforced by the server, not only by a blockquote a model can read past.
+One detail moved with ADR-0011 and changed format with ADR-0021. The original ADR said
+a skipped gate must be logged in `STATE.md`; the cockpit state file is now
+`.agent/tasks/state.json`, so a documented skip is recorded there. The runtime
+reinforces the same intent at the protocol layer: the `truenorth_verify_gate` tool
+passes only on exit 0, so a gate backed by a runnable command is enforced by the
+server, not only described in a skill.
 
 **Status today:** live, as a `skills/` convention, with the skip record in
-`.agent/tasks/state.yml`.
+`.agent/tasks/state.json`.

@@ -31,9 +31,9 @@ and a human-facing `specs/` layer, so this ADR is superseded by that split, not 
 return to remote state.
 
 Later decisions carry the premise forward. ADR-0011 relocated the cockpit into
-`.agent/`, so the runtime reads `.agent/tasks/state.yml` and
-`.agent/tasks/release-plan.yml` live. ADR-0010 keeps bug detail in an external
-tracker while storing only a lean reference on disk.
+`.agent/`, and ADR-0021 moved its runtime-owned documents to
+`.agent/tasks/state.json` and `.agent/tasks/release-plan.json`. ADR-0010 keeps bug
+detail in an external tracker while storing only a lean reference on disk.
 
 Backlog ownership is a second bounded exception. A project can keep an
 authoritative local list in `.agent/tasks/backlog.yml` or declare an external

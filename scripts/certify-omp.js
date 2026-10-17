@@ -25,7 +25,7 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const repoRoot = path.resolve(__dirname, '..');
   const beforeStatus = gitStatus(repoRoot);
-  const beforePlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml'));
+  const beforePlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'));
   const fixture = createPackedWrapperFixture(options.platformPackage, 'tn-omp-certification-');
   const home = path.join(fixture.work, 'home');
   const sessions = path.join(fixture.work, 'sessions');
@@ -82,10 +82,10 @@ async function main() {
     console.error('OMP certification: OMP exited after stdin close');
     rpc = null;
     const serverLifecycle = await readServerLifecycle(serverStart, serverExit, options.timeoutMs);
-    const disposablePlan = path.join(fixture.project, '.agent', 'tasks', 'release-plan.yml');
+    const disposablePlan = path.join(fixture.project, '.agent', 'tasks', 'release-plan.json');
     const plan = fs.existsSync(disposablePlan) ? fs.readFileSync(disposablePlan, 'utf8') : '';
     const afterStatus = gitStatus(repoRoot);
-    const afterPlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml'));
+    const afterPlan = fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'));
 
     const readEvents = toolEvents(promptFrames, readTool);
     const mutationEvents = toolEvents(promptFrames, mutationTool);

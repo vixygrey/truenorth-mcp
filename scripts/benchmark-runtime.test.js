@@ -1,9 +1,18 @@
 'use strict';
 
-const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const test = require('node:test');
 
-const { parseArgs, parseLinuxRss, parseMacRss, renderMarkdown } = require('./benchmark-runtime.js');
+const {
+  measureWatcher,
+  parseArgs,
+  parseLinuxRss,
+  parseMacRss,
+  renderMarkdown,
+} = require('./benchmark-runtime.js');
 const {
   characterCount,
   estimateTokens,
@@ -70,6 +79,39 @@ test('parseArgs accepts reduced smoke sample counts and rejects zero samples', (
     },
   );
   assert.throws(() => parseArgs(['--request-samples', '0']), /positive integer/);
+});
+
+test('watcher measurement preserves the JSON cockpit document', async (t) => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), 'truenorth-benchmark-'));
+  t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
+  const tasks = path.join(workspace, '.agent', 'tasks');
+  fs.mkdirSync(tasks, { recursive: true });
+  const statePath = path.join(tasks, 'state.json');
+  fs.writeFileSync(statePath, '{"phase":"discover","custom":{"preserved":true}}\n');
+
+  const samples = await measureWatcher(
+    {
+      waitForNotification(predicate) {
+        assert.equal(
+          predicate({
+            method: 'notifications/resources/updated',
+            params: { uri: 'truenorth://state' },
+          }),
+          true,
+        );
+        return Promise.resolve();
+      },
+    },
+    workspace,
+    1,
+  );
+
+  assert.equal(samples.length, 1);
+  assert.deepEqual(JSON.parse(fs.readFileSync(statePath, 'utf8')), {
+    phase: 'discover',
+    custom: { preserved: true },
+    benchmark_tick: 0,
+  });
 });
 
 test('renderMarkdown publishes environment, spread, payloads, and non-gating policy', () => {

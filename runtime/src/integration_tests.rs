@@ -65,7 +65,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     let state = read_text(&client, "truenorth://state").await?;
     assert!(state.contains("\"active_epic\":\"e01\""));
 
-    // Drive a phase advance. The tool writes state.yaml (Requirements 2.1, 2.3).
+    // Drive a phase advance. The tool writes state.json (Requirements 2.1, 2.3).
     let advance_result = call_tool(
         &client,
         "truenorth_advance_phase",
@@ -91,7 +91,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
         "state reflects the advance"
     );
 
-    // Record a task. The tool appends to release-plan.yaml (Requirements 2.1, 2.5).
+    // Record a task. The tool appends to release-plan.json (Requirements 2.1, 2.5).
     let task_result = call_tool(
         &client,
         "truenorth_record_task",

@@ -45,30 +45,29 @@ still receives upstream security fixes.
 
 ## Supported workspaces
 
-A v1 `.agent/` workspace has this layout contract:
+A current `.agent/` workspace has this layout contract:
 
 ```yaml
 version: "1"
 areas:
   config: [rules.yml]
   spec: [requirements.md]
-  tasks: [state.yml] # truenorth-lint: allow-relative-layout-path
+  tasks: [state.json] # truenorth-lint: allow-relative-layout-path
   memories: [lessons.md, glossary.md]
 ```
 
-The runtime accepts only layout version `"1"`. It also requires these paths:
+The runtime accepts layout version `"1"`. It requires these paths:
 
 - `.agent/config/rules.yml`
 - `.agent/spec/requirements.md`
-- `.agent/tasks/state.yml`
+- `.agent/tasks/state.json`
 - `.agent/memories/lessons.md`
 - `.agent/memories/glossary.md`
 - `.agent/layout.yml`
 - `.agent/profile.yml`
 
 The runtime logs an invalid layout as a warning and preserves its last valid layout
-cache. A missing layout remains valid for an unscaffolded or legacy workspace, so
-v1 can perform the legacy reads described below.
+cache. A missing layout remains valid for an unscaffolded workspace.
 
 `.agent/telemetry/runs.yml` is no longer required or scaffolded. Existing telemetry
 directories and files remain accepted as extra v1 content, but the runtime does not
@@ -127,40 +126,29 @@ contain a `backlog` field, including an empty list. Consumers obtain current wor
 from the declared provider. The runtime validates the ownership metadata but makes
 no external tracker request.
 
-## Cockpit migration
+## Cockpit documents
 
-V1 reads the `.agent/` cockpit first. When the corresponding file is absent, it
-reads these legacy BigPowers paths:
+ADR-0021 defines the runtime-owned cockpit documents:
 
-| V1 path                         | Legacy fallback           | First runtime write                                                                       |
-| ------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
-| `.agent/tasks/state.yml`        | `specs/state.yaml`        | Writes `.agent/tasks/state.yml` <!-- truenorth-lint: allow-legacy-cockpit-path -->        |
-| `.agent/tasks/release-plan.yml` | `specs/release-plan.yaml` | Writes `.agent/tasks/release-plan.yml` <!-- truenorth-lint: allow-legacy-cockpit-path --> |
-| `.agent/ontology.yml`           | `specs/ontology.yaml`     | Writes `.agent/ontology.yml` <!-- truenorth-lint: allow-legacy-cockpit-path -->           |
+| Document       | Path                             | Resource MIME type                          |
+| -------------- | -------------------------------- | ------------------------------------------- |
+| State          | `.agent/tasks/state.json`        | `application/json` at `truenorth://state`   |
+| Release plan   | `.agent/tasks/release-plan.json` | `application/json` at `truenorth://cockpit` |
+| Bug references | `.agent/tasks/bugs.json`         | not served as an MCP resource               |
 
-When both files exist, the `.agent/` file wins. V1 never mutates a legacy
-`specs/` source. It does not automatically delete or rename legacy files.
+Each document root is a JSON object. Runtime mutations preserve unknown fields,
+explicit `null`, arrays, and key insertion order. A malformed or non-object
+document is rejected without a partial mutation.
 
-State and release-plan mutations preserve every unmodified field, including unknown
-top-level fields and legacy version markers. The runtime validates YAML before
-writing. A malformed cockpit input is rejected and left unchanged. This preservation
-promise does not cover ontology rewrites, which use a structured ontology model.
+The resource URIs remain stable. There is no YAML fallback for these three
+documents. A workspace that still has legacy cockpit YAML must use
+`truenorth-mcp migrate-cockpit-json --check` to identify its source and migration
+constraints. That command is read-only; the runtime does not silently read or
+convert legacy files.
 
 The lifecycle tool continues to accept legacy phase names where the runtime maps
 them to a current lifecycle phase. `truenorth_record_task` continues to accept
 `epic_id`; it maps to `group_id` with `group_kind: epic`.
-
-### Planned v2 change: cockpit JSON
-
-A pending major version moves `.agent/tasks/state.yml`, `.agent/tasks/release-plan.yml`,
-and `.agent/tasks/bugs.yml` <!-- truenorth-lint: allow-legacy-cockpit-path --> to
-`.agent/tasks/state.json`, `.agent/tasks/release-plan.json`, and
-`.agent/tasks/bugs.json`, with a MIME type of `application/json` on the matching
-resources and no YAML fallback for these three documents. See
-[ADR-0021](../specs/adr/0021-cockpit-json-migration.md). This is a breaking change
-under this page's own rule: it ships with a new major version, release notes, and
-an explicit `truenorth-mcp migrate-cockpit-json` command, not a silent read-path
-change within v1.
 
 ## MCP tools and resources
 
@@ -204,7 +192,7 @@ Successful repository mutations retain their existing result fields and add a
     "correlation_id": "mcp-sha256:<digest>",
     "changes": [
       {
-        "path": ".agent/tasks/release-plan.yml",
+        "path": ".agent/tasks/release-plan.json",
         "sha256": "<digest of the exact resulting bytes>"
       }
     ]
@@ -272,25 +260,23 @@ tracks the assessment, and
 [croft#685](https://github.com/vitali87/croft/issues/685) tracks forced sidecar
 shutdown.
 
-## Upgrade to v1
+## JSON cockpit migration
 
 1. Commit or back up the existing workspace.
-2. Check `.agent/layout.yml` has `version: "1"` and all required paths. A legacy
-   workspace can omit it temporarily while it uses fallback reads.
-3. Check `profile.yml` uses one supported profile. Omit it only to use the
-   `issue-per-task` default.
-4. Start v1 and inspect `resources/list`, then read `truenorth://state` and
-   `truenorth://cockpit` before any mutation.
-5. Run the relevant workflow operation. The first write creates the v1 cockpit
-   file under `.agent/`; the legacy source remains unchanged.
-6. Compare the new file with the committed legacy source. Confirm required fields
-   and unknown fields are present before considering the workspace migrated.
-7. Keep legacy files until the migration is reviewed and committed. Roll back by
-   restoring the prior commit rather than editing an active cockpit in place.
+2. Check `.agent/layout.yml` has `version: "1"` and requires `tasks/state.json`.
+3. Run `truenorth-mcp migrate-cockpit-json --check` for a workspace that has
+   legacy cockpit YAML. It reports the selected source, unsupported YAML constructs,
+   and potential comment loss without writing.
+4. Do not expect the runtime to read, rename, or convert legacy cockpit YAML during
+   normal operations. Preserve the original workspace until the explicit migration
+   workflow is complete and reviewed.
+5. Start the runtime and inspect `resources/list`, then read
+   `truenorth://state` and `truenorth://cockpit` before mutation. They serve JSON
+   with their stable URIs.
 
 Use the [compatibility issue form](https://github.com/vixygrey/truenorth-mcp/issues/new?template=compat.yml)
-for a dropped field, failed legacy read, invalid phase mapping, or unexpected
-resource result.
+for a dropped field, failed JSON migration analysis, invalid phase mapping, or
+unexpected resource result.
 
 ## Contract evidence
 
@@ -304,8 +290,8 @@ The runtime tests enforce this policy:
   `--check-config` rejects cached entries under external ownership.
 - `tools::scaffold::tests::scaffold_emits_the_agent_tree_and_root_docs` validates
   that a fresh project receives explicit local backlog ownership.
-- `engine::cockpit::tests` validates legacy reads, migration writes, source
-  immutability, and state and release-plan field preservation.
+- `engine::cockpit::tests` validates JSON cockpit mutations, source preservation,
+  and state and release-plan field preservation.
 - `resources::tests` and `resources::prop_tests` validate resource URI stability,
-  legacy fallback, `.agent/` precedence, and arbitrary unknown state fields.
+  JSON MIME types, `.agent/` backing paths, and arbitrary unknown state fields.
 - `integration_tests` exercises the MCP client surface end to end.

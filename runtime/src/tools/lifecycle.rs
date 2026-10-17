@@ -1,9 +1,9 @@
 //! Lifecycle tools: `truenorth_advance_phase` and `truenorth_record_task`.
 //!
-//! `truenorth_advance_phase` moves the lifecycle phase, writes `state.yaml`, records the
-//! git-scoped context, and emits `resources/updated` for `truenorth://state`
+//! `truenorth_advance_phase` moves the lifecycle phase, writes `.agent/tasks/state.json`,
+//! records the git-scoped context, and emits `resources/updated` for `truenorth://state`
 //! (Requirements 2.2, 2.3). `truenorth_record_task` registers a task under an epic,
-//! appends it to `release-plan.yaml`, and emits `resources/updated` for
+//! appends it to `.agent/tasks/release-plan.json`, and emits `resources/updated` for
 //! `truenorth://cockpit` (Requirements 2.4, 2.5).
 //!
 //! Both reject schema-violating input by naming the offending field, without a partial
@@ -85,7 +85,9 @@ struct Grouping {
 #[tool_router(router = lifecycle_router, vis = "pub")]
 impl TrueNorthServer {
     /// Advance the lifecycle phase and record the artifacts summary.
-    #[tool(description = "Advance the lifecycle phase, write state.yaml, and record git context.")]
+    #[tool(
+        description = "Advance the lifecycle phase, write .agent/tasks/state.json, and record git context."
+    )]
     pub async fn truenorth_advance_phase(
         &self,
         params: Parameters<AdvancePhaseArgs>,
