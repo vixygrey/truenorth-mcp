@@ -16,6 +16,7 @@ use crate::engine::agent_ws;
 use crate::engine::git::{self, GitAction, GitError};
 use crate::engine::graph::{self, SkillGraph};
 use crate::engine::skill::{SkillError, discover_skills, read_skill_raw};
+use crate::engine::skill_contract::read_skill_contract;
 use crate::engine::skill_parser::{ParsedSkill, parse_skill};
 use crate::engine::skill_validate::validate_skill;
 use crate::server::{ServerContext, TrueNorthServer};
@@ -98,7 +99,10 @@ impl TrueNorthServer {
     pub async fn index_skills(&self) -> Result<CallToolResult, ErrorData> {
         let skills = discover_skills(&self.ctx.repo_root);
         json_result(
-            &serde_json::json!({ "count": skills.len(), "skills": skills_json(&skills) }),
+            &serde_json::json!({
+                "count": skills.len(),
+                "skills": skills_json(&self.ctx.repo_root, &skills),
+            }),
             self.ctx.token_caps,
         )
     }
@@ -112,7 +116,14 @@ impl TrueNorthServer {
         params: Parameters<NameArg>,
     ) -> Result<CallToolResult, ErrorData> {
         let parsed = self.parse_named_skill(&params.0.name)?;
-        json_result(&parsed, self.ctx.token_caps)
+        let mut value = serde_json::to_value(parsed).map_err(|error| {
+            ErrorData::internal_error(format!("could not serialize skill: {error}"), None)
+        })?;
+        let contract = read_skill_contract(&self.ctx.repo_root, &params.0.name).ok();
+        value["contract"] = serde_json::to_value(contract).map_err(|error| {
+            ErrorData::internal_error(format!("could not serialize skill contract: {error}"), None)
+        })?;
+        json_result(&value, self.ctx.token_caps)
     }
 
     /// Search skills by metadata.
@@ -145,8 +156,8 @@ impl TrueNorthServer {
         let observed = agent_ws::ObservedFile::observe(self.ctx.graph_path()).map_err(|error| {
             ErrorData::internal_error(format!("could not inspect the skill graph: {error}"), None)
         })?;
-        let parsed = self.parse_all_skills();
-        let build = graph::build_graph_report(&parsed);
+        let (parsed, contracts) = self.parse_all_skills();
+        let build = graph::build_graph_report_with_contracts(&parsed, &contracts);
         if let Some(mention) = build
             .diagnostics
             .unresolved_mentions
@@ -289,13 +300,25 @@ impl TrueNorthServer {
         Ok(parse_skill(&raw))
     }
 
-    /// Parse every discovered skill, skipping any that fail to read.
-    fn parse_all_skills(&self) -> Vec<ParsedSkill> {
-        discover_skills(&self.ctx.repo_root)
+    /// Parse every discovered skill and load each present adjacent contract.
+    fn parse_all_skills(
+        &self,
+    ) -> (
+        Vec<ParsedSkill>,
+        std::collections::BTreeMap<String, crate::engine::skill_contract::SkillContract>,
+    ) {
+        let mut contracts = std::collections::BTreeMap::new();
+        let parsed = discover_skills(&self.ctx.repo_root)
             .into_iter()
-            .filter_map(|entry| read_skill_raw(&self.ctx.repo_root, &entry.name).ok())
-            .map(|raw| parse_skill(&raw))
-            .collect()
+            .filter_map(|entry| {
+                let raw = read_skill_raw(&self.ctx.repo_root, &entry.name).ok()?;
+                if let Ok(contract) = read_skill_contract(&self.ctx.repo_root, &entry.name) {
+                    contracts.insert(entry.name.clone(), contract);
+                }
+                Some(parse_skill(&raw))
+            })
+            .collect();
+        (parsed, contracts)
     }
 
     /// Load the persisted graph, erroring when none has been built.
@@ -327,10 +350,21 @@ impl TrueNorthServer {
             };
             let parsed = parse_skill(&raw);
             let fm = &parsed.frontmatter;
+            let contract = read_skill_contract(&self.ctx.repo_root, &entry.name).ok();
+            let contract_description = contract
+                .as_ref()
+                .map(|contract| contract.description.as_str())
+                .unwrap_or_default();
+            let contract_scale = contract
+                .as_ref()
+                .map(|contract| format!("{:?}", contract.scale))
+                .unwrap_or_default();
             let haystack = [
                 entry.name.clone(),
                 entry.phase.clone(),
                 fm_str(fm, "description"),
+                contract_description.to_string(),
+                contract_scale,
             ]
             .join(" ")
             .to_lowercase();
@@ -366,14 +400,21 @@ fn receipt_error(error: String) -> ErrorData {
 }
 
 /// Serialize skill index entries for the JSON result.
-fn skills_json(skills: &[crate::engine::skill::SkillIndexEntry]) -> Vec<serde_json::Value> {
+fn skills_json(
+    repo_root: &std::path::Path,
+    skills: &[crate::engine::skill::SkillIndexEntry],
+) -> Vec<serde_json::Value> {
     skills
         .iter()
-        .map(|s| {
+        .map(|skill| {
+            let contract = read_skill_contract(repo_root, &skill.name).ok();
             serde_json::json!({
-                "name": s.name,
-                "path": s.path.display().to_string(),
-                "phase": s.phase,
+                "name": skill.name,
+                "path": skill.path.display().to_string(),
+                "phase": skill.phase,
+                "scale": contract.as_ref().map(|value| value.scale),
+                "side_effects": contract.as_ref().map(|value| value.side_effects),
+                "risks": contract.as_ref().map(|value| value.risks),
             })
         })
         .collect()
