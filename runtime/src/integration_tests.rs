@@ -778,6 +778,7 @@ async fn concurrent_mutation_matrix_remains_serializable() -> anyhow::Result<()>
     let tdd_args = serde_json::json!({
         "step": "red",
         "failing_test_cmd": "false",
+        "group_id": "concurrency",
         "files_to_modify": ["src/lib.rs"]
     });
     let tdd_outcomes = concurrent_tool_calls(

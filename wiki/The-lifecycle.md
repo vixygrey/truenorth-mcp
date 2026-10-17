@@ -34,13 +34,17 @@ the verify gate can run it later. The tool appends the task to
 ## Execute
 
 Drive the change with the Red-Green-Refactor loop. `truenorth_tdd_cycle` enforces the step
-order. It takes `step` (`red`, `green`, or `refactor`), a `failing_test_cmd`, and the
-`files_to_modify`.
+order. It takes `step` (`red`, `green`, or `refactor`), a `failing_test_cmd`,
+`files_to_modify`, and an optional `group_id`.
+
+Use `group_id` for work recorded under a task group. Each group has an independent cycle.
+Omit it only when continuing a legacy unscoped cycle.
 
 ```json
 {
   "step": "red",
   "failing_test_cmd": "cargo test users::pagination",
+  "group_id": "552",
   "files_to_modify": ["runtime/src/tools/users.rs"]
 }
 ```

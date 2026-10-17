@@ -178,6 +178,7 @@ fn second_process_reads_but_cannot_mutate_and_recovers_after_owner_crash() {
             json!({
                 "step": "red",
                 "failing_test_cmd": "false",
+                "group_id": "writer-lease",
                 "files_to_modify": ["src/lib.rs"]
             }),
         ),

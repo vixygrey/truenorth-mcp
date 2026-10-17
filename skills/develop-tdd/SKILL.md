@@ -51,7 +51,8 @@ Self-Validating, Timely.
 
 Write ONE test that confirms ONE thing about the system. Drive the cycle through
 the `truenorth_tdd_cycle` tool, which enforces the red-green-refactor order and the
-red-stage exit-code semantics.
+red-stage exit-code semantics. For grouped work, send the selected `group_id` on every
+cycle call. Each group has its own recorded step.
 
 ```text
 RED:      write one behavior test, run it through truenorth_tdd_cycle, and keep the failure local

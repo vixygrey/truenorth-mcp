@@ -27,6 +27,7 @@ Unknown supported workspace fields survive updates that do not own them.
 The cockpit records lifecycle phase, handoff, release tasks, story status, and bug references in their declared machine files.
 Phase advancement uses `truenorth_advance_phase`.
 The TDD tool enforces the declared Red, Green, and Refactor order and observes the red test result.
+An optional `group_id` scopes a cycle to one task group. An omitted value retains the legacy unscoped cycle.
 A failed validation or write does not leave a partially changed state file.
 Legacy phase mappings follow the project convention rather than create another active lifecycle.
 
