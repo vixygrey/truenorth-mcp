@@ -1,5 +1,5 @@
-//! Serde models for the cockpit YAML files: `state.yaml`, `release-plan.yaml`, and
-//! `ontology.yaml`.
+//! Serde models for the cockpit JSON files (`state.json` and `release-plan.json`) and
+//! the YAML ontology file.
 //!
 //! The state and release-plan models preserve the document verbatim (Requirement 9.3).
 //! Both hold the whole document in an ordered map, so a read then a write reproduces
@@ -17,7 +17,7 @@ use std::collections::BTreeMap;
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_yaml::{Mapping, Value};
+use serde_json::Value;
 
 /// A lifecycle phase in the six-phase model.
 ///
@@ -67,7 +67,7 @@ impl Phase {
     }
 }
 
-/// The `state.yaml` cockpit file (Requirement 9.1).
+/// The `state.json` cockpit file (Requirement 9.1).
 ///
 /// The document is held verbatim in `root`, so a read then a write preserves every key
 /// and value unchanged (Requirements 9.3, 9.4). Typed accessors expose the observed
@@ -76,7 +76,7 @@ impl Phase {
 #[serde(transparent)]
 pub struct StateFile {
     /// The whole document, preserved verbatim.
-    pub root: Mapping,
+    pub root: crate::engine::cockpit_json::CockpitObject,
 }
 
 impl StateFile {
@@ -95,7 +95,7 @@ impl StateFile {
     /// The write preserves every other field, so a mutation never drops a human edit
     /// (Requirement 9.3).
     pub fn set(&mut self, key: &str, value: Value) {
-        self.root.insert(Value::String(key.to_string()), value);
+        self.root.insert(key.to_string(), value);
     }
 
     /// Read a top-level field by key, when present.
@@ -104,7 +104,7 @@ impl StateFile {
     }
 }
 
-/// The `release-plan.yaml` cockpit file (Requirement 9.1).
+/// The `release-plan.json` cockpit file (Requirement 9.1).
 ///
 /// The document is held verbatim in `root`, so a read then a write preserves every key
 /// and value unchanged (Requirement 9.3). Typed accessors expose the observed fields
@@ -113,7 +113,7 @@ impl StateFile {
 #[serde(transparent)]
 pub struct ReleasePlanFile {
     /// The whole document, preserved verbatim.
-    pub root: Mapping,
+    pub root: crate::engine::cockpit_json::CockpitObject,
 }
 
 impl ReleasePlanFile {
@@ -124,7 +124,7 @@ impl ReleasePlanFile {
     /// allow rather than being deleted.
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn build_order(&self) -> Option<&Vec<Value>> {
-        self.root.get("build_order")?.as_sequence()
+        self.root.get("build_order")?.as_array()
     }
 
     /// Append an entry to the `build_order` sequence, creating it when absent.
@@ -133,11 +133,15 @@ impl ReleasePlanFile {
     /// tool calls it today, so it carries a non-test allow rather than being deleted.
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn push_build_order(&mut self, entry: Value) {
-        let key = Value::String("build_order".to_string());
-        match self.root.get_mut(&key).and_then(Value::as_sequence_mut) {
+        match self
+            .root
+            .get_mut("build_order")
+            .and_then(Value::as_array_mut)
+        {
             Some(sequence) => sequence.push(entry),
             None => {
-                self.root.insert(key, Value::Sequence(vec![entry]));
+                self.root
+                    .insert("build_order".to_string(), Value::Array(vec![entry]));
             }
         }
     }

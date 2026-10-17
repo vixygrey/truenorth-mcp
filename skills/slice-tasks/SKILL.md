@@ -19,7 +19,7 @@ and no `group_id` or `group_kind`.
 - **Manifest write**: `group.yml` in the selected capsule, including boundaries
   and reserved specification and ledger filenames.
 - **Task registration**: call `truenorth_record_task` for each work item.
-- **Reads**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.yml`, and
+- **Reads**: `.agent/product/scope.yml`, `.agent/tasks/release-plan.json`, and
   `.agent/tasks/planning-context.yml` when present.
 - **Never writes**: test plans, detailed work-item specifications, task ledgers,
   or `.agent/tasks/execution-status.yml`.

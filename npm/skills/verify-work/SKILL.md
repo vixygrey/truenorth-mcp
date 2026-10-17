@@ -16,8 +16,8 @@ kind: prose
 - **Reads**: `.agent/profile.yml`, the selected work-item specification and task
   ledger, optional `test-plan.md`, architecture, conventions, and affected code.
 - **Writes**: verification evidence in the task capsule and coordination state in
-  `.agent/tasks/state.yml`.
-- **Never writes**: `.agent/tasks/release-plan.yml`, the task manifest, work-item
+  `.agent/tasks/state.json`.
+- **Never writes**: `.agent/tasks/release-plan.json`, the task manifest, work-item
   specification, task ledger promises, or product scope.
 
 Use task and work-item ids in shared evidence. Preserve a profile-specific id only
@@ -68,6 +68,6 @@ passes, and durable evidence is recorded.
 
 ## Handoff
 
-Write the canonical `.agent/tasks/state.yml` handoff. Use `next_skill: execute-group`
+Write the canonical `.agent/tasks/state.json` handoff. Use `next_skill: execute-group`
 when more tasks remain in the selected scope, otherwise route to the profile-appropriate
 integration or release step.

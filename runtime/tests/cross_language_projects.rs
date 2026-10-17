@@ -232,8 +232,8 @@ async fn exercise_project(case: &ProjectCase, bundle: &Path) -> anyhow::Result<(
         }),
     )
     .await?;
-    let state: serde_yaml::Value = serde_yaml::from_str(&fs::read_to_string(
-        repo.path().join(".agent/tasks/state.yml"),
+    let state: saneyaml::Value = saneyaml::from_str(&fs::read_to_string(
+        repo.path().join(".agent/tasks/state.json"),
     )?)?;
     assert_eq!(
         state["phase"].as_str(),
@@ -255,7 +255,7 @@ async fn exercise_project(case: &ProjectCase, bundle: &Path) -> anyhow::Result<(
         }),
     )
     .await?;
-    let plan = fs::read_to_string(repo.path().join(".agent/tasks/release-plan.yml"))?;
+    let plan = fs::read_to_string(repo.path().join(".agent/tasks/release-plan.json"))?;
     assert!(
         plan.contains(&task_name) && plan.contains(case.verify_command),
         "fixture={} rule=record-task plan={plan}",
@@ -298,9 +298,9 @@ fn minimal_package_bundle() -> anyhow::Result<TempDir> {
     let content = b"# Using TrueNorth\n";
     fs::write(&path, content)?;
     let manifest = json!({
-        "schema_version": 2,
+        "schema_version": 3,
         "bundle_version": env!("CARGO_PKG_VERSION"),
-        "workspace_schema_version": "2",
+        "workspace_schema_version": "3",
         "supported_from": [],
         "skill_sets": [{
             "name": "core",

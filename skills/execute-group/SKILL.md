@@ -21,7 +21,7 @@ Shared state and artifact instructions use `group`, `task`, and `work item`.
 Do not invent profile-specific grouping for ungrouped work.
 
 > **HARD GATE**: set `active_flow: execute_group`, the `active_task`, and
-> `group_cycle.mode` in `.agent/tasks/state.yml`. Set `active_group` and
+> `group_cycle.mode` in `.agent/tasks/state.json`. Set `active_group` and
 > `handoff.group_id` only when the profile groups work.
 >
 > **HARD GATE**: do not implement on `main` or `master`. Run `kickoff-branch`
@@ -47,14 +47,14 @@ cursor. Never restart the cycle or skip a previously failed gate.
 
 ## Artifact ownership
 
-- Read `.agent/tasks/release-plan.yml` for ordering and verify commands.
+- Read `.agent/tasks/release-plan.json` for ordering and verify commands.
 - Read the selected work-item manifest by the `slice-tasks` contract: the indexed
   group capsule, or `.agent/tasks/<task-id>/group.yml` for ungrouped work.
 - Resolve `active_task` by its `task_id`, exact registered `task_name` and command,
   and reserved specification and ledger filenames. Do not infer these from a title.
 - Write execution progress and timestamps to
   `.agent/tasks/execution-status.yml`.
-- Write only the cursor and canonical handoff to `.agent/tasks/state.yml`.
+- Write only the cursor and canonical handoff to `.agent/tasks/state.json`.
 - Do not copy status into state or rewrite planning artifacts to record progress.
 
 Preserve unknown fields in every artifact.

@@ -89,7 +89,7 @@ pub enum FeaturesError {
         /// The config path.
         path: String,
         /// The underlying parse error.
-        source: serde_yaml::Error,
+        source: saneyaml::Error,
     },
 
     /// A token-cap value was zero. Token budgets must be positive.
@@ -213,7 +213,7 @@ pub fn resolve(repo_root: &Path) -> Result<Features, FeaturesError> {
     };
 
     let view: RulesFeatureView =
-        serde_yaml::from_str(&text).map_err(|source| FeaturesError::Parse {
+        crate::engine::yaml::from_str(&text).map_err(|source| FeaturesError::Parse {
             path: config_path.display().to_string(),
             source,
         })?;
@@ -245,7 +245,7 @@ pub fn resolve_token_caps(repo_root: &Path) -> Result<TokenCaps, FeaturesError> 
     };
 
     let view: RulesTokenCapsView =
-        serde_yaml::from_str(&text).map_err(|source| FeaturesError::Parse {
+        crate::engine::yaml::from_str(&text).map_err(|source| FeaturesError::Parse {
             path: config_path.display().to_string(),
             source,
         })?;

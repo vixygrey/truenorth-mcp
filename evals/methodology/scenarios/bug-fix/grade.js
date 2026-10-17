@@ -8,13 +8,13 @@ const result = (id, passed, evidence) => ({ id, passed, evidence });
 function grade({ evidence, mode }) {
   const events = evidence.events;
   if (mode === 'model') {
-    const state = readOptional(path.join(evidence.workspace, '.agent/tasks/state.yml'));
-    const bugs = readOptional(path.join(evidence.workspace, '.agent/tasks/bugs.yml'));
+    const state = readOptional(path.join(evidence.workspace, '.agent/tasks/state.json'));
+    const bugs = readOptional(path.join(evidence.workspace, '.agent/tasks/bugs.json'));
     const modelPassed = events.some((event) => event.type === 'model' && event.result.code === 0);
     return [
       result(
         'bug-fix-model-bug-cycle',
-        /bug_cycle:|active_flow:\s*fix_bug/.test(state),
+        /"bug_cycle":|"active_flow":\s*"fix_bug"/.test(state),
         'bug flow state is recorded',
       ),
       result('bug-fix-model-resolution', /resolved|closed/.test(bugs), 'bug reference is resolved'),
@@ -24,7 +24,7 @@ function grade({ evidence, mode }) {
 
   const tools = events.filter((event) => event.type === 'mcp_tool');
   const commands = events.filter((event) => event.type === 'command');
-  const bugs = readOptional(path.join(evidence.workspace, '.agent/tasks/bugs.yml'));
+  const bugs = readOptional(path.join(evidence.workspace, '.agent/tasks/bugs.json'));
   const tdd = tools
     .filter((event) => event.tool === 'truenorth_tdd_cycle')
     .map((event) => event.args.step);

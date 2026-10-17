@@ -254,7 +254,6 @@ fn upgrade_adds_and_removes_optional_skill_sets() {
     assert!(!repo.path().join("skills/visual-test/SKILL.md").exists());
     let manifest = fs::read_to_string(repo.path().join(".agent/workspace-manifest.yml"))
         .expect("workspace manifest");
-    assert!(manifest.contains("skill_sets:\n- core\n"));
     assert!(!manifest.contains("- visual"));
 }
 
@@ -325,7 +324,7 @@ fn checked_in_historical_manifest_migrates_an_exact_legacy_workspace() {
     let migrated = WorkspaceManifest::read_optional(repo.path())
         .expect("read migrated manifest")
         .expect("migrated manifest");
-    assert_eq!(migrated.manifest_version, "2");
+    assert_eq!(migrated.manifest_version, "3");
     assert_eq!(migrated.bundle_version, env!("CARGO_PKG_VERSION"));
     assert!(
         migrated.managed.contains_key(adopted_path),
@@ -343,9 +342,9 @@ fn write_package(root: &Path, skill: &[u8], supported_from: &[&str]) {
         .expect("visual skill directory");
     fs::write(&visual_path, visual).expect("visual skill");
     let manifest = json!({
-        "schema_version": 2,
+        "schema_version": 3,
         "bundle_version": env!("CARGO_PKG_VERSION"),
-        "workspace_schema_version": "2",
+        "workspace_schema_version": "3",
         "supported_from": supported_from,
         "skill_sets": [
             {

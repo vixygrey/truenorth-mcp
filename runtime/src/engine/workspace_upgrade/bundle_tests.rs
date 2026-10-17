@@ -25,7 +25,7 @@ fn package_bundle_loads_only_verified_manifest_files() {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         supported_from: Vec::new(),
         files: vec![BundleFile {
             path: "skills/a/SKILL.md".to_string(),
@@ -54,7 +54,7 @@ fn package_bundle_rejects_source_drift() {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         supported_from: Vec::new(),
         files: vec![BundleFile {
             path: "skills/a/SKILL.md".to_string(),
@@ -93,7 +93,7 @@ fn current_manifest(files: Vec<BundleFile>) -> BundleManifest {
     BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         supported_from: vec!["1.0.0".to_string()],
         files,
         skill_sets: vec![core_set()],

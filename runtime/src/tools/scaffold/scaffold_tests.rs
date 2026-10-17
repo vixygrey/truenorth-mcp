@@ -55,7 +55,7 @@ async fn scaffold_emits_the_agent_tree_and_root_docs() {
     // The .agent/ contract, profile, and required area files exist.
     assert!(root.join(".agent/layout.yml").is_file());
     assert!(root.join(".agent/profile.yml").is_file());
-    assert!(root.join(".agent/tasks/state.yml").is_file());
+    assert!(root.join(".agent/tasks/state.json").is_file());
     assert!(root.join(".agent/memories/glossary.md").is_file());
     assert!(!root.join(".agent/telemetry/runs.yml").exists());
     // Backlog ownership is explicit and independent of the methodology profile.
@@ -96,7 +96,7 @@ async fn scaffold_writes_the_declared_profile_name() {
             .expect("read status"),
         "tasks: {}\ngroups: {}\ndevelopment_status: {}\n"
     );
-    assert!(repo.path().join(".agent/tasks/release-plan.yml").is_file());
+    assert!(repo.path().join(".agent/tasks/release-plan.json").is_file());
 }
 
 #[tokio::test]
@@ -119,7 +119,7 @@ async fn scaffold_is_non_destructive_on_a_second_run() {
     scaffold(&srv, None).await.expect("first");
 
     // Tamper with one seeded file, then re-run.
-    let state = repo.path().join(".agent/tasks/state.yml");
+    let state = repo.path().join(".agent/tasks/state.json");
     fs::write(&state, "phase: integrate\n").expect("tamper");
     scaffold(&srv, None).await.expect("second");
 
@@ -314,14 +314,14 @@ fn profile_name_boundaries_reject_empty_and_overlong_values() {
 #[test]
 fn scaffold_plan_reports_and_preserves_mixed_existing_targets() {
     let repo = TempDir::new().expect("temp repo");
-    let state = repo.path().join(".agent/tasks/state.yml");
+    let state = repo.path().join(".agent/tasks/state.json");
     fs::create_dir_all(state.parent().expect("state parent")).expect("tasks dir");
     fs::write(&state, "human state\n").expect("seed state");
     fs::write(repo.path().join("AGENTS.md"), "human agents\n").expect("seed agents");
 
     let emissions =
         scaffold_project(repo.path(), profile::ISSUE_PER_TASK).expect("scaffold project");
-    assert!(emissions.contains(&Emission::Skipped(".agent/tasks/state.yml".to_string())));
+    assert!(emissions.contains(&Emission::Skipped(".agent/tasks/state.json".to_string())));
     assert!(emissions.contains(&Emission::Skipped("AGENTS.md".to_string())));
     assert!(emissions.contains(&Emission::Wrote(".agent/layout.yml".to_string())));
     assert_eq!(fs::read_to_string(state).expect("state"), "human state\n");

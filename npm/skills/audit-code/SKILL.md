@@ -140,4 +140,4 @@ request-review) exist.
 ## Handoff
 
 Gate: READY. Next: commit-message.
-Writes: `.agent/tasks/state.yml` `handoff.next_skill = commit-message`.
+Writes: `.agent/tasks/state.json` `handoff.next_skill = commit-message`.

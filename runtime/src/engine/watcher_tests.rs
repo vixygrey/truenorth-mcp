@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 #[test]
 fn maps_state_file_to_state_uri() {
     assert_eq!(
-        map_path_to_uri(Path::new("/repo/.agent/tasks/state.yml")),
+        map_path_to_uri(Path::new("/repo/.agent/tasks/state.json")),
         Some(ResourceUri::State)
     );
 }
@@ -21,7 +21,7 @@ fn maps_state_file_to_state_uri() {
 #[test]
 fn maps_release_plan_and_product_to_cockpit() {
     assert_eq!(
-        map_path_to_uri(Path::new("/repo/.agent/tasks/release-plan.yml")),
+        map_path_to_uri(Path::new("/repo/.agent/tasks/release-plan.json")),
         Some(ResourceUri::Cockpit)
     );
     // The product path moved to .agent/product/ (Requirement 2.12).
@@ -77,9 +77,9 @@ fn two_edits_in_window_coalesce_into_one_notification() {
     let start = Instant::now();
 
     // Two edits to the same file, both inside the window.
-    debouncer.record(Path::new("/repo/.agent/tasks/state.yml"), start);
+    debouncer.record(Path::new("/repo/.agent/tasks/state.json"), start);
     debouncer.record(
-        Path::new("/repo/.agent/tasks/state.yml"),
+        Path::new("/repo/.agent/tasks/state.json"),
         start + Duration::from_millis(50),
     );
 
@@ -98,10 +98,10 @@ fn distinct_files_in_window_report_each_uri_once() {
     let mut debouncer = Debouncer::new();
     let start = Instant::now();
 
-    debouncer.record(Path::new("/repo/.agent/tasks/state.yml"), start);
+    debouncer.record(Path::new("/repo/.agent/tasks/state.json"), start);
     debouncer.record(Path::new("/repo/.agent/ontology.yml"), start);
     debouncer.record(
-        Path::new("/repo/.agent/tasks/state.yml"),
+        Path::new("/repo/.agent/tasks/state.json"),
         start + Duration::from_millis(10),
     );
 
@@ -142,7 +142,7 @@ fn a_new_window_opens_after_a_flush() {
     let mut debouncer = Debouncer::new();
     let start = Instant::now();
 
-    debouncer.record(Path::new("/repo/.agent/tasks/state.yml"), start);
+    debouncer.record(Path::new("/repo/.agent/tasks/state.json"), start);
     let first = debouncer.poll(start + DEBOUNCE_WINDOW + Duration::from_millis(1));
     assert_eq!(first, Some(vec![ResourceUri::State]));
 
@@ -194,7 +194,7 @@ fn worker_ignores_backend_errors_and_notifies_for_the_next_change() {
         .expect("send backend error");
     event_tx
         .send(Ok(notify::Event::new(notify::EventKind::Any)
-            .add_path(Path::new("/repo/.agent/tasks/state.yml").to_path_buf())
+            .add_path(Path::new("/repo/.agent/tasks/state.json").to_path_buf())
             .add_path(Path::new("/repo/src/unrelated.rs").to_path_buf())
             .add_path(
                 Path::new("/repo/.agent/ontology.yml").to_path_buf(),

@@ -11,8 +11,8 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag, TagEnd};
+use saneyaml::Value;
 use serde::Serialize;
-use serde_yaml::Value;
 
 use crate::engine::skill::RawSkill;
 
@@ -132,7 +132,7 @@ fn parse_frontmatter(block: &str) -> BTreeMap<String, Value> {
     if block.trim().is_empty() {
         return BTreeMap::new();
     }
-    serde_yaml::from_str::<BTreeMap<String, Value>>(block).unwrap_or_default()
+    crate::engine::yaml::from_str::<BTreeMap<String, Value>>(block).unwrap_or_default()
 }
 
 /// The accumulator that walks CommonMark events into the parsed parts.

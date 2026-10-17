@@ -1,13 +1,13 @@
 ---
 name: session-state
-description: "Track implementation decisions and progress in .agent/tasks/state.yml to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached."
+description: "Track implementation decisions and progress in .agent/tasks/state.json to prevent context rot. Use it at the start of a session to load context, and whenever a significant decision is made or a milestone is reached."
 kind: prose
 ---
 
 # Session State
 
 > **HARD GATE**: session state must stay synchronized with Git. When
-> `.agent/tasks/state.yml` conflicts with the working tree, halt and ask for
+> `.agent/tasks/state.json` conflicts with the working tree, halt and ask for
 > clarification. Do not assume either source is correct.
 
 Track the current work item, decisions, pending tasks, and open questions so a new
@@ -55,22 +55,22 @@ Legacy fields remain readable, but current skills do not write `group`, `epic`,
 
 ### Initialize
 
-When `.agent/tasks/state.yml` does not exist, or a new major phase starts:
+When `.agent/tasks/state.json` does not exist, or a new major phase starts:
 
-- Read `.agent/profile.yml`, `.agent/tasks/release-plan.yml`, and product scope.
+- Read `.agent/profile.yml`, `.agent/tasks/release-plan.json`, and product scope.
 - Get the branch and short hash through `get_git_context`.
 - Create the state with `active_flow`, `active_task`, the optional active group,
   the Git block, the canonical handoff, and the relevant cycle.
 
 ### Load
 
-- Read `.agent/tasks/state.yml`.
+- Read `.agent/tasks/state.json`.
 - Read `.agent/tasks/execution-status.yml` for task or work-item progress.
 - Verify that the recorded branch and hash match the working tree.
 
 ### Update
 
-- Patch `.agent/tasks/state.yml` through lifecycle tools when a tool owns the
+- Patch `.agent/tasks/state.json` through lifecycle tools when a tool owns the
   mutation; otherwise use one direct transactional edit.
 - Update `handoff.last_step_completed`, `handoff.context`, and
   `handoff.open_decisions`.
@@ -122,7 +122,7 @@ handoff:
   context: "Implement the next failing task."
   open_decisions: []
   required_reading:
-    - .agent/tasks/release-plan.yml
+    - .agent/tasks/release-plan.json
   group_id: null
   artifacts_summary: null
   git_context: null
@@ -138,5 +138,5 @@ handoff:
 
 ## Verify
 
-Confirm `.agent/tasks/state.yml` parses, uses the canonical handoff fields, and
+Confirm `.agent/tasks/state.json` parses, uses the canonical handoff fields, and
 matches the working tree's Git context.

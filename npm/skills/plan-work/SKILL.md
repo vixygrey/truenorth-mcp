@@ -16,8 +16,8 @@ already declared in the active task manifest.
 
 - **Planning writes**: the specification and task-ledger filenames reserved for
   the selected work item under `.agent/tasks/<capsule>/`.
-- **Coordination write**: `.agent/tasks/state.yml` handoff only.
-- **Reads**: `.agent/profile.yml`, `.agent/tasks/release-plan.yml`, product scope,
+- **Coordination write**: `.agent/tasks/state.json` handoff only.
+- **Reads**: `.agent/profile.yml`, `.agent/tasks/release-plan.json`, product scope,
   the active task manifest, tech stack, glossary, and `test-plan.md` when present.
 - **Readers**: execution, development, verification, and traceability skills.
 - **Never writes**: the release index, the task manifest, `test-plan.md`, or
@@ -93,5 +93,5 @@ consistency finding remains.
 
 ## Handoff
 
-Gate: READY. Write the canonical `.agent/tasks/state.yml` handoff with
+Gate: READY. Write the canonical `.agent/tasks/state.json` handoff with
 `next_skill: kickoff-branch`.

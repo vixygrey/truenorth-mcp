@@ -61,13 +61,13 @@ fn read_layout_does_not_require_telemetry_and_accepts_legacy_extra_files() {
 fn read_layout_names_an_absent_required_entry() {
     let repo = seed_valid_layout();
     // Remove a required file to break the contract.
-    fs::remove_file(repo.path().join(AGENT_DIR).join("tasks/state.yml"))
+    fs::remove_file(repo.path().join(AGENT_DIR).join("tasks/state.json"))
         .expect("remove required file");
 
     let error = read_layout(repo.path()).expect_err("must reject");
     match error {
         LayoutError::MissingEntry { absent } => {
-            assert_eq!(absent, ".agent/tasks/state.yml");
+            assert_eq!(absent, ".agent/tasks/state.json");
         }
         other => panic!("expected MissingEntry, got {other:?}"),
     }

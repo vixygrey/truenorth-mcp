@@ -224,7 +224,7 @@ fn lifecycle_error_mapping_covers_request_write_and_io_failures() {
     assert_eq!(write.code.0, -32603);
 
     let io = cockpit_error(CockpitError::Io {
-        file: ".agent/tasks/state.yml".to_string(),
+        file: ".agent/tasks/state.json".to_string(),
         source: std::io::Error::other("read failed"),
     });
     assert_eq!(io.code.0, -32603);

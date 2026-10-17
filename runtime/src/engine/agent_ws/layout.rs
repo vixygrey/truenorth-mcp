@@ -42,7 +42,7 @@ const REQUIRED_ENTRIES: [(&str, EntryKind); 11] = [
     ("spec/requirements.md", EntryKind::File),
     // tasks/ area (Requirement 1.7).
     ("tasks", EntryKind::Dir),
-    ("tasks/state.yml", EntryKind::File),
+    ("tasks/state.json", EntryKind::File),
     // memories/ area (Requirement 1.8).
     ("memories", EntryKind::Dir),
     ("memories/lessons.md", EntryKind::File),
@@ -77,7 +77,7 @@ pub enum LayoutError {
         /// The contract path.
         path: String,
         /// The YAML parse failure.
-        source: serde_yaml::Error,
+        source: saneyaml::Error,
     },
 
     /// The layout contract declares a version this runtime does not support.
@@ -185,7 +185,7 @@ pub fn read_layout(repo_root: &Path) -> Result<Layout, LayoutError> {
         source,
     })?;
     let contract: LayoutContract =
-        serde_yaml::from_str(&text).map_err(|source| LayoutError::Parse {
+        crate::engine::yaml::from_str(&text).map_err(|source| LayoutError::Parse {
             path: contract_path.display().to_string(),
             source,
         })?;

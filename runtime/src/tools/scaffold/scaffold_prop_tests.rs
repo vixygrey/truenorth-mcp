@@ -35,7 +35,7 @@ fn run_scaffold(repo: &TempDir, profile: Option<&str>) {
 /// A representative set of target paths the scaffold emits, used to pre-seed subsets.
 const TARGET_PATHS: [&str; 8] = [
     ".agent/layout.yml",
-    ".agent/tasks/state.yml",
+    ".agent/tasks/state.json",
     ".agent/memories/lessons.md",
     "AGENTS.md",
     "CONVENTIONS.md",

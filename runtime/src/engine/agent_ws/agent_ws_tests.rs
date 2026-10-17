@@ -16,7 +16,7 @@ use super::*;
 #[test]
 fn write_under_agent_writes_a_path_under_agent() {
     let repo = TempDir::new().expect("temp repo");
-    let rel = Path::new("tasks/state.yml");
+    let rel = Path::new("tasks/state.json");
 
     write_under_agent(repo.path(), rel, "phase: execute\n").expect("write under .agent");
 
@@ -178,8 +178,8 @@ fn is_excluded_read_is_true_only_for_telemetry() {
     assert!(is_excluded_read(Path::new(".agent/telemetry")));
 
     // Other areas are not excluded.
-    assert!(!is_excluded_read(Path::new(".agent/tasks/state.yml")));
-    assert!(!is_excluded_read(Path::new("tasks/state.yml")));
+    assert!(!is_excluded_read(Path::new(".agent/tasks/state.json")));
+    assert!(!is_excluded_read(Path::new("tasks/state.json")));
     // A name that merely contains "telemetry" as a substring is not the telemetry area.
     assert!(!is_excluded_read(Path::new(
         ".agent/tasks/telemetry-notes.md"
@@ -189,7 +189,7 @@ fn is_excluded_read_is_true_only_for_telemetry() {
 #[test]
 fn conditional_write_rejects_a_stale_revision_and_preserves_external_bytes() {
     let repo = TempDir::new().expect("temp repo");
-    let rel = Path::new("tasks/state.yml");
+    let rel = Path::new("tasks/state.json");
     let target = repo.path().join(AGENT_DIR).join(rel);
     fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
     fs::write(&target, "phase: discover\n").expect("seed state");
@@ -210,7 +210,7 @@ fn conditional_write_rejects_a_stale_revision_and_preserves_external_bytes() {
 #[test]
 fn conditional_write_rejects_a_file_created_after_observation() {
     let repo = TempDir::new().expect("temp repo");
-    let rel = Path::new("tasks/state.yml");
+    let rel = Path::new("tasks/state.json");
     let target = repo.path().join(AGENT_DIR).join(rel);
     let observed = ObservedFile::observe(&target).expect("observe missing state");
     let precondition = WritePrecondition::new(observed);
@@ -240,7 +240,8 @@ fn concurrent_atomic_writes_use_distinct_temporary_files() {
         handles.push(std::thread::spawn(move || {
             let payload = format!("writer: {index}\nbody: {}\n", "x".repeat(4096));
             barrier.wait();
-            write_under_agent(repo.path(), Path::new("tasks/state.yml"), &payload).map(|()| payload)
+            write_under_agent(repo.path(), Path::new("tasks/state.json"), &payload)
+                .map(|()| payload)
         }));
     }
 
@@ -248,7 +249,7 @@ fn concurrent_atomic_writes_use_distinct_temporary_files() {
         .into_iter()
         .map(|handle| handle.join().expect("writer thread").expect("atomic write"))
         .collect();
-    let final_text = fs::read_to_string(repo.path().join(AGENT_DIR).join("tasks/state.yml"))
+    let final_text = fs::read_to_string(repo.path().join(AGENT_DIR).join("tasks/state.json"))
         .expect("read final state");
     assert!(
         payloads.contains(&final_text),
@@ -259,7 +260,7 @@ fn concurrent_atomic_writes_use_distinct_temporary_files() {
 #[test]
 fn conditional_write_commits_when_target_and_dependency_are_unchanged() {
     let repo = TempDir::new().expect("temp repo");
-    let rel = Path::new("tasks/state.yml");
+    let rel = Path::new("tasks/state.json");
     let target = repo.path().join(AGENT_DIR).join(rel);
     let dependency = repo.path().join(AGENT_DIR).join("profile.yml");
     fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
@@ -285,7 +286,7 @@ fn conditional_write_commits_when_target_and_dependency_are_unchanged() {
 #[test]
 fn conditional_write_rejects_a_precondition_for_another_target() {
     let repo = TempDir::new().expect("temp repo");
-    let rel = Path::new("tasks/state.yml");
+    let rel = Path::new("tasks/state.json");
     let other = repo.path().join(AGENT_DIR).join("tasks/other.yml");
     let precondition =
         WritePrecondition::new(ObservedFile::observe(other).expect("observe other target"));
@@ -294,7 +295,7 @@ fn conditional_write_rejects_a_precondition_for_another_target() {
         .expect_err("mismatched precondition");
     match error {
         WriteGuardError::Io { target, source } => {
-            assert!(target.ends_with(".agent/tasks/state.yml"));
+            assert!(target.ends_with(".agent/tasks/state.json"));
             assert_eq!(source.kind(), std::io::ErrorKind::InvalidInput);
             assert!(source.to_string().contains("different target"));
         }
@@ -349,7 +350,7 @@ fn conditional_write_rejects_a_symlinked_directory_escape() {
 #[test]
 fn conditional_write_reports_revision_read_failure_and_preserves_target_kind() {
     let repo = TempDir::new().expect("temp repo");
-    let rel = Path::new("tasks/state.yml");
+    let rel = Path::new("tasks/state.json");
     let target = repo.path().join(AGENT_DIR).join(rel);
     fs::create_dir_all(target.parent().expect("state parent")).expect("create tasks");
     fs::write(&target, "phase: discover\n").expect("seed target");

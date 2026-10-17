@@ -24,9 +24,9 @@ existing `specs/` target.
   standards.
 - `.agent/spec/`: the feature requirements, architecture, and the definitions of
   ready and done.
-- `.agent/tasks/`: the cockpit. `state.yml` carries the phase and the TDD loop,
-  `release-plan.yml` carries the recorded tasks, `execution-status.yml` carries
-  the story status, `bugs.yml` carries external-tracker bug references, and
+- `.agent/tasks/`: the cockpit. `state.json` carries the phase and the TDD loop,
+  `release-plan.json` carries the recorded tasks, `execution-status.yml` carries
+  the story status, `bugs.json` carries external-tracker bug references, and
   `backlog.yml` declares whether backlog ownership is local or external.
 - `.agent/ontology.yml`: the domain ontology.
 - `.agent/product/`: the product scope, vision, and glossary.

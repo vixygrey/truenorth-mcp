@@ -12,13 +12,13 @@ afterEach(() => {
   for (const root of roots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
 });
 
-function project(profile, releasePlan, state = 'active_task: task-1\nactive_group: null\n') {
+function project(profile, releasePlan, state = '{"active_task": "task-1", "active_group": null}') {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'truenorth-dashboard-'));
   roots.push(root);
   fs.mkdirSync(path.join(root, '.agent', 'tasks'), { recursive: true });
   fs.writeFileSync(path.join(root, '.agent', 'profile.yml'), `profile: ${profile}\n`);
-  fs.writeFileSync(path.join(root, '.agent', 'tasks', 'state.yml'), state);
-  fs.writeFileSync(path.join(root, '.agent', 'tasks', 'release-plan.yml'), releasePlan);
+  fs.writeFileSync(path.join(root, '.agent', 'tasks', 'state.json'), state);
+  fs.writeFileSync(path.join(root, '.agent', 'tasks', 'release-plan.json'), releasePlan);
   fs.writeFileSync(
     path.join(root, '.agent', 'tasks', 'execution-status.yml'),
     'tasks: {}\ngroups: {}\ndevelopment_status: {}\n',
@@ -28,7 +28,7 @@ function project(profile, releasePlan, state = 'active_task: task-1\nactive_grou
 
 for (const profile of ['issue-per-task', 'kanban', 'generic']) {
   test(`shows ungrouped tasks for ${profile}`, () => {
-    const root = project(profile, 'tasks:\n- task_name: Task one\n  verify_command: true\n');
+    const root = project(profile, '{"tasks": [{"task_name": "Task one", "verify_command": true}]}');
     const status = readSpecsStatus(root);
     assert.strictEqual(status.profile, profile);
     assert.deepStrictEqual(
@@ -47,8 +47,13 @@ for (const [profile, kind] of [
   test(`shows profile-derived groups for ${profile}`, () => {
     const root = project(
       profile,
-      `groups:\n- group_id: g1\n  group_kind: ${kind}\n  title: Group one\n  capsule_dir: .agent/tasks/g1\ntasks:\n- group_id: g1\n  group_kind: ${kind}\n  task_name: Task one\n  verify_command: true\n`,
-      'active_task: Task one\nactive_group: g1\n',
+      JSON.stringify({
+        groups: [
+          { group_id: 'g1', group_kind: kind, title: 'Group one', capsule_dir: '.agent/tasks/g1' },
+        ],
+        tasks: [{ group_id: 'g1', group_kind: kind, task_name: 'Task one', verify_command: true }],
+      }),
+      '{"active_task": "Task one", "active_group": "g1"}',
     );
     const status = readSpecsStatus(root);
     assert.deepStrictEqual(
@@ -66,8 +71,10 @@ for (const [profile, kind] of [
 test('reads legacy epic metadata without emitting it as the current schema', () => {
   const root = project(
     'issue-per-task',
-    'epics:\n- id: e01\n  title: Legacy epic\n  wsjf: 2.5\n  file: e01/group.yml\n',
-    'active_epic: e01\n',
+    JSON.stringify({
+      epics: [{ id: 'e01', title: 'Legacy epic', wsjf: 2.5, file: 'e01/group.yml' }],
+    }),
+    '{"active_epic": "e01"}',
   );
   const status = readSpecsStatus(root);
   assert.deepStrictEqual(

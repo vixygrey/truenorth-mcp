@@ -10,7 +10,7 @@ kind: prose
 
 Orchestrates **fix_bug** flow without mixing group build state.
 
-> **HARD GATE** — Set `.agent/tasks/state.yml` `active_flow: fix_bug` and `bug_cycle.current_step: 1` before starting.
+> **HARD GATE** — Set `.agent/tasks/state.json` `active_flow: fix_bug` and `bug_cycle.current_step: 1` before starting.
 
 ## Discovered gate failures (e51s04)
 
@@ -22,7 +22,7 @@ Valid entry **without a user-reported bug** when:
 
 Record the gate failure in the configured external tracker through `investigate-bug`, then run the standard fix_bug chain.
 
-## Four steps (`bug_cycle` in `.agent/tasks/state.yml`)
+## Four steps (`bug_cycle` in `.agent/tasks/state.json`)
 
 | Step | Skill / action                                                               |
 | ---- | ---------------------------------------------------------------------------- |
@@ -36,7 +36,7 @@ and runs it directly before producing the TDD plan.
 
 ### Checkpoint / resume
 
-Track progress via `.agent/tasks/state.yml` `bug_cycle`:
+Track progress via `.agent/tasks/state.json` `bug_cycle`:
 
 - `bug_cycle.current_step`: current step (1–4)
 - `bug_cycle.completed_steps`: completed step numbers
@@ -52,4 +52,4 @@ Track progress via `.agent/tasks/state.yml` `bug_cycle`:
 
 ## Verify
 
-Confirm the same external issue carries intake, RCA, the TDD plan, and resolution evidence. Confirm `.agent/tasks/bugs.yml` contains only one lean reference for its canonical id. The project verification must pass through `truenorth_verify_gate`.
+Confirm the same external issue carries intake, RCA, the TDD plan, and resolution evidence. Confirm `.agent/tasks/bugs.json` contains only one lean reference for its canonical id. The project verification must pass through `truenorth_verify_gate`.

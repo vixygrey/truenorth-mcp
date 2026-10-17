@@ -150,6 +150,18 @@ The lifecycle tool continues to accept legacy phase names where the runtime maps
 them to a current lifecycle phase. `truenorth_record_task` continues to accept
 `epic_id`; it maps to `group_id` with `group_kind: epic`.
 
+### Planned v2 change: cockpit JSON
+
+A pending major version moves `.agent/tasks/state.yml`, `.agent/tasks/release-plan.yml`,
+and `.agent/tasks/bugs.yml` <!-- truenorth-lint: allow-legacy-cockpit-path --> to
+`.agent/tasks/state.json`, `.agent/tasks/release-plan.json`, and
+`.agent/tasks/bugs.json`, with a MIME type of `application/json` on the matching
+resources and no YAML fallback for these three documents. See
+[ADR-0021](../specs/adr/0021-cockpit-json-migration.md). This is a breaking change
+under this page's own rule: it ships with a new major version, release notes, and
+an explicit `truenorth-mcp migrate-cockpit-json` command, not a silent read-path
+change within v1.
+
 ## MCP tools and resources
 
 The following resource URIs are stable throughout v1:

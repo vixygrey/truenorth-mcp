@@ -3,9 +3,9 @@
 //! Separates enforced runtime settings from advisory conventions, validates
 //! recognized blocks, identifies misspelled keys, and provides strict-mode validation.
 
+use saneyaml::Value;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_yaml::Value;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// Supported schema versions for rules.yml.
@@ -56,7 +56,7 @@ pub struct RulesConfigInspection {
 impl RulesConfigInspection {
     /// Inspect the raw parsed YAML mapping of a rules.yml file.
     pub fn inspect_yaml(raw_yaml: &str, strict: bool) -> Self {
-        let parsed: Result<Value, serde_yaml::Error> = serde_yaml::from_str(raw_yaml);
+        let parsed: Result<Value, saneyaml::Error> = crate::engine::yaml::from_str(raw_yaml);
         let value = match parsed {
             Ok(val) => val,
             Err(err) => {

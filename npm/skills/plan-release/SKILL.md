@@ -1,6 +1,6 @@
 ---
 name: plan-release
-description: "Build the release index in .agent/tasks/release-plan.yml without assuming a grouping or prioritization method. Use it after elaborate-spec when the user wants release metadata, optional profile-derived groups, and an ordered task ledger."
+description: "Build the release index in .agent/tasks/release-plan.json without assuming a grouping or prioritization method. Use it after elaborate-spec when the user wants release metadata, optional profile-derived groups, and an ordered task ledger."
 kind: prose
 ---
 
@@ -9,7 +9,7 @@ kind: prose
 > **HARD GATE**: Run this skill only after `elaborate-spec` has produced a clear
 > specification and `.agent/product/scope.yml` exists.
 
-Create or update `.agent/tasks/release-plan.yml`. Preserve the runtime-owned
+Create or update `.agent/tasks/release-plan.json`. Preserve the runtime-owned
 `tasks[]` ledger written by `truenorth_record_task`.
 
 ## Methodology gate
@@ -30,7 +30,7 @@ instructions use `group`.
 ## Artifact contract
 
 - **Writes**: release metadata and optional `groups[]` in
-  `.agent/tasks/release-plan.yml`.
+  `.agent/tasks/release-plan.json`.
 - **Preserves**: every existing `tasks[]` entry and unknown field.
 - **Readers**: planning analysis, execution, traceability, and status views.
 - **Never writes**: group manifests, test plans, work-item specifications, task

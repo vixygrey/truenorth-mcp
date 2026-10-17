@@ -85,7 +85,7 @@ pub const EPIC_BASED: Profile = Profile {
     name: "epic-based",
     vocab: GroupingVocab::Epic,
     rule: GroupingRule::Required,
-    starter_files: &["tasks/release-plan.yml", "tasks/backlog.yml"],
+    starter_files: &["tasks/release-plan.json", "tasks/backlog.yml"],
     branch_pattern: r"^(feat|fix)/e[0-9]+",
     require_issue_id: true,
 };
@@ -115,7 +115,7 @@ pub const MILESTONE_BASED: Profile = Profile {
     name: "milestone-based",
     vocab: GroupingVocab::Milestone,
     rule: GroupingRule::Required,
-    starter_files: &["tasks/release-plan.yml"],
+    starter_files: &["tasks/release-plan.json"],
     branch_pattern: r"^(feat|fix)/m[0-9]+",
     require_issue_id: true,
 };
@@ -163,7 +163,7 @@ pub enum ProfileError {
         /// The config path.
         path: String,
         /// The underlying parse error.
-        source: serde_yaml::Error,
+        source: saneyaml::Error,
     },
 }
 
@@ -208,7 +208,7 @@ pub fn resolve_active(repo_root: &Path) -> Result<Profile, ProfileError> {
     };
 
     let config: ProfileConfig =
-        serde_yaml::from_str(&text).map_err(|source| ProfileError::Parse {
+        crate::engine::yaml::from_str(&text).map_err(|source| ProfileError::Parse {
             path: config_path.display().to_string(),
             source,
         })?;

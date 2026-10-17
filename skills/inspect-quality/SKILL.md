@@ -52,7 +52,7 @@ Create one issue in the configured external tracker for each independent bug. Th
 - Severity and priority
 - Relevant domain context
 
-The tracker-issued id and URL are canonical. Do not generate a second local bug id. Do not copy the issue body, reproduction steps, diagnosis, or implementation detail into `.agent/tasks/bugs.yml`.
+The tracker-issued id and URL are canonical. Do not generate a second local bug id. Do not copy the issue body, reproduction steps, diagnosis, or implementation detail into `.agent/tasks/bugs.json`.
 
 When the report is a recurrence, update the original external issue with the new evidence instead of creating another narrative. Keep its canonical id and URL.
 
@@ -70,7 +70,7 @@ Call `truenorth_record_bug` after the external tracker returns the canonical id 
 }
 ```
 
-Use an existing task or group as `linked_ref`. If none exists, create the corresponding planned task before recording the bug. Never edit `.agent/tasks/bugs.yml` directly.
+Use an existing task or group as `linked_ref`. If none exists, create the corresponding planned task before recording the bug. Never edit `.agent/tasks/bugs.json` directly.
 
 ### 6. Continue the session
 

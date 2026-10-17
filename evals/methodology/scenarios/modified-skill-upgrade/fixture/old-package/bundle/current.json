@@ -1,7 +1,7 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "bundle_version": "1.0.5",
-  "workspace_schema_version": "2",
+  "workspace_schema_version": "3",
   "supported_from": [],
   "skill_sets": [
     {

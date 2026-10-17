@@ -11,7 +11,7 @@ const read = (root, relative) =>
 
 function grade({ evidence }) {
   const root = evidence.workspace;
-  const state = read(root, '.agent/tasks/state.yml');
+  const state = read(root, '.agent/tasks/state.json');
   const status = read(root, '.agent/tasks/execution-status.yml');
   const requirement = read(root, '.agent/spec/requirements.md');
   const workItem = read(root, '.agent/tasks/normalize-display-name-spec.md');
@@ -19,7 +19,7 @@ function grade({ evidence }) {
   return [
     result(
       'requirement-change-active-execution-preserved',
-      state.includes('active_task: normalize-display-name') &&
+      state.includes('"active_task": "normalize-display-name"') &&
         status.includes('normalize-display-name'),
       'active task remains represented in state and execution status',
     ),

@@ -13,9 +13,9 @@ Record externally owned bugs with `truenorth_record_bug`.
 
 ## Execution records
 
-`.agent/tasks/release-plan.yml` records task identity, grouping, and verification commands.
+`.agent/tasks/release-plan.json` records task identity, grouping, and verification commands.
 `.agent/tasks/execution-status.yml` owns current completion status.
-`.agent/tasks/state.yml` owns lifecycle and the active handoff.
+`.agent/tasks/state.json` owns lifecycle and the active handoff.
 Planning specifications, this narrative, and archived checkboxes do not replace those records.
 
 Each task retains the command result and every required observable smoke.

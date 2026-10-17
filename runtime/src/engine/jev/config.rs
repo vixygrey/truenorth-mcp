@@ -12,7 +12,7 @@
 //! `jev` block through a private view struct, so an unrelated `rules.yml` key does not break
 //! the parse.
 //!
-//! `serde_yaml` cannot read a `std::time::Duration` from a plain integer, so the private
+//! YAML deserialization cannot read a `std::time::Duration` from a plain integer, so the private
 //! view reads the two durations as millisecond counts (`max_backoff_ms`, `timeout_ms`) and
 //! the builder converts them. [`JevConfig`] itself holds `Duration`.
 //!
@@ -219,7 +219,7 @@ struct RulesProtectedView {
 }
 
 /// The `jev` block, as read from disk. The two durations arrive as millisecond counts,
-/// because `serde_yaml` cannot read a `Duration` from a plain integer.
+/// because YAML deserialization cannot read a `Duration` from a plain integer.
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 struct JevBlock {
@@ -316,7 +316,7 @@ pub fn resolve(repo_root: &Path) -> Result<JevConfig, super::JevError> {
     };
 
     let view: RulesJevView =
-        serde_yaml::from_str(&text).map_err(|source| super::JevError::Config {
+        crate::engine::yaml::from_str(&text).map_err(|source| super::JevError::Config {
             path: config_path.display().to_string(),
             detail: source.to_string(),
         })?;
@@ -356,7 +356,7 @@ pub fn resolve_protected_paths(repo_root: &Path) -> Result<Vec<String>, super::J
     };
 
     let view: RulesProtectedView =
-        serde_yaml::from_str(&text).map_err(|source| super::JevError::Config {
+        crate::engine::yaml::from_str(&text).map_err(|source| super::JevError::Config {
             path: config_path.display().to_string(),
             detail: source.to_string(),
         })?;

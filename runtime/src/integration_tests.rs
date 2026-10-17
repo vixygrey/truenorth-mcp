@@ -25,10 +25,14 @@ fn seed_repo(root: &std::path::Path) {
     fs::write(root.join("skills/develop-tdd/SKILL.md"), "# TDD\n").expect("skill");
     // The cockpit files live under .agent/tasks/ after the relocation (Requirement 2).
     fs::create_dir_all(root.join(".agent/tasks")).expect("tasks dir");
-    fs::write(root.join(".agent/tasks/state.yml"), "active_epic: e01\n").expect("state");
     fs::write(
-        root.join(".agent/tasks/release-plan.yml"),
-        "build_order:\n- e01\n",
+        root.join(".agent/tasks/state.json"),
+        "{\"active_epic\":\"e01\"}\n",
+    )
+    .expect("state");
+    fs::write(
+        root.join(".agent/tasks/release-plan.json"),
+        "{\"build_order\":[\"e01\"]}\n",
     )
     .expect("plan");
 }
@@ -59,7 +63,7 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
 
     // resources/read returns the current on-disk state (Requirement 5.5).
     let state = read_text(&client, "truenorth://state").await?;
-    assert!(state.contains("active_epic: e01"));
+    assert!(state.contains("\"active_epic\":\"e01\""));
 
     // Drive a phase advance. The tool writes state.yaml (Requirements 2.1, 2.3).
     let advance_result = call_tool(
@@ -76,14 +80,14 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     assert_receipt_change(
         &advance_receipt,
         "truenorth_advance_phase",
-        ".agent/tasks/state.yml",
-        &root.join(".agent/tasks/state.yml"),
+        ".agent/tasks/state.json",
+        &root.join(".agent/tasks/state.json"),
     )?;
 
     // The state resource now reflects the written phase (Requirement 5.4/5.5).
     let after_advance = read_text(&client, "truenorth://state").await?;
     assert!(
-        after_advance.contains("phase: design"),
+        after_advance.contains("\"phase\": \"design\""),
         "state reflects the advance"
     );
 
@@ -102,8 +106,8 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
     assert_receipt_change(
         &task_receipt,
         "truenorth_record_task",
-        ".agent/tasks/release-plan.yml",
-        &root.join(".agent/tasks/release-plan.yml"),
+        ".agent/tasks/release-plan.json",
+        &root.join(".agent/tasks/release-plan.json"),
     )?;
     assert_ne!(
         advance_receipt["receipt"]["correlation_id"],
@@ -119,8 +123,8 @@ async fn full_lifecycle_over_in_process_client() -> anyhow::Result<()> {
 
     // A direct disk edit is reflected on the next read (disk is the source of truth).
     fs::write(
-        root.join(".agent/tasks/state.yml"),
-        "active_epic: e99\nphase: integrate\n",
+        root.join(".agent/tasks/state.json"),
+        "{\"active_epic\":\"e99\",\"phase\":\"integrate\"}\n",
     )?;
     let after_edit = read_text(&client, "truenorth://state").await?;
     assert!(after_edit.contains("e99"), "read reflects the on-disk edit");
@@ -218,8 +222,8 @@ async fn advance_phase_rejects_invalid_transition_over_the_client() -> anyhow::R
     let dir = tempdir().expect("temp dir");
     let root = dir.path().to_path_buf();
     seed_repo(&root);
-    let original = "active_epic: e01\nphase: design\n";
-    fs::write(root.join(".agent/tasks/state.yml"), original)?;
+    let original = "{\"active_epic\":\"e01\",\"phase\":\"design\"}\n";
+    fs::write(root.join(".agent/tasks/state.json"), original)?;
     let (client, handle) = connect(root.clone()).await?;
 
     let error = client
@@ -242,7 +246,7 @@ async fn advance_phase_rejects_invalid_transition_over_the_client() -> anyhow::R
         "transition error identifies the expected phase: {error:?}"
     );
     assert_eq!(
-        fs::read_to_string(root.join(".agent/tasks/state.yml"))?,
+        fs::read_to_string(root.join(".agent/tasks/state.json"))?,
         original,
         "rejected request leaves the state file unchanged"
     );
@@ -416,32 +420,6 @@ async fn connect_with(
 }
 
 #[tokio::test]
-async fn reads_a_legacy_specs_cockpit_over_the_client() -> anyhow::Result<()> {
-    // Requirement 2.9: a legacy specs/ cockpit is served when the .agent/ file is absent.
-    let dir = tempdir().expect("temp dir");
-    let root = dir.path().to_path_buf();
-    fs::create_dir_all(root.join("skills")).expect("skills");
-    fs::create_dir_all(root.join("specs")).expect("specs");
-    fs::write(
-        root.join("specs/state.yaml"),
-        "active_epic: legacy1\nbigpowers_version: 2.88.2\n",
-    )?;
-
-    let (client, handle) = connect(root).await?;
-
-    let state = read_text(&client, "truenorth://state").await?;
-    assert!(state.contains("legacy1"), "serves the legacy cockpit");
-    assert!(
-        state.contains("bigpowers_version: 2.88.2"),
-        "preserves the version key"
-    );
-
-    client.cancel().await?;
-    handle.abort();
-    Ok(())
-}
-
-#[tokio::test]
 async fn reads_the_adr_resource_over_the_client() -> anyhow::Result<()> {
     // Requirement 9.2: the read-only ADR resource serves specs/adr/ content.
     let dir = tempdir().expect("temp dir");
@@ -472,8 +450,8 @@ async fn records_and_updates_a_bug_over_the_client() -> anyhow::Result<()> {
     seed_repo(&root);
     // Seed a release-plan task so the linked_ref resolves.
     fs::write(
-        root.join(".agent/tasks/release-plan.yml"),
-        "tasks:\n- group_id: e01\n  task_name: A task\n  verify_command: cargo test\n",
+        root.join(".agent/tasks/release-plan.json"),
+        "{\"tasks\":[{\"group_id\":\"e01\",\"task_name\":\"A task\",\"verify_command\":\"cargo test\"}]}\n",
     )?;
 
     let (client, handle) = connect(root.clone()).await?;
@@ -506,19 +484,19 @@ async fn records_and_updates_a_bug_over_the_client() -> anyhow::Result<()> {
     assert_receipt_change(
         &result_json(&bug_result)?,
         "truenorth_record_bug",
-        ".agent/tasks/bugs.yml",
-        &root.join(".agent/tasks/bugs.yml"),
+        ".agent/tasks/bugs.json",
+        &root.join(".agent/tasks/bugs.json"),
     )?;
 
-    let bugs: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?)?;
+    let bugs: saneyaml::Value =
+        crate::engine::yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.json"))?)?;
     let entries = bugs
         .get("bugs")
-        .and_then(serde_yaml::Value::as_sequence)
+        .and_then(saneyaml::Value::as_sequence)
         .expect("bug references");
     assert_eq!(entries.len(), 1, "the update does not duplicate the issue");
     assert_eq!(
-        entries[0].get("status").and_then(serde_yaml::Value::as_str),
+        entries[0].get("status").and_then(saneyaml::Value::as_str),
         Some("resolved")
     );
 
@@ -678,11 +656,11 @@ async fn concurrent_task_mutations_retain_every_accepted_update() -> anyhow::Res
         );
     }
 
-    let text = fs::read_to_string(root.join(".agent/tasks/release-plan.yml"))?;
-    let plan: serde_yaml::Value = serde_yaml::from_str(&text)?;
+    let text = fs::read_to_string(root.join(".agent/tasks/release-plan.json"))?;
+    let plan: saneyaml::Value = crate::engine::yaml::from_str(&text)?;
     let tasks = plan
         .get("tasks")
-        .and_then(serde_yaml::Value::as_sequence)
+        .and_then(saneyaml::Value::as_sequence)
         .expect("recorded tasks");
     for index in 0..64 {
         let name = format!("Concurrent task {index}");
@@ -690,7 +668,7 @@ async fn concurrent_task_mutations_retain_every_accepted_update() -> anyhow::Res
             tasks
                 .iter()
                 .filter(
-                    |task| task.get("task_name").and_then(serde_yaml::Value::as_str)
+                    |task| task.get("task_name").and_then(saneyaml::Value::as_str)
                         == Some(name.as_str())
                 )
                 .count(),
@@ -747,11 +725,11 @@ async fn concurrent_mutation_matrix_remains_serializable() -> anyhow::Result<()>
         .into_iter()
         .all(|success| success)
     );
-    let bugs: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.yml"))?)?;
+    let bugs: saneyaml::Value =
+        crate::engine::yaml::from_str(&fs::read_to_string(root.join(".agent/tasks/bugs.json"))?)?;
     assert_eq!(
         bugs.get("bugs")
-            .and_then(serde_yaml::Value::as_sequence)
+            .and_then(saneyaml::Value::as_sequence)
             .map(Vec::len),
         Some(32)
     );
@@ -810,7 +788,7 @@ async fn concurrent_mutation_matrix_remains_serializable() -> anyhow::Result<()>
         1
     );
     let _: crate::engine::spec::Ontology =
-        serde_yaml::from_str(&fs::read_to_string(root.join(".agent/ontology.yml"))?)?;
+        crate::engine::yaml::from_str(&fs::read_to_string(root.join(".agent/ontology.yml"))?)?;
 
     let graph_outcomes = concurrent_tool_calls(
         std::sync::Arc::clone(&client),

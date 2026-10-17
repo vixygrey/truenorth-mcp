@@ -302,9 +302,9 @@ fn enforcement_values_have_stable_wire_names() {
     ];
 
     for (value, wire_name) in values {
-        assert_eq!(serde_yaml::to_string(&value).unwrap().trim(), wire_name);
+        assert_eq!(saneyaml::to_string(&value).unwrap().trim(), wire_name);
         assert_eq!(
-            serde_yaml::from_str::<BlockEnforcement>(wire_name).unwrap(),
+            crate::engine::yaml::from_str::<BlockEnforcement>(wire_name).unwrap(),
             value
         );
     }

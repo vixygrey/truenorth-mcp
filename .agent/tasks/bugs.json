@@ -1,0 +1,70 @@
+{
+  "bugs": [
+    {
+      "id": "369",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/369",
+      "status": "closed",
+      "linked_ref": "367",
+      "tags": [
+        "release",
+        "workflow",
+        "v1"
+      ]
+    },
+    {
+      "id": "371",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/371",
+      "status": "closed",
+      "linked_ref": "367",
+      "tags": [
+        "release",
+        "workflow",
+        "v1"
+      ]
+    },
+    {
+      "id": "375",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/375",
+      "status": "closed",
+      "linked_ref": "375",
+      "tags": [
+        "methodology",
+        "skills",
+        "verify-gate"
+      ]
+    },
+    {
+      "id": "410",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/410",
+      "status": "closed",
+      "linked_ref": "405",
+      "tags": [
+        "opencode",
+        "client-compatibility"
+      ]
+    },
+    {
+      "id": "412",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/412",
+      "status": "open",
+      "linked_ref": "404",
+      "tags": [
+        "compatibility",
+        "vscode",
+        "copilot",
+        "json-schema"
+      ]
+    },
+    {
+      "id": "453",
+      "external_link": "https://github.com/vixygrey/truenorth-mcp/issues/453",
+      "status": "resolved",
+      "linked_ref": "453",
+      "tags": [
+        "skills",
+        "bug-workflow",
+        "external-ownership"
+      ]
+    }
+  ]
+}

@@ -190,7 +190,7 @@ mod tests {
 
     #[test]
     fn receipt_rejects_duplicate_paths() {
-        let change = ChangedContent::new(".agent/tasks/state.yml", b"phase: design\n").unwrap();
+        let change = ChangedContent::new(".agent/tasks/state.json", b"phase: design\n").unwrap();
         let error = OperationReceipt::new(
             "test_operation",
             &request_id(NumberOrString::Number(1)),

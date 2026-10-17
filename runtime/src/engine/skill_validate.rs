@@ -63,7 +63,7 @@ pub fn validate_skill(
     let documented_name_exception = parsed
         .frontmatter
         .get("name_exception")
-        .and_then(serde_yaml::Value::as_str)
+        .and_then(saneyaml::Value::as_str)
         .is_some_and(|value| !value.trim().is_empty());
     let verb_noun = verb_noun_re().is_match(name) || documented_name_exception;
     checks.push(ValidationCheck {
@@ -96,7 +96,7 @@ pub fn validate_skill(
     let kind = parsed
         .frontmatter
         .get("kind")
-        .and_then(serde_yaml::Value::as_str);
+        .and_then(saneyaml::Value::as_str);
     let kind_valid = matches!(kind, Some("prose" | "scripted"));
     checks.push(ValidationCheck {
         id: "skill-kind".to_string(),
@@ -114,7 +114,7 @@ pub fn validate_skill(
         Some("scripted") => parsed
             .frontmatter
             .get("verify")
-            .and_then(serde_yaml::Value::as_str)
+            .and_then(saneyaml::Value::as_str)
             .is_some_and(|value| !value.trim().is_empty()),
         _ => false,
     };

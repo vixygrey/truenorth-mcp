@@ -43,7 +43,7 @@ Scan for the fingerprints below. Stop at first match; if multiple match, list th
 
 If none found: ask the user which framework before proceeding.
 
-→ verify: `test -d specs && test -f .agent/tasks/state.yml`
+→ verify: `test -d specs && test -f .agent/tasks/state.json`
 
 ### Step 2 — Inventory the source artifacts
 
@@ -81,18 +81,18 @@ See [REFERENCE.md](REFERENCE.md) — `trace:...`
 
 **Existing trace file:** If `REQUIREMENTS_TRACE.yaml` already exists, prompt: "REQUIREMENTS_TRACE.yaml exists. [overwrite / merge / skip]"
 
-**No FR-XX/UJ-XX found:** Skip the trace file; add a note to the `.agent/tasks/state.yml` handoff: "No FR-XX/UJ-XX IDs found; traceability file skipped".
+**No FR-XX/UJ-XX found:** Skip the trace file; add a note to the `.agent/tasks/state.json` handoff: "No FR-XX/UJ-XX IDs found; traceability file skipped".
 
 See [REFERENCE.md — REQUIREMENTS_TRACE.yaml format](./REFERENCE.md#requirements_traceyaml-format) for the complete schema.
 
 > **HARD GATE** — Never overwrite existing `.agent/` or `specs/` files without explicit user confirmation. Merge into them if they exist; don't clobber.
 >
 > → verify: `git rev-parse --git-dir >/dev/null 2>&1 && test -d specs`
-> → verify: `test -f .agent/tasks/state.yml`
+> → verify: `test -f .agent/tasks/state.json`
 
-### Step 4 — Generate `.agent/tasks/state.yml`
+### Step 4 — Generate `.agent/tasks/state.json`
 
-Always regenerate `.agent/tasks/state.yml` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
+Always regenerate `.agent/tasks/state.json` from scratch in the project YAML format (see REFERENCE.md for template). The **handoff block is mandatory** and must include all four fields:
 
 See [REFERENCE.md](REFERENCE.md) — `active_flow: null...`
 
@@ -100,4 +100,4 @@ If no open decisions were found during migration, the `open_decisions` list may 
 
 See [REFERENCE.md](REFERENCE.md) — `handoff:...`
 
-→ verify: `grep -q handoff: .agent/tasks/state.yml`
+→ verify: `grep -q handoff: .agent/tasks/state.json`

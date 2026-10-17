@@ -29,7 +29,7 @@ fn bundle_with_supported_from(supported_from: Vec<String>) -> TempDir {
     let manifest = BundleManifest {
         schema_version: BUNDLE_SCHEMA_VERSION,
         bundle_version: env!("CARGO_PKG_VERSION").to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         supported_from,
         files: files
             .into_iter()
@@ -69,7 +69,7 @@ fn installed(version: &str, manifest_version: &str, skill_sets: Vec<String>) -> 
     WorkspaceManifest {
         manifest_version: manifest_version.to_string(),
         bundle_version: version.to_string(),
-        workspace_schema_version: "2".to_string(),
+        workspace_schema_version: "3".to_string(),
         profile: "generic".to_string(),
         skill_sets,
         managed: BTreeMap::new(),
@@ -195,7 +195,7 @@ fn apply_rejects_dirty_git_workspace_without_overwriting_scaffold() {
     let repo = TempDir::new().expect("repo");
     let fixture = bundle_with_supported_from(Vec::new());
     super::super::scaffold_project(repo.path(), profile::GENERIC).expect("valid scaffold");
-    let state = repo.path().join(".agent/tasks/state.yml");
+    let state = repo.path().join(".agent/tasks/state.json");
     fs::write(&state, "phase: discover\nlocal: keep\n").expect("local state");
     let before = fs::read(&state).expect("state before");
     let status = Command::new("git")

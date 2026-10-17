@@ -391,8 +391,8 @@ fn resolve_scope_task_falls_back_to_the_cockpit_active_task() {
     let state_dir = repo.path().join(".agent").join("tasks");
     std::fs::create_dir_all(&state_dir).expect("mkdir");
     std::fs::write(
-        state_dir.join("state.yml"),
-        "active_task: refactor the cache layer\nphase: null\n",
+        state_dir.join("state.json"),
+        r#"{"active_task": "refactor the cache layer", "phase": null}"#,
     )
     .expect("write state");
 

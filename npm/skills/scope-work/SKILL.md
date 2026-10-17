@@ -26,7 +26,7 @@ Turn the conversation into a bounded PRD at `.agent/product/scope.yml`. Without 
 
    Pre-populate `feature_name`, `constraints`, and `out_of_scope` from the file. Skip re-asking questions already answered by elaborate-spec. If the file is absent, proceed normally.
 
-1. **Gather context** — Read the existing cockpit artifacts (`.agent/tasks/release-plan.yml`, the project tech-stack note, `.agent/product/vision.yml` if any). Understand what the project is building and why.
+1. **Gather context** — Read the existing cockpit artifacts (`.agent/tasks/release-plan.json`, the project tech-stack note, `.agent/product/vision.yml` if any). Understand what the project is building and why.
 
 2. **Interview (if needed)** — Clarify: What is the goal? Who are the users? What is definitely in scope? What is explicitly out of scope? What constraints exist (time, budget, tech)? How will success be measured?
 

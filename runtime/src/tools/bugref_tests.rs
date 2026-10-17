@@ -19,7 +19,7 @@ fn repo_with_task() -> TempDir {
     fs::create_dir_all(plan.parent().unwrap()).expect("tasks dir");
     fs::write(
         &plan,
-        "tasks:\n- group_id: e80\n  task_name: Wire the gate\n  verify_command: cargo test\n",
+        r#"{"tasks": [{"group_id": "e80", "task_name": "Wire the gate", "verify_command": "cargo test"}]}"#,
     )
     .expect("seed plan");
     repo
@@ -41,7 +41,7 @@ fn server(repo: &TempDir) -> TrueNorthServer {
 }
 
 fn bugs_path(repo: &TempDir) -> std::path::PathBuf {
-    repo.path().join(".agent").join("tasks").join("bugs.yml")
+    repo.path().join(".agent").join("tasks").join("bugs.json")
 }
 
 #[test]
@@ -68,10 +68,10 @@ async fn record_bug_writes_a_reference_with_tags() {
     .expect("record bug");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
-    let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse bugs");
+    let doc: serde_json::Value = serde_json::from_str(&text).expect("parse bugs");
     let bugs = doc
         .get("bugs")
-        .and_then(|v| v.as_sequence())
+        .and_then(|v| v.as_array())
         .expect("bugs seq");
     assert_eq!(bugs.len(), 1);
     assert_eq!(bugs[0].get("id").and_then(|v| v.as_str()), Some("BUG-1"));
@@ -79,7 +79,7 @@ async fn record_bug_writes_a_reference_with_tags() {
     // Tags round-trip as given (Requirement 8.3).
     let tags: Vec<&str> = bugs[0]
         .get("tags")
-        .and_then(|v| v.as_sequence())
+        .and_then(|v| v.as_array())
         .expect("tags")
         .iter()
         .filter_map(|v| v.as_str())
@@ -108,8 +108,8 @@ async fn record_bug_appends_and_preserves_existing_references() {
     .expect("second");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("read bugs");
-    let doc: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse");
-    let bugs = doc.get("bugs").and_then(|v| v.as_sequence()).expect("bugs");
+    let doc: serde_json::Value = serde_json::from_str(&text).expect("parse");
+    let bugs = doc.get("bugs").and_then(|v| v.as_array()).expect("bugs");
     assert_eq!(bugs.len(), 2);
 }
 
@@ -124,14 +124,14 @@ async fn record_bug_updates_an_existing_reference_without_duplication() {
     )
     .await
     .expect("insert");
-    let mut document: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(bugs_path(&repo)).expect("read bugs"))
+    let mut document: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(bugs_path(&repo)).expect("read bugs"))
             .expect("parse bugs");
     document["workspace_note"] = "preserve top level".into();
     document["bugs"][0]["custom_field"] = "preserve entry".into();
     fs::write(
         bugs_path(&repo),
-        serde_yaml::to_string(&document).expect("serialize fixture"),
+        serde_json::to_string(&document).expect("serialize fixture"),
     )
     .expect("write fixture");
 
@@ -147,32 +147,32 @@ async fn record_bug_updates_an_existing_reference_without_duplication() {
     .expect("update");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("read updated bugs");
-    let document: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse updated bugs");
+    let document: serde_json::Value = serde_json::from_str(&text).expect("parse updated bugs");
     let bugs = document
         .get("bugs")
-        .and_then(serde_yaml::Value::as_sequence)
+        .and_then(serde_json::Value::as_array)
         .expect("bugs");
     assert_eq!(bugs.len(), 1);
     assert_eq!(
-        bugs[0].get("status").and_then(serde_yaml::Value::as_str),
+        bugs[0].get("status").and_then(serde_json::Value::as_str),
         Some("resolved")
     );
     assert_eq!(
         bugs[0]
             .get("linked_ref")
-            .and_then(serde_yaml::Value::as_str),
+            .and_then(serde_json::Value::as_str),
         Some("Wire the gate")
     );
     assert_eq!(
         bugs[0]
             .get("custom_field")
-            .and_then(serde_yaml::Value::as_str),
+            .and_then(serde_json::Value::as_str),
         Some("preserve entry")
     );
     assert_eq!(
         document
             .get("workspace_note")
-            .and_then(serde_yaml::Value::as_str),
+            .and_then(serde_json::Value::as_str),
         Some("preserve top level")
     );
 }
@@ -307,7 +307,7 @@ async fn record_bug_resolves_a_ref_to_an_existing_bug_id() {
 
 #[tokio::test]
 async fn record_bug_rejects_malformed_or_non_mapping_storage_without_rewriting_it() {
-    for existing in ["bugs: [\n", "- id: BUG-1\n"] {
+    for existing in ["{\"bugs\": [\n", "[{\"id\": \"BUG-1\"}]\n"] {
         let repo = repo_with_task();
         let path = bugs_path(&repo);
         fs::write(&path, existing).expect("seed invalid bugs document");
@@ -321,10 +321,7 @@ async fn record_bug_rejects_malformed_or_non_mapping_storage_without_rewriting_i
             .await
             .expect_err("invalid stored document");
 
-        assert!(
-            error.message.contains("failed to parse")
-                || error.message.contains("must contain a YAML mapping")
-        );
+        assert!(error.message.contains("failed to parse"));
         assert_eq!(fs::read(&path).expect("read unchanged fixture"), before);
     }
 }
@@ -357,10 +354,9 @@ async fn record_bug_rejects_boundary_violations_before_creating_storage() {
     assert!(error.message.contains("external_link"));
     assert!(!bugs_path(&repo).exists());
 }
-
 #[tokio::test]
 async fn unresolved_ref_from_missing_or_malformed_release_plan_preserves_storage() {
-    for plan_body in [None, Some("tasks: [\n"), Some("version: 1\n")] {
+    for plan_body in [None, Some("{\"tasks\": [\n"), Some("{\"version\": 1}\n")] {
         let repo = TempDir::new().expect("temp repo");
         if let Some(body) = plan_body {
             let plan = release_plan_path(repo.path());
@@ -379,10 +375,9 @@ async fn unresolved_ref_from_missing_or_malformed_release_plan_preserves_storage
         assert!(!bugs_path(&repo).exists());
     }
 }
-
 #[test]
 fn read_bugs_treats_invalid_or_non_mapping_content_as_empty() {
-    for body in ["bugs: [\n", "- id: BUG-1\n"] {
+    for body in ["{\"bugs\": [\n", "[{\"id\": \"BUG-1\"}]\n"] {
         let repo = TempDir::new().expect("temp repo");
         let path = bugs_path(&repo);
         fs::create_dir_all(path.parent().expect("bugs parent")).expect("tasks dir");
@@ -398,11 +393,14 @@ fn bug_receipt_error_mapping_is_internal() {
     assert_eq!(error.code.0, -32603);
     assert!(error.message.contains("mutation receipt"));
 }
-
 #[tokio::test]
 async fn record_bug_normalizes_a_non_sequence_bugs_field() {
     let repo = repo_with_task();
-    fs::write(bugs_path(&repo), "bugs: legacy-scalar\nnote: keep\n").expect("seed mapping");
+    fs::write(
+        bugs_path(&repo),
+        "{\"bugs\": \"legacy-scalar\", \"note\": \"keep\"}",
+    )
+    .expect("seed mapping");
 
     server(&repo)
         .truenorth_record_bug(
@@ -413,9 +411,9 @@ async fn record_bug_normalizes_a_non_sequence_bugs_field() {
         .expect("normalize bugs field");
 
     let text = fs::read_to_string(bugs_path(&repo)).expect("updated bugs");
-    let value: serde_yaml::Value = serde_yaml::from_str(&text).expect("parse bugs");
+    let value: serde_json::Value = serde_json::from_str(&text).expect("parse bugs");
     assert_eq!(value["note"], "keep");
-    let bugs = value["bugs"].as_sequence().expect("normalized sequence");
+    let bugs = value["bugs"].as_array().expect("normalized sequence");
     assert_eq!(bugs.len(), 1);
     assert_eq!(bugs[0]["id"], "BUG-1");
 }

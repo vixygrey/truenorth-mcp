@@ -19,7 +19,7 @@ prove the validation delta did not regress.
 2. **Resolve the definition**: locate the reviewed versioned JSON definition for
    the selected skill. Invoke `run-benchmark` with `--update-baseline` before
    editing. Save the definition, baseline, and report paths in
-   `.agent/tasks/state.yml`.
+   `.agent/tasks/state.json`.
 3. **Handle unavailable evidence**: exit 2 or
    `TRUENORTH_BENCHMARK_UNAVAILABLE` means `UNAVAILABLE`. Stop until a reviewed
    definition, skill file, or baseline exists. Never invent a score, silently

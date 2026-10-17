@@ -2,5 +2,5 @@ version: "1"
 areas:
   config: [rules.yml]
   spec: [requirements.md]
-  tasks: [state.yml]
+  tasks: [state.json]
   memories: [lessons.md, glossary.md]

@@ -14,7 +14,7 @@ kind: prose
 2. Write the workflow recipe:
    - `name`, `command`, `description`, `skills[]`, `verify`
    - Optional: `args` for skill-specific arguments
-3. Register in `.agent/tasks/state.yml` Active Decisions.
+3. Register in `.agent/tasks/state.json` Active Decisions.
 4. Optional: reference from `orchestrate-project` Ad-Hoc mode.
 
 > **Prefer the YAML recipe format** over the legacy workflow markdown format.
@@ -31,7 +31,7 @@ Every workflow step and `/loop` tick MUST exit with exactly one terminal state:
 | `blocked`   | External gate (approval, red CI, missing dep)               | `diagnose-stall` or escalate to user |
 | `exhausted` | Max iterations/cycles reached (review cap, dispatch cycles) | Stop; human decision required        |
 
-Record terminal state in `.agent/tasks/state.yml` `handoff.last_terminal_state` when a recipe step completes. `/loop` ticks that produce no progress for two consecutive wakes → invoke `diagnose-stall`.
+Record terminal state in `.agent/tasks/state.json` `handoff.last_terminal_state` when a recipe step completes. `/loop` ticks that produce no progress for two consecutive wakes → invoke `diagnose-stall`.
 
 ## Standard Recipe Library
 

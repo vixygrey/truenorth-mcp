@@ -1,6 +1,6 @@
 # ADR-0011: Cockpit Relocation into `.agent/`
 
-**Status:** Accepted
+**Status:** Accepted. The state and release-plan path and format are superseded by [ADR-0021](0021-cockpit-json-migration.md); the ontology and product relocation stand.
 **Date:** 2026-09-13
 
 ## Context

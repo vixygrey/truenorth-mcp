@@ -104,7 +104,7 @@ fn assert_scaffold(root: &Path, case: ProfileCase) {
         ".agent/profile.yml",
         ".agent/config/rules.yml",
         ".agent/spec/requirements.md",
-        ".agent/tasks/state.yml",
+        ".agent/tasks/state.json",
         ".agent/tasks/execution-status.yml",
         ".agent/memories/lessons.md",
         ".agent/memories/glossary.md",
@@ -131,27 +131,30 @@ fn assert_scaffold(root: &Path, case: ProfileCase) {
         case.profile.name
     );
     assert_eq!(
-        fs::read_to_string(root.join(".agent/tasks/state.yml")).expect("read state"),
+        fs::read_to_string(root.join(".agent/tasks/state.json")).expect("read state"),
         concat!(
-            "phase: discover\n",
-            "active_flow: null\n",
-            "active_task: null\n",
-            "active_group: null\n",
-            "handoff:\n",
-            "  next_skill: null\n",
-            "  last_step_completed: null\n",
-            "  context: null\n",
-            "  open_decisions: []\n",
-            "  required_reading: []\n",
-            "  group_id: null\n",
-            "  artifacts_summary: null\n",
-            "  git_context: null\n",
+            "{\n",
+            "  \"phase\": \"discover\",\n",
+            "  \"active_flow\": null,\n",
+            "  \"active_task\": null,\n",
+            "  \"active_group\": null,\n",
+            "  \"handoff\": {\n",
+            "    \"next_skill\": null,\n",
+            "    \"last_step_completed\": null,\n",
+            "    \"context\": null,\n",
+            "    \"open_decisions\": [],\n",
+            "    \"required_reading\": [],\n",
+            "    \"group_id\": null,\n",
+            "    \"artifacts_summary\": null,\n",
+            "    \"git_context\": null\n",
+            "  }\n",
+            "}\n",
         ),
         "profile={} rule=initial-state",
         case.profile.name
     );
 
-    for relative in ["tasks/release-plan.yml", "tasks/backlog.yml"] {
+    for relative in ["tasks/release-plan.json", "tasks/backlog.yml"] {
         let expected = case.profile.starter_files.contains(&relative);
         assert_eq!(
             root.join(".agent").join(relative).is_file(),
@@ -167,8 +170,8 @@ fn assert_local_backlog(root: &Path, case: ProfileCase) {
         return;
     }
     let path = root.join(".agent/tasks/backlog.yml");
-    let document: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(&path).expect("read local backlog"))
+    let document: saneyaml::Value =
+        crate::engine::yaml::from_str(&fs::read_to_string(&path).expect("read local backlog"))
             .expect("parse local backlog");
     assert_eq!(
         document["version"].as_str(),
@@ -214,9 +217,9 @@ async fn exercise_task_recording(
     }
     call_tool(client, "truenorth_record_task", valid).await?;
 
-    let plan_path = root.join(".agent/tasks/release-plan.yml");
-    let plan: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(&plan_path)?).expect("parse release plan");
+    let plan_path = root.join(".agent/tasks/release-plan.json");
+    let plan: saneyaml::Value = crate::engine::yaml::from_str(&fs::read_to_string(&plan_path)?)
+        .expect("parse release plan");
     let task = &plan["tasks"][0];
     assert_eq!(
         task["task_name"].as_str(),
@@ -231,13 +234,13 @@ async fn exercise_task_recording(
         case.profile.name
     );
     assert_eq!(
-        task.get("group_id").and_then(serde_yaml::Value::as_str),
+        task.get("group_id").and_then(saneyaml::Value::as_str),
         case.valid_group_id,
         "profile={} rule=valid-group-id",
         case.profile.name
     );
     assert_eq!(
-        task.get("group_kind").and_then(serde_yaml::Value::as_str),
+        task.get("group_kind").and_then(saneyaml::Value::as_str),
         case.valid_group_kind,
         "profile={} rule=valid-group-kind",
         case.profile.name
@@ -316,9 +319,9 @@ async fn exercise_lifecycle(client: &Client, root: &Path, case: ProfileCase) -> 
     )
     .await?;
 
-    let state_path = root.join(".agent/tasks/state.yml");
+    let state_path = root.join(".agent/tasks/state.json");
     let designed = fs::read(&state_path)?;
-    let state: serde_yaml::Value = serde_yaml::from_slice(&designed)?;
+    let state: saneyaml::Value = crate::engine::yaml::from_slice(&designed)?;
     assert_eq!(
         state["phase"].as_str(),
         Some("design"),
@@ -497,8 +500,8 @@ fn exercise_external_backlog(root: &Path, case: ProfileCase) {
             case.profile.name
         )
     });
-    let document: serde_yaml::Value =
-        serde_yaml::from_str(&fs::read_to_string(&path).expect("read external backlog"))
+    let document: saneyaml::Value =
+        crate::engine::yaml::from_str(&fs::read_to_string(&path).expect("read external backlog"))
             .expect("parse external backlog");
     assert!(
         document.get("backlog").is_none(),

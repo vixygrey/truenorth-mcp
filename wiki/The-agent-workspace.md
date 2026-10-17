@@ -23,11 +23,11 @@ named files.
 | ----------- | --------------------------- | ------------------------------------------------------------------------------------------ |
 | `config/`   | `rules.yml`                 | Token caps, approval gates, protected paths, flags                                         |
 | `spec/`     | `requirements.md`           | The feature narrative                                                                      |
-| `tasks/`    | `state.yml`                 | Cockpit state, the phase, the TDD step <!-- truenorth-lint: allow-relative-layout-path --> |
+| `tasks/`    | `state.json`                | Cockpit state, the phase, the TDD step <!-- truenorth-lint: allow-relative-layout-path --> |
 | `memories/` | `lessons.md`, `glossary.md` | Durable lessons and the working glossary                                                   |
 | (root)      | `layout.yml`, `profile.yml` | The contract and the active profile name                                                   |
 
-The runtime also reads `tasks/release-plan.yml` for recorded tasks.
+The runtime also reads `tasks/release-plan.json` for recorded tasks.
 `tasks/backlog.yml` independently declares whether backlog ownership is local or
 external. A local file owns its `backlog` list. An external declaration contains
 only a provider pointer, and consumers read current work from that tracker. The
@@ -37,7 +37,7 @@ is enabled, the runtime also reads `ontology.yml`. Product docs live under
 
 ## Who writes what
 
-- `tasks/state.yml`, `tasks/release-plan.yml`, and `tasks/bugs.yml` are runtime-written.
+- `tasks/state.json`, `tasks/release-plan.json`, and `tasks/bugs.json` are runtime-written.
 - `tasks/backlog.yml` is human-seeded. Local owners may update its backlog; external
   owners keep only provider metadata in it.
 - `layout.yml`, `profile.yml`, `config/*`, `spec/*`, `product/*`, and `memories/*`

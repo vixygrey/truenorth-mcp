@@ -33,8 +33,8 @@ fn seed_profile(name: &str) -> TempDir {
     let repo = TempDir::new().expect("temp repo");
     let agent = repo.path().join(AGENT_DIR);
     fs::create_dir_all(&agent).expect("create .agent");
-    let doc = serde_yaml::to_string(&serde_yaml::Value::Mapping({
-        let mut map = serde_yaml::Mapping::new();
+    let doc = crate::engine::yaml::to_string(&saneyaml::Value::Mapping({
+        let mut map = saneyaml::Mapping::new();
         map.insert("profile".into(), name.into());
         map
     }))

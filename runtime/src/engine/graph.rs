@@ -604,11 +604,11 @@ pub fn conventions(graph: &SkillGraph, name: &str) -> Vec<String> {
 }
 
 /// Render a YAML scalar as a string, when it is a string, number, or bool.
-fn scalar_string(value: &serde_yaml::Value) -> Option<String> {
+fn scalar_string(value: &saneyaml::Value) -> Option<String> {
     match value {
-        serde_yaml::Value::String(s) => Some(s.clone()),
-        serde_yaml::Value::Number(n) => Some(n.to_string()),
-        serde_yaml::Value::Bool(b) => Some(b.to_string()),
+        saneyaml::Value::String(s) => Some(s.clone()),
+        saneyaml::Value::Number(n) => Some(n.to_string()),
+        saneyaml::Value::Bool(b) => Some(b.to_string()),
         _ => None,
     }
 }

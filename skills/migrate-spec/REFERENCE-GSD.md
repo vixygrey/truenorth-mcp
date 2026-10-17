@@ -35,14 +35,14 @@ GSD stores everything under `.planning/` at the project root.
 
 ## Transformation Rules
 
-### `.planning/ROADMAP.md` → `.agent/tasks/release-plan.yml` + `.agent/tasks/<group>/`
+### `.planning/ROADMAP.md` → `.agent/tasks/release-plan.json` + `.agent/tasks/<group>/`
 
 GSD ROADMAP has a milestone name, phases, success criteria per phase, and a plan
 count.
 
 Transform:
 
-- Each GSD phase becomes one task-group entry in `.agent/tasks/release-plan.yml` (`group_id`,
+- Each GSD phase becomes one task-group entry in `.agent/tasks/release-plan.json` (`group_id`,
   `group_kind: epic`, `title`, optional source priority, `file`). A GSD phase is genuinely
   epic-shaped, so it maps to `group_kind: epic` under the neutral grouping model.
 - Phase detail becomes the matching task group under `.agent/tasks/<group>/`
@@ -112,12 +112,12 @@ Transform:
 
 ---
 
-### `.planning/HANDOFF.json` + `.continue-here.md` → `.agent/tasks/state.yml` `handoff`
+### `.planning/HANDOFF.json` + `.continue-here.md` → `.agent/tasks/state.json` `handoff`
 
 GSD HANDOFF has the current phase, last plan, blocking reason, and required-reading
 list.
 
-Transform — populate `handoff` in `.agent/tasks/state.yml`:
+Transform — populate `handoff` in `.agent/tasks/state.json`:
 
 ```yaml
 handoff:

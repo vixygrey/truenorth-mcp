@@ -28,8 +28,8 @@ the MCP server.
 ## Cockpit keys the view reads
 
 - `.agent/profile.yml`: active methodology profile.
-- `.agent/tasks/state.yml`: `active_flow`, `active_task`, optional group, Git, and handoff.
-- `.agent/tasks/release-plan.yml`: runtime `tasks[]` and optional neutral `groups[]`.
+- `.agent/tasks/state.json`: `active_flow`, `active_task`, optional group, Git, and handoff.
+- `.agent/tasks/release-plan.json`: runtime `tasks[]` and optional neutral `groups[]`.
 - `.agent/tasks/execution-status.yml`: task and optional group status maps.
 - Legacy epic and story fields are read-only compatibility fallbacks.
 

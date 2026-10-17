@@ -37,10 +37,10 @@ git log --oneline -10 -- "[file-path]"
 
 ### 3. Map to release-plan work items
 
-Read `.agent/tasks/release-plan.yml` and task-group directories when present. For
+Read `.agent/tasks/release-plan.json` and task-group directories when present. For
 each dependent found in Step 2, identify the owning task or work item.
 
-→ verify: `test -f .agent/tasks/release-plan.yml`
+→ verify: `test -f .agent/tasks/release-plan.json`
 
 ### 4. List test coverage
 

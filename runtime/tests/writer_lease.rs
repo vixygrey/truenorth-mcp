@@ -125,13 +125,13 @@ fn seed_repo() -> TempDir {
     )
     .expect("write profile");
     fs::write(
-        repo.path().join(".agent/tasks/state.yml"),
-        "phase: discover\n",
+        repo.path().join(".agent/tasks/state.json"),
+        "{\"phase\": \"discover\"}",
     )
     .expect("write state");
     fs::write(
-        repo.path().join(".agent/tasks/release-plan.yml"),
-        "tasks: []\n",
+        repo.path().join(".agent/tasks/release-plan.json"),
+        "{\"tasks\": []}",
     )
     .expect("write release plan");
     repo
@@ -212,7 +212,7 @@ fn second_process_reads_but_cannot_mutate_and_recovers_after_owner_crash() {
         recovered.get("result").is_some(),
         "contender did not acquire released lease: {recovered}"
     );
-    let plan = fs::read_to_string(repo.path().join(".agent/tasks/release-plan.yml"))
+    let plan = fs::read_to_string(repo.path().join(".agent/tasks/release-plan.json"))
         .expect("read release plan");
     assert!(plan.contains("recovered task"));
     assert!(!plan.contains("contended task"));

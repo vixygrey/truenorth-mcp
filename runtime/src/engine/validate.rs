@@ -1,28 +1,27 @@
-//! Backward-compatible validation for the bigpowers cockpit and legacy phase mapping.
+//! Validation for the JSON cockpit documents and legacy phase mapping.
 //!
-//! This module validates `state.yaml` and `release-plan.yaml` content against the
-//! observed bigpowers shapes (Requirement 9.1). A read that fails validation is rejected
-//! with an error that names the file and the failed constraint, and the caller leaves
-//! the file unmodified (Requirement 9.2). The write validators let a tool confirm its
-//! serialized output still parses before it touches disk, so a write never corrupts a
-//! human-authored file (Requirement 9.3).
+//! This module validates `state.json` and `release-plan.json` against the observed
+//! shapes. Reads reject invalid data without mutation, and write validators serialize
+//! through the duplicate-key-rejecting ordered cockpit JSON codec before disk writes.
 //!
 //! The module also maps legacy bigpowers phase names onto the six-phase model
 //! (Requirement 9.5) and rejects an unrecognized legacy name (Requirement 9.6).
 //!
 //! Requirements: 9.1, 9.2, 9.5, 9.6. Design: Part II §8.
 
+use serde_json::{Map, Value};
 use thiserror::Error;
 
+use crate::engine::cockpit_json;
 use crate::engine::spec::{Phase, ReleasePlanFile, StateFile};
 
 /// The cockpit file a validation error refers to. The value names the file in the
 /// error message, so an operator can locate it (Requirement 9.2).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CockpitFile {
-    /// `state.yaml`.
+    /// `state.json`.
     State,
-    /// `release-plan.yaml`.
+    /// `release-plan.json`.
     ReleasePlan,
 }
 
@@ -30,8 +29,8 @@ impl CockpitFile {
     /// The file name for the error message.
     fn name(self) -> &'static str {
         match self {
-            CockpitFile::State => "state.yaml",
-            CockpitFile::ReleasePlan => "release-plan.yaml",
+            CockpitFile::State => "state.json",
+            CockpitFile::ReleasePlan => "release-plan.json",
         }
     }
 }
@@ -41,7 +40,7 @@ impl CockpitFile {
 pub enum ValidationError {
     /// A cockpit file failed to parse against its observed schema (Requirement 9.2).
     #[error(
-        "{file} failed schema validation: {detail}. The file was left unchanged. Fix the YAML and retry."
+        "{file} failed schema validation: {detail}. The file was left unchanged. Fix the JSON and retry."
     )]
     Schema {
         /// The offending file.
@@ -64,19 +63,11 @@ pub enum ValidationError {
     },
 }
 
-/// Validate and parse `state.yaml` content (Requirements 9.1, 9.2).
-///
-/// The content must be a mapping. When the observed fields are present, they must match
-/// their observed types: `git` and `handoff` and `metrics` are mappings, and
-/// `metrics.skill_timings` is a mapping. Unknown fields pass, so a human edit is never
-/// rejected for adding a field.
-///
-/// # Errors
-///
-/// Returns [`ValidationError::Schema`] naming `state.yaml` when the content does not
-/// parse or a present field has the wrong type. The caller leaves the file unchanged.
-pub fn validate_state(yaml: &str) -> Result<StateFile, ValidationError> {
-    let state: StateFile = parse(yaml, CockpitFile::State)?;
+/// Validate and parse `state.json` content (Requirements 9.1, 9.2).
+pub fn validate_state(json: &str) -> Result<StateFile, ValidationError> {
+    let state = StateFile {
+        root: parse(json, CockpitFile::State)?,
+    };
     check_mapping_field(&state.root, "git", CockpitFile::State)?;
     check_mapping_field(&state.root, "handoff", CockpitFile::State)?;
     if let Some(metrics) = state.root.get("metrics") {
@@ -86,23 +77,17 @@ pub fn validate_state(yaml: &str) -> Result<StateFile, ValidationError> {
     Ok(state)
 }
 
-/// Validate and parse `release-plan.yaml` content (Requirements 9.1, 9.2).
-///
-/// The content must be a mapping. When `build_order` is present, it must be a sequence.
-/// Unknown fields pass.
-///
-/// # Errors
-///
-/// Returns [`ValidationError::Schema`] naming `release-plan.yaml` when the content does
-/// not parse or `build_order` is not a sequence. The caller leaves the file unchanged.
-pub fn validate_release_plan(yaml: &str) -> Result<ReleasePlanFile, ValidationError> {
-    let plan: ReleasePlanFile = parse(yaml, CockpitFile::ReleasePlan)?;
+/// Validate and parse `release-plan.json` content (Requirements 9.1, 9.2).
+pub fn validate_release_plan(json: &str) -> Result<ReleasePlanFile, ValidationError> {
+    let plan = ReleasePlanFile {
+        root: parse(json, CockpitFile::ReleasePlan)?,
+    };
     if let Some(build_order) = plan.root.get("build_order")
-        && !build_order.is_sequence()
+        && !build_order.is_array()
     {
         return Err(ValidationError::Schema {
             file: CockpitFile::ReleasePlan.name(),
-            detail: "`build_order` must be a sequence of epic ids".to_string(),
+            detail: "`build_order` must be an array of epic ids".to_string(),
         });
     }
     Ok(plan)
@@ -162,21 +147,17 @@ pub fn map_legacy_phase(name: &str) -> Result<Phase, ValidationError> {
     }
 }
 
-/// Parse cockpit YAML into a typed model, wrapping a parse failure in a schema error
-/// that names the file.
-fn parse<T>(yaml: &str, file: CockpitFile) -> Result<T, ValidationError>
-where
-    T: serde::de::DeserializeOwned,
-{
-    serde_yaml::from_str(yaml).map_err(|error| ValidationError::Schema {
+/// Parse cockpit JSON into an ordered object, wrapping failures in a schema error.
+fn parse(json: &str, file: CockpitFile) -> Result<cockpit_json::CockpitObject, ValidationError> {
+    cockpit_json::parse_object(json).map_err(|error| ValidationError::Schema {
         file: file.name(),
         detail: error.to_string(),
     })
 }
 
-/// Reject a present field that is not a mapping. An absent field passes.
+/// Reject a present field that is not an object. An absent field passes.
 fn check_mapping_field(
-    root: &serde_yaml::Mapping,
+    root: &Map<String, Value>,
     field: &str,
     file: CockpitFile,
 ) -> Result<(), ValidationError> {
@@ -186,21 +167,19 @@ fn check_mapping_field(
     }
 }
 
-/// Reject a value that is not a mapping, naming the field and the file.
-///
-/// Returns the validated mapping, so a caller uses it directly without re-unwrapping.
+/// Reject a value that is not an object, naming the field and the file.
 fn expect_mapping<'a>(
-    value: &'a serde_yaml::Value,
+    value: &'a Value,
     field: &str,
     file: CockpitFile,
-) -> Result<&'a serde_yaml::Mapping, ValidationError> {
-    value.as_mapping().ok_or_else(|| ValidationError::Schema {
+) -> Result<&'a Map<String, Value>, ValidationError> {
+    value.as_object().ok_or_else(|| ValidationError::Schema {
         file: file.name(),
-        detail: format!("`{field}` must be a mapping"),
+        detail: format!("`{field}` must be an object"),
     })
 }
 
-/// Serialize a model to YAML and re-parse it to confirm the output still validates.
+/// Serialize a model through the ordered JSON codec and re-parse it.
 fn serialize_and_recheck<T, F, R>(
     value: &T,
     file: CockpitFile,
@@ -210,12 +189,19 @@ where
     T: serde::Serialize,
     F: Fn(&str) -> Result<R, ValidationError>,
 {
-    let yaml = serde_yaml::to_string(value).map_err(|error| ValidationError::Schema {
+    let object = serde_json::to_value(value)
+        .ok()
+        .and_then(|value| value.as_object().cloned())
+        .ok_or_else(|| ValidationError::Schema {
+            file: file.name(),
+            detail: "cockpit model did not serialize as an object".to_string(),
+        })?;
+    let json = cockpit_json::to_string(&object).map_err(|error| ValidationError::Schema {
         file: file.name(),
         detail: error.to_string(),
     })?;
-    recheck(&yaml)?;
-    Ok(yaml)
+    recheck(&json)?;
+    Ok(json)
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The
