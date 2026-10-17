@@ -1,0 +1,14 @@
+schema_version: 1
+name: run-evals
+description: Define and execute capability and regression evaluations with durable results.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [capability_defined]
+handoffs:
+  - skill: develop-tdd
+    when: evals-defined
+    required: false
+outputs: [eval_definition, eval_report]

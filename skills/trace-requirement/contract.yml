@@ -1,0 +1,14 @@
+schema_version: 1
+name: trace-requirement
+description: Build and gate durable traceability evidence for planned work.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, process_execution]
+risk_categories: []
+preconditions: [release_plan_available]
+handoffs:
+  - skill: release-branch
+    when: traceability-gate-passed
+    required: true
+outputs: [traceability_report, traceability_verdict]

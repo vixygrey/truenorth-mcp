@@ -1,0 +1,14 @@
+schema_version: 1
+name: respond-review
+description: Resolve reviewer findings and record their verified dispositions.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, git_write, process_execution]
+risk_categories: []
+preconditions: [review_reports_available]
+handoffs:
+  - skill: commit-message
+    when: blockers-resolved
+    required: false
+outputs: [review_dispositions, verification_evidence]

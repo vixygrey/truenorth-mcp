@@ -1,0 +1,15 @@
+schema_version: 1
+name: investigate-bug
+description: Verify a defect root cause and publish an evidence-backed TDD fix plan.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories:
+  [filesystem_read, filesystem_write, git_read, process_execution, external_service_write]
+risk_categories: []
+preconditions: [external_bug_issue_available]
+handoffs:
+  - skill: kickoff-branch
+    when: fix-plan-published
+    required: false
+outputs: [root_cause_analysis, tdd_fix_plan, bug_reference]

@@ -1,0 +1,23 @@
+schema_version: 1
+name: fix-bug
+description: Orchestrate investigation, implementation, validation, and release of a defect fix.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, external_service_write]
+risk_categories: []
+preconditions: [bug_report_available]
+handoffs:
+  - skill: investigate-bug
+    when: bug-flow-started
+    required: true
+  - skill: develop-tdd
+    when: root-cause-verified
+    required: true
+  - skill: validate-fix
+    when: implementation-complete
+    required: true
+  - skill: release-branch
+    when: fix-validated
+    required: true
+outputs: [bug_cycle_state, verified_bug_fix]

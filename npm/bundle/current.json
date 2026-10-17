@@ -145,6 +145,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/audit-code/contract.yml",
+      "sha256": "5e6fcc20bf0c5f3f4e1a9121dba932f09cc72a4c540100a453d2d6fc3c8d54b6",
+      "mode": "0644"
+    },
+    {
       "path": "skills/audit-plan/SKILL.md",
       "sha256": "6a3ca97fcd63fd4e4a895f19d6343a4b84838fdf8f8e392e7774048f2238d0b2",
       "mode": "0644"
@@ -340,6 +345,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/enforce-first/contract.yml",
+      "sha256": "5f7743cc1f529a8ce72751f198ba8cb34119f8bed81c9d4b34d5504a0f3c24b2",
+      "mode": "0644"
+    },
+    {
       "path": "skills/evolve-skill/REFERENCE.md",
       "sha256": "fe3e3c556b5908935b8de2453fa02f9482e3e2e8a986d00938d762d849ba8f6c",
       "mode": "0644"
@@ -510,6 +520,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/fix-bug/contract.yml",
+      "sha256": "97428d9334d140ec5d38f71b46223f80363dde6f106609d3249bbd4bacfd26d3",
+      "mode": "0644"
+    },
+    {
       "path": "skills/grill-me/REFERENCE.md",
       "sha256": "c8bcda606fd4c96677a2512748746356f386a6892a3562e399113c7faa3486ea",
       "mode": "0644"
@@ -575,8 +590,18 @@
       "mode": "0644"
     },
     {
+      "path": "skills/inspect-quality/contract.yml",
+      "sha256": "8822f2f414984fa61b9cfd297815bdcf120f1a06f7336f69938758b317a9fe7a",
+      "mode": "0644"
+    },
+    {
       "path": "skills/investigate-bug/SKILL.md",
       "sha256": "c6c3d57fbe6f9b151012c89036c23b5e45e66c79aaf9e8044f75a715da3e178a",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/investigate-bug/contract.yml",
+      "sha256": "a70fc4355941e9a8813985b8f55ad92e8a1c1e0758775ba7cd219ea11afaa139",
       "mode": "0644"
     },
     {
@@ -780,6 +805,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/request-review/contract.yml",
+      "sha256": "a3e7486a8b53efd6c655970194ccf6af86d52c7f022a644e81954ca86ca73572",
+      "mode": "0644"
+    },
+    {
       "path": "skills/research-first/REFERENCE.md",
       "sha256": "e9b8766b0fe69c1a1884e60ba5074ca1e65ea99a187e05f93682ee08572fef7e",
       "mode": "0644"
@@ -802,6 +832,11 @@
     {
       "path": "skills/respond-review/SKILL.md",
       "sha256": "6616c960f6ba277b8847a0996e0c11e2883495258151104c51e76a428967c286",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/respond-review/contract.yml",
+      "sha256": "b769072212d68e49abb4ca8fe6c5c5dab215549c54b53625aa938e507f9a9ff1",
       "mode": "0644"
     },
     {
@@ -885,6 +920,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/run-evals/contract.yml",
+      "sha256": "010424581ae5bdf0ca3d87586f9d4be02e96402eab38c6cc66ce742481b83774",
+      "mode": "0644"
+    },
+    {
       "path": "skills/scope-work/SKILL.md",
       "sha256": "267af9151270f0c802702a9411a918eab0923bb2b91c83c07c814d6708da38d3",
       "mode": "0644"
@@ -912,6 +952,11 @@
     {
       "path": "skills/security-review/SKILL.md",
       "sha256": "04728b3076b079672b8af6e194cd935398e8df501cecdb8a371bff659d589c86",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/security-review/contract.yml",
+      "sha256": "ed8266f6d3bf66d31d27f9869f8b665a3b4604c7af4ae225d87067e7e7f7a749",
       "mode": "0644"
     },
     {
@@ -1065,6 +1110,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/trace-requirement/contract.yml",
+      "sha256": "e5a950c669662cd6e2133f3135dc7fb79af5366b68ef9adba6793f06787bbd58",
+      "mode": "0644"
+    },
+    {
       "path": "skills/using-truenorth/SKILL.md",
       "sha256": "a1ed3d60275657721ecada06d27a375e61f74263ddf107cee2e844bbdd2f6d1e",
       "mode": "0644"
@@ -1100,6 +1150,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/validate-fix/contract.yml",
+      "sha256": "64f485485bbf59d16a80612350de67c2c4154ec57e88e65767dcf77fbf24829b",
+      "mode": "0644"
+    },
+    {
       "path": "skills/verify-work/REFERENCE.md",
       "sha256": "57feb3b8b4149810b56587134b85b4541a264b76116eb035a0ee92916615a2ef",
       "mode": "0644"
@@ -1107,6 +1162,11 @@
     {
       "path": "skills/verify-work/SKILL.md",
       "sha256": "a6606246055bddec83aa06c7897ae551a6fe572c92a924b8abf951857a6a54f6",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/verify-work/contract.yml",
+      "sha256": "943433f7531286e40052801e8120bdaf985de6ec5a6a6820e109e4431dde430c",
       "mode": "0644"
     },
     {
