@@ -45,7 +45,7 @@ jobs:
 
       - name: Set up Node.js
         if: steps.crate.outputs.present == 'true'
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
@@ -148,7 +148,7 @@ jobs:
         run: bash scripts/preflight.sh coverage
 
       - name: Retain native coverage evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: production-coverage
@@ -178,7 +178,7 @@ jobs:
 
       - name: Set up Node.js
         if: steps.wrapper.outputs.present == 'true'
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: ${{ matrix.node }}
 
@@ -199,7 +199,7 @@ jobs:
           toolchain: "1.88.0"
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
@@ -225,7 +225,7 @@ jobs:
 
       - name: Set up Node.js
         if: steps.tooling.outputs.present == 'true'
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
@@ -245,7 +245,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
@@ -291,7 +291,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
@@ -316,7 +316,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Reject mutable Action references
-        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@62574f011e0d1967d555a862bd28a7abba8684fe # v5.0.9
+        uses: zgosalvez/github-actions-ensure-sha-pinned-actions@c4e71056006d29f90204b2d063be337109507d62 # v5.0.10
 
   licenses:
     name: dependency license policy
