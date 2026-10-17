@@ -7,6 +7,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 
 const { McpError, startSession } = require('./mcp-session.js');
+const { modelEnvironment, shellInvocation } = require('./methodology-model-adapter.js');
 
 const REPORT_SCHEMA_VERSION = 1;
 const SUITE_SCHEMA_VERSION = 1;
@@ -164,10 +165,12 @@ function copyFixture(source, target) {
 }
 
 async function runProcess(command, args, options = {}) {
+  if (!path.isAbsolute(command)) throw new Error(`process executable must be absolute: ${command}`);
   const timeoutMs = options.timeoutMs ?? 30_000;
   const child = spawn(command, args, {
     cwd: options.cwd,
-    env: options.env ?? process.env,
+    env: options.env,
+    shell: false,
     detached: process.platform !== 'win32',
     stdio: ['pipe', 'pipe', 'pipe'],
   });
@@ -200,6 +203,43 @@ async function runProcess(command, args, options = {}) {
     stdout: stdout.toString('utf8'),
     stderr: stderr.toString('utf8'),
   };
+}
+
+function evaluatorEnvironment(root, overrides = {}) {
+  const allowed = new Set(['TRUENORTH_VERIFY_CMD']);
+  for (const [key, value] of Object.entries(overrides)) {
+    if (!allowed.has(key)) throw new Error(`environment override ${key} is not permitted`);
+    if (typeof value !== 'string') throw new Error(`environment override ${key} must be a string`);
+  }
+  const env = {
+    HOME: process.env.HOME ?? os.homedir(),
+    PATH: process.env.PATH ?? '',
+    TMPDIR: process.env.TMPDIR ?? os.tmpdir(),
+    LANG: process.env.LANG ?? 'C.UTF-8',
+    TRUENORTH_ROOT: root,
+  };
+  if (process.env.LC_ALL) env.LC_ALL = process.env.LC_ALL;
+  return { ...env, ...overrides };
+}
+
+function resolveExecutable(name) {
+  if (typeof name !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
+    throw new Error(`invalid executable name: ${name}`);
+  }
+  const suffixes =
+    process.platform === 'win32' ? (process.env.PATHEXT ?? '.EXE;.CMD;.BAT').split(';') : [''];
+  for (const directory of (process.env.PATH ?? '').split(path.delimiter)) {
+    for (const suffix of suffixes) {
+      const candidate = path.join(directory || '.', `${name}${suffix}`);
+      try {
+        fs.accessSync(candidate, fs.constants.X_OK);
+        return path.resolve(candidate);
+      } catch {
+        continue;
+      }
+    }
+  }
+  throw new Error(`executable not found on PATH: ${name}`);
 }
 
 function boundedAppend(current, chunk) {
@@ -255,7 +295,28 @@ async function executeScenarioDriver(input) {
     if (resolved !== scenarioRoot && !resolved.startsWith(`${scenarioRoot}${path.sep}`)) {
       throw new Error(`scenario path escapes disposable root: ${target}`);
     }
-    return resolved;
+    const root = fs.realpathSync.native(scenarioRoot);
+    const canonical = fs.realpathSync.native(resolved);
+    if (canonical !== root && !canonical.startsWith(`${root}${path.sep}`)) {
+      throw new Error(`scenario path escapes disposable root: ${target}`);
+    }
+    return canonical;
+  }
+
+  async function runDeterministic(executable, args, options, type, label, command = null) {
+    const cwd = assertContained(options.cwd ?? workspace);
+    const result = await runProcess(executable, args, {
+      cwd,
+      env: evaluatorEnvironment(cwd, options.env),
+      input: options.input,
+      timeoutMs: options.timeoutMs ?? scenario.timeout_ms,
+      label,
+    });
+    event(type, { ...(command ? { command } : {}), args, cwd, label, result });
+    if (result.code !== 0 && !options.expectFailure) {
+      throw new Error(`${label} failed: ${result.stderr.trim()}`);
+    }
+    return result;
   }
 
   const context = {
@@ -266,36 +327,27 @@ async function executeScenarioDriver(input) {
     scenario,
     event,
     async cli(args, options = {}) {
-      const cwd = assertContained(options.cwd ?? workspace);
-      const result = await runProcess(input.binary, args, {
-        cwd,
-        env: { ...process.env, TRUENORTH_ROOT: cwd, ...options.env },
-        timeoutMs: options.timeoutMs ?? scenario.timeout_ms,
-        label: `runtime ${args.join(' ')}`,
-      });
-      event('cli', { args, cwd, result });
-      if (result.code !== 0 && !options.expectFailure) {
-        throw new Error(`runtime ${args.join(' ')} failed: ${result.stderr.trim()}`);
-      }
-      return result;
+      return runDeterministic(input.binary, args, options, 'cli', `runtime ${args.join(' ')}`);
     },
-    async command(command, args = [], options = {}) {
-      const cwd = assertContained(options.cwd ?? workspace);
-      const result = await runProcess(command, args, {
-        cwd,
-        env: { ...process.env, ...options.env },
-        input: options.input,
-        timeoutMs: options.timeoutMs ?? scenario.timeout_ms,
-        label: options.label ?? command,
-      });
-      event('command', { command, args, cwd, label: options.label ?? command, result });
-      if (result.code !== 0 && !options.expectFailure) {
-        throw new Error(`${command} failed: ${result.stderr.trim()}`);
-      }
-      return result;
+    async node(args, options = {}) {
+      return runDeterministic(
+        process.execPath,
+        args,
+        options,
+        'command',
+        options.label ?? `node ${args.join(' ')}`,
+        'node',
+      );
     },
     async git(args, options = {}) {
-      return this.command('git', args, { ...options, label: `git ${args.join(' ')}` });
+      return runDeterministic(
+        input.git_binary,
+        args,
+        options,
+        'command',
+        `git ${args.join(' ')}`,
+        'git',
+      );
     },
     mutate(relative, contents, options = {}) {
       if (!declaredMutations.has(relative)) {
@@ -324,7 +376,7 @@ async function executeScenarioDriver(input) {
       const session = startSession(input.binary, [], root, {
         requestTimeoutMs: options.requestTimeoutMs ?? scenario.timeout_ms,
         exitTimeoutMs: 5_000,
-        env: { RUST_LOG: 'error', ...options.env },
+        env: { ...evaluatorEnvironment(root, options.env), RUST_LOG: 'error' },
       });
       sessions.set(name, session);
       await session.request('initialize', {
@@ -364,12 +416,14 @@ async function executeScenarioDriver(input) {
       if (options.expectError) throw new Error(`${tool} unexpectedly succeeded`);
       return { ok: true, result };
     },
-    async runModel(prompt) {
-      const command = process.env.TRUENORTH_EVAL_MODEL_COMMAND;
-      if (!command) throw new Error('model command is unavailable');
-      const result = await runProcess('/bin/sh', ['-c', command], {
+  };
+
+  if (input.mode === 'model') {
+    context.runModel = async (prompt) => {
+      const invocation = shellInvocation(input.model);
+      const result = await runProcess(invocation.executable, invocation.args, {
         cwd: workspace,
-        env: { ...process.env, TRUENORTH_ROOT: workspace },
+        env: modelEnvironment(workspace),
         input: stableStringify({ prompt, workspace }),
         timeoutMs: scenario.timeout_ms,
         label: 'model adapter',
@@ -377,8 +431,8 @@ async function executeScenarioDriver(input) {
       event('model', { result });
       if (result.code !== 0) throw new Error(`model adapter failed: ${result.stderr.trim()}`);
       return result;
-    },
-  };
+    };
+  }
 
   let driverError = null;
   try {
@@ -430,14 +484,6 @@ function baselineProjection(report) {
   };
 }
 
-function modelAvailable() {
-  return Boolean(
-    process.env.TRUENORTH_EVAL_MODEL_COMMAND &&
-    process.env.TRUENORTH_EVAL_MODEL_PROVIDER &&
-    process.env.TRUENORTH_EVAL_MODEL_ID,
-  );
-}
-
 function temporaryRoot(prefix = 'truenorth-methodology-') {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
@@ -449,10 +495,11 @@ module.exports = {
   copyFixture,
   definitionDigests,
   diffSnapshots,
+  evaluatorEnvironment,
   executeScenarioDriver,
-  modelAvailable,
   normalizeValue,
   readJson,
+  resolveExecutable,
   runProcess,
   sha256,
   snapshotTree,

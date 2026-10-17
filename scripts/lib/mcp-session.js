@@ -23,7 +23,8 @@ function startSession(command, args, root, options = {}) {
   const exitTimeoutMs = options.exitTimeoutMs ?? DEFAULT_EXIT_TIMEOUT_MS;
   const child = spawn(executable, args, {
     cwd: root,
-    env: { ...process.env, TRUENORTH_ROOT: root, ...options.env },
+    env: { ...(options.env ?? process.env), TRUENORTH_ROOT: root },
+    shell: false,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   const pending = new Map();

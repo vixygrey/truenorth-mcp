@@ -41,6 +41,17 @@ It must exit zero after the configured client completes. Without all three setti
 scenario reports `SKIP` with an explicit reason. A configured run records provider, model, client
 actions, and objective code-grader results.
 
+## Process boundaries
+
+Deterministic drivers can invoke only the runtime, Node, and Git operations supplied by the
+runner. Those launchers resolve their executables before execution, disable shell evaluation, use a
+minimal evaluator environment, and reject working directories outside the disposable scenario root,
+including through symlinks. Drivers may only set `TRUENORTH_VERIFY_CMD` for the fixture runtime.
+
+Model mode alone exposes the operator-configured model command. It runs through its documented shell
+adapter in the disposable workspace so providers can receive their own credentials. The deterministic
+driver context cannot reach that adapter.
+
 ## Scenario contract
 
 Each scenario owns fixed inputs in `fixture/`, a `scenario.json`, a driver, and a read-only grader.
