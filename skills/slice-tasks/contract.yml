@@ -1,0 +1,17 @@
+schema_version: 1
+name: slice-tasks
+description: Split scoped work into registered independently deliverable work items.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [product_scope_exists]
+handoffs:
+  - skill: plan-tests
+    when: high-risk-work-item
+    required: false
+  - skill: plan-work
+    when: work-items-registered
+    required: true
+outputs: [work_item_manifest, registered_tasks]

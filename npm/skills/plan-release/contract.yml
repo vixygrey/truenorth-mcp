@@ -1,0 +1,14 @@
+schema_version: 1
+name: plan-release
+description: Create or update release metadata and optional planning groups.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [scope_exists]
+handoffs:
+  - skill: slice-tasks
+    when: release-index-ready
+    required: false
+outputs: [release_index, group_definitions]

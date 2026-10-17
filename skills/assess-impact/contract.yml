@@ -1,0 +1,14 @@
+schema_version: 1
+name: assess-impact
+description: Analyze change blast radius, dependents, and test coverage before planning.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, git_read]
+risk_categories: []
+preconditions: [change_target_identified]
+handoffs:
+  - skill: grill-me
+    when: high-risk-assessment
+    required: false
+outputs: [impact_report, risk_classification]

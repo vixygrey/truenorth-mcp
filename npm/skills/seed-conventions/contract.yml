@@ -1,0 +1,14 @@
+schema_version: 1
+name: seed-conventions
+description: Establish project conventions and the initial agent workspace for a new project.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_write]
+risk_categories: []
+preconditions: [greenfield_project]
+handoffs:
+  - skill: scope-work
+    when: conventions-established
+    required: false
+outputs: [agent_guide, project_conventions]

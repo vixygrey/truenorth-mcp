@@ -1,0 +1,14 @@
+schema_version: 1
+name: scope-work
+description: Define and persist bounded product scope for a planned initiative.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [user_need_defined]
+handoffs:
+  - skill: slice-tasks
+    when: scope-confirmed
+    required: true
+outputs: [product_scope, scope_boundaries]

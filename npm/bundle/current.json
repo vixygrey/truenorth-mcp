@@ -125,6 +125,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/assess-impact/contract.yml",
+      "sha256": "0306c5682374f24e318171ab603b220d39949abe31ce80081acc417fd527daf0",
+      "mode": "0644"
+    },
+    {
       "path": "skills/audit-code/HEURISTICS.md",
       "sha256": "b1a50441d408bfbd582f129e7692e55a2930a1f665d3ca36a2e512a3597bc4b2",
       "mode": "0644"
@@ -147,6 +152,11 @@
     {
       "path": "skills/change-request/SKILL.md",
       "sha256": "ca4f35c1cc388773d391881d09b99fb91ab1e4bae1fd3ca29668733c9eb69dc9",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/change-request/contract.yml",
+      "sha256": "6276a1e5c9ce9fee18da59431f961f03c4d77d557c86a6396c408e4baa557dac",
       "mode": "0644"
     },
     {
@@ -620,8 +630,18 @@
       "mode": "0644"
     },
     {
+      "path": "skills/plan-refactor/contract.yml",
+      "sha256": "cb44bae8c40dd483c2434aec4f865b15a5e0703cd88d5f67e605cdcc06c2d3dd",
+      "mode": "0644"
+    },
+    {
       "path": "skills/plan-release/SKILL.md",
       "sha256": "4aac30f625dc29c6fb1a5cf474ea89124b18864529b0d95592f5bfc395729e86",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/plan-release/contract.yml",
+      "sha256": "5943923a7e6579c4c0f46299aba636d202675826b2c96a956b0d973cd0715931",
       "mode": "0644"
     },
     {
@@ -635,6 +655,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/plan-tests/contract.yml",
+      "sha256": "3bdb1a942bc23f4e0ea6302bf591c1ea5887be168ff186931ead7d274812c128",
+      "mode": "0644"
+    },
+    {
       "path": "skills/plan-work/REFERENCE.md",
       "sha256": "2f901b27b15ec09743a15598f033fa77e4af0316b3a1b979c96f17c84a84f677",
       "mode": "0644"
@@ -642,6 +667,11 @@
     {
       "path": "skills/plan-work/SKILL.md",
       "sha256": "ee3588f99a7145b6ffe0377fb2c9abdbf5a2add0aa332cd96eb5e0f177532ce4",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/plan-work/contract.yml",
+      "sha256": "a83d266597fb304349c0efded5cd139e5905c6913a5f944c3d93416586ecd7d6",
       "mode": "0644"
     },
     {
@@ -795,6 +825,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/scope-work/contract.yml",
+      "sha256": "d2b805b6185252e2daac81ca0b280d652f350bfc3053ea12e3e78d5df24cd25a",
+      "mode": "0644"
+    },
+    {
       "path": "skills/security-review/REFERENCE-confidence-rubric.md",
       "sha256": "facc66ad431a9b37ce5de72285869e1e0a0c20fee0f1ec843ee57d9d0dacab7a",
       "mode": "0644"
@@ -865,6 +900,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/seed-conventions/contract.yml",
+      "sha256": "f0bd978d561ff113c6ec1389702fc1773aa73b688ea5de43330d25d637138806",
+      "mode": "0644"
+    },
+    {
       "path": "skills/senior-developer/SKILL.md",
       "sha256": "ad905511d2fd152f51b66deb05f894da2e55a25318259b9231f6a82af3f7b296",
       "mode": "0644"
@@ -897,6 +937,11 @@
     {
       "path": "skills/slice-tasks/SKILL.md",
       "sha256": "92f599b47d4d0c6e55231f8c176dee99a5d3633f84656d5f559dc27936b365dc",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/slice-tasks/contract.yml",
+      "sha256": "99917a983c740b359d80d08d1d8836d62631688d6966492b5a83a045afcaf689",
       "mode": "0644"
     },
     {

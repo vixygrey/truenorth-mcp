@@ -1,0 +1,14 @@
+schema_version: 1
+name: plan-tests
+description: Design risk-scaled test scenarios for declared planning work items.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [task_manifest_exists]
+handoffs:
+  - skill: plan-work
+    when: test-plan-ready
+    required: false
+outputs: [test_plan, scenario_coverage]
