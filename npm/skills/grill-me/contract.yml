@@ -1,0 +1,14 @@
+schema_version: 1
+name: grill-me
+description: Stress-test a design through questions and optionally official documentation research.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, network]
+risk_categories: []
+preconditions: [design_or_plan_available]
+handoffs:
+  - skill: spike-prototype
+    when: empirical-uncertainty-remains
+    required: false
+outputs: [resolved_decisions, documented_assumptions]
