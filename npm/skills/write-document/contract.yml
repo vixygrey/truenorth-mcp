@@ -1,0 +1,14 @@
+schema_version: 1
+name: write-document
+description: Create or revise an evidence-backed technical document in its authoritative location.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read]
+risk_categories: []
+preconditions: [document_purpose_defined]
+handoffs:
+  - skill: simple-english
+    when: style-validation-needed
+    required: false
+outputs: [technical_document, documentation_verification]

@@ -1,0 +1,11 @@
+schema_version: 1
+name: migrate-spec
+description: Transform approved foreign planning artifacts into the project specification layout.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [source_framework_identified, user_confirmation]
+handoffs: []
+outputs: [migrated_project_specification, migration_summary]

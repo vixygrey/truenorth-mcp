@@ -1,0 +1,14 @@
+schema_version: 1
+name: reset-baseline
+description: Restore a repository baseline after explicit approval of working-tree changes.
+scale: task
+side_effects: true
+risks: true
+effect_categories: [filesystem_read, filesystem_write, git_read, git_write, process_execution]
+risk_categories: [destructive_operation, data_loss]
+preconditions: [git_repository, explicit_user_approval]
+handoffs:
+  - skill: setup-environment
+    when: baseline-restored
+    required: true
+outputs: [restored_baseline, baseline_verification]
