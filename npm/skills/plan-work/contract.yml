@@ -1,0 +1,14 @@
+schema_version: 1
+name: plan-work
+description: Write a detailed specification and runnable task ledger for one work item.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [work_item_manifest_exists]
+handoffs:
+  - skill: kickoff-branch
+    when: work-plan-ready
+    required: true
+outputs: [work_item_specification, task_ledger]

@@ -1,0 +1,14 @@
+schema_version: 1
+name: plan-refactor
+description: Produce a safe incremental refactor plan and working report.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [refactor_problem_defined]
+handoffs:
+  - skill: kickoff-branch
+    when: refactor-plan-approved
+    required: false
+outputs: [refactor_plan, preserved_invariant]

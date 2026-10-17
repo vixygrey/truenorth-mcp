@@ -1,0 +1,17 @@
+schema_version: 1
+name: change-request
+description: Route mid-release requirement changes to their planning artifact owners.
+scale: workflow
+side_effects: false
+risks: false
+effect_categories: []
+risk_categories: []
+preconditions: [release_plan_exists]
+handoffs:
+  - skill: plan-release
+    when: release-order-changed
+    required: false
+  - skill: slice-tasks
+    when: boundaries-changed
+    required: false
+outputs: [change_route, affected_artifact_summary]
