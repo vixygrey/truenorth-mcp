@@ -2,7 +2,7 @@ workflow_mode: team-pr
 active_flow: execute_group
 active_task: null
 active_group: '515'
-phase: execute
+phase: review
 handoff:
   next_skill: null
   last_step_completed: published-v1.0.5
@@ -21,8 +21,9 @@ handoff:
   - specs/adr/0020-prospective-traceability-evidence-cutover.md
   - release-notes/v1.0.5.md
   group_id: '515'
-  artifacts_summary: 'Issues #516-#520 merged to main via PR #525 (squash commit 39810ee7); v1.0.5 tagged from b166a140 (after 11 Dependabot merges resolved both open HIGH security alerts), published to npm with a real end-to-end smoke test, and the GitHub release (id 410825821) is published and immutable.'
-  git_context: main is at b166a140 (tagged v1.0.5, released), fast-forwarded from origin. The merged branch chore/515-methodology-compliance still exists on origin pending a separate cleanup approval.
+  artifacts_summary: 'Issue #551 contract-foundation work is starting. The recorded task covers the v1 typed contract model, parser, diagnostics, migration-mode batch validation, authoring rules, focused tests, and preflight verification.'
+  git_context: |2
+     M .agent/tasks/release-plan.yml
 group_cycle:
   mode: completed
   current_step: v1.0.5_fully_released
