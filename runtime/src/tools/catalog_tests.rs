@@ -117,6 +117,38 @@ fn make_skill(root: &std::path::Path, name: &str, body: &str) {
     std::fs::write(dir.join("SKILL.md"), body).expect("write SKILL.md");
 }
 
+#[tokio::test]
+async fn catalog_exposes_contracts_and_declared_handoffs() {
+    let repo = tempdir().expect("temporary repository");
+    make_skill(
+        repo.path(),
+        "plan-work",
+        "---\nname: plan-work\n---\n# Plan\n",
+    );
+    make_skill(
+        repo.path(),
+        "develop-tdd",
+        "---\nname: develop-tdd\n---\n# Develop\n",
+    );
+    std::fs::write(
+        repo.path().join("skills/plan-work/contract.yml"),
+        "schema_version: 1\nname: plan-work\ndescription: Plan the work.\nscale: task\nside_effects: false\nrisks: false\neffect_categories: []\nrisk_categories: []\npreconditions: []\nhandoffs:\n  - skill: develop-tdd\n    when: implementation-ready\n    required: true\noutputs: [plan]\n",
+    )
+    .expect("write contract");
+    let server = server_at(repo.path());
+
+    let index = result_json(server.index_skills().await.expect("index"));
+    assert_eq!(index["skills"][1]["scale"], "task");
+    let graph = server
+        .build_skill_graph(rmcp::handler::server::tool::RequestId(
+            rmcp::model::NumberOrString::Number(1),
+        ))
+        .await
+        .expect("build graph");
+    let value = result_json(graph);
+    assert_eq!(value["relations"], 1);
+}
+
 #[test]
 fn parse_named_skill_returns_parsed_structure() {
     let dir = tempdir().expect("temp dir");

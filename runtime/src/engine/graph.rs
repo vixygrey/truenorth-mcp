@@ -16,6 +16,7 @@ use crate::engine::regex_util::compile_static;
 use serde::{Deserialize, Serialize};
 use std::sync::LazyLock;
 
+use crate::engine::skill_contract::SkillContract;
 use crate::engine::skill_parser::ParsedSkill;
 
 /// A graph entity (ports `GraphEntity`). A skill is an entity.
@@ -124,35 +125,47 @@ pub fn build_graph(skills: &[ParsedSkill]) -> SkillGraph {
     build_graph_report(skills).graph
 }
 
-/// Build the graph and classify every exact inter-skill mention.
-///
-/// Relation direction is semantic:
-///
-/// - `A depends_on B`: A requires B before A can run.
-/// - `A invokes B`: A directly runs or routes work to B.
-/// - `A handoff_to B`: A may select B as its next lifecycle skill.
-/// - `A references B`: A mentions B without execution ordering.
-/// - `A enforces B`: A applies B's convention contract.
-pub fn build_graph_report(skills: &[ParsedSkill]) -> GraphBuildResult {
+/// Build the graph and diagnostics from parsed skills and declared contracts.
+pub fn build_graph_report_with_contracts(
+    skills: &[ParsedSkill],
+    contracts: &BTreeMap<String, SkillContract>,
+) -> GraphBuildResult {
     let known: BTreeSet<String> = skills.iter().map(|skill| skill.name.clone()).collect();
     let mut result = GraphBuildResult::default();
 
     for skill in skills {
         result.graph.entities.insert(
             skill.name.clone(),
-            GraphEntity::skill(&skill.name, observations_from(skill)),
+            GraphEntity::skill(
+                &skill.name,
+                observations_from(skill, contracts.get(&skill.name)),
+            ),
         );
     }
     for skill in skills {
         mine_relations(&mut result, skill, &known);
+        if let Some(contract) = contracts.get(&skill.name) {
+            for handoff in &contract.handoffs {
+                if known.contains(&handoff.skill) {
+                    push_unique(
+                        &mut result.graph,
+                        GraphRelation::new(&skill.name, &handoff.skill, "handoff_to"),
+                    );
+                }
+            }
+        }
     }
 
     finish_diagnostics(&mut result, skills);
     result
 }
 
-/// The observations for a skill, drawn from its frontmatter.
-fn observations_from(skill: &ParsedSkill) -> Vec<String> {
+/// Build the graph and classify every exact inter-skill mention.
+pub fn build_graph_report(skills: &[ParsedSkill]) -> GraphBuildResult {
+    build_graph_report_with_contracts(skills, &BTreeMap::new())
+}
+
+fn observations_from(skill: &ParsedSkill, contract: Option<&SkillContract>) -> Vec<String> {
     let mut observations = Vec::new();
     for field in ["description"] {
         if let Some(value) = skill.frontmatter.get(field)
@@ -160,6 +173,12 @@ fn observations_from(skill: &ParsedSkill) -> Vec<String> {
         {
             observations.push(format!("{field}: {text}"));
         }
+    }
+    if let Some(contract) = contract {
+        observations.push(format!("contract.description: {}", contract.description));
+        observations.push(format!("contract.scale: {:?}", contract.scale));
+        observations.push(format!("contract.side_effects: {}", contract.side_effects));
+        observations.push(format!("contract.risks: {}", contract.risks));
     }
     observations
 }
