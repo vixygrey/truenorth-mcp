@@ -48,11 +48,12 @@ TrueNorth-MCP keeps the context-isolation premise and the dual-mechanism design.
 the files it needs, and the `session-state` skill still writes the handoff to disk so the
 next agent resumes without a conversation replay.
 
-The handoff file relocated under ADR-0011: the cockpit state that carries
-`handoff.next_skill` is now `.agent/tasks/state.yml`, not `specs/state.yaml`. The runtime
-serves that state live through the `truenorth://state` resource, so an isolated agent reads
-the current handoff from a resource rather than re-reading the file itself. The isolation
-principle and the state.yaml handoff both hold; only the path moved into `.agent/`.
+The handoff file relocated under ADR-0011 and moved to JSON under ADR-0021: the
+cockpit state that carries `handoff.next_skill` is now `.agent/tasks/state.json`,
+not `specs/state.yaml`. The runtime serves that state live through the
+`truenorth://state` resource, so an isolated agent reads the current handoff from a
+resource rather than re-reading the file itself. The isolation principle and the
+state handoff both hold; only the path and format changed.
 
-**Status today:** live, with the handoff state relocated to `.agent/tasks/state.yml`
-(ADR-0011).
+**Status today:** live, with the handoff state at `.agent/tasks/state.json`
+(ADR-0021).

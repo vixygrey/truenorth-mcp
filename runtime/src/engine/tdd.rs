@@ -6,7 +6,7 @@
 //! is rejected, so the caller leaves the recorded state unchanged (Requirement 2.8).
 //!
 //! The logic is pure, so it is unit-testable without disk. The cockpit module persists
-//! the step in `state.yaml`.
+//! the step in `state.json`.
 //!
 //! Requirements: 2.7, 2.8. Design: Part II §2.
 

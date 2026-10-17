@@ -70,8 +70,8 @@ terms:
 
   - term: cockpit
     definition: >
-      The runtime-written state under .agent/tasks/: state.yml carries the phase and the
-      TDD loop, release-plan.yml carries the recorded tasks, and bugs.yml carries the
+      The runtime-written state under .agent/tasks/: state.json carries the phase and the
+      TDD loop, release-plan.json carries the recorded tasks, and bugs.json carries the
       external-tracker bug references.
     related_terms: [.agent workspace, resource, tier]
 

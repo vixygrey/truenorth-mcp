@@ -30,8 +30,8 @@ verify → release — via `orchestrate-project`, with two opt-in modes:
 TrueNorth-MCP keeps the prescriptive loop and delivers it through two layers. The
 `orchestrate-project` skill still carries the phase sequence for a harness that drives the
 workflow through skills. The runtime adds an active enforcement layer: the
-`truenorth_advance_phase` tool moves the phase and writes `.agent/tasks/state.yml`
-(`truenorth-mcp/src/tools/lifecycle.rs`), and the `truenorth_verify_gate` tool runs a
+`truenorth_advance_phase` tool moves the phase and writes `.agent/tasks/state.json`
+(`runtime/src/tools/lifecycle.rs`), and the `truenorth_verify_gate` tool runs a
 project gate command through a bounded executor and passes only on exit 0
 (`truenorth-mcp/src/tools/gates.rs`).
 

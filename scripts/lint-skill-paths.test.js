@@ -32,21 +32,31 @@ function run(root) {
   });
 }
 
-test('rejects an unqualified cockpit filename in a source skill', () => {
+test('rejects a retired YAML cockpit filename in a source skill', () => {
   const root = fixture('skills/example/SKILL.md', 'Write the handoff to `state.yaml`.\n');
   const result = run(root);
   assert.notStrictEqual(result.status, 0);
-  assert.match(result.stderr, /bare cockpit filename/);
+  assert.match(result.stderr, /retired YAML cockpit path/);
   assert.match(result.stderr, /skills\/example\/SKILL\.md:1/);
 });
 
 test('accepts the canonical qualified cockpit path', () => {
   const root = fixture(
     'skills/example/SKILL.md',
-    'Write the handoff to `.agent/tasks/state.yml`.\n',
+    'Write the handoff to `.agent/tasks/state.json`.\n',
   );
   const result = run(root);
   assert.strictEqual(result.status, 0, result.stderr);
+});
+
+test('rejects a qualified retired YAML cockpit path', () => {
+  const root = fixture(
+    'skills/example/SKILL.md',
+    'Write the handoff to `.agent/tasks/state.yml`.\n',
+  );
+  const result = run(root);
+  assert.notStrictEqual(result.status, 0);
+  assert.match(result.stderr, /retired YAML cockpit path/);
 });
 
 test('accepts an explicitly marked legacy migration source example', () => {
@@ -65,7 +75,7 @@ test('rejects an unmarked stale output path inside migrate-spec', () => {
   );
   const result = run(root);
   assert.notStrictEqual(result.status, 0);
-  assert.match(result.stderr, /bare cockpit filename/);
+  assert.match(result.stderr, /retired YAML cockpit path/);
 });
 
 test('checks in-repo wiki pages', () => {

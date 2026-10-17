@@ -74,7 +74,9 @@ function prepare(options) {
       },
       baseline: {
         git_status: gitStatus(repoRoot),
-        release_plan_digest: fileDigest(path.join(repoRoot, '.agent', 'tasks', 'release-plan.yml')),
+        release_plan_digest: fileDigest(
+          path.join(repoRoot, '.agent', 'tasks', 'release-plan.json'),
+        ),
         user_settings_digest: fileDigestOrMissing(zedUserSettings()),
       },
     };
@@ -103,12 +105,12 @@ function collect(options) {
   const protocol = readJsonLines(manifest.transcript);
   const lifecycle = readJsonLines(manifest.lifecycle);
   const observed = protocolEvidence(protocol);
-  const planPath = path.join(manifest.workspace, '.agent', 'tasks', 'release-plan.yml');
+  const planPath = path.join(manifest.workspace, '.agent', 'tasks', 'release-plan.json');
   const plan = fs.existsSync(planPath) ? fs.readFileSync(planPath, 'utf8') : '';
   const taskCount = countOccurrences(plan, TASK_NAME);
   const currentStatus = gitStatus(manifest.repository_root);
   const currentPlanDigest = fileDigest(
-    path.join(manifest.repository_root, '.agent', 'tasks', 'release-plan.yml'),
+    path.join(manifest.repository_root, '.agent', 'tasks', 'release-plan.json'),
   );
   const currentUserSettingsDigest = fileDigestOrMissing(zedUserSettings());
   const starts = lifecycle.filter((event) => event.event === 'start');

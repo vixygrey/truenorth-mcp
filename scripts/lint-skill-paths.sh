@@ -42,9 +42,9 @@ ROOT_FILES="ontology.yml layout.yml profile.yml"
 # dir. `specs/adr/` stays legal, because the ADR resource reads it (ADR-0011).
 RETIRED_RE='(^|[^A-Za-z0-9_./-])(specs/(state|release-plan|ontology|tasks|product|backlog|active-feature)|\.bigpowers)([/.]|$)'
 
-# Current cockpit filenames must include `.agent/tasks/`. The explicit markers are narrow
-# by design: they permit one labeled exception line, not a whole file or directory.
-BARE_COCKPIT_RE='(^|[^A-Za-z0-9_./-])(state|release-plan|execution-status)\.ya?ml([^A-Za-z0-9_.-]|$)'
+# Runtime-owned cockpit documents use JSON. The explicit marker is narrow by design:
+# it permits one labeled legacy-migration-source line, not a whole file or directory.
+RETIRED_COCKPIT_YAML_RE='(\.agent/tasks/(state|release-plan|bugs)\.ya?ml|(^|[^A-Za-z0-9_./-])(state|release-plan|bugs)\.ya?ml([^A-Za-z0-9_.-]|$))'
 ALLOW_MARKER_RE='truenorth-lint: allow-(legacy-cockpit|relative-layout)-path'
 
 # The source skill documents and in-repo wiki. The packaged mirror is checked separately
@@ -86,23 +86,19 @@ for f in "${FILES[@]}"; do
     violations=$((violations + 1))
   done < <(grep -nE "$RETIRED_RE" "$f" || true)
 
-  # Remove canonical qualified names, then reject any cockpit filename that remains.
+  # YAML is retired only for the three runtime-owned cockpit documents.
   while IFS= read -r hit; do
     lineno="${hit%%:*}"
     line="${hit#*:}"
     if printf '%s\n' "$line" | grep -Eq "$ALLOW_MARKER_RE"; then
       continue
     fi
-    unqualified=$(
-      printf '%s\n' "$line" |
-        sed -E 's#\.agent/tasks/(state|release-plan|execution-status)\.ya?ml##g'
-    )
-    if printf '%s\n' "$unqualified" | grep -Eq "$BARE_COCKPIT_RE"; then
-      echo "lint-skill-paths: $f:$lineno names a bare cockpit filename: ${line#"${line%%[![:space:]]*}"}" >&2
-      echo "  Use .agent/tasks/<name>.yml, or mark one clearly labeled layout or migration-source line." >&2
+    if printf '%s\n' "$line" | grep -Eq "$RETIRED_COCKPIT_YAML_RE"; then
+      echo "lint-skill-paths: $f:$lineno names a retired YAML cockpit path: ${line#"${line%%[![:space:]]*}"}" >&2
+      echo "  Use .agent/tasks/<name>.json, or mark one clearly labeled legacy migration-source line." >&2
       violations=$((violations + 1))
     fi
-  done < <(grep -nE '(state|release-plan|execution-status)\.ya?ml' "$f" || true)
+  done < <(grep -nE "$RETIRED_COCKPIT_YAML_RE" "$f" || true)
 
   # Check every `.agent/` path token for a known area.
   while IFS= read -r hit; do
