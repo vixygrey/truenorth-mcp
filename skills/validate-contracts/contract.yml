@@ -1,0 +1,11 @@
+schema_version: 1
+name: validate-contracts
+description: Verify that declared data contracts match their source and target shapes.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [contract_files_available]
+handoffs: []
+outputs: [contract_validation_report, contract_validation_verdict]

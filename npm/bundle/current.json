@@ -105,6 +105,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/align-grid/contract.yml",
+      "sha256": "dbed52d7efd7fe442544b4d9a00f7e7ea43fe78c5864133c8ca3c7bbf37e5086",
+      "mode": "0644"
+    },
+    {
       "path": "skills/align-grid/scripts/grid_tokens.py",
       "sha256": "600fe1d739e71a6f3ede6c69dd87605277e6638ecda688aee7eb3ca84402f988",
       "mode": "0755"
@@ -196,7 +201,12 @@
     },
     {
       "path": "skills/craft-skill/SKILL.md",
-      "sha256": "6dd1b8449db799db776ffb187631bb5d5fb397c37d738c09b2f6a36a9e5281a0",
+      "sha256": "e6d563c3761fc821d8c6fdd0b31baf864398d6ed1e6d9d0374ee13cf803c6071",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/craft-skill/contract.yml",
+      "sha256": "6bd184752a471b3c005966dda7bdba6f91b6b2b909faa8d9d3ed480b2a3e5326",
       "mode": "0644"
     },
     {
@@ -272,6 +282,11 @@
     {
       "path": "skills/develop-tdd/SKILL.md",
       "sha256": "73be152eb62f0754011aaf97c64c73695898571d019daa94da47a6d290fc3e25",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/develop-tdd/contract.yml",
+      "sha256": "883795c69aa28d4c6a9f3169207bbfb1d1cae146533d5a878d7358197c8e1a7a",
       "mode": "0644"
     },
     {
@@ -730,6 +745,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/quick-fix/contract.yml",
+      "sha256": "d18f257328c5e28944498752c10783056b756474a4fdf2e4b7c1563c4a15e723",
+      "mode": "0644"
+    },
+    {
       "path": "skills/release-branch/REFERENCE.md",
       "sha256": "6557f16b6dfc9190b2c604416ea1f32d3e724875d62a1c104a4e1ae27676a43c",
       "mode": "0644"
@@ -965,6 +985,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/setup-environment/contract.yml",
+      "sha256": "d0ee547ae7dfdcd5cca4a6d2bf2e1942c7425a627793a21fd932c30c93fccc0f",
+      "mode": "0644"
+    },
+    {
       "path": "skills/simple-english/REFERENCE.md",
       "sha256": "4bca3e4085fc1c92b93f320d87882f8cca665a3b7fa9f1504db45d25d38d6074",
       "mode": "0644"
@@ -1000,8 +1025,18 @@
       "mode": "0644"
     },
     {
+      "path": "skills/smoke-test/contract.yml",
+      "sha256": "2bd8bb5d8c23ca717973ee635ffa15a4bc8c712c8bd5b3d814de795af95f37b7",
+      "mode": "0644"
+    },
+    {
       "path": "skills/spike-prototype/SKILL.md",
       "sha256": "ba1c014051c577674e65f4f25aacfb7900cff41337f374b435248169b2fbe417",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/spike-prototype/contract.yml",
+      "sha256": "7afbe219c87c03591697f4d5095e059f06d17609f83c2777273e343c0f7b29d4",
       "mode": "0644"
     },
     {
@@ -1047,6 +1082,11 @@
     {
       "path": "skills/validate-contracts/SKILL.md",
       "sha256": "115da4c43f2242b9c8463455f3a78637cc560dde52521b93093a65625677550c",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/validate-contracts/contract.yml",
+      "sha256": "62737120dfea6a4f4ce2d32ad0919cb7962ecb0359f8fb6909e3c4fac991337f",
       "mode": "0644"
     },
     {
@@ -1130,8 +1170,18 @@
       "mode": "0644"
     },
     {
+      "path": "skills/wire-ci/contract.yml",
+      "sha256": "c7832dcbae28874d491632176c888a7eca6b7436eb1d331f8cd085ef79656c3e",
+      "mode": "0644"
+    },
+    {
       "path": "skills/wire-observability/SKILL.md",
       "sha256": "c250b6324524fe745ffadb274e2346c11b0b379063eeb33fac6dcf071d5feb32",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/wire-observability/contract.yml",
+      "sha256": "86061ae0a4faf489defe880456cb76758ea3094c2d2e7f6247d6bc3d301b2291",
       "mode": "0644"
     },
     {

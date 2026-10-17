@@ -1,0 +1,11 @@
+schema_version: 1
+name: wire-observability
+description: Add risk-appropriate logging, health checks, and observability guidance.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [deployment_profile_assessed]
+handoffs: []
+outputs: [observability_configuration, observability_verification]
