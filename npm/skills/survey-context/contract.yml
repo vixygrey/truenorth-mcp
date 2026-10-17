@@ -1,0 +1,14 @@
+schema_version: 1
+name: survey-context
+description: Read project state and recommend the next lifecycle skill.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read]
+risk_categories: []
+preconditions: [repository_available]
+handoffs:
+  - skill: plan-work
+    when: planning-ready
+    required: false
+outputs: [phase_map, next_skill_recommendation]

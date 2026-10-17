@@ -1,0 +1,14 @@
+schema_version: 1
+name: using-truenorth
+description: Introduce the TrueNorth lifecycle and select an appropriate first skill.
+scale: task
+side_effects: false
+risks: false
+effect_categories: []
+risk_categories: []
+preconditions: []
+handoffs:
+  - skill: survey-context
+    when: existing-project-task
+    required: false
+outputs: [lifecycle_orientation, first_skill_recommendation]

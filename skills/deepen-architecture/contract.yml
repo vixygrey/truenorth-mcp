@@ -1,0 +1,14 @@
+schema_version: 1
+name: deepen-architecture
+description: Identify and document high-leverage architecture deepening opportunities.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read]
+risk_categories: []
+preconditions: [repository_available]
+handoffs:
+  - skill: grill-me
+    when: candidate-selected
+    required: false
+outputs: [architecture_candidates, module_depth_assessment]

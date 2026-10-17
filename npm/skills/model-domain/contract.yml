@@ -1,0 +1,14 @@
+schema_version: 1
+name: model-domain
+description: Resolve domain model decisions and persist domain vocabulary and invariants.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [plan_available]
+handoffs:
+  - skill: define-language
+    when: glossary-needs-expansion
+    required: false
+outputs: [domain_invariants, domain_model_decisions]

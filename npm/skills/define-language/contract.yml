@@ -1,0 +1,14 @@
+schema_version: 1
+name: define-language
+description: Produce and maintain a canonical project glossary from domain discussion.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_write]
+risk_categories: []
+preconditions: [domain_discussion_available]
+handoffs:
+  - skill: model-domain
+    when: glossary-needs-validation
+    required: false
+outputs: [project_glossary, flagged_ambiguities]

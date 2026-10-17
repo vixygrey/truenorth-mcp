@@ -205,8 +205,18 @@
       "mode": "0644"
     },
     {
+      "path": "skills/deepen-architecture/contract.yml",
+      "sha256": "c62370309f87c79f435cd52e9f50581910d96d144c5270291eb053479b58553b",
+      "mode": "0644"
+    },
+    {
       "path": "skills/define-language/SKILL.md",
       "sha256": "329bc5147e72329cf014253289a9b25c4a464d177e3b90e173a23c2401c2f63d",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/define-language/contract.yml",
+      "sha256": "ff07842f63cc12681e36d934d48435650c8cb13ff22d1daa9ce687b54c195aff",
       "mode": "0644"
     },
     {
@@ -227,6 +237,11 @@
     {
       "path": "skills/design-interface/SKILL.md",
       "sha256": "66f0f06c8246174660629d43579b9a6c42a9791b8732cbf5f1d2ffa22b001bb2",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/design-interface/contract.yml",
+      "sha256": "19b3d6e58487318d0e88eafedcf4e53e77aefd70b5c333b7b921d51b83211037",
       "mode": "0644"
     },
     {
@@ -277,6 +292,11 @@
     {
       "path": "skills/elaborate-spec/SKILL.md",
       "sha256": "5c7562374082ebeb952f632528740775c2ab227f4dc059e0a66463f724955429",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/elaborate-spec/contract.yml",
+      "sha256": "110cacd9040df9e0253f999743bceb36ea3238aa181f2fa55e233754863438ae",
       "mode": "0644"
     },
     {
@@ -460,6 +480,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/grill-me/contract.yml",
+      "sha256": "7130fb0dd2312feb177d06363e8a8bc882d65bf8f91bf7d5e94a909bd064c6a5",
+      "mode": "0644"
+    },
+    {
       "path": "skills/guard-git/REFERENCE.md",
       "sha256": "d118e563cc65157477f1767678d13a629ad9ba072d91872e0f974f023e0302c6",
       "mode": "0644"
@@ -520,6 +545,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/map-codebase/contract.yml",
+      "sha256": "415fc92c2bf8519359dfb7e928679adbae63756882feede660ede0e0a84e74b4",
+      "mode": "0644"
+    },
+    {
       "path": "skills/migrate-spec/REFERENCE-GSD.md",
       "sha256": "7a4cfb69e3483dccfa0b94c7427f6414116a2042a5fbf110b70dd817143ceec2",
       "mode": "0644"
@@ -557,6 +587,11 @@
     {
       "path": "skills/model-domain/SKILL.md",
       "sha256": "a9ba063c8d170f28301f9c2096da36b4b6bfec83833f326b5b551090982b4269",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/model-domain/contract.yml",
+      "sha256": "f93379fba31dd69073c23607c73bf46ab69bfded218e9653712b8bd1f41cf493",
       "mode": "0644"
     },
     {
@@ -657,6 +692,11 @@
     {
       "path": "skills/research-first/SKILL.md",
       "sha256": "885931c063838ca24a4588c8c39016019cfcaae4bb6058fbe43daa094ec62c0c",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/research-first/contract.yml",
+      "sha256": "381e9ad42c84d0f6d651872328ac87d2d886f641b5894c7d2206a18988332aa5",
       "mode": "0644"
     },
     {
@@ -890,6 +930,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/survey-context/contract.yml",
+      "sha256": "f916428043da4283095d4b0db56ff196d0686377da89a1a87ed3ee9eeb1fc2cd",
+      "mode": "0644"
+    },
+    {
       "path": "skills/trace-requirement/SKILL.md",
       "sha256": "26d72ce60cb8b14a95db4c043ed2e4d29cdcdedd3f808936f2ffe2e6cdcd58bd",
       "mode": "0644"
@@ -897,6 +942,11 @@
     {
       "path": "skills/using-truenorth/SKILL.md",
       "sha256": "a1ed3d60275657721ecada06d27a375e61f74263ddf107cee2e844bbdd2f6d1e",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/using-truenorth/contract.yml",
+      "sha256": "30d923e6dca51be1d209cdb631a485bfda4091e6dedbd3b31fb17d89e31ce4c7",
       "mode": "0644"
     },
     {
