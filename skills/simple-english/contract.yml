@@ -1,0 +1,11 @@
+schema_version: 1
+name: simple-english
+description: Write or revise technical text with a deterministic Simplified Technical English check.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, process_execution]
+risk_categories: []
+preconditions: [technical_text_available]
+handoffs: []
+outputs: [technical_text, style_check_result]

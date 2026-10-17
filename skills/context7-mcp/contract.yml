@@ -1,0 +1,11 @@
+schema_version: 1
+name: context7-mcp
+description: Retrieve current library documentation through the Context7 MCP service.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [network]
+risk_categories: []
+preconditions: [library_question_defined]
+handoffs: []
+outputs: [documentation_evidence, availability_result]

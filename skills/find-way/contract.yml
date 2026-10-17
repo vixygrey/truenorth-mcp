@@ -1,0 +1,11 @@
+schema_version: 1
+name: find-way
+description: Map and resolve decision tickets for a large effort on the issue tracker.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [github_read, github_write]
+risk_categories: []
+preconditions: [issue_tracker_available, destination_defined]
+handoffs: []
+outputs: [decision_map, decision_resolution]

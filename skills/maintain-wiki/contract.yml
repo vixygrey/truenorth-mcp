@@ -1,0 +1,11 @@
+schema_version: 1
+name: maintain-wiki
+description: Synchronize and check a concept wiki against its authoritative source documents.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read]
+risk_categories: []
+preconditions: [wiki_sources_available]
+handoffs: []
+outputs: [wiki_update, wiki_consistency_report]

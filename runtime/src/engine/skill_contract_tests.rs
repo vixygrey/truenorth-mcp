@@ -84,15 +84,16 @@ fn rejects_category_boolean_mismatches_and_unknown_required_handoffs() {
 }
 
 #[test]
-fn migration_batch_reports_missing_contracts_without_failing() {
+fn batch_rejects_missing_contracts() {
     let dir = tempdir().expect("temp directory");
     write_skill(dir.path(), "validate-work");
 
     let report = validate_skill_contracts(dir.path());
 
-    assert!(report.pass);
+    assert!(!report.pass);
     assert_eq!(report.missing, vec!["validate-work"]);
     assert!(report.invalid.is_empty());
+    assert!(!report.reports[0].pass);
 }
 
 #[test]
@@ -172,4 +173,20 @@ fn rejects_contracts_larger_than_the_read_limit() {
             .iter()
             .any(|diagnostic| diagnostic.id == "contract-parse")
     );
+}
+
+#[test]
+fn checked_in_skill_catalog_has_complete_valid_contracts() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("repository root")
+        .to_path_buf();
+
+    let report = validate_skill_contracts(&root);
+
+    assert!(report.pass, "{report:#?}");
+    assert!(report.missing.is_empty(), "{report:#?}");
+    assert!(report.invalid.is_empty(), "{report:#?}");
+    assert_eq!(report.reports.len(), discover_skills(&root).len());
+    assert!(report.reports.iter().all(|item| !item.missing && item.pass));
 }

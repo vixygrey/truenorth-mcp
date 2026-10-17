@@ -1,0 +1,14 @@
+schema_version: 1
+name: audit-plan
+description: Evaluate a project plan and produce a readiness verdict before build work begins.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [incoming_plan_available]
+handoffs:
+  - skill: survey-context
+    when: plan-ready
+    required: false
+outputs: [plan_audit_report, readiness_verdict]

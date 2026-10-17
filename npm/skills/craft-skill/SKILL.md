@@ -16,7 +16,7 @@ does not follow the verb-noun rule declares a nonempty `name_exception`.
 
 ## Contract discipline
 
-Every new skill MUST include an adjacent `contract.yml`. Start with the template
+Every skill MUST include an adjacent `contract.yml`. Start with the template
 in [REFERENCE.md](REFERENCE.md#contract-requirements). Record declarative scale,
 observable effects, risks, preconditions, handoffs, and outputs. Keep procedure,
 examples, and rationale in `SKILL.md`.

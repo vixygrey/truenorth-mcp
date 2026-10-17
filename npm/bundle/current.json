@@ -155,6 +155,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/audit-plan/contract.yml",
+      "sha256": "2e8d85b1658d44772acb4e51a0d11a4ef4dafde04c6430945b7a6d7dbba0b549",
+      "mode": "0644"
+    },
+    {
       "path": "skills/change-request/REFERENCE.md",
       "sha256": "e8f03624af33f2bfa2ad1cc38daf3604d2fb6a2b0f967f76b10c148c444aebe9",
       "mode": "0644"
@@ -205,13 +210,18 @@
       "mode": "0644"
     },
     {
+      "path": "skills/context7-mcp/contract.yml",
+      "sha256": "4054fbaca44ff2b44fc762d4a93471d8fada6645daa6575e53e4d78377bb3829",
+      "mode": "0644"
+    },
+    {
       "path": "skills/craft-skill/REFERENCE.md",
-      "sha256": "883de1e32265602092522f98b44af4151c4666b5c954b2864f22497c94537dab",
+      "sha256": "2067daee0d063fc3828b77fb11797860086377ca0c49966e25f0f8c2228cdc65",
       "mode": "0644"
     },
     {
       "path": "skills/craft-skill/SKILL.md",
-      "sha256": "e6d563c3761fc821d8c6fdd0b31baf864398d6ed1e6d9d0374ee13cf803c6071",
+      "sha256": "fb328b4bef4f667be549d867718a0fb5fad9fcdf41081568631d9b6e1205b2ef",
       "mode": "0644"
     },
     {
@@ -335,6 +345,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/diagnose-stall/contract.yml",
+      "sha256": "b4867fafefa325fdf988c0597eac1f3b2303f38ac204ff3ac3f8006465242dad",
+      "mode": "0644"
+    },
+    {
       "path": "skills/dispatch-agents/SKILL.md",
       "sha256": "f55349a8368e643bffe687cbaa96a42ca9371f56919fdb57df6af124142ec7e1",
       "mode": "0644"
@@ -397,6 +412,11 @@
     {
       "path": "skills/extract-design/SKILL.md",
       "sha256": "c3536334142fde81c03a569ce9d831112965256606d1baa47c3b88875b9be568",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/extract-design/contract.yml",
+      "sha256": "a909f6d0abe8d38701bd31b3ccf6f56fd9a55965da263b48b4945d720cb3f309",
       "mode": "0644"
     },
     {
@@ -535,6 +555,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/find-way/contract.yml",
+      "sha256": "b13b7b10fa7ed6747e991eeda37e02aeffe15f9884d69e3918ccfa8d408fafe9",
+      "mode": "0644"
+    },
+    {
       "path": "skills/fix-bug/SKILL.md",
       "sha256": "348c74c1dcfd0feeae483daba482d7c3cd90e0661104de6c0d1a6709f9b93d5f",
       "mode": "0644"
@@ -637,6 +662,11 @@
     {
       "path": "skills/maintain-wiki/SKILL.md",
       "sha256": "85ec09a5551d33f6ce63795b583232963fe7433cf3673cf34edb08b125bb0593",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/maintain-wiki/contract.yml",
+      "sha256": "047466c173ad9b3572a4573c7c214f8281d8aa663d6cf0d419f3f547bf95798a",
       "mode": "0644"
     },
     {
@@ -885,6 +915,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/run-benchmark/contract.yml",
+      "sha256": "ffe987be44b8c55badcccb5dac0b0703a01b7113fd698677931f6cd4712f0545",
+      "mode": "0644"
+    },
+    {
       "path": "skills/run-benchmark/definitions/sample/SKILL.md",
       "sha256": "084b9a2d0ec81435189dbbace113d3ec0e65be43bae0f3d5c48341eb478bc218",
       "mode": "0644"
@@ -1055,6 +1090,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/senior-developer/contract.yml",
+      "sha256": "924b57b4677305dbf3c97bd8d1ad6f8edb9e8d40e6fe316435e806d89584ba3b",
+      "mode": "0644"
+    },
+    {
       "path": "skills/session-state/SKILL.md",
       "sha256": "c915a54f91aa660fedb14f049a2657d1d5e431fd97e7836c41aa642e1a01c48f",
       "mode": "0644"
@@ -1082,6 +1122,11 @@
     {
       "path": "skills/simple-english/SKILL.md",
       "sha256": "5eec9a15792ca0dfa1159c444191c283b369749cd6e144ffe7bb80ea78e5150f",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/simple-english/contract.yml",
+      "sha256": "66f04a058e24ddb1cceac5e6bdcb2c71f0334c3fe520fd36863158acb7c08cdb",
       "mode": "0644"
     },
     {
@@ -1217,6 +1262,11 @@
     {
       "path": "skills/visual-dashboard/SKILL.md",
       "sha256": "a3999ff872be5fcdb11cedc3ba09f38bdc66b793f87bb09e5424120c9c328020",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/visual-dashboard/contract.yml",
+      "sha256": "1e234537c7f00b854beb6b515eeacfec205003bb4f2cf41fdb2cef1fc4d753b0",
       "mode": "0644"
     },
     {
