@@ -1,0 +1,15 @@
+schema_version: 1
+name: release-branch
+description: Verify and integrate a completed branch through the configured release workflow.
+scale: workflow
+side_effects: true
+risks: true
+effect_categories:
+  [filesystem_read, filesystem_write, git_read, git_write, github_write, network, process_execution]
+risk_categories: [irreversible_merge, branch_deletion, release_publication]
+preconditions: [verification_green, traceability_complete, integration_approval]
+handoffs:
+  - skill: trace-requirement
+    when: before-integration
+    required: true
+outputs: [integration_commit, release_verification]

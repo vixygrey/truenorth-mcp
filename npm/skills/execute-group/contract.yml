@@ -1,0 +1,14 @@
+schema_version: 1
+name: execute-group
+description: Execute approved work through implementation, verification, review, and integration gates.
+scale: system
+side_effects: true
+risks: true
+effect_categories: [filesystem_read, filesystem_write, git_read, process_execution]
+risk_categories: [production_change]
+preconditions: [approved_plan, green_baseline, feature_branch]
+handoffs:
+  - skill: release-branch
+    when: execution-complete
+    required: true
+outputs: [execution_status, verification_evidence]

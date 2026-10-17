@@ -1,0 +1,14 @@
+schema_version: 1
+name: deploy
+description: Build, deploy, and smoke a production artifact after explicit approval.
+scale: workflow
+side_effects: true
+risks: true
+effect_categories: [filesystem_read, network, process_execution, deployment]
+risk_categories: [production_change]
+preconditions: [tests_green, production_approval, default_branch]
+handoffs:
+  - skill: smoke-test
+    when: deployment-complete
+    required: true
+outputs: [deployment_url, deployment_verification]

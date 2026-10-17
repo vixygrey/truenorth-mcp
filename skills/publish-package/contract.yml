@@ -1,0 +1,11 @@
+schema_version: 1
+name: publish-package
+description: Publish a verified package to a target registry after explicit approval.
+scale: workflow
+side_effects: true
+risks: true
+effect_categories: [filesystem_read, network, process_execution, package_publish]
+risk_categories: [release_publication]
+preconditions: [dry_run_passed, publish_approval]
+handoffs: []
+outputs: [published_package_version, registry_verification]

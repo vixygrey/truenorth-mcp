@@ -1,0 +1,14 @@
+schema_version: 1
+name: commit-message
+description: Draft a Conventional Commit message and SemVer impact for current changes.
+scale: atomic
+side_effects: true
+risks: false
+effect_categories: [git_read, filesystem_write]
+risk_categories: []
+preconditions: [working_tree_changes]
+handoffs:
+  - skill: release-branch
+    when: commit-ready
+    required: false
+outputs: [commit_message, semver_assessment]

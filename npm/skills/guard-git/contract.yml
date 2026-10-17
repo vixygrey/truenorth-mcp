@@ -1,0 +1,11 @@
+schema_version: 1
+name: guard-git
+description: Install hooks that block destructive Git commands before execution.
+scale: task
+side_effects: true
+risks: true
+effect_categories: [filesystem_write, git_read, process_execution]
+risk_categories: [branch_deletion, data_loss]
+preconditions: [git_repository]
+handoffs: []
+outputs: [git_safety_hooks]

@@ -1,0 +1,11 @@
+schema_version: 1
+name: hook-commits
+description: Configure commit-time quality hooks for a project.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_write, network, process_execution]
+risk_categories: []
+preconditions: [project_package_manager]
+handoffs: []
+outputs: [commit_hooks, hook_verification]
