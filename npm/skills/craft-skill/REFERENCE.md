@@ -19,6 +19,7 @@ When a justified name cannot follow this pattern, add a concise nonempty
 ```
 skill-name/
 ├── SKILL.md           # Main instructions (required)
+├── contract.yml       # Declarative effects, risks, and handoffs (required for new skills)
 ├── REFERENCE.md       # Detailed docs (if needed)
 ├── EXAMPLES.md        # Usage examples (if needed)
 └── scripts/           # Utility scripts (if needed)
@@ -62,6 +63,39 @@ verify: command that exits nonzero on failure
 
 Add `name_exception: Concise reason.` only when the name does not follow the
 verb-noun rule. Do not add `model` or `effort`.
+
+## Contract requirements
+
+`contract.yml` records metadata. Keep process detail in `SKILL.md`.
+
+```yaml
+schema_version: 1
+name: skill-name
+description: Brief capability statement.
+scale: task
+side_effects: false
+risks: false
+effect_categories: []
+risk_categories: []
+preconditions: []
+handoffs: []
+outputs:
+  - result
+```
+
+Use one of `atomic`, `task`, `workflow`, or `system` for `scale`. Set
+`side_effects` when `effect_categories` is nonempty. Set `risks` when
+`risk_categories` is nonempty. Every required handoff must name an existing skill.
+Use a kebab-case label for `handoffs[].when`. Declare observable outputs only.
+
+Use only these `effect_categories`: `filesystem_read`, `filesystem_write`,
+`network`, `process_execution`, `git_read`, `git_write`, `github_read`,
+`github_write`, `external_service_write`, `package_publish`, `deployment`, and
+`browser_automation`.
+
+Use only these `risk_categories`: `destructive_operation`, `irreversible_merge`,
+`release_publication`, `branch_deletion`, `production_change`, `credential_access`,
+and `data_loss`.
 
 ## Description Requirements
 
