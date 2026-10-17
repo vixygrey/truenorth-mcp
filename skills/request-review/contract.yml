@@ -1,0 +1,14 @@
+schema_version: 1
+name: request-review
+description: Dispatch independent reviewers and resolve a risk-scaled review verdict.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, external_service_write]
+risk_categories: []
+preconditions: [audit_passed, verification_evidence_available]
+handoffs:
+  - skill: respond-review
+    when: findings-returned
+    required: true
+outputs: [review_reports, review_verdict]

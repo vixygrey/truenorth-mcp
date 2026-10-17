@@ -1,0 +1,11 @@
+schema_version: 1
+name: enforce-first
+description: Assess and improve test quality against the F.I.R.S.T rubric.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [test_suite_available, conventions_available]
+handoffs: []
+outputs: [first_audit_report, test_quality_verdict]

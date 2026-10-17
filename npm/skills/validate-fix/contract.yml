@@ -1,0 +1,22 @@
+schema_version: 1
+name: validate-fix
+description: Prove a defect fix and its recurrence hardening through behavior and full verification.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories:
+  [
+    filesystem_read,
+    filesystem_write,
+    git_read,
+    git_write,
+    process_execution,
+    external_service_write,
+  ]
+risk_categories: []
+preconditions: [bug_fix_implemented, regression_test_available]
+handoffs:
+  - skill: audit-code
+    when: fix-validated
+    required: false
+outputs: [fix_validation_report, resolution_evidence]

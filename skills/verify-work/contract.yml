@@ -1,0 +1,14 @@
+schema_version: 1
+name: verify-work
+description: Verify planned work through quality gates and observable behavior evidence.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, process_execution]
+risk_categories: []
+preconditions: [feature_branch, task_specification_available]
+handoffs:
+  - skill: execute-group
+    when: more-work-remains
+    required: false
+outputs: [verification_evidence, work_verdict]

@@ -1,0 +1,14 @@
+schema_version: 1
+name: audit-code
+description: Review a change against project conventions and evidence requirements.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, process_execution]
+risk_categories: []
+preconditions: [change_scope_available, project_conventions_available]
+handoffs:
+  - skill: request-review
+    when: self-audit-passed
+    required: false
+outputs: [code_audit_report, audit_verdict]

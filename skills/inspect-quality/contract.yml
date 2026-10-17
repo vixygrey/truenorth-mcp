@@ -1,0 +1,11 @@
+schema_version: 1
+name: inspect-quality
+description: Record user-reported quality defects in the external tracker with local references.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, external_service_write]
+risk_categories: []
+preconditions: [external_tracker_available]
+handoffs: []
+outputs: [external_bug_issues, local_bug_references]
