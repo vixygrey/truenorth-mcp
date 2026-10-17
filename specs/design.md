@@ -25,6 +25,11 @@ A completed write can notify resource consumers. Invalid input does not partiall
 A malformed resource does not terminate service for unrelated resources.
 The runtime treats disk as the live source rather than an agent's remembered snapshot.
 
+`truenorth_tdd_cycle` stores an omitted `group_id` at the legacy `tdd.step` field.
+A supplied group ID stores the step at `tdd.scopes.<group_id>.step`.
+The runtime does not infer scope from `active_group`, because a completed group can remain in state.
+Each scoped transition preserves the unscoped step and every other group scope.
+
 The release plan records work and verify commands.
 `execution-status.yml` owns current execution progress. Planning specifications and historical task checkboxes do not.
 `backlog.yml` declares ownership independently from the profile.

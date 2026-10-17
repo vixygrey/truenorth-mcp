@@ -22,11 +22,17 @@ fn server_at(root: &std::path::Path) -> TrueNorthServer {
 }
 
 #[test]
-fn failing_test_cmd_length_is_checked() {
+fn failing_test_cmd_and_group_id_lengths_are_checked() {
     assert!(check_failing_test_cmd("cargo test").is_ok());
     assert!(check_failing_test_cmd("").is_err());
-    let long = "x".repeat(MAX_FAILING_TEST_CMD + 1);
-    assert!(check_failing_test_cmd(&long).is_err());
+    let long_command = "x".repeat(MAX_FAILING_TEST_CMD + 1);
+    assert!(check_failing_test_cmd(&long_command).is_err());
+
+    assert!(check_group_id(None).is_ok());
+    assert!(check_group_id(Some("552")).is_ok());
+    assert!(check_group_id(Some("")).is_err());
+    let long_group = "x".repeat(MAX_GROUP_ID + 1);
+    assert!(check_group_id(Some(&long_group)).is_err());
 }
 
 #[test]
@@ -84,6 +90,7 @@ async fn public_red_step_records_only_an_observed_failure() {
             Parameters(TddCycleArgs {
                 step: "red".to_string(),
                 failing_test_cmd: "false".to_string(),
+                group_id: None,
                 files_to_modify: vec!["src/lib.rs".to_string()],
             }),
             rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
@@ -119,6 +126,7 @@ async fn public_red_step_records_only_an_observed_failure() {
             Parameters(TddCycleArgs {
                 step: "red".to_string(),
                 failing_test_cmd: "true".to_string(),
+                group_id: None,
                 files_to_modify: vec!["src/lib.rs".to_string()],
             }),
             rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(1)),
@@ -130,6 +138,81 @@ async fn public_red_step_records_only_an_observed_failure() {
         read_tdd_step(passing_test_dir.path()).expect("read unchanged state"),
         None
     );
+}
+
+#[tokio::test]
+async fn scoped_cycle_starts_without_mutating_legacy_state() {
+    let dir = tempdir().expect("temp dir");
+    let state_path = dir.path().join(".agent/tasks/state.yml");
+    fs::create_dir_all(state_path.parent().expect("state parent")).expect("create state parent");
+    fs::write(&state_path, "tdd:\n  step: green\n").expect("seed legacy state");
+
+    let server = server_at(dir.path());
+    let result = server
+        .truenorth_tdd_cycle(
+            Parameters(TddCycleArgs {
+                step: "red".to_string(),
+                failing_test_cmd: "false".to_string(),
+                group_id: Some("552".to_string()),
+                files_to_modify: vec!["src/lib.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(2)),
+        )
+        .await
+        .expect("a new group starts at red");
+    let response: serde_json::Value =
+        serde_json::from_str(&result.content[0].as_text().expect("text content").text)
+            .expect("JSON response");
+    assert_eq!(response["group_id"], "552");
+
+    server
+        .truenorth_tdd_cycle(
+            Parameters(TddCycleArgs {
+                step: "green".to_string(),
+                failing_test_cmd: "ignored".to_string(),
+                group_id: Some("552".to_string()),
+                files_to_modify: vec!["src/lib.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(3)),
+        )
+        .await
+        .expect("the selected group advances to green");
+    server
+        .truenorth_tdd_cycle(
+            Parameters(TddCycleArgs {
+                step: "red".to_string(),
+                failing_test_cmd: "false".to_string(),
+                group_id: Some("515".to_string()),
+                files_to_modify: vec!["src/lib.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(4)),
+        )
+        .await
+        .expect("a different group starts independently");
+    let before_rejected_transition = fs::read(&state_path).expect("read independent scopes");
+    let error = server
+        .truenorth_tdd_cycle(
+            Parameters(TddCycleArgs {
+                step: "refactor".to_string(),
+                failing_test_cmd: "ignored".to_string(),
+                group_id: Some("515".to_string()),
+                files_to_modify: vec!["src/lib.rs".to_string()],
+            }),
+            rmcp::handler::server::tool::RequestId(rmcp::model::NumberOrString::Number(5)),
+        )
+        .await
+        .expect_err("red cannot skip green");
+    assert!(error.message.contains("transition"));
+    assert_eq!(
+        fs::read(&state_path).expect("state unchanged after rejected transition"),
+        before_rejected_transition
+    );
+
+    let state: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(&state_path).expect("read state")).expect("parse");
+    assert_eq!(state["tdd"]["step"], "green");
+    assert_eq!(state["tdd"]["scopes"]["552"]["step"], "green");
+    assert_eq!(state["tdd"]["scopes"]["515"]["step"], "red");
 }
 
 #[test]
@@ -194,6 +277,7 @@ fn cycle_args(step: &str, command: &str) -> TddCycleArgs {
     TddCycleArgs {
         step: step.to_string(),
         failing_test_cmd: command.to_string(),
+        group_id: None,
         files_to_modify: vec!["src/lib.rs".to_string()],
     }
 }
@@ -264,7 +348,14 @@ async fn public_cycle_rejects_invalid_fields_without_creating_state() {
         TddCycleArgs {
             step: "red".to_string(),
             failing_test_cmd: "false".to_string(),
+            group_id: None,
             files_to_modify: vec![" ".to_string()],
+        },
+        TddCycleArgs {
+            step: "red".to_string(),
+            failing_test_cmd: "false".to_string(),
+            group_id: Some("".to_string()),
+            files_to_modify: vec!["src/lib.rs".to_string()],
         },
     ];
 

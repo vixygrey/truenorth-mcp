@@ -233,37 +233,46 @@ pub fn prepare_record_task(
     })
 }
 
-/// Read the recorded TDD step from `state.yaml`, or `None` when unset (Requirement 2.8).
+/// Read the unscoped TDD step from `state.yaml`, or `None` when unset.
 ///
 /// # Errors
 ///
 /// Returns [`CockpitError`] when the file exists but fails validation.
 pub fn read_tdd_step(repo_root: &Path) -> Result<Option<TddStep>, CockpitError> {
-    Ok(read_tdd_mutation(repo_root)?.current())
+    Ok(read_tdd_mutation(repo_root, None)?.current())
 }
 
 /// A TDD state read retained until the requested transition commits.
 pub struct TddMutation {
     state: StateFile,
+    group_id: Option<String>,
     precondition: WritePrecondition,
 }
 
 impl TddMutation {
-    /// The currently recorded TDD step.
+    /// The currently recorded TDD step for this mutation's selected scope.
     pub fn current(&self) -> Option<TddStep> {
-        self.state
-            .get("tdd")
-            .and_then(|value| value.get("step"))
-            .and_then(Value::as_str)
-            .and_then(TddStep::parse)
+        let tdd = self.state.get("tdd")?;
+        let step = match self.group_id.as_deref() {
+            Some(group_id) => tdd
+                .get("scopes")
+                .and_then(|value| value.get(group_id))
+                .and_then(|value| value.get("step")),
+            None => tdd.get("step"),
+        };
+        step.and_then(Value::as_str).and_then(TddStep::parse)
     }
 }
 
-/// Read the TDD state and retain its revision for a later conditional commit.
-pub fn read_tdd_mutation(repo_root: &Path) -> Result<TddMutation, CockpitError> {
+/// Read the selected TDD scope and retain its revision for a later conditional commit.
+pub fn read_tdd_mutation(
+    repo_root: &Path,
+    group_id: Option<&str>,
+) -> Result<TddMutation, CockpitError> {
     let versioned = read_state_versioned(repo_root)?;
     Ok(TddMutation {
         state: versioned.value,
+        group_id: group_id.map(str::to_string),
         precondition: versioned.precondition,
     })
 }
@@ -298,7 +307,7 @@ pub fn read_active_task(repo_root: &Path) -> Result<Option<String>, CockpitError
 ///
 /// Returns [`CockpitError`] on a read, validation, or write failure.
 pub fn write_tdd_step(repo_root: &Path, step: TddStep) -> Result<(), CockpitError> {
-    let mutation = read_tdd_mutation(repo_root)?;
+    let mutation = read_tdd_mutation(repo_root, None)?;
     commit_tdd_step(repo_root, mutation, step)
 }
 
@@ -321,10 +330,27 @@ pub fn prepare_tdd_step(
         .get("tdd")
         .and_then(|value| value.as_mapping().cloned())
         .unwrap_or_default();
-    tdd.insert(
-        Value::String("step".to_string()),
-        Value::String(step.as_str().to_string()),
-    );
+    if let Some(group_id) = mutation.group_id {
+        let mut scopes = tdd
+            .get("scopes")
+            .and_then(|value| value.as_mapping().cloned())
+            .unwrap_or_default();
+        let mut scope = scopes
+            .get(Value::String(group_id.clone()))
+            .and_then(|value| value.as_mapping().cloned())
+            .unwrap_or_default();
+        scope.insert(
+            Value::String("step".to_string()),
+            Value::String(step.as_str().to_string()),
+        );
+        scopes.insert(Value::String(group_id), Value::Mapping(scope));
+        tdd.insert(Value::String("scopes".to_string()), Value::Mapping(scopes));
+    } else {
+        tdd.insert(
+            Value::String("step".to_string()),
+            Value::String(step.as_str().to_string()),
+        );
+    }
     mutation.state.set("tdd", Value::Mapping(tdd));
 
     let contents = validate_state_for_write(&mutation.state)?;

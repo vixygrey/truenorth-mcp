@@ -27,6 +27,8 @@ use crate::tools::result;
 
 /// The maximum length of the failing test command (Requirement 2.6).
 const MAX_FAILING_TEST_CMD: usize = 1000;
+/// The maximum length of a selected TDD group (Requirement 2.6).
+const MAX_GROUP_ID: usize = 200;
 /// The maximum number of files to modify (Requirement 2.6).
 const MAX_FILES_TO_MODIFY: usize = 100;
 
@@ -37,6 +39,9 @@ pub struct TddCycleArgs {
     pub step: String,
     /// The failing test command (1 to 1000 chars).
     pub failing_test_cmd: String,
+    /// The task-group ID whose TDD state this call owns (1 to 200 characters).
+    #[serde(default)]
+    pub group_id: Option<String>,
     /// The files to modify this step (1 to 100 non-empty entries).
     pub files_to_modify: Vec<String>,
 }
@@ -63,12 +68,14 @@ impl TrueNorthServer {
             )
         })?;
         check_failing_test_cmd(&args.failing_test_cmd)?;
+        check_group_id(args.group_id.as_deref())?;
         check_files_to_modify(&args.files_to_modify)?;
         let permit = self.ctx.mutations.begin().await.map_err(mutation_error)?;
 
         // Enforce ordering. An invalid transition leaves the recorded step unchanged,
         // because no write happens (Requirement 2.8).
-        let mutation = cockpit::read_tdd_mutation(&self.ctx.repo_root).map_err(cockpit_error)?;
+        let mutation = cockpit::read_tdd_mutation(&self.ctx.repo_root, args.group_id.as_deref())
+            .map_err(cockpit_error)?;
         let step = next_step(mutation.current(), requested)
             .map_err(|error| ErrorData::invalid_request(error.to_string(), None))?;
 
@@ -110,13 +117,13 @@ impl TrueNorthServer {
             .map_err(receipt_error)?;
         let receipt = OperationReceipt::new("truenorth_tdd_cycle", &request_id, vec![change], gate)
             .map_err(receipt_error)?;
+        let mut result = serde_json::json!({ "step": step.as_str(), "step_ok": true });
+        if let Some(group_id) = args.group_id {
+            result["group_id"] = serde_json::Value::String(group_id);
+        }
         let response = result::success(
             vec![ContentBlock::text(
-                receipt::attach(
-                    serde_json::json!({ "step": step.as_str(), "step_ok": true }),
-                    receipt,
-                )
-                .to_string(),
+                receipt::attach(result, receipt).to_string(),
             )],
             self.ctx.token_caps,
         )?;
@@ -186,6 +193,21 @@ fn check_failing_test_cmd(value: &str) -> Result<(), ErrorData> {
     if !(1..=MAX_FAILING_TEST_CMD).contains(&len) {
         return Err(ErrorData::invalid_params(
             format!("`failing_test_cmd` must be 1 to {MAX_FAILING_TEST_CMD} characters"),
+            None,
+        ));
+    }
+    Ok(())
+}
+
+/// Check an optional group ID before reading or mutating state.
+fn check_group_id(value: Option<&str>) -> Result<(), ErrorData> {
+    let Some(value) = value else {
+        return Ok(());
+    };
+    let len = value.chars().count();
+    if !(1..=MAX_GROUP_ID).contains(&len) {
+        return Err(ErrorData::invalid_params(
+            format!("`group_id` must be 1 to {MAX_GROUP_ID} characters"),
             None,
         ));
     }
