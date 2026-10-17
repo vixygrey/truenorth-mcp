@@ -181,7 +181,7 @@ pub fn read_skill_contract(
     })
 }
 
-/// Validate one contract. Missing contracts warn during the incremental migration.
+/// Validate one contract. Missing contracts fail validation.
 pub fn validate_skill_contract(repo_root: &Path, name: &str) -> SkillContractReport {
     let path = match resolve_skill_contract_path(repo_root, name) {
         Ok(path) => path,
@@ -190,14 +190,14 @@ pub fn validate_skill_contract(repo_root: &Path, name: &str) -> SkillContractRep
     if !path.is_file() {
         return SkillContractReport {
             skill: name.to_string(),
-            pass: true,
+            pass: false,
             missing: true,
             contract: None,
             diagnostics: vec![diagnostic(
                 "contract-missing",
-                true,
-                format!("No contract at {} during migration", path.display()),
-                Some("Add contract.yml before mandatory enforcement begins".to_string()),
+                false,
+                format!("No contract at {}", path.display()),
+                Some("Add a valid contract.yml".to_string()),
             )],
         };
     }
@@ -208,7 +208,7 @@ pub fn validate_skill_contract(repo_root: &Path, name: &str) -> SkillContractRep
     }
 }
 
-/// Validate all discovered contracts without failing migration gaps.
+/// Validate all discovered contracts and reject absent or invalid contracts.
 pub fn validate_skill_contracts(repo_root: &Path) -> SkillContractCatalogReport {
     let reports: Vec<_> = discover_skills(repo_root)
         .into_iter()
@@ -221,11 +221,11 @@ pub fn validate_skill_contracts(repo_root: &Path) -> SkillContractCatalogReport 
         .collect();
     let invalid: Vec<String> = reports
         .iter()
-        .filter(|report| !report.pass)
+        .filter(|report| !report.missing && !report.pass)
         .map(|report| report.skill.clone())
         .collect();
     SkillContractCatalogReport {
-        pass: invalid.is_empty(),
+        pass: missing.is_empty() && invalid.is_empty(),
         missing,
         invalid,
         reports,

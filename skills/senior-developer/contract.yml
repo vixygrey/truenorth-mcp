@@ -1,0 +1,11 @@
+schema_version: 1
+name: senior-developer
+description: Define the baseline engineering judgment applied throughout repository work.
+scale: system
+side_effects: false
+risks: false
+effect_categories: []
+risk_categories: []
+preconditions: []
+handoffs: []
+outputs: [engineering_guidance]

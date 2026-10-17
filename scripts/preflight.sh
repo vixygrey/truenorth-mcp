@@ -141,6 +141,7 @@ run_shell() {
   require_bash_four
   require_command git "Install Git."
   require_command node "Install Node.js 18 or newer. Use a supported release."
+  require_command cargo "Install the stable Rust toolchain."
 
   echo "preflight: [shell] shellcheck"
   bash scripts/lint-shell.sh
@@ -152,6 +153,8 @@ run_shell() {
   bash scripts/lint-skill-paths.sh
   echo "preflight: [shell] skill handoffs"
   bash scripts/lint-skill-handoffs.sh
+  echo "preflight: [shell] skill contracts"
+  cargo run --quiet --locked --manifest-path runtime/Cargo.toml --bin validate_skill_contracts
   echo "preflight: [shell] scripted skill runner"
   node --test scripts/verify-scripted-skills.test.js
   echo "preflight: [shell] scripted skills"

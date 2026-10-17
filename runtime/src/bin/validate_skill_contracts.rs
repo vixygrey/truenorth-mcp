@@ -1,4 +1,4 @@
-//! Validate checked-in skill contracts during the incremental migration.
+//! Validate checked-in skill contracts.
 
 use std::path::PathBuf;
 
@@ -22,6 +22,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if report.pass {
         Ok(())
     } else {
-        Err(format!("invalid skill contracts: {}", report.invalid.join(", ")).into())
+        Err(format!(
+            "missing skill contracts: {}; invalid skill contracts: {}",
+            report.missing.join(", "),
+            report.invalid.join(", ")
+        )
+        .into())
     }
 }

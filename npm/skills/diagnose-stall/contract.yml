@@ -1,0 +1,14 @@
+schema_version: 1
+name: diagnose-stall
+description: Diagnose an orchestration stall and recommend one evidence-based recovery action.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [workflow_stall_observed]
+handoffs:
+  - skill: survey-context
+    when: state-unclear
+    required: false
+outputs: [stall_diagnosis, recovery_recommendation]

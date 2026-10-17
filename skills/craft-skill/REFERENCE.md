@@ -19,7 +19,7 @@ When a justified name cannot follow this pattern, add a concise nonempty
 ```
 skill-name/
 ├── SKILL.md           # Main instructions (required)
-├── contract.yml       # Declarative effects, risks, and handoffs (required for new skills)
+├── contract.yml       # Declarative effects, risks, and handoffs (required)
 ├── REFERENCE.md       # Detailed docs (if needed)
 ├── EXAMPLES.md        # Usage examples (if needed)
 └── scripts/           # Utility scripts (if needed)
@@ -66,7 +66,8 @@ verb-noun rule. Do not add `model` or `effort`.
 
 ## Contract requirements
 
-`contract.yml` records metadata. Keep process detail in `SKILL.md`.
+`contract.yml` records required metadata for every shipped skill. Keep process detail in
+`SKILL.md`.
 
 ```yaml
 schema_version: 1

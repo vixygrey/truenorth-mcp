@@ -1,0 +1,14 @@
+schema_version: 1
+name: extract-design
+description: Extract validated design tokens and documentation from an HTML prototype.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution, browser_automation]
+risk_categories: []
+preconditions: [html_prototype_available, headless_browser_available]
+handoffs:
+  - skill: grill-me
+    when: extraction-complete
+    required: true
+outputs: [design_document, extraction_log, token_validation]

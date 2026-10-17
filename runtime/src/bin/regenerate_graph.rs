@@ -1,8 +1,10 @@
+use std::collections::BTreeMap;
 use std::error::Error;
 use std::path::PathBuf;
 
-use truenorth_mcp::engine::graph::{build_graph_report, to_jsonl};
+use truenorth_mcp::engine::graph::{build_graph_report_with_contracts, to_jsonl};
 use truenorth_mcp::engine::skill::{discover_skills, read_skill_raw};
+use truenorth_mcp::engine::skill_contract::read_skill_contract;
 use truenorth_mcp::engine::skill_parser::parse_skill;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -14,7 +16,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         .into_iter()
         .map(|entry| read_skill_raw(&root, &entry.name).map(|raw| parse_skill(&raw)))
         .collect::<Result<Vec<_>, _>>()?;
-    let result = build_graph_report(&skills);
+    let contracts = skills
+        .iter()
+        .map(|skill| {
+            read_skill_contract(&root, &skill.name).map(|contract| (skill.name.clone(), contract))
+        })
+        .collect::<Result<BTreeMap<_, _>, _>>()?;
+    let result = build_graph_report_with_contracts(&skills, &contracts);
     if !result.diagnostics.unresolved_mentions.is_empty()
         || !result.diagnostics.unclassified_mentions.is_empty()
     {

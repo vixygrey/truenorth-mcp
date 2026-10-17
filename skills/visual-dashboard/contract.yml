@@ -1,0 +1,11 @@
+schema_version: 1
+name: visual-dashboard
+description: Serve a read-only local dashboard of architecture, plans, and cockpit status.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, network, process_execution]
+risk_categories: []
+preconditions: [cockpit_available]
+handoffs: []
+outputs: [dashboard_url, cockpit_view]

@@ -1,0 +1,11 @@
+schema_version: 1
+name: run-benchmark
+description: Run an isolated skill benchmark and report validated performance deltas.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [benchmark_definition_available]
+handoffs: []
+outputs: [benchmark_report, validation_delta]
