@@ -13,23 +13,23 @@ pub fn mutation_error(error: MutationError) -> ErrorData {
             ..
         } => ErrorData::invalid_request(
             format!(
-                "another TrueNorth server owns `{lock_path}`. Use that server or use a separate Git worktree."
+                "another TrueNorth server owns `{lock_path}`. This MCP connection stays bound to its startup worktree. Use that server or configure another MCP server connection with TRUENORTH_ROOT set to a separate Git worktree."
             ),
             Some(serde_json::json!({
                 "type": "writer_lease_conflict",
                 "lock_path": lock_path,
                 "holder_pid": holder_pid,
-                "remediation": "Use the existing TrueNorth server or use a separate Git worktree."
+                "remediation": "Use the existing TrueNorth server, or configure another MCP server connection with TRUENORTH_ROOT set to a separate Git worktree and invoke that connection."
             })),
         ),
         MutationError::Unavailable { lock_path, detail } => ErrorData::internal_error(
             format!(
-                "could not acquire the TrueNorth writer lease `{lock_path}`: {detail}. Check `.agent/` permissions or use a separate Git worktree."
+                "could not acquire the TrueNorth writer lease `{lock_path}`: {detail}. Check `.agent/` permissions. To use a separate Git worktree, configure another MCP server connection with TRUENORTH_ROOT set to that worktree."
             ),
             Some(serde_json::json!({
                 "type": "writer_lease_unavailable",
                 "lock_path": lock_path,
-                "remediation": "Check `.agent/` permissions or use a separate Git worktree."
+                "remediation": "Check `.agent/` permissions. To use another worktree, configure another MCP server connection with TRUENORTH_ROOT set to that worktree and invoke that connection."
             })),
         ),
     }

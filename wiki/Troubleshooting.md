@@ -59,8 +59,28 @@ To fix it, add the named entry. The full set of required entries is on
 ## A mutating tool reports `writer_lease_conflict`
 
 Another TrueNorth server owns mutation rights for the same worktree. Existing resource reads
-remain available. Use the client connected to the owner, close the owner and retry, or use a
-separate Git worktree for each parallel agent.
+remain available. A mounted MCP connection stays bound to the repository root it selected at
+startup, so creating a worktree does not retarget that connection.
+
+Use the client connected to the owner, close the owner and retry, or configure a separate MCP
+server connection for the other worktree:
+
+```json
+{
+  "mcpServers": {
+    "truenorth-feature": {
+      "command": "npx",
+      "args": ["-y", "truenorth-mcp"],
+      "env": {
+        "TRUENORTH_ROOT": "/absolute/path/to/feature-worktree"
+      }
+    }
+  }
+}
+```
+
+Select that connection before you invoke a mutating tool. See the [install guide](Install-and-connect)
+for client-specific configuration.
 
 The error identifies `.agent/runtime/writer.lock` and can include the owner process id. Do
 not delete the file. It is a persistent rendezvous path, while the operating-system lock is
