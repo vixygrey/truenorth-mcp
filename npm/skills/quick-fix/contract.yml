@@ -1,0 +1,14 @@
+schema_version: 1
+name: quick-fix
+description: Apply and verify one guarded data-only fix on an isolated branch.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, git_write, process_execution]
+risk_categories: []
+preconditions: [quick_fix_guardrails_pass, feature_branch]
+handoffs:
+  - skill: release-branch
+    when: fix-verified
+    required: true
+outputs: [verified_data_fix, fix_commit]

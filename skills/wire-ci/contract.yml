@@ -1,0 +1,11 @@
+schema_version: 1
+name: wire-ci
+description: Create and locally validate a GitHub Actions continuous integration workflow.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, process_execution]
+risk_categories: []
+preconditions: [supported_forge_detected, project_stack_detected]
+handoffs: []
+outputs: [ci_workflow, workflow_validation_report]

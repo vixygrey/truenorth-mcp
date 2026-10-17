@@ -1,0 +1,11 @@
+schema_version: 1
+name: setup-environment
+description: Prepare reproducible local tooling and dependencies for development.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, network, process_execution]
+risk_categories: []
+preconditions: [project_root_available]
+handoffs: []
+outputs: [prepared_environment, tool_version_report]

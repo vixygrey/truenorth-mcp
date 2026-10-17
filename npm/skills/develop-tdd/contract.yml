@@ -1,0 +1,14 @@
+schema_version: 1
+name: develop-tdd
+description: Deliver a planned behavior through a verified red-green-refactor cycle.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, git_write, process_execution]
+risk_categories: []
+preconditions: [feature_branch, approved_plan]
+handoffs:
+  - skill: verify-work
+    when: development-complete
+    required: true
+outputs: [verified_behavior_slice, verification_evidence]

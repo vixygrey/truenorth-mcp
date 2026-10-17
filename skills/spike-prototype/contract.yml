@@ -1,0 +1,14 @@
+schema_version: 1
+name: spike-prototype
+description: Run a time-boxed experiment and record planning-relevant findings.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [spike_question_defined, timebox_approved]
+handoffs:
+  - skill: plan-work
+    when: findings-recorded
+    required: true
+outputs: [spike_note, planning_recommendation]

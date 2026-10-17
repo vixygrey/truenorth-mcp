@@ -1,0 +1,11 @@
+schema_version: 1
+name: smoke-test
+description: Verify deployed HTTP endpoints and retain a health report.
+scale: atomic
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, network, process_execution]
+risk_categories: []
+preconditions: [deployment_url_available]
+handoffs: []
+outputs: [smoke_test_report, deployment_health_verdict]

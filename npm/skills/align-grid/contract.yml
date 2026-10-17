@@ -1,0 +1,11 @@
+schema_version: 1
+name: align-grid
+description: Generate and verify a browser-based modular grid layout.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution, browser_automation]
+risk_categories: []
+preconditions: [grid_page_available]
+handoffs: []
+outputs: [grid_scaffold, grid_verification_report]

@@ -14,6 +14,15 @@ Every skill declares `name`, `description`, and `kind`. Set `kind` to `prose` or
 `scripted`. A scripted skill also declares a nonempty `verify` command. A name that
 does not follow the verb-noun rule declares a nonempty `name_exception`.
 
+## Contract discipline
+
+Every new skill MUST include an adjacent `contract.yml`. Start with the template
+in [REFERENCE.md](REFERENCE.md#contract-requirements). Record declarative scale,
+observable effects, risks, preconditions, handoffs, and outputs. Keep procedure,
+examples, and rationale in `SKILL.md`.
+
+Set `side_effects` and `risks` from their category lists. Every required handoff
+MUST name an existing skill.
 Do NOT add `model:` or `effort:`. The runtime is model-agnostic and does not route on
 a vendor model tier.
 
@@ -84,6 +93,8 @@ narrative goes under `specs/`. Document the output-file path in the skill body.
 - [ ] Frontmatter declares `name`, `description`, and `kind`.
 - [ ] `kind` is `prose` or `scripted`.
 - [ ] A scripted skill declares a nonempty runnable `verify` command.
+- [ ] An adjacent `contract.yml` has valid schema v1 metadata.
+- [ ] Contract effects, risks, outputs, and required handoffs match the skill behavior.
 - [ ] The description is under 1024 characters, triggers only, no workflow summary.
 - [ ] The description includes the "Use it ..." triggers.
 - [ ] The complete SKILL.md is 150 lines or fewer.
