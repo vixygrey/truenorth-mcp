@@ -170,6 +170,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/commit-message/contract.yml",
+      "sha256": "372728e35d44643ded243ee2fee3907cf677d663060a484c37c3b3f7deaf1cee",
+      "mode": "0644"
+    },
+    {
       "path": "skills/compose-workflow/REFERENCE.md",
       "sha256": "a19450060a1ca8eed8d1eecca24ae742b1e9ba14e826cb2d142060396a552160",
       "mode": "0644"
@@ -242,6 +247,11 @@
     {
       "path": "skills/deploy/SKILL.md",
       "sha256": "14268bba7af2af59e1f8d26bec077f28962f6294abfe1127c5f02e32af47a194",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/deploy/contract.yml",
+      "sha256": "1510b30488207c219b8d1361424515e3775e401dbab093e856bf14c8cc543f93",
       "mode": "0644"
     },
     {
@@ -327,6 +337,11 @@
     {
       "path": "skills/execute-group/SKILL.md",
       "sha256": "b7c415103e5881ae2664652adac7350339e03574200771573908adc7f5cef503",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/execute-group/contract.yml",
+      "sha256": "862cb1dfe5808d82911c8256fabf27c09cac5c16934be3f6e62c0ba4b933c956",
       "mode": "0644"
     },
     {
@@ -505,6 +520,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/guard-git/contract.yml",
+      "sha256": "1f574b32b55eb53c3ac25e36c83c77bc6f35db51de3721068f1094a745b442cd",
+      "mode": "0644"
+    },
+    {
       "path": "skills/guard-git/scripts/block-dangerous-git.sh",
       "sha256": "30330115c5bf3eb7f7ea2b0f9e606ca01b737d83a34b65f57a843db4be0cfd38",
       "mode": "0755"
@@ -530,6 +550,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/hook-commits/contract.yml",
+      "sha256": "c1cc2b382c30673c14dea0ba6d61e06cdec9e4b3ee43dd4a2f8ff2f2bc8aa5fc",
+      "mode": "0644"
+    },
+    {
       "path": "skills/inspect-quality/SKILL.md",
       "sha256": "8b31ff29f6443bfbbe8f5852a0dbf219891c1eafc6a6917ef5a50abf886775f9",
       "mode": "0644"
@@ -542,6 +567,11 @@
     {
       "path": "skills/kickoff-branch/SKILL.md",
       "sha256": "974c3d8ad5f1ebc61f45ebb3698e7cf2c5a67ffba5b0223a6a832a48b0558791",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/kickoff-branch/contract.yml",
+      "sha256": "cdd8dbdb98d64c61383c824e06dfada8572879df68334c8a51e1dcd01f09e227",
       "mode": "0644"
     },
     {
@@ -615,6 +645,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/orchestrate-project/contract.yml",
+      "sha256": "aaad0edea1e19b229310eb19e6042efd6bb82161fa8ea8b20495b1e5f21baa4f",
+      "mode": "0644"
+    },
+    {
       "path": "skills/organize-workspace/REFERENCE.md",
       "sha256": "b9e1b2222e6fdd81b8a2fd7a74119c3243ea4fe05985ae9c3f769bbc47899146",
       "mode": "0644"
@@ -685,6 +720,11 @@
       "mode": "0644"
     },
     {
+      "path": "skills/publish-package/contract.yml",
+      "sha256": "8a69fd835feb5dfc2f856bf192cba1b8780d59705a7c88a3649367cdbf7a6423",
+      "mode": "0644"
+    },
+    {
       "path": "skills/quick-fix/SKILL.md",
       "sha256": "552b3182a7576538b46ba2da06c3a5fc69a0a2447e3ba5b7c0ae65c313283930",
       "mode": "0644"
@@ -697,6 +737,11 @@
     {
       "path": "skills/release-branch/SKILL.md",
       "sha256": "535459bf5abf96edca43e42332f6599966156ecc16be5b8ba38f21e06de4a16b",
+      "mode": "0644"
+    },
+    {
+      "path": "skills/release-branch/contract.yml",
+      "sha256": "ec63fed574d8e59730eef302fe587bde79c8c7576649edcd3f000dbfe407925c",
       "mode": "0644"
     },
     {

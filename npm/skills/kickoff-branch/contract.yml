@@ -1,0 +1,14 @@
+schema_version: 1
+name: kickoff-branch
+description: Create an isolated Git branch or worktree from a green baseline.
+scale: task
+side_effects: true
+risks: true
+effect_categories: [git_read, git_write, process_execution]
+risk_categories: [branch_deletion]
+preconditions: [clean_default_branch, green_baseline]
+handoffs:
+  - skill: develop-tdd
+    when: branch-ready
+    required: true
+outputs: [feature_branch, clean_baseline_evidence]

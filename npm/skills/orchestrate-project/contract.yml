@@ -1,0 +1,14 @@
+schema_version: 1
+name: orchestrate-project
+description: Coordinate a complex project across lifecycle phases and quality gates.
+scale: system
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [multi_phase_workflow]
+handoffs:
+  - skill: execute-group
+    when: execution-phase
+    required: true
+outputs: [project_cycle_state, phase_handoffs]
