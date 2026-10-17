@@ -64,6 +64,7 @@ fn red_stage_timeout_does_not_satisfy_expected_failure() {
         duration_ms: 5,
         error: Some("timed out".to_string()),
         remediation_hints: Vec::new(),
+        diagnostic: None,
     };
     assert!(!red_expectation_met(&timeout));
     let receipt = gate_receipt(&timeout, true);
@@ -289,6 +290,7 @@ fn gate_receipt_maps_pass_failure_and_both_expectations() {
         duration_ms: 1,
         error: None,
         remediation_hints: Vec::new(),
+        diagnostic: None,
     };
     let receipt = gate_receipt(&pass, false);
     assert_eq!(receipt.status, GateStatus::Pass);
@@ -300,6 +302,7 @@ fn gate_receipt_maps_pass_failure_and_both_expectations() {
         duration_ms: 2,
         error: None,
         remediation_hints: Vec::new(),
+        diagnostic: None,
     };
     let receipt = gate_receipt(&failure, true);
     assert_eq!(receipt.status, GateStatus::Failure);

@@ -65,8 +65,7 @@ fn pass_only_on_exit_zero() {
 }
 
 #[test]
-fn nonzero_exit_fails_with_stderr_tail() {
-    // Requirement 3.3: a non-zero exit returns the stderr tail and hints.
+fn nonzero_exit_returns_complete_diagnostic() {
     let runner = FakeCommandRunner::new(CommandResult {
         exit_code: Some(101),
         stderr: b"error: test `foo` failed\n".to_vec(),
@@ -74,6 +73,9 @@ fn nonzero_exit_fails_with_stderr_tail() {
     });
     let outcome = run_gate("cargo test", &cfg_with_cargo(), &runner);
     assert!(!outcome.passed());
+    let diagnostic = outcome.diagnostic.as_ref().expect("failure diagnostic");
+    assert!(!diagnostic.truncated);
+    assert_eq!(diagnostic.captured_bytes, diagnostic.returned_bytes);
     let error = outcome.error.expect("failure carries an error");
     assert!(error.contains("101"));
     assert!(error.contains("test `foo` failed"));
@@ -81,23 +83,55 @@ fn nonzero_exit_fails_with_stderr_tail() {
 }
 
 #[test]
-fn stderr_tail_is_capped_at_2kb() {
-    // Requirement 3.3: at most the final 2 KB of stderr.
-    let big = vec![b'x'; 10 * 1024];
+fn diagnostic_excerpt_is_bounded_and_labeled_when_truncated() {
     let runner = FakeCommandRunner::new(CommandResult {
         exit_code: Some(1),
-        stderr: big,
+        stderr: format!("error: broken\n{}", "x".repeat(10 * 1024)).into_bytes(),
         timed_out: false,
     });
     let outcome = run_gate("cargo test", &cfg_with_cargo(), &runner);
+    let diagnostic = outcome.diagnostic.expect("failure diagnostic");
+    assert!(diagnostic.truncated);
+    assert!(
+        diagnostic.returned_bytes <= crate::engine::gate_diagnostics::MAX_DIAGNOSTIC_EXCERPT_BYTES
+    );
+    assert!(diagnostic.text.contains("stderr excerpt truncated"));
+    assert!(diagnostic.text.contains("line truncated"));
+}
+
+#[test]
+fn cargo_style_failure_keeps_actionable_diagnostic() {
+    let compiler_invocation = format!("rustc {}", "--extern dependency=crate.rlib ".repeat(200));
+    let runner = FakeCommandRunner::new(CommandResult {
+        exit_code: Some(1),
+        stderr: format!(
+            "error[E0308]: mismatched types\n --> src/lib.rs:12:5\n{compiler_invocation}\nerror: could not compile `example`\n"
+        )
+        .into_bytes(),
+        timed_out: false,
+    });
+
+    let outcome = run_gate("cargo test", &cfg_with_cargo(), &runner);
+    let diagnostic = outcome.diagnostic.as_ref().expect("failure diagnostic");
+    assert!(diagnostic.truncated);
+    assert!(diagnostic.captured_bytes > diagnostic.returned_bytes);
     let error = outcome.error.expect("failure carries an error");
-    // The error prefixes the tail after a newline. The tail is the run of `x` bytes and
-    // must be capped at 2 KB. The fixed prefix ("...exited...") carries its own letters,
-    // so measure the tail as the longest trailing `x` run.
-    let tail_x = error.chars().rev().take_while(|&c| c == 'x').count();
-    assert_eq!(
-        tail_x, MAX_STDERR_TAIL_BYTES,
-        "stderr tail must cap at 2 KB"
+    assert!(error.contains("error[E0308]: mismatched types"), "{error}");
+    assert!(error.contains("stderr excerpt truncated"), "{error}");
+    assert!(
+        error.contains("error: could not compile `example`"),
+        "{error}"
+    );
+}
+
+#[test]
+fn diagnostic_excerpt_preserves_utf8_boundaries() {
+    let diagnostic =
+        diagnostic_excerpt(format!("error[E0308]: bad type\n{}", "é".repeat(2_000)).as_bytes());
+    assert!(diagnostic.truncated);
+    assert!(diagnostic.text.is_char_boundary(diagnostic.text.len()));
+    assert!(
+        diagnostic.returned_bytes <= crate::engine::gate_diagnostics::MAX_DIAGNOSTIC_EXCERPT_BYTES
     );
 }
 

@@ -118,6 +118,8 @@ environment variable, add its name to `TRUENORTH_GATE_ENV_ALLOWLIST`. Run
 [Install and connect](Install-and-connect#configure-the-verify-gate) for the complete
 configuration.
 
-A non-zero exit or timeout returns the command error and remediation hints. Exact inherited
-environment values are redacted from returned stderr. Fix the command or its failure, then
-run the gate again. Do not send `mode` or `test_evidence`; both fields are rejected.
+A non-zero exit returns a bounded, line-aware diagnostic excerpt with remediation hints. The
+error data reports whether the excerpt was truncated and its captured and returned byte counts.
+When the excerpt is truncated, rerun the configured gate locally in the repository to inspect
+the complete command output. Exact inherited environment values are redacted from returned
+stderr. Do not send `mode` or `test_evidence`; both fields are rejected.

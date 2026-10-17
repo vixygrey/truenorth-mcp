@@ -43,6 +43,10 @@ The command is trusted operator configuration, not a tool argument.
 The runtime launches it through `/bin/sh -c` with bounded execution and output handling.
 The command allowlist checks the leading executable, not every operation in the shell expression.
 Exact-name environment inheritance and value redaction limit accidental credential disclosure.
+For a nonzero exit, the executor selects a bounded, line-aware stderr excerpt that retains the
+last actionable diagnostic and final summary where they fit. It explicitly reports truncation
+and byte counts. A long compiler invocation cannot consume the full failure response.
+The executor does not persist full stderr or serve a diagnostic artifact.
 They do not isolate files, networks, or hostile processes.
 Only the observed subprocess result can produce a passing gate receipt.
 A receipt proves that command invocation, not an unperformed manual review or a missing coverage measurement.
