@@ -1,0 +1,14 @@
+schema_version: 1
+name: evolve-skill
+description: Improve a skill only when benchmark evidence proves no validation regression.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [benchmark_definition_available, baseline_evidence_available]
+handoffs:
+  - skill: run-benchmark
+    when: baseline-required
+    required: true
+outputs: [skill_evolution_decision, benchmark_comparison]

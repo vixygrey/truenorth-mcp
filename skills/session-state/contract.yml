@@ -1,0 +1,11 @@
+schema_version: 1
+name: session-state
+description: Maintain durable task context synchronized with the current Git state.
+scale: task
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read]
+risk_categories: []
+preconditions: [project_profile_available]
+handoffs: []
+outputs: [session_state, resume_context]

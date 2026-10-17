@@ -1,0 +1,14 @@
+schema_version: 1
+name: stocktake-skills
+description: Audit skill catalog structure, semantics, and scripted verification health.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, process_execution]
+risk_categories: []
+preconditions: [skill_catalog_available]
+handoffs:
+  - skill: evolve-skill
+    when: improvement-needed
+    required: false
+outputs: [skill_stocktake_report, catalog_health_verdict]

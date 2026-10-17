@@ -1,0 +1,11 @@
+schema_version: 1
+name: dispatch-agents
+description: Dispatch independent subagent tasks in parallel and integrate their results.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, external_service_write]
+risk_categories: []
+preconditions: [tasks_independent, synchronization_points_defined]
+handoffs: []
+outputs: [agent_results, integration_summary]

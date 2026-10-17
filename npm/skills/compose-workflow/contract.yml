@@ -1,0 +1,14 @@
+schema_version: 1
+name: compose-workflow
+description: Create a documented custom workflow recipe from an approved skill sequence.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write]
+risk_categories: []
+preconditions: [workflow_goal_defined]
+handoffs:
+  - skill: orchestrate-project
+    when: recipe-registered
+    required: false
+outputs: [workflow_recipe, workflow_registration]

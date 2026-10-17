@@ -1,0 +1,11 @@
+schema_version: 1
+name: organize-workspace
+description: Inventory workspace clutter and perform only user-approved cleanup actions.
+scale: workflow
+side_effects: true
+risks: true
+effect_categories: [filesystem_read, filesystem_write, git_read, git_write, process_execution]
+risk_categories: [destructive_operation, data_loss]
+preconditions: [workspace_scope_defined, explicit_cleanup_approval]
+handoffs: []
+outputs: [cleanup_inventory, approved_cleanup_result]

@@ -355,6 +355,10 @@ tasks:
   group_kind: ticket
   task_name: Add Verify skill contracts and declared handoffs
   verify_command: bash scripts/preflight.sh check shell wrapper
+- group_id: '551'
+  group_kind: ticket
+  task_name: Add Sustain skill contracts with workspace safety metadata
+  verify_command: bash scripts/preflight.sh check shell wrapper
 groups:
 - group_id: '515'
   group_kind: ticket

@@ -1,0 +1,11 @@
+schema_version: 1
+name: delegate-task
+description: Delegate one bounded task to a subagent and review its verified result.
+scale: workflow
+side_effects: true
+risks: false
+effect_categories: [filesystem_read, filesystem_write, git_read, external_service_write]
+risk_categories: []
+preconditions: [task_brief_defined, verification_command_defined]
+handoffs: []
+outputs: [delegated_task_result, delegation_decision]
