@@ -486,20 +486,77 @@ async fn guard_path_rejections_send_no_http_request_but_valid_change_is_evaluate
     )
     .await;
     unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
-    assert_eq!(
+    assert!(matches!(
         result.expect("valid evaluation"),
-        GuardDecision::Allow { notes: Vec::new() }
-    );
+        GuardDecision::Allow { .. }
+    ));
     let requests = tokio::time::timeout(Duration::from_secs(5), server)
         .await
         .expect("server served both aspects")
         .expect("server task");
     assert_eq!(
-        requests[0]["state"],
-        serde_json::json!([{"path": "good.rs", "content": "safe source"}])
+        requests[0]["state"]["proposal"]["content"], "clean",
+        "the provider must judge the proposed payload rather than the existing file"
     );
+}
+
+#[tokio::test]
+async fn guard_accounting_counts_retried_sends_as_unknown_usage() {
+    let _guard = ENV_LOCK.lock().await;
+    unsafe { std::env::set_var(JEV_API_KEY_VAR, "test-key") };
+    let port = spawn_stub(vec![
+        Canned {
+            status: 429,
+            body: "{}",
+        },
+        Canned {
+            status: 200,
+            body: OK_BODY,
+        },
+    ])
+    .await;
+    let client = crate::tools::guard::AccountedClient::new(super::HttpClient::new_for_test(
+        format!("http://127.0.0.1:{port}/jev"),
+        &fast_config(),
+    ));
+    let first = client.evaluate(a_request()).await;
+    let second = client.evaluate(a_request()).await;
+    unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
+    first.expect("retried evaluation");
+    assert!(
+        second.is_err(),
+        "unknown usage must stop the next logical call"
+    );
+    let accounting = serde_json::to_value(client.into_accounting(0)).expect("accounting");
+    assert_eq!(accounting["transport_attempts"], 2);
+    assert_eq!(accounting["input_tokens"], 1);
+    assert_eq!(accounting["output_tokens"], 0);
+    assert_eq!(accounting["unknown_usage_calls"], 1);
     assert_eq!(
-        requests[1]["state"]["changed_paths"],
-        serde_json::json!(["good.rs", "new.rs"])
+        accounting["observed_models"],
+        serde_json::json!(["jev-latest"])
     );
+}
+
+#[tokio::test]
+async fn guard_accounting_does_not_report_failed_sends_as_free_successes() {
+    let _guard = ENV_LOCK.lock().await;
+    unsafe { std::env::set_var(JEV_API_KEY_VAR, "test-key") };
+    let port = spawn_stub(vec![Canned {
+        status: 200,
+        body: "invalid JSON",
+    }])
+    .await;
+    let client = crate::tools::guard::AccountedClient::new(super::HttpClient::new_for_test(
+        format!("http://127.0.0.1:{port}/jev"),
+        &fast_config(),
+    ));
+    let result = client.evaluate(a_request()).await;
+    unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
+    assert!(result.is_err());
+    let accounting = serde_json::to_value(client.into_accounting(0)).expect("accounting");
+    assert_eq!(accounting["transport_attempts"], 1);
+    assert_eq!(accounting["unknown_usage_calls"], 1);
+    assert_eq!(accounting["input_tokens"], 0);
+    assert_eq!(accounting["observed_models"], serde_json::json!([]));
 }

@@ -84,16 +84,16 @@ pub(super) fn conventions_md(profile: Profile) -> String {
 /// automatic interception holds only where the client honors the `PreToolUse` hook, and the
 /// `truenorth_guard_change` tool is the fallback everywhere else (R7.4, R9.4).
 ///
-/// The command runs `truenorth-mcp guard`, which reads the proposed change on standard input,
-/// runs the guardrail, and exits non-zero on a block. The client passes the proposed write to
-/// the hook on standard input.
+/// The command accepts normalized `paths`, proposed `content`, and optional `task` JSON.
+/// A replacement tool must supply its proposed payload, not an untranslated client envelope.
+/// Client-specific interception remains unverified unless that client supplies this contract.
 pub(super) const JEV_GUARD_HOOK: &str = "\
 {
   \"version\": \"v1\",
   \"hooks\": [
     {
       \"name\": \"Jev active guardrail\",
-      \"description\": \"Runs the TrueNorth guardrail before a write tool. Automatic interception depends on the client honoring the PreToolUse hook. Where the client does not honor it, call the truenorth_guard_change tool before a write instead. TrueNorth cannot force-intercept a write an agent makes to a foreign tool.\",
+      \"description\": \"Runs the TrueNorth guardrail before a write tool. The client must normalize stdin to JSON containing paths, proposed content, and optional task, including replacement-tool proposals. Raw client tool envelopes are not accepted. Automatic interception depends on the client honoring the PreToolUse hook and supplying this input contract. Otherwise call truenorth_guard_change before a write. TrueNorth cannot force-intercept writes to foreign tools.\",
       \"trigger\": \"PreToolUse\",
       \"matcher\": \"write_to_file|fs_write|str_replace\",
       \"action\": { \"type\": \"command\", \"command\": \"truenorth-mcp guard\" }

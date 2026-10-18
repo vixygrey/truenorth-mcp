@@ -1,21 +1,8 @@
-//! The `evaluate_guard` entry point and the probabilistic fail-open layer (task 3, #295).
+//! Shared pre-write guard evaluation over one proposed payload and bounded disk context.
 //!
-//! Included from `guard.rs` via `#[path]`, so `super` is the `guard` module. This module ties
-//! the deterministic layer (`guard.rs`) and the pure combine step (`guard_combine.rs`) into one
-//! decision function. It validates the entire path set before the deterministic and
-//! probabilistic layers.
-//!
-//! Unsafe caller paths are input errors even when the Jev feature is off. Every safe existing
-//! file is opened before any content is read; a missing proposed file is allowed. The
-//! probabilistic layer still fails open (ADR-G3) for unavailable clients, a residual content
-//! secret, timeout, network errors, or non-success responses (R4).
-//!
-//! The layer sends no secret to Jev: it builds content state from protected file handles,
-//! filters denylisted content, and checks the assembled state before a call (R3.2, R3.3, P40).
-//! No neutralization packet or note carries a secret value or the API key (P40).
-//!
-//! Requirements: 1.3, 1.4, 3.1, 3.2, 3.3, 3.5, 4.1, 4.2, 4.3, 4.5.
-//! Design: jev-active-guardrail, the evaluate_guard function, P36, P37, P40.
+//! Unsafe target paths are input errors; protected paths and lexical denylist matches
+//! block before any provider call. Model findings and failures are visible but advisory.
+//! Only safely opened, filtered context and the filtered proposal reach the client.
 
 use std::path::PathBuf;
 
@@ -24,9 +11,9 @@ use super::super::config::JevConfig;
 use super::super::drift::{DriftOutcome, evaluate_drift};
 use super::super::rigor::{RigorReport, evaluate_rigor};
 use super::super::secret_filter::{
-    build_drift_scope_state, build_state_from_open_files, open_state_files,
+    build_drift_scope_state, build_guard_rigor_state, open_state_files,
 };
-use super::combine::{CandidateSignal, combine};
+use super::combine::{combine, rigor_advice};
 use super::{GuardDecision, ProposedChange, deterministic_layer};
 use crate::engine::cockpit::read_active_task;
 
@@ -39,33 +26,23 @@ const NOTE_NO_CLIENT: &str = "probabilistic layer did not run: no jev client is 
 /// The note an absent-key evaluation returns (R4.2).
 const NOTE_NO_KEY: &str = "probabilistic layer did not run: no jev API key is set";
 
-/// Evaluate a proposed change and return one decision, or reject an unsafe caller path.
+/// Actual aspect outcomes, or the reason evaluation was unavailable. The production
+/// decision remains advisory for every model result.
+#[derive(Debug, Clone, Default)]
+pub struct GuardObservation {
+    pub rigor: Option<RigorReport>,
+    pub drift: Option<DriftOutcome>,
+    pub unavailable: Option<String>,
+    pub unavailable_context: Vec<String>,
+}
+
+/// Evaluate a proposed change without exposing raw aspect observations.
 ///
-/// Every path is checked and every existing safe file opened before any file content is read
-/// or Jev is called, including when the probabilistic layer is disabled. A missing proposed
-/// file is allowed. The deterministic layer then runs first, with no Jev call.
-///
-/// The probabilistic layer returns `Allow` with a note, and makes no Jev call, when:
-///
-/// - the flag is off (R4.1),
-/// - the client is absent (R4.1),
-/// - the API key is absent (R4.2).
-///
-/// Otherwise it builds a Jev state per aspect through the secret filter, so each question
-/// receives its own curated state rather than one shared blob (issue #304). A residual secret
-/// surfaces the harness `SecretResidual` as an `Allow` with a note, because the probabilistic
-/// layer never hard-blocks the developer; the deterministic secret scan already caught a plain
-/// secret (R3.2, R3.3). It then scores rigor and drift. A timeout, a network error, or a
-/// non-success status returns `Allow` with a note naming the cause, never a block (R4.3, R4.5,
-/// P37).
-///
-/// When both aspects succeed, the function gates the signals through the pure combine step and
-/// returns its decision (R1.4).
-///
-/// The `api_key_present` flag is supplied by the caller, which reads the key environment
-/// variable once. Passing it keeps this function free of a process-global environment read, so
-/// the tests are deterministic and parallel-safe. The caller (the tool, issue #296) reads
-/// `JEV_API_KEY_VAR` and passes the result.
+/// Paths are validated and existing targets opened before reading any content.
+/// Missing proposed files and missing parents are allowed without filesystem writes.
+/// The proposed body is one logical payload, not a replacement for every target.
+/// Deterministic blocks take precedence; Jev failures fail open with visible notes.
+/// `api_key_present` is supplied by the caller to avoid process-global reads.
 pub async fn evaluate_guard<C: JevClient>(
     change: &ProposedChange,
     protected_paths: &[String],
@@ -75,6 +52,31 @@ pub async fn evaluate_guard<C: JevClient>(
     client: Option<&C>,
     repo_root: &std::path::Path,
 ) -> Result<GuardDecision, super::super::JevError> {
+    evaluate_guard_observed(
+        change,
+        protected_paths,
+        config,
+        jev_enabled,
+        api_key_present,
+        client,
+        repo_root,
+    )
+    .await
+    .map(|(decision, _)| decision)
+}
+
+/// Evaluate through the production guard while retaining raw model observations for
+/// qualification. A blocked deterministic change never calls the provider.
+pub async fn evaluate_guard_observed<C: JevClient>(
+    change: &ProposedChange,
+    protected_paths: &[String],
+    config: &JevConfig,
+    jev_enabled: bool,
+    api_key_present: bool,
+    client: Option<&C>,
+    repo_root: &std::path::Path,
+) -> Result<(GuardDecision, GuardObservation), super::super::JevError> {
+    let mut observation = GuardObservation::default();
     if change.paths.is_empty() {
         return Err(super::super::JevError::InvalidGuardPath {
             path: "paths".to_string(),
@@ -84,57 +86,63 @@ pub async fn evaluate_guard<C: JevClient>(
     let paths: Vec<PathBuf> = change.paths.iter().map(PathBuf::from).collect();
     let mut files = open_state_files(repo_root, &paths)?;
     if let Some(decision) = deterministic_layer(change, protected_paths) {
-        return Ok(decision);
+        return Ok((decision, observation));
     }
 
-    // The probabilistic layer fails open on every unavailability (ADR-G3, R4).
     if !jev_enabled {
-        return Ok(allow_with_note(NOTE_FLAG_OFF));
+        observation.unavailable = Some(NOTE_FLAG_OFF.to_string());
+        return Ok((allow_with_note(NOTE_FLAG_OFF), observation));
     }
     let Some(client) = client else {
-        return Ok(allow_with_note(NOTE_NO_CLIENT));
+        observation.unavailable = Some(NOTE_NO_CLIENT.to_string());
+        return Ok((allow_with_note(NOTE_NO_CLIENT), observation));
     };
     if !api_key_present {
-        return Ok(allow_with_note(NOTE_NO_KEY));
+        observation.unavailable = Some(NOTE_NO_KEY.to_string());
+        return Ok((allow_with_note(NOTE_NO_KEY), observation));
     }
 
-    // Rigor needs file content; all protected handles are already opened. A residual
-    // content secret remains a probabilistic fail-open, without making a Jev call.
-    let rigor_state = match build_state_from_open_files(&paths, &mut files) {
-        Ok(state) => state,
-        Err(cause @ super::super::JevError::InvalidGuardPath { .. }) => return Err(cause),
-        Err(cause) => {
-            return Ok(allow_with_note(&format!(
-                "probabilistic layer did not run: {cause}"
-            )));
-        }
-    };
+    let (rigor_state, unavailable_context) =
+        match build_guard_rigor_state(repo_root, &paths, &mut files, &change.content) {
+            Ok(state) => state,
+            Err(cause @ super::super::JevError::InvalidGuardPath { .. }) => return Err(cause),
+            Err(cause) => {
+                let note = format!("probabilistic layer did not run: {cause}");
+                observation.unavailable = Some(note.clone());
+                return Ok((allow_with_note(&note), observation));
+            }
+        };
+    observation.unavailable_context = unavailable_context;
     let rigor = match evaluate_rigor(client, rigor_state).await {
         Ok(report) => report,
         Err(cause) => {
-            return Ok(allow_with_note(&format!(
-                "rigor scoring did not complete: {cause}"
-            )));
+            let note = format!("rigor scoring did not complete: {cause}");
+            observation.unavailable = Some(note.clone());
+            let mut decision = allow_with_note(&note);
+            if let GuardDecision::Allow { notes } = &mut decision {
+                notes.extend(observation.unavailable_context.iter().cloned());
+            }
+            return Ok((decision, observation));
         }
     };
+    observation.rigor = Some(rigor);
 
-    // Resolve the scope task: prefer the caller-supplied task on the change, then fall back
-    // to the cockpit active task, then to none (#331). A cockpit read error is non-fatal here;
-    // the guard degrades to a protected-path-only scope judgment rather than failing the
-    // whole evaluation over a cockpit read.
+    // The caller task wins over cockpit fallback. Drift remains a bounded
+    // path/protected/task scope question with no proposal or disk file content.
     let task = resolve_scope_task(change, repo_root);
-
-    // Score drift over a lightweight scope state: the changed paths, the protected set, and the
-    // task, with no file content (#328, #331). The drift Noul question judges scope, which the
-    // paths, the protected list, and the task answer; file content does not. This costs far
-    // fewer tokens than the full-content state and gives the scope question the context it
-    // needs. The written paths and the protected set also drive the model-free path layer.
+    if task.is_none() {
+        observation
+            .unavailable_context
+            .push("scope task unavailable: judging paths against protected paths only".to_string());
+    }
     let drift_state = match build_drift_scope_state(&paths, protected_paths, task.as_deref()) {
         Ok(state) => state,
         Err(cause) => {
-            return Ok(allow_with_note(&format!(
-                "probabilistic layer did not run: {cause}"
-            )));
+            let note = format!("probabilistic layer did not run: {cause}");
+            observation.unavailable = Some(note.clone());
+            let decision =
+                partial_with_note(&rigor, config, &note, &observation.unavailable_context);
+            return Ok((decision, observation));
         }
     };
     let drift = match evaluate_drift(
@@ -148,29 +156,43 @@ pub async fn evaluate_guard<C: JevClient>(
     {
         Ok(outcome) => outcome,
         Err(cause) => {
-            return Ok(allow_with_note(&format!(
-                "drift scoring did not complete: {cause}"
-            )));
+            let note = format!("drift scoring did not complete: {cause}");
+            observation.unavailable = Some(note.clone());
+            let decision =
+                partial_with_note(&rigor, config, &note, &observation.unavailable_context);
+            return Ok((decision, observation));
         }
     };
+    observation.drift = Some(drift);
 
-    // Both aspects succeeded. Gate the signals through the pure combine step (R1.4).
-    let rigor_signal = rigor_candidate(&rigor, config);
-    let drift_signal = drift_candidate(&drift);
-    Ok(combine(
-        &rigor,
-        rigor_signal,
-        &drift,
-        drift_signal,
-        None,
-        config,
-    ))
+    let mut decision = combine(&rigor, &drift, None, config);
+    if let GuardDecision::Allow { notes } | GuardDecision::Annotate { notes } = &mut decision {
+        notes.extend(observation.unavailable_context.iter().cloned());
+    }
+    Ok((decision, observation))
 }
 
 /// Build an `Allow` decision carrying one advisory note.
 fn allow_with_note(note: &str) -> GuardDecision {
     GuardDecision::Allow {
         notes: vec![note.to_string()],
+    }
+}
+
+fn partial_with_note(
+    rigor: &RigorReport,
+    config: &JevConfig,
+    note: &str,
+    context: &[String],
+) -> GuardDecision {
+    let mut notes = rigor_advice(rigor, None, config);
+    let finding = !notes.is_empty();
+    notes.push(note.to_string());
+    notes.extend(context.iter().cloned());
+    if finding {
+        GuardDecision::Annotate { notes }
+    } else {
+        GuardDecision::Allow { notes }
     }
 }
 
@@ -191,43 +213,6 @@ fn resolve_scope_task(change: &ProposedChange, repo_root: &std::path::Path) -> O
         return Some(task.to_string());
     }
     read_active_task(repo_root).ok().flatten()
-}
-
-/// Build the rigor candidate signal from a rigor report (R3.4).
-///
-/// The rigor Noul answers carry no separate confidence, so the signal strength is the strongest
-/// fired signal: the maximum of the three Noul judgments and the complexity mapped into the unit
-/// range. This is the honest, only-available confidence for the rigor candidate. The guard's
-/// rigor block is an advisory stop, not a destructive action, so the candidate is
-/// non-destructive; a destructive action is a self-heal revert, decided elsewhere.
-fn rigor_candidate(rigor: &RigorReport, config: &JevConfig) -> CandidateSignal {
-    let complexity_unit = if config.complexity_boundary > 0.0 {
-        (rigor.complexity / 100.0).clamp(0.0, 1.0)
-    } else {
-        0.0
-    };
-    let confidence = rigor
-        .hallucinated_import
-        .max(rigor.violates_conventions)
-        .max(rigor.contains_secrets)
-        .max(complexity_unit);
-    CandidateSignal {
-        confidence,
-        destructive: false,
-    }
-}
-
-/// Build the drift candidate signal from a drift outcome (R3.4).
-///
-/// The drift Noul carries no separate confidence, so the signal strength is the Noul value. A
-/// drift forced by the model-free path match carries `noul = 1.0`, so a forced outcome always
-/// clears the gate, which matches the deterministic decision the path match already made. The
-/// drift block is an advisory stop, so the candidate is non-destructive.
-fn drift_candidate(drift: &DriftOutcome) -> CandidateSignal {
-    CandidateSignal {
-        confidence: drift.noul,
-        destructive: false,
-    }
 }
 
 // Example and property tests live in sibling files to hold this module under the size

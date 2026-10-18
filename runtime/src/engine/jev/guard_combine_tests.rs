@@ -1,264 +1,83 @@
-//! Example tests for the combine step and the confidence gate (task 2, issue #294).
-//!
-//! Included from `guard_combine.rs` via `#[path]`, so `super` is the `combine` module. These
-//! pin the decision boundaries: the confidence gate at, above, and below the threshold, the
-//! destructive threshold for a destructive candidate, the drift block, the rigor block versus
-//! annotate, and the clean allow (jev-active-guardrail R3.4, R5, R6.2).
+//! Decision policy examples: detection boundaries are independent and never hard-block.
 
 use super::super::super::config::JevConfig;
 use super::super::super::drift::DriftOutcome;
 use super::super::super::rigor::RigorReport;
 use super::super::super::self_heal::SelfHeal;
-use super::super::{GuardDecision, NeutralizationPacket};
+use super::super::GuardDecision;
 use super::*;
 
-/// A default config with separate aspect boundaries and unchanged confidence gates.
-fn config() -> JevConfig {
-    JevConfig::default()
-}
-
-/// A rigor report with all signals clean (no failure).
-fn clean_rigor() -> RigorReport {
+fn rigor() -> RigorReport {
     RigorReport {
         hallucinated_import: 0.0,
         violates_conventions: 0.0,
         complexity: 0.0,
         contains_secrets: 0.0,
-        latency_ms: 5,
+        latency_ms: 0,
     }
 }
 
-/// A rigor report that is a failure: convention violation at 0.9, above the 0.70 boundary.
-fn failing_rigor() -> RigorReport {
-    RigorReport {
-        hallucinated_import: 0.0,
-        violates_conventions: 0.9,
-        complexity: 10.0,
-        contains_secrets: 0.0,
-        latency_ms: 5,
-    }
-}
-
-/// A drift outcome that is in scope.
-fn in_scope_drift() -> DriftOutcome {
+fn drift(noul: f64) -> DriftOutcome {
     DriftOutcome {
-        noul: 0.1,
-        out_of_scope: false,
+        noul,
+        out_of_scope: noul >= JevConfig::default().drift_boundary,
         forced_by_path_match: false,
     }
 }
 
-/// A drift outcome that is out of scope.
-fn out_of_scope_drift() -> DriftOutcome {
-    DriftOutcome {
-        noul: 0.9,
-        out_of_scope: true,
-        forced_by_path_match: false,
-    }
-}
-
-/// A non-destructive candidate at the given confidence.
-fn candidate(confidence: f64) -> CandidateSignal {
-    CandidateSignal {
-        confidence,
-        destructive: false,
-    }
-}
-
-/// A destructive candidate at the given confidence.
-fn destructive_candidate(confidence: f64) -> CandidateSignal {
-    CandidateSignal {
-        confidence,
-        destructive: true,
-    }
-}
-
 #[test]
-fn the_gate_blocks_at_exactly_the_high_threshold() {
-    let cfg = config();
-    // confidence_high is 0.85. A candidate exactly at it clears the gate (R5.1).
-    assert!(confidence_gate(candidate(cfg.confidence_high), &cfg));
-}
-
-#[test]
-fn the_gate_blocks_above_the_high_threshold() {
-    let cfg = config();
-    assert!(confidence_gate(candidate(0.95), &cfg));
-}
-
-#[test]
-fn the_gate_does_not_block_below_the_high_threshold() {
-    let cfg = config();
-    // Just below 0.85 does not clear the gate (R5.2).
-    assert!(!confidence_gate(candidate(0.84), &cfg));
-}
-
-#[test]
-fn a_destructive_candidate_uses_the_higher_threshold() {
-    let cfg = config();
-    // destructive_threshold is 0.90. A destructive candidate at 0.86 clears the plain high
-    // threshold but not the destructive one (R5.3).
-    assert!(!confidence_gate(destructive_candidate(0.86), &cfg));
-    assert!(confidence_gate(
-        destructive_candidate(cfg.destructive_threshold),
-        &cfg
-    ));
-}
-
-#[test]
-fn an_out_of_scope_confident_drift_blocks() {
-    let cfg = config();
-    let decision = combine(
-        &clean_rigor(),
-        candidate(0.0),
-        &out_of_scope_drift(),
-        candidate(0.90),
-        None,
-        &cfg,
-    );
-    match decision {
-        GuardDecision::Block(NeutralizationPacket { violated_check, .. }) => {
-            assert_eq!(violated_check, "drift");
-        }
-        other => panic!("expected a drift Block, got {other:?}"),
-    }
-}
-
-#[test]
-fn an_out_of_scope_but_unconfident_drift_does_not_block() {
-    let cfg = config();
-    // The drift is out of scope, but the confidence 0.5 is below the gate, so no drift block.
-    // The rigor is clean, so the result is Allow (R5.2).
-    let decision = combine(
-        &clean_rigor(),
-        candidate(0.0),
-        &out_of_scope_drift(),
-        candidate(0.5),
-        None,
-        &cfg,
-    );
-    assert_eq!(decision, GuardDecision::Allow { notes: Vec::new() });
-}
-
-#[test]
-fn a_confident_rigor_failure_blocks_with_the_suggested_fix() {
-    let cfg = config();
-    let decision = combine(
-        &failing_rigor(),
-        candidate(0.90),
-        &in_scope_drift(),
-        candidate(0.0),
-        Some(SelfHeal::RefactorImports),
-        &cfg,
-    );
-    match decision {
-        GuardDecision::Block(packet) => {
-            assert_eq!(packet.violated_check, "rigor");
-            assert_eq!(packet.suggested_fix.as_deref(), Some("REFACTOR_IMPORTS"));
-        }
-        other => panic!("expected a rigor Block, got {other:?}"),
-    }
-}
-
-#[test]
-fn an_unconfident_rigor_failure_annotates_with_the_suggested_fix() {
-    let cfg = config();
-    // The rigor is a failure, but the confidence 0.5 is below the gate, so it annotates (R5.2).
-    let decision = combine(
-        &failing_rigor(),
-        candidate(0.5),
-        &in_scope_drift(),
-        candidate(0.0),
-        Some(SelfHeal::SimplifyLogic),
-        &cfg,
-    );
-    match decision {
-        GuardDecision::Annotate { notes } => {
-            assert!(
-                notes.iter().any(|n| n.starts_with("rigor:")),
-                "carries the summary"
-            );
-            assert!(
-                notes.iter().any(|n| n == "suggested fix: SIMPLIFY_LOGIC"),
-                "carries the suggested fix"
-            );
-        }
-        other => panic!("expected an Annotate, got {other:?}"),
-    }
-}
-
-#[test]
-fn secret_at_its_boundary_annotates_without_lowering_the_confidence_gate() {
-    let cfg = config();
-    let rigor = RigorReport {
-        hallucinated_import: 0.69,
-        violates_conventions: 0.69,
-        contains_secrets: cfg.secret_boundary,
-        ..clean_rigor()
-    };
+fn clean_signals_allow() {
     assert_eq!(
-        combine(
-            &rigor,
-            candidate(cfg.secret_boundary),
-            &in_scope_drift(),
-            candidate(0.0),
-            None,
-            &cfg,
-        ),
-        GuardDecision::Annotate {
-            notes: vec![rigor_summary(&rigor)]
-        }
+        combine(&rigor(), &drift(0.1), None, &JevConfig::default()),
+        GuardDecision::Allow { notes: vec![] }
     );
 }
 
 #[test]
-fn a_clean_change_allows_with_no_notes() {
-    let cfg = config();
-    let decision = combine(
-        &clean_rigor(),
-        candidate(0.0),
-        &in_scope_drift(),
-        candidate(0.0),
-        None,
-        &cfg,
+fn model_drift_is_visible_but_not_blocking() {
+    let decision = combine(&rigor(), &drift(0.9), None, &JevConfig::default());
+    assert!(
+        matches!(decision, GuardDecision::Annotate { notes } if notes.iter().any(|note| note.starts_with("drift:")))
     );
-    assert_eq!(decision, GuardDecision::Allow { notes: Vec::new() });
 }
 
 #[test]
-fn the_drift_block_wins_over_a_rigor_failure() {
-    let cfg = config();
-    // Both a confident drift and a confident rigor failure fire. The drift block is first.
-    let decision = combine(
-        &failing_rigor(),
-        candidate(0.95),
-        &out_of_scope_drift(),
-        candidate(0.95),
-        Some(SelfHeal::Revert),
-        &cfg,
+fn unrelated_strong_signal_cannot_promote_weak_signal_across_its_boundary() {
+    let config = JevConfig::default();
+    let mut report = rigor();
+    report.violates_conventions = config.rigor_failure_boundary - 0.01;
+    assert_eq!(
+        combine(&report, &drift(0.1), None, &config),
+        GuardDecision::Allow { notes: vec![] }
     );
-    match decision {
-        GuardDecision::Block(packet) => assert_eq!(packet.violated_check, "drift"),
-        other => panic!("expected the drift Block first, got {other:?}"),
-    }
+    report.contains_secrets = config.secret_boundary;
+    assert!(
+        matches!(combine(&report, &drift(0.1), None, &config), GuardDecision::Annotate { notes } if notes.len() == 1 && notes[0].starts_with("rigor:"))
+    );
 }
 
 #[test]
-fn an_annotate_note_names_no_secret_value() {
-    let cfg = config();
+fn both_findings_and_fix_remain_visible_without_model_block() {
+    let mut report = rigor();
+    report.violates_conventions = 0.99;
     let decision = combine(
-        &failing_rigor(),
-        candidate(0.5),
-        &in_scope_drift(),
-        candidate(0.0),
-        None,
-        &cfg,
+        &report,
+        &drift(0.9),
+        Some(SelfHeal::SimplifyLogic),
+        &JevConfig::default(),
     );
-    if let GuardDecision::Annotate { notes } = decision {
-        let joined = notes.join(" ");
-        // The summary reports the signal values, not the change content.
-        assert!(joined.contains("violates_conventions 0.90"));
-    } else {
-        panic!("expected an Annotate");
-    }
+    assert!(
+        matches!(decision, GuardDecision::Annotate { notes } if notes.iter().any(|n| n.starts_with("drift:")) && notes.iter().any(|n| n.starts_with("rigor:")) && notes.iter().any(|n| n == "suggested fix: SIMPLIFY_LOGIC"))
+    );
+}
+
+#[test]
+fn ordinal_complexity_boundary_produces_only_advice() {
+    let config = JevConfig::default();
+    let mut report = rigor();
+    report.complexity = config.complexity_boundary;
+    assert!(matches!(
+        combine(&report, &drift(0.1), None, &config),
+        GuardDecision::Annotate { .. }
+    ));
 }

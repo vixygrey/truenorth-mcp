@@ -210,6 +210,8 @@ fn annotate_decision_returns_structured_success_and_obeys_payload_cap() {
             notes: vec!["review the proposed scope".to_string()],
         },
         caps,
+        GuardAccounting::default(),
+        GuardObservation::default(),
     )
     .expect("annotation result");
     let text = result.content[0].as_text().expect("text");
@@ -229,9 +231,20 @@ fn annotate_decision_returns_structured_success_and_obeys_payload_cap() {
             notes: vec!["long advisory note".to_string()],
         },
         tiny_caps,
+        GuardAccounting {
+            input_tokens: 123,
+            transport_attempts: 1,
+            ..GuardAccounting::default()
+        },
+        GuardObservation::default(),
     )
     .expect_err("payload cap");
     assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+    let accounting = error
+        .data
+        .expect("spent usage survives a response-cap failure");
+    assert_eq!(accounting["accounting"]["input_tokens"], 123);
+    assert_eq!(accounting["accounting"]["transport_attempts"], 1);
 }
 
 #[tokio::test]

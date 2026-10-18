@@ -159,3 +159,175 @@ fn git_diff_guards_validate_metadata_without_reading_private_named_files() {
         b"outside bytes"
     );
 }
+
+#[test]
+fn stdin_guard_inspects_proposed_content_without_writing_the_target() {
+    let repo = tempfile::tempdir().expect("repository");
+    for marker in [".agent", "specs", "skills"] {
+        std::fs::create_dir(repo.path().join(marker)).expect("root marker");
+    }
+    let original = "fn main() {}\n";
+    std::fs::write(repo.path().join("main.rs"), original).expect("source");
+    for (content, allowed) in [
+        ("fn main() { let value = 1; }", true),
+        ("// credentials placeholder only", false),
+    ] {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"))
+            .arg("guard")
+            .current_dir(repo.path())
+            .env_clear()
+            .env("TRUENORTH_ROOT", repo.path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("stdin guard");
+        let input = serde_json::json!({
+            "paths": ["main.rs"],
+            "content": content,
+            "task": "Update the entry point",
+        });
+        child
+            .stdin
+            .take()
+            .expect("stdin")
+            .write_all(input.to_string().as_bytes())
+            .expect("proposal");
+        let output = child.wait_with_output().expect("decision");
+        assert_eq!(output.status.success(), allowed, "{output:?}");
+        assert!(output.stdout.is_empty());
+        assert_eq!(
+            std::fs::read_to_string(repo.path().join("main.rs")).expect("source"),
+            original
+        );
+    }
+}
+
+#[tokio::test]
+async fn generated_hook_command_blocks_a_normalized_replacement_proposal() {
+    use rmcp::handler::server::{tool::RequestId, wrapper::Parameters};
+    use truenorth_mcp::server::TrueNorthServer;
+    use truenorth_mcp::tools::scaffold::ScaffoldArgs;
+
+    let repo = tempfile::tempdir().expect("repository");
+    let server = TrueNorthServer::resolve(repo.path().to_path_buf()).expect("server");
+    server
+        .truenorth_scaffold_project(
+            Parameters(ScaffoldArgs { profile: None }),
+            RequestId(rmcp::model::NumberOrString::Number(1)),
+        )
+        .await
+        .expect("scaffold");
+    let hook: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(repo.path().join(".kiro/hooks/jev-guard.json")).expect("hook"),
+    )
+    .expect("hook JSON");
+    let command = hook["hooks"][0]["action"]["command"]
+        .as_str()
+        .expect("command");
+    let binary = std::path::Path::new(env!("CARGO_BIN_EXE_truenorth-mcp"));
+    let mut child = Command::new("/bin/sh")
+        .args(["-c", command])
+        .current_dir(repo.path())
+        .env_clear()
+        .env("PATH", binary.parent().expect("binary directory"))
+        .env("TRUENORTH_ROOT", repo.path())
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("emitted hook command");
+    let input = serde_json::json!({
+        "paths": ["new.rs"],
+        "content": "// credentials placeholder only",
+        "task": "Replace a function",
+    });
+    child
+        .stdin
+        .take()
+        .expect("stdin")
+        .write_all(input.to_string().as_bytes())
+        .expect("normalized proposal");
+    let output = child.wait_with_output().expect("hook decision");
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    assert!(output.stdout.is_empty());
+    assert!(!repo.path().join("new.rs").exists());
+}
+
+#[test]
+fn foreign_hook_payload_is_rejected_without_echoing_its_content() {
+    let repo = tempfile::tempdir().expect("repository");
+    for marker in [".agent", "specs", "skills"] {
+        std::fs::create_dir(repo.path().join(marker)).expect("root marker");
+    }
+    let sentinel = "inert-private-payload-sentinel";
+    let mut child = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"))
+        .arg("guard")
+        .current_dir(repo.path())
+        .env_clear()
+        .env("TRUENORTH_ROOT", repo.path())
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("guard");
+    let input = serde_json::json!({
+        "tool_name": "str_replace",
+        "tool_input": {"path": "new.rs", "old_str": "", "new_str": sentinel},
+    });
+    child
+        .stdin
+        .take()
+        .expect("stdin")
+        .write_all(input.to_string().as_bytes())
+        .expect("foreign payload");
+    let output = child.wait_with_output().expect("rejection");
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    assert!(!String::from_utf8_lossy(&output.stderr).contains(sentinel));
+    assert!(!repo.path().join("new.rs").exists());
+}
+
+#[test]
+fn stdin_guard_rejects_oversized_utf8_content_before_activation() {
+    let repo = tempfile::tempdir().expect("repository");
+    std::fs::create_dir_all(repo.path().join(".agent/config")).expect("config");
+    for marker in ["specs", "skills"] {
+        std::fs::create_dir(repo.path().join(marker)).expect("root marker");
+    }
+    std::fs::write(
+        repo.path().join(".agent/config/rules.yml"),
+        "features:\n  jev: true\n",
+    )
+    .expect("opt in without credentials");
+    let mut child = Command::new(env!("CARGO_BIN_EXE_truenorth-mcp"))
+        .arg("guard")
+        .current_dir(repo.path())
+        .env_clear()
+        .env("TRUENORTH_ROOT", repo.path())
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("guard");
+    let input = serde_json::json!({
+        "paths": ["new.rs"],
+        "content": "é".repeat(500_001),
+    });
+    child
+        .stdin
+        .take()
+        .expect("stdin")
+        .write_all(input.to_string().as_bytes())
+        .expect("oversized proposal");
+    let output = child.wait_with_output().expect("rejection");
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    let diagnostic = String::from_utf8_lossy(&output.stderr);
+    assert!(diagnostic.contains("content"), "{diagnostic}");
+    assert!(
+        !diagnostic.contains("TRUENORTH_JEV_ENDPOINT"),
+        "{diagnostic}"
+    );
+    assert!(!repo.path().join("new.rs").exists());
+}

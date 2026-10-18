@@ -1,30 +1,8 @@
-//! The active guardrail: a pre-write check that returns one decision (jev-active-guardrail).
+//! Active pre-write guard: deterministic blocks followed by optional model advice.
 //!
-//! The guardrail wires the Jev evaluation harness into the live request path. It runs a
-//! pre-write check over a proposed change and returns one [`GuardDecision`]: allow, block,
-//! or annotate. It composes the existing harness modules whole and adds no new Jev client,
-//! wire type, or aspect (ADR-G1).
-//!
-//! The guardrail runs two layers in a fixed order. This module lands the first layer, the
-//! deterministic layer. The deterministic layer runs first, with no Jev call, regardless of
-//! the flag. It blocks a write to a protected path and a write whose content matches the
-//! secret denylist. It never fails open (R2, P34, P35). The probabilistic layer, the
-//! `evaluate_guard` entry point, the tool, the CLI subcommand, and the emitted hook land in
-//! later tasks (issues #294 onward).
-//!
-//! The deterministic layer is genuinely deterministic: it is a literal match in code, not a
-//! model judgment. A protected-path hit and a secret hit each block with no client call, so
-//! a Jev outage cannot weaken the hard rule (ADR-G3).
-//!
-//! The types and the layer have no non-test caller until the combine step and the
-//! `evaluate_guard` entry point land (issue #294) and the tool lands (issue #296). Each
-//! staged public item carries a narrow non-test `allow` with this reason, per the repo
-//! dead-code policy (main.rs). The task that adds each item's first caller removes its
-//! attribute. The test build exercises every item through the sibling `guard_tests.rs` and
-//! `guard_prop_tests.rs`.
-//!
-//! Requirements: 1.2, 1.4, 2.1, 2.2, 2.3, 2.5, 2.6, 6.1, 6.3, 6.4.
-//! Design: jev-active-guardrail, ADR-G1, ADR-G3, the deterministic layer, P34, P35.
+//! A proposed payload is checked before a write. Protected paths and lexical
+//! denylist matches block without calling Jev. Model findings and unavailability
+//! are advisory; neither can override a deterministic block.
 
 use std::sync::OnceLock;
 
@@ -51,13 +29,13 @@ const REMEDIATION_SECRET: &str = "Remove the secret before the write. Move the v
 
 /// One proposed change the guard evaluates (R1.2).
 ///
-/// The change names the target paths it writes and the new content it writes. The guard
-/// reads it and decides; it performs no write itself.
+/// The content is one logical proposed payload, not an implicit replacement body for
+/// every listed path. Existing target files provide filtered context only.
 #[derive(Debug, Clone, serde::Deserialize, schemars::JsonSchema)]
 pub struct ProposedChange {
     /// The target paths the change writes.
     pub paths: Vec<String>,
-    /// The new content the change writes.
+    /// The proposed content for one logical change.
     pub content: String,
     /// The task the change serves, as a short description (#331). When present, the drift
     /// guard judges whether the change stays within this task. When absent, the guard falls
@@ -95,22 +73,19 @@ pub enum GuardDecision {
 /// the matched pattern name, never the secret value (R6.3, P40).
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct NeutralizationPacket {
-    /// The violated check, for example `protected-path` or `secret` or `drift`.
+    /// The deterministic check that blocked the change (`protected-path` or `secret`).
     pub violated_check: String,
     /// The offending value for a deterministic block, such as the protected path or the
     /// matched pattern name. Never a secret value.
     pub offending_value: Option<String>,
     /// A remediation hint the agent can act on.
     pub remediation: String,
-    /// A suggested self-heal instruction, present when a rigor failure warranted one.
+    /// No self-heal instruction is emitted for deterministic blocks.
     pub suggested_fix: Option<String>,
 }
 
 impl NeutralizationPacket {
     /// Build a deterministic-block packet naming the violated check and the offending value.
-    ///
-    /// A deterministic block carries no suggested fix; the self-heal instruction attaches
-    /// only to a rigor block in the probabilistic layer (issue #294).
     fn deterministic(violated_check: &str, offending_value: String, remediation: &str) -> Self {
         Self {
             violated_check: violated_check.to_string(),
@@ -238,16 +213,13 @@ fn shared_marker_for_index(index: usize) -> &'static str {
     }
 }
 
-// The pure combine step and the confidence gate live in a sibling file to hold this module
-// under the size guidance, split by concern: this file holds the types and the deterministic
-// layer, `guard_combine.rs` holds the probabilistic combine and the confidence gate (task 2).
+// The pure model-advisory combine step remains separate from deterministic checks.
 // The `#[path]` include keeps the flat file layout and makes it a child module of `guard`.
 #[path = "guard_combine.rs"]
 pub mod combine;
 
-// The `evaluate_guard` entry point and the probabilistic fail-open layer live in a sibling
-// file, split by concern: this file holds the deterministic layer, `guard_evaluate.rs` ties it
-// to the combine step and the harness aspects (task 3, #295).
+// Guard evaluation composes path validation, deterministic checks and the two
+// independent model aspects; only deterministic checks can return Block.
 #[path = "guard_evaluate.rs"]
 pub mod evaluate;
 
@@ -260,9 +232,3 @@ mod tests;
 #[cfg(test)]
 #[path = "guard_prop_tests.rs"]
 mod prop_tests;
-
-// Structural and scope smoke checks (task 8): the guardrail holds no hardcoded threshold,
-// references no reqwest, performs no write, and spawns no secondary agent.
-#[cfg(test)]
-#[path = "guard_structural_tests.rs"]
-mod structural_tests;

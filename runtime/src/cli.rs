@@ -5,7 +5,6 @@
 //! intentional mutating mode: it seeds a fresh language-agnostic workspace from an explicit,
 //! versioned skills bundle.
 
-use std::io::Read;
 use std::path::PathBuf;
 use std::process::{Command, ExitCode};
 
@@ -19,15 +18,15 @@ use truenorth_mcp::engine::cockpit_json_transaction;
 use truenorth_mcp::engine::features;
 use truenorth_mcp::engine::jev::config::resolve_protected_paths;
 use truenorth_mcp::engine::jev::drift::path_is_protected;
-use truenorth_mcp::engine::jev::guard::ProposedChange;
-use truenorth_mcp::engine::jev::secret_filter::{
-    validate_guard_metadata_paths, validate_guard_paths,
-};
+use truenorth_mcp::engine::jev::secret_filter::validate_guard_metadata_paths;
+
 use truenorth_mcp::engine::mutation::acquire_worktree_lease;
 use truenorth_mcp::engine::workspace_upgrade::bundle::PackageBundle;
 use truenorth_mcp::tools::scaffold::{
     apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
 };
+#[path = "cli_guard.rs"]
+mod guard_command;
 
 const USAGE: &str = "usage: truenorth-mcp [--version | --check-config [--strict] | guard [--staged | --range <base>..<head>] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | migrate-cockpit-json (--check | --resume | --rollback) | skills list --bundle-dir <path>]";
 
@@ -43,7 +42,7 @@ pub enum Mode {
         /// Enforce strict configuration schema with no unknown or deprecated keys.
         strict: bool,
     },
-    /// Run the deterministic guard over an explicit or Git-derived change.
+    /// Evaluate a stdin proposal, or inspect Git-derived path metadata without Jev.
     Guard {
         /// The source of the proposed change.
         source: GuardSource,
@@ -130,23 +129,14 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
     }
 }
 
-/// Evaluate protected paths from an explicit change or a Git diff.
+/// Evaluate stdin proposals through the guard; Git modes inspect metadata only.
 pub fn guard(source: GuardSource) -> ExitCode {
     let root = match config::get_repo_root() {
         Ok(root) => root,
         Err(error) => return guard_fail(&error.to_string()),
     };
-    let metadata_only = !matches!(&source, GuardSource::Stdin);
     let paths = match source {
-        GuardSource::Stdin => {
-            let mut input = String::new();
-            if let Err(error) = std::io::stdin().read_to_string(&mut input) {
-                return guard_fail(&format!("could not read proposed change: {error}"));
-            }
-            serde_json::from_str::<ProposedChange>(&input)
-                .map(|change| change.paths)
-                .map_err(|error| format!("could not parse proposed change JSON: {error}"))
-        }
+        GuardSource::Stdin => return guard_command::run(&root),
         GuardSource::Staged => git_paths(
             &root,
             &["diff", "--cached", "--no-renames", "--name-only", "-z"],
@@ -160,12 +150,7 @@ pub fn guard(source: GuardSource) -> ExitCode {
         Ok(paths) => paths,
         Err(error) => return guard_fail(&error),
     };
-    let validation = if metadata_only {
-        validate_guard_metadata_paths(&root, &paths)
-    } else {
-        validate_guard_paths(&root, &paths)
-    };
-    if let Err(error) = validation {
+    if let Err(error) = validate_guard_metadata_paths(&root, &paths) {
         return guard_fail(&error.to_string());
     }
     let protected = match resolve_protected_paths(&root) {
