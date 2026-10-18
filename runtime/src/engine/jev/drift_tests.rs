@@ -133,8 +133,12 @@ fn path_is_protected_matches_dir_prefix_and_exact_file() {
 
 #[test]
 fn is_out_of_scope_applies_the_boundary() {
-    assert!(is_out_of_scope(0.7, 0.7), "at the boundary is out of scope");
-    assert!(is_out_of_scope(0.9, 0.7));
-    assert!(!is_out_of_scope(0.69, 0.7));
-    assert!(!is_out_of_scope(0.0, 0.7));
+    let boundary = 0.5;
+    assert!(
+        is_out_of_scope(0.5, boundary),
+        "at the boundary is out of scope"
+    );
+    assert!(is_out_of_scope(0.9, boundary));
+    assert!(!is_out_of_scope(0.49, boundary));
+    assert!(!is_out_of_scope(0.0, boundary));
 }

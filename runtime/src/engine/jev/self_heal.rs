@@ -111,19 +111,20 @@ fn expected_set() -> String {
 
 /// Report whether a rigor report warrants self-healing (R7.1).
 ///
-/// The report warrants self-healing when any Noul judgment (hallucinated import,
-/// convention violation, contains secrets) is at or above `rigor_failure_boundary`, OR the
-/// complexity is at or above `complexity_boundary`. The `latency_ms` field carries no
-/// signal for this predicate.
+/// The report warrants self-healing when either the hallucinated-import or
+/// convention-violation judgment meets `rigor_failure_boundary`, the contains-secrets
+/// judgment meets `secret_boundary`, or complexity meets `complexity_boundary`.
+/// The `latency_ms` field carries no signal for this predicate.
 #[cfg_attr(not(test), allow(dead_code))]
 pub fn is_rigor_failure(
     report: &RigorReport,
     rigor_failure_boundary: f64,
+    secret_boundary: f64,
     complexity_boundary: f64,
 ) -> bool {
     report.hallucinated_import >= rigor_failure_boundary
         || report.violates_conventions >= rigor_failure_boundary
-        || report.contains_secrets >= rigor_failure_boundary
+        || report.contains_secrets >= secret_boundary
         || report.complexity >= complexity_boundary
 }
 

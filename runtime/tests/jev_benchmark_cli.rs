@@ -180,3 +180,43 @@ fn symlinked_and_outside_inputs_are_rejected_before_report_write() {
         );
     }
 }
+
+#[test]
+fn nested_inputs_run_but_symlinked_parent_and_traversal_are_rejected() {
+    let repo = repo();
+    let base = repo.path().join("benchmarks/jev");
+    let nested = base.join("holdout");
+    std::fs::create_dir(&nested).unwrap();
+    for name in ["fixtures-v1.yml", "source-v1.yml"] {
+        std::fs::copy(base.join(name), nested.join(name)).unwrap();
+    }
+    let invoke = |path: &Path| {
+        Command::new(env!("CARGO_BIN_EXE_jev-bench"))
+            .current_dir(repo.path())
+            .env_clear()
+            .env("TRUENORTH_ROOT", repo.path())
+            .env("JEV_BENCH_FIXTURES", path)
+            .output()
+            .unwrap()
+    };
+    let report = repo.path().join(".agent/telemetry/jev-benchmark.yml");
+    let output = invoke(&nested.join("fixtures-v1.yml"));
+    assert!(!output.status.success());
+    assert!(
+        report.is_file(),
+        "valid nested inputs reached offline evaluation"
+    );
+    std::fs::remove_file(&report).unwrap();
+    let linked = base.join("redirect");
+    std::os::unix::fs::symlink(&nested, &linked).unwrap();
+    for rejected in [
+        linked.join("fixtures-v1.yml"),
+        nested.join("../fixtures-v1.yml"),
+    ] {
+        assert!(!invoke(&rejected).status.success());
+        assert!(
+            !report.exists(),
+            "unsafe inputs cannot produce evaluation evidence"
+        );
+    }
+}

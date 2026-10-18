@@ -13,7 +13,8 @@ The checked-in fixtures are synthetic candidate labels. The policy is pending, n
 
 The calibration candidate contains 50 rigor and 50 drift cases. Each signal has at least
 20 positive and 20 negative examples. Examples are template-composed synthetic cases,
-not independent production observations. No holdout has been prepared or evaluated.
+not independent production observations. A distinct holdout review candidate is prepared under
+`holdout/`; it has not been evaluated against the provider.
 Review the rubric and rationales before authorizing paid calibration.
 
 The operator accepted estimated budgets of USD 0.05 for provider compatibility smoke,
@@ -58,11 +59,39 @@ The `complexity` Score has five ordered levels for the supplied code:
 
 `complexity_high` is true for complex or very complex, false for trivial, simple, or
 moderate. The production Score index is mapped to `index / 4 * 100`; the current configured
-boundary of 70 is equivalent to a model Score index of at least 2.8, including index 3
-(75) and index 4 (100). Because the model Score can be probability-weighted and fractional,
+candidate boundary of 62.5 is the midpoint between moderate (50) and complex (75),
+equivalent to a model Score index of at least 2.5. Because the model Score can be probability-weighted and fractional,
 the model threshold is not itself a human level definition. Human fixture labels use the
-definitions, not model scores. Calibration cases are candidates for review, not holdout
-validation; prepare an independent holdout separately and never tune against its results.
+definitions, not model scores. Calibration and holdout cases remain separate; never tune
+against holdout provider results.
+
+## Frozen scoring candidate and holdout
+
+The operator-approved candidate defaults are `rigor_failure_boundary: 0.70` for imports
+and conventions, `secret_boundary: 0.25` for credential material, `complexity_boundary: 62.5`,
+and `drift_boundary: 0.50`. Projects can override each through the existing `jev` rules block.
+The quality acceptance limits are unchanged. These boundaries fit the calibration scores;
+they are not independently validated production guarantees.
+
+Guard confidence and destructive-action gates remain separate and unchanged.
+A secret score of 0.25 can trigger a rigor annotation without meeting the confidence
+required for a guard block. Deterministic path and secret checks are not bypassed.
+
+`holdout/fixtures-v1.yml` contains 50 rigor and 50 drift examples, with at least 20
+positive and negative examples per signal. It covers moderate versus complex code,
+placeholder/redacted inputs versus inert credential material, and justified related-file
+changes versus unrelated changes. `holdout/rationales-v1.yml` stays out of provider input.
+`holdout/source-v1.yml` freezes the candidate scoring values and rationale digest.
+Runtime tests check that this frozen candidate matches default scoring.
+The author knew the calibration results: this is a distinct held-out dataset, not blind
+independent authoring. Labels still require independent review before provider evaluation.
+
+Keyless preparation can use `JEV_BENCH_FIXTURES=benchmarks/jev/holdout/fixtures-v1.yml`
+with the existing offline CLI command. Nested versioned inputs are allowed, but parent
+traversal, paths outside `benchmarks/jev/`, and symlink components remain rejected.
+Do not change labels or thresholds based on holdout scores. A failed holdout requires a
+new candidate and fresh independent validation rather than tuning against that set.
+No paid holdout run or repeat calibration is authorized by preparing these files.
 
 ## Keyless verification
 

@@ -143,6 +143,7 @@ mod imp {
         };
         let scoring = [
             ("rigor_failure_boundary", config.rigor_failure_boundary),
+            ("secret_boundary", config.secret_boundary),
             ("complexity_boundary", config.complexity_boundary),
             ("drift_boundary", config.drift_boundary),
         ]
@@ -282,18 +283,18 @@ mod imp {
             repo_root.join(path)
         };
         let base = repo_root.join("benchmarks/jev");
-        if path.parent() != Some(base.as_path())
+        if !path.starts_with(&base)
             || path
                 .components()
                 .any(|part| matches!(part, std::path::Component::ParentDir))
         {
             return Err(format!(
-                "{variable} must name an input directly under benchmarks/jev/"
+                "{variable} must name an input under benchmarks/jev/"
             ));
         }
         // Inputs stay in the versioned benchmark directory, outside telemetry. Refuse
         // symlinks at each boundary rather than following a redirected manifest.
-        for part in [repo_root.join("benchmarks"), base.clone(), path.clone()] {
+        for part in path.ancestors().take_while(|part| *part != repo_root) {
             if std::fs::symlink_metadata(part).is_ok_and(|m| m.file_type().is_symlink()) {
                 return Err(format!("{variable} must not traverse a symlink"));
             }

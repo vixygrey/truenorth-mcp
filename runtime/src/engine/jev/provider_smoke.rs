@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use serde::Serialize;
 
-use super::config::JevPrice;
+use super::config::{JevConfig, JevPrice};
 use super::{Answer, JEV_MODEL, JevClient, JevError, JevRequest, JevResponse, Question};
 
 /// The policy fields that bind smoke evidence to benchmark acceptance provenance.
@@ -237,6 +237,7 @@ impl<C: JevClient> JevClient for CapturedClient<'_, C> {
 pub async fn compatibility<C: JevClient>(
     client: &C,
     policy: &SmokePolicy,
+    config: &JevConfig,
     max_estimated_usd: f64,
 ) -> Result<Counters, &'static str> {
     let repo = tempfile::tempdir().map_err(|_| "cannot prepare synthetic state")?;
@@ -277,9 +278,15 @@ pub async fn compatibility<C: JevClient>(
         usage: Cell::new(None),
     };
     let written = ["sample.rs".to_string()];
-    let outcome = super::drift::evaluate_drift(&drift, drift_state, &written, &protected, 0.25)
-        .await
-        .map_err(|_| "production drift evaluation failed")?;
+    let outcome = super::drift::evaluate_drift(
+        &drift,
+        drift_state,
+        &written,
+        &protected,
+        config.drift_boundary,
+    )
+    .await
+    .map_err(|_| "production drift evaluation failed")?;
     if outcome.forced_by_path_match {
         return Err("drift did not reach provider");
     }

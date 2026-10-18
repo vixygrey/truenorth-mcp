@@ -695,3 +695,7 @@ mod validation_tests;
 #[cfg(test)]
 #[path = "bench_case_diagnostics_tests.rs"]
 mod case_diagnostics_tests;
+
+#[cfg(test)]
+#[path = "bench_holdout_tests.rs"]
+mod holdout_tests;

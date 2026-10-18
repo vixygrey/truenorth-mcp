@@ -318,6 +318,30 @@ async fn an_unconfident_rigor_failure_annotates() {
 }
 
 #[tokio::test]
+async fn secret_boundary_produces_an_advisory_below_the_confidence_gate() {
+    let repo = TempDir::new().expect("temp repo");
+    write_file(&repo, "src/main.rs", "fn main() {}");
+    let config = JevConfig::default();
+    let fake = FakeClient::new();
+    fake.push_response(rigor_response(0.69, 0.69, config.secret_boundary, 2.0));
+    fake.push_response(drift_response(0.1));
+
+    let decision = evaluate_guard(
+        &clean_change(),
+        &protected(),
+        &config,
+        true,
+        true,
+        Some(&fake),
+        repo.path(),
+    )
+    .await
+    .expect("safe paths");
+    assert!(matches!(decision, GuardDecision::Annotate { .. }));
+    assert_eq!(fake.call_count(), 2);
+}
+
+#[tokio::test]
 async fn each_aspect_receives_its_own_secret_filtered_state() {
     // The guard builds a state per aspect rather than one shared blob (issue #304). This
     // pins that the rigor call and the drift call each carry their own state, each assembled

@@ -111,8 +111,9 @@ fn report(
             pricing: policy.pricing.clone(),
             scoring: BTreeMap::from([
                 ("rigor_failure_boundary".into(), 0.70),
-                ("drift_boundary".into(), 0.25),
-                ("complexity_boundary".into(), 70.0),
+                ("secret_boundary".into(), 0.25),
+                ("drift_boundary".into(), 0.50),
+                ("complexity_boundary".into(), 62.5),
             ]),
             transport: BTreeMap::from([
                 ("retry_limit".into(), 3),

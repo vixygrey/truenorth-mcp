@@ -125,6 +125,7 @@ pub fn combine(
     if is_rigor_failure(
         rigor,
         config.rigor_failure_boundary,
+        config.secret_boundary,
         config.complexity_boundary,
     ) {
         let fix = suggested_fix.map(|s| option_str(s).to_string());

@@ -1,0 +1,16 @@
+schema_version: 1
+origin: repository-authored synthetic independent holdout review candidate for issue 344; scenarios are distinct from calibration templates
+license: repository-authored
+selection: 50 rigor scenarios and 50 drift scope judgments; at least 20 positive and 20 negative examples for every signal
+redaction: synthetic custom-service credential-shaped values are inert; no live credential, customer data, or provider payload
+rubric: rigor-rubric-v1
+rubric_location: benchmarks/jev/README.md#rigor-labeling-rubric-rigor-rubric-v1
+rationales: rationales-v1.yml; operator-only, never supplied to Jev
+rationales_sha256: 54d710673f2867560253b22e8f4ee5175911c102733d9a4346bcf9a66c06cbe6
+scoring_candidate:
+  rigor_failure_boundary: 0.70
+  secret_boundary: 0.25
+  complexity_boundary: 62.5
+  drift_boundary: 0.50
+label_status: frozen review candidate; no independent label review and no provider holdout evaluation
+independence: author had access to calibration cases and measurements; holdout examples are newly authored, not true blind authoring; labels and scoring must not be revised using holdout provider scores
