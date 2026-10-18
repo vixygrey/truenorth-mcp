@@ -36,17 +36,14 @@ use crate::engine::agent_ws::AGENT_DIR;
 const DEFAULT_CONFIDENCE_HIGH: f64 = 0.85;
 /// The default confidence low threshold.
 const DEFAULT_CONFIDENCE_LOW: f64 = 0.60;
-/// The default drift boundary (#334).
-///
-/// A calibration run showed the drift signal, with a task in the state (#331), puts an
-/// out-of-scope change in a 0.19 to 0.76 noul band while an in-scope change stays at or below
-/// 0.19. A boundary of 0.25 catches most drift with no false positive on that set, and leaves
-/// a small margin above the in-scope ceiling. A project can override this in `rules.yml`.
-const DEFAULT_DRIFT_BOUNDARY: f64 = 0.25;
-/// The default rigor-failure boundary.
+/// The default drift boundary, in 0 to 1.
+const DEFAULT_DRIFT_BOUNDARY: f64 = 0.50;
+/// The default rigor-failure boundary for imports and conventions, in 0 to 1.
 const DEFAULT_RIGOR_FAILURE_BOUNDARY: f64 = 0.70;
+/// The default secret boundary, in 0 to 1.
+const DEFAULT_SECRET_BOUNDARY: f64 = 0.25;
 /// The default complexity boundary, on a 0 to 100 scale.
-const DEFAULT_COMPLEXITY_BOUNDARY: f64 = 70.0;
+const DEFAULT_COMPLEXITY_BOUNDARY: f64 = 62.5;
 /// The default pruning keep threshold.
 const DEFAULT_PRUNING_KEEP_THRESHOLD: f64 = 0.50;
 /// The default destructive-action threshold.
@@ -73,6 +70,8 @@ pub struct JevConfig {
     pub drift_boundary: f64,
     /// The rigor-failure boundary, in 0 to 1.
     pub rigor_failure_boundary: f64,
+    /// The secret boundary, in 0 to 1, independent of the import/convention boundary.
+    pub secret_boundary: f64,
     /// The complexity boundary, on a 0 to 100 scale.
     pub complexity_boundary: f64,
     /// The pruning keep threshold, in 0 to 1.
@@ -108,6 +107,7 @@ impl Default for JevConfig {
             confidence_low: DEFAULT_CONFIDENCE_LOW,
             drift_boundary: DEFAULT_DRIFT_BOUNDARY,
             rigor_failure_boundary: DEFAULT_RIGOR_FAILURE_BOUNDARY,
+            secret_boundary: DEFAULT_SECRET_BOUNDARY,
             complexity_boundary: DEFAULT_COMPLEXITY_BOUNDARY,
             pruning_keep_threshold: DEFAULT_PRUNING_KEEP_THRESHOLD,
             destructive_threshold: DEFAULT_DESTRUCTIVE_THRESHOLD,
@@ -136,6 +136,7 @@ impl JevConfig {
         check_unit("confidence_low", self.confidence_low)?;
         check_unit("drift_boundary", self.drift_boundary)?;
         check_unit("rigor_failure_boundary", self.rigor_failure_boundary)?;
+        check_unit("secret_boundary", self.secret_boundary)?;
         check_unit("pruning_keep_threshold", self.pruning_keep_threshold)?;
         check_unit("destructive_threshold", self.destructive_threshold)?;
 
@@ -227,6 +228,7 @@ struct JevBlock {
     confidence_low: f64,
     drift_boundary: f64,
     rigor_failure_boundary: f64,
+    secret_boundary: f64,
     complexity_boundary: f64,
     pruning_keep_threshold: f64,
     destructive_threshold: f64,
@@ -244,6 +246,7 @@ impl Default for JevBlock {
             confidence_low: DEFAULT_CONFIDENCE_LOW,
             drift_boundary: DEFAULT_DRIFT_BOUNDARY,
             rigor_failure_boundary: DEFAULT_RIGOR_FAILURE_BOUNDARY,
+            secret_boundary: DEFAULT_SECRET_BOUNDARY,
             complexity_boundary: DEFAULT_COMPLEXITY_BOUNDARY,
             pruning_keep_threshold: DEFAULT_PRUNING_KEEP_THRESHOLD,
             destructive_threshold: DEFAULT_DESTRUCTIVE_THRESHOLD,
@@ -270,6 +273,7 @@ impl JevBlock {
             confidence_low: self.confidence_low,
             drift_boundary: self.drift_boundary,
             rigor_failure_boundary: self.rigor_failure_boundary,
+            secret_boundary: self.secret_boundary,
             complexity_boundary: self.complexity_boundary,
             pruning_keep_threshold: self.pruning_keep_threshold,
             destructive_threshold: self.destructive_threshold,

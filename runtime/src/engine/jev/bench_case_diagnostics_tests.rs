@@ -67,7 +67,7 @@ async fn exact_boundaries_preserve_classification_and_normalize_only_display_sco
     combined_case(&mut fixtures);
     let config = JevConfig::default();
     let fake = FakeClient::new();
-    fake.push_response(rigor_response(config.rigor_failure_boundary, 2.8));
+    fake.push_response(rigor_response(config.rigor_failure_boundary, 2.5));
     fake.push_response(drift_response(config.drift_boundary));
     let measured = run_benchmark(&fake, &fixtures, &config, &policy.pricing)
         .await
@@ -94,9 +94,9 @@ async fn exact_boundaries_preserve_classification_and_normalize_only_display_sco
     assert!(import.actual, "a score exactly on the boundary is positive");
     let complexity = &rigor.signals["complexity_high"];
     assert!(!complexity.expected);
-    assert_eq!(complexity.score, 0.7);
+    assert_eq!(complexity.score, 0.625);
     assert_eq!(complexity.threshold, config.complexity_boundary / 100.0);
-    assert!(complexity.actual, "the 70/100 boundary is inclusive");
+    assert!(complexity.actual, "the 62.5/100 boundary is inclusive");
     let scope = &drift.signals["out_of_scope"];
     assert!(!scope.expected);
     assert_eq!(scope.score, config.drift_boundary);
@@ -117,12 +117,39 @@ async fn exact_boundaries_preserve_classification_and_normalize_only_display_sco
 }
 
 #[tokio::test]
+async fn secret_diagnostic_uses_its_own_boundary_below_shared_rigor_boundary() {
+    let (mut fixtures, _, policy, _) = inputs();
+    fixtures.cases.truncate(1);
+    let config = JevConfig::default();
+    let fake = FakeClient::new();
+    let mut response = rigor_response(0.69, 2.0);
+    response.answers.insert(
+        "contains_secrets".into(),
+        Answer::Noul {
+            noul: config.secret_boundary,
+        },
+    );
+    fake.push_response(response);
+    let measured = run_benchmark(&fake, &fixtures, &config, &policy.pricing)
+        .await
+        .expect("offline benchmark");
+    let signals = &measured.case_diagnostics[0].signals;
+    let secret = &signals["contains_secrets"];
+    assert_eq!(secret.score, 0.25);
+    assert_eq!(secret.threshold, config.secret_boundary);
+    assert!(secret.actual);
+    assert!(!signals["hallucinated_import"].actual);
+    assert!(!signals["violates_conventions"].actual);
+    assert!(!signals["complexity_high"].actual);
+}
+
+#[tokio::test]
 async fn scores_below_boundaries_keep_negative_production_decisions() {
     let (mut fixtures, _, policy, _) = inputs();
     combined_case(&mut fixtures);
     let fake = FakeClient::new();
     fake.push_response(rigor_response(0.69, 2.0));
-    fake.push_response(drift_response(0.24));
+    fake.push_response(drift_response(0.49));
     let measured = run_benchmark(&fake, &fixtures, &JevConfig::default(), &policy.pricing)
         .await
         .expect("offline benchmark");
@@ -132,7 +159,7 @@ async fn scores_below_boundaries_keep_negative_production_decisions() {
     assert!(!rigor["complexity_high"].actual);
     assert_eq!(rigor["complexity_high"].score, 0.5);
     assert!(!drift.actual);
-    assert_eq!(drift.score, 0.24);
+    assert_eq!(drift.score, 0.49);
     assert_eq!(
         measured.metrics[0].signals["hallucinated_import"].true_negatives,
         1

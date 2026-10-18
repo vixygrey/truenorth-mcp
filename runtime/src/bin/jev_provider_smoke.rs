@@ -237,7 +237,7 @@ async fn probe() -> Result<bool, &'static str> {
     let before = client.attempt_count();
     let positive = tokio::time::timeout(
         Duration::from_secs(32),
-        provider_smoke::compatibility(&client, &policy, max_cost),
+        provider_smoke::compatibility(&client, &policy, &config, max_cost),
     )
     .await;
     let counters: Option<Counters> = match positive {

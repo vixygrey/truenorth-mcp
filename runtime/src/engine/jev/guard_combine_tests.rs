@@ -12,8 +12,7 @@ use super::super::super::self_heal::SelfHeal;
 use super::super::{GuardDecision, NeutralizationPacket};
 use super::*;
 
-/// A default config with known thresholds: confidence_high 0.85, destructive 0.90, drift
-/// boundary 0.70, rigor-failure boundary 0.70, complexity boundary 70.0.
+/// A default config with separate aspect boundaries and unchanged confidence gates.
 fn config() -> JevConfig {
     JevConfig::default()
 }
@@ -186,6 +185,30 @@ fn an_unconfident_rigor_failure_annotates_with_the_suggested_fix() {
         }
         other => panic!("expected an Annotate, got {other:?}"),
     }
+}
+
+#[test]
+fn secret_at_its_boundary_annotates_without_lowering_the_confidence_gate() {
+    let cfg = config();
+    let rigor = RigorReport {
+        hallucinated_import: 0.69,
+        violates_conventions: 0.69,
+        contains_secrets: cfg.secret_boundary,
+        ..clean_rigor()
+    };
+    assert_eq!(
+        combine(
+            &rigor,
+            candidate(cfg.secret_boundary),
+            &in_scope_drift(),
+            candidate(0.0),
+            None,
+            &cfg,
+        ),
+        GuardDecision::Annotate {
+            notes: vec![rigor_summary(&rigor)]
+        }
+    );
 }
 
 #[test]

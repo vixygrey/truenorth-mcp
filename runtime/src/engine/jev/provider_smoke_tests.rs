@@ -136,7 +136,7 @@ async fn fake_proves_wire_shape_and_accounting_without_vendor_claim() {
     let fake = FakeClient::new();
     fake.push_response(rigor_response());
     fake.push_response(drift_response());
-    let counts = compatibility(&fake, &policy(), 1.0)
+    let counts = compatibility(&fake, &policy(), &JevConfig::default(), 1.0)
         .await
         .expect("typed production contract");
     assert_eq!(counts.input_tokens, 180);
@@ -160,7 +160,7 @@ async fn spending_ceiling_stops_before_second_production_request() {
     let fake = FakeClient::new();
     fake.push_response(rigor_response());
     assert_eq!(
-        compatibility(&fake, &policy(), 0.000001).await,
+        compatibility(&fake, &policy(), &JevConfig::default(), 0.000001).await,
         Err("reviewed spending ceiling reached")
     );
     assert_eq!(fake.call_count(), 1);
@@ -174,7 +174,7 @@ async fn concrete_model_must_match_on_both_production_calls() {
     drift.model = "jev-1.14.0".into();
     fake.push_response(drift);
     assert_eq!(
-        compatibility(&fake, &policy(), 1.0).await,
+        compatibility(&fake, &policy(), &JevConfig::default(), 1.0).await,
         Err("production drift evaluation failed")
     );
     assert_eq!(fake.call_count(), 2);
@@ -186,7 +186,7 @@ async fn errors_never_include_provider_payload() {
     fake.push_error(FakeError::Network {
         detail: "URL, key, and raw provider payload".into(),
     });
-    let error = compatibility(&fake, &policy(), 1.0)
+    let error = compatibility(&fake, &policy(), &JevConfig::default(), 1.0)
         .await
         .expect_err("failed provider call");
     assert_eq!(error, "production rigor evaluation failed");

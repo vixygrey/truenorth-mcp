@@ -310,8 +310,8 @@ pub async fn run_benchmark_with_budget<C: JevClient>(
                         "contains_secrets",
                         expected.contains_secrets,
                         result.contains_secrets,
-                        config.rigor_failure_boundary,
-                        result.contains_secrets >= config.rigor_failure_boundary,
+                        config.secret_boundary,
+                        result.contains_secrets >= config.secret_boundary,
                     ),
                 ];
                 if scores.iter().all(|(_, _, score, threshold, _)| {

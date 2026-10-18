@@ -28,6 +28,7 @@ jev:
   confidence_low: 0.40
   drift_boundary: 0.65
   rigor_failure_boundary: 0.55
+  secret_boundary: 0.35
   complexity_boundary: 60
   pruning_keep_threshold: 0.45
   destructive_threshold: 0.95
@@ -45,8 +46,10 @@ fn absent_file_resolves_to_default() {
     let resolved = resolve(repo.path()).expect("absent file resolves");
     assert_eq!(resolved.confidence_high, 0.85);
     assert_eq!(resolved.confidence_low, 0.60);
-    // The drift boundary default is the calibrated value (#334), not the legacy 0.70.
-    assert_eq!(resolved.drift_boundary, 0.25);
+    assert_eq!(resolved.drift_boundary, 0.50);
+    assert_eq!(resolved.rigor_failure_boundary, 0.70);
+    assert_eq!(resolved.secret_boundary, 0.25);
+    assert_eq!(resolved.complexity_boundary, 62.5);
     assert_eq!(resolved.retry_limit, 3);
     assert_eq!(resolved.max_backoff, Duration::from_secs(8));
     assert_eq!(resolved.timeout, Duration::from_secs(30));
@@ -99,6 +102,7 @@ fn valid_block_round_trips_values_including_durations() {
     assert_eq!(resolved.confidence_low, 0.40);
     assert_eq!(resolved.drift_boundary, 0.65);
     assert_eq!(resolved.rigor_failure_boundary, 0.55);
+    assert_eq!(resolved.secret_boundary, 0.35);
     assert_eq!(resolved.complexity_boundary, 60.0);
     assert_eq!(resolved.pruning_keep_threshold, 0.45);
     assert_eq!(resolved.destructive_threshold, 0.95);
@@ -117,6 +121,29 @@ fn unrelated_key_is_tolerated() {
     let resolved = resolve(repo.path()).expect("unrelated key tolerated");
     assert_eq!(resolved.confidence_high, 0.70);
     assert_eq!(resolved.confidence_low, 0.30);
+}
+
+#[test]
+fn boundary_overrides_are_independent() {
+    for (body, expected) in [
+        ("jev:\n  secret_boundary: 0.40\n", (0.40, 0.70, 62.5, 0.50)),
+        (
+            "jev:\n  rigor_failure_boundary: 0.90\n  complexity_boundary: 75\n  drift_boundary: 0.80\n",
+            (0.25, 0.90, 75.0, 0.80),
+        ),
+    ] {
+        let repo = seed_rules(body);
+        let config = resolve(repo.path()).expect("independent override resolves");
+        assert_eq!(
+            (
+                config.secret_boundary,
+                config.rigor_failure_boundary,
+                config.complexity_boundary,
+                config.drift_boundary,
+            ),
+            expected
+        );
+    }
 }
 
 #[test]
@@ -158,6 +185,34 @@ fn out_of_range_unit_boundary_is_rejected() {
 }
 
 #[test]
+fn invalid_secret_boundaries_name_the_field_and_range() {
+    for body in [
+        "jev:\n  secret_boundary: -0.01\n",
+        "jev:\n  secret_boundary: 1.01\n",
+    ] {
+        let repo = seed_rules(body);
+        match resolve(repo.path()).expect_err("invalid secret boundary rejected") {
+            super::super::JevError::Config { detail, .. } => {
+                assert!(detail.contains("secret_boundary"), "{detail}");
+                assert!(detail.contains("0 to 1"), "{detail}");
+            }
+            other => panic!("expected Config, got {other:?}"),
+        }
+    }
+    let config = JevConfig {
+        secret_boundary: f64::NAN,
+        ..JevConfig::default()
+    };
+    match config.validate().expect_err("NaN secret boundary rejected") {
+        super::super::JevError::Config { detail, .. } => {
+            assert!(detail.contains("secret_boundary"), "{detail}");
+            assert!(detail.contains("0 to 1"), "{detail}");
+        }
+        other => panic!("expected Config, got {other:?}"),
+    }
+}
+
+#[test]
 fn out_of_range_complexity_boundary_is_rejected() {
     let body = "jev:\n  complexity_boundary: 150\n";
     let repo = seed_rules(body);
@@ -193,6 +248,7 @@ jev:
   confidence_low: 1.0
   drift_boundary: 0.0
   rigor_failure_boundary: 1.0
+  secret_boundary: 0.0
   complexity_boundary: 0
   pruning_keep_threshold: 1.0
   destructive_threshold: 1.0
@@ -202,6 +258,7 @@ jev:
     assert_eq!(resolved.confidence_high, 1.0);
     assert_eq!(resolved.confidence_low, 1.0);
     assert_eq!(resolved.drift_boundary, 0.0);
+    assert_eq!(resolved.secret_boundary, 0.0);
     assert_eq!(resolved.complexity_boundary, 0.0);
 }
 

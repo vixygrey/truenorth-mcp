@@ -215,24 +215,47 @@ fn clean_report() -> RigorReport {
 }
 
 #[test]
-fn is_rigor_failure_flags_a_secret_above_the_boundary() {
-    let report = RigorReport {
-        contains_secrets: 0.9,
+fn rigor_failure_uses_independent_inclusive_boundaries() {
+    let config = crate::engine::jev::config::JevConfig::default();
+    let classified = |report: &RigorReport| {
+        is_rigor_failure(
+            report,
+            config.rigor_failure_boundary,
+            config.secret_boundary,
+            config.complexity_boundary,
+        )
+    };
+    assert!(!classified(&clean_report()));
+    let secret = RigorReport {
+        hallucinated_import: 0.69,
+        violates_conventions: 0.69,
+        contains_secrets: 0.25,
         ..clean_report()
     };
-    assert!(is_rigor_failure(&report, 0.7, 70.0));
-}
-
-#[test]
-fn is_rigor_failure_clears_a_clean_report() {
-    assert!(!is_rigor_failure(&clean_report(), 0.7, 70.0));
-}
-
-#[test]
-fn is_rigor_failure_flags_complexity_above_the_boundary() {
-    let report = RigorReport {
-        complexity: 80.0,
+    assert!(classified(&secret));
+    assert!(!classified(&RigorReport {
+        contains_secrets: 0.24,
         ..clean_report()
-    };
-    assert!(is_rigor_failure(&report, 0.7, 70.0));
+    }));
+    assert!(classified(&RigorReport {
+        complexity: 62.5,
+        ..clean_report()
+    }));
+    assert!(!classified(&RigorReport {
+        complexity: 50.0,
+        ..clean_report()
+    }));
+    assert!(classified(&RigorReport {
+        hallucinated_import: 0.7,
+        ..clean_report()
+    }));
+    assert!(classified(&RigorReport {
+        violates_conventions: 0.7,
+        ..clean_report()
+    }));
+    assert!(!classified(&RigorReport {
+        hallucinated_import: 0.69,
+        violates_conventions: 0.69,
+        ..clean_report()
+    }));
 }
