@@ -328,6 +328,15 @@ Review the revised fixtures and provenance before another paid pilot.
 That pilot needs separate spending authorization and human Environment approval on the merged, immutable `main` SHA.
 Do not dispatch the full qualification from these keyless results.
 
+The import-question clarification candidate names `proposal.content`, `project_context`,
+and `existing_context` explicitly and supplies aligned Noul `true`/`false` criteria.
+Existing source remains resolution evidence, not the proposed change.
+Insufficient context still does not establish an unresolved import.
+This candidate changes no fixture, scoring boundary, or acceptance policy.
+The failed v2 pilot remains unaccepted evidence for the prior question.
+Keyless request and compiler checks do not establish improved model accuracy.
+Review the new rigor-source digest before a separately authorized pilot.
+
 ## Release acceptance
 
 Require approved thresholds, complete aspect coverage, the expected responder, known accounting, and passing independent provider results.

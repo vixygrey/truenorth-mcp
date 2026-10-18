@@ -159,11 +159,18 @@ pub async fn evaluate_rigor<C: JevClient>(
     questions.insert(
         HALLUCINATED_IMPORT_ID.to_string(),
         Question::noul(
-            "Does an import in the proposed code fail to resolve against the existing project \
-             files or dependency declarations explicitly supplied as context? Answer 1 only \
-             when supplied context establishes it cannot resolve; unavailable context is not \
-             evidence of a hallucinated import. Answer 0 otherwise.",
-            None,
+            "Does `proposal.content` contain an unresolved import? Judge only \
+             `proposal.content` as the change. Use dependency manifests in `project_context` \
+             and supplied project files in `existing_context` as resolution evidence. \
+             Do not judge imports in `existing_context` as proposed imports.",
+            Some(serde_json::json!({
+                "true": "At least one import in `proposal.content` cannot resolve, established \
+                         by the supplied dependency manifests and local-module or complete \
+                         proposed crate-root evidence.",
+                "false": "There are no imports in `proposal.content`, the proposed imports \
+                          resolve, or the supplied context is insufficient to establish an \
+                          unresolved import. Missing context alone does not establish one."
+            })),
         ),
     );
     questions.insert(
