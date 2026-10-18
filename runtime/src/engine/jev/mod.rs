@@ -463,6 +463,14 @@ pub enum JevError {
         id: String,
     },
 
+    /// An answer has the expected type but an invalid numerical value.
+    /// Only the fixed question id is included, never the provider value or payload.
+    #[error("the response has an invalid value for question id `{id}`.")]
+    InvalidAnswer {
+        /// The known question id whose value was out of range or non-finite.
+        id: String,
+    },
+
     /// A question id appeared more than once in the response (Requirement 4.8).
     #[error("the response carries the answer id `{id}` more than once.")]
     DuplicateAnswer {

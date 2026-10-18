@@ -11,11 +11,11 @@ The checked-in fixtures are synthetic candidate labels. The policy is pending, n
 - `rationales-v1.yml` gives case-by-case reviewer explanations and is not sent to Jev.
 - `smoke/` retains five small examples separately from the 100-case calibration candidate.
 
-The calibration candidate contains 50 rigor and 50 drift cases. Each signal has at least
-20 positive and 20 negative examples. Examples are template-composed synthetic cases,
-not independent production observations. A distinct holdout review candidate is prepared under
-`holdout/`; it has not been evaluated against the provider.
-Review the rubric and rationales before authorizing paid calibration.
+The calibration candidate contains 50 rigor and 50 drift cases, each with at least
+20 positive and 20 negative labels. These template-composed synthetic examples are not
+production observations. The separate 100-case holdout under `holdout/` was consumed and
+failed; it is historical evidence, **not** fresh validation. Neither corpus is relabeled,
+retuned, or reused as the new qualification set.
 
 The operator accepted estimated budgets of USD 0.05 for provider compatibility smoke,
 USD 0.25 for calibration, and USD 0.25 for independent validation, with a USD 10.00
@@ -28,17 +28,19 @@ The requested alias does not establish responder identity. Acceptance requires t
 
 ## Rigor labeling rubric (rigor-rubric-v1)
 
-This version defines the four production rigor questions and the human labels for calibration.
-Changing these definitions or question wording changes the scoring contract and invalidates
-earlier acceptance evidence; retain the rubric identifier with aggregate scoring provenance.
-Label the **actual state sent to Jev**, not an original file before filtering. Each rigor state
+This historical evaluator-only rubric defines the four rigor questions as applied to the
+calibration and consumed holdout files, **not** to the new proposed-change qualification.
+Changing these definitions or question wording invalidates earlier evaluator evidence;
+retain the rubric identifier with historical scoring provenance. Label the actual historical
+state sent to Jev, not the original file before filtering. Each such rigor state
 is an array of `{path, content}` entries for explicitly selected existing files. The protected
 reader omits missing files, rejects sensitive paths, drops lines matching the secret denylist
 (`secret`, `credentials`, `.env`, or `.pem` patterns), and rejects residual denylist matches.
-Proposed write content, dependency resolution results, repository-wide files, and project
-rules are **not** supplied automatically. A fixture can explicitly select a manifest, local
-module, or convention file as another evaluated file. Selected context may still be incomplete;
-missing context alone cannot establish an import or convention violation. Credential labels
+In this historical evaluator-only mode, proposed write content, dependency resolution
+results, repository-wide files, and project rules are **not** supplied automatically.
+A fixture can explicitly select a manifest, local module, or convention file as another
+evaluated file. Selected context may still be incomplete; missing context alone cannot
+establish an import or convention violation. Credential labels
 must likewise reflect only surviving content, never redacted lines.
 
 | Signal                 | Positive label                                                                                              | Negative label                                                                                                                                            |
@@ -73,9 +75,10 @@ and `drift_boundary: 0.50`. Projects can override each through the existing `jev
 The quality acceptance limits are unchanged. These boundaries fit the calibration scores;
 they are not independently validated production guarantees.
 
-Guard confidence and destructive-action gates remain separate and unchanged.
-A secret score of 0.25 can trigger a rigor annotation without meeting the confidence
-required for a guard block. Deterministic path and secret checks are not bypassed.
+Guard confidence and destructive-action gates remain distinct from finding thresholds.
+The guard blocks deterministic protected paths and lexical denylist matches without a
+provider call; every Jev finding, including high scores, is advisory and cannot hard-block.
+The lexical denylist does not purport to detect every credential-shaped literal.
 
 `holdout/fixtures-v1.yml` contains 50 rigor and 50 drift examples, with at least 20
 positive and negative examples per signal. It covers moderate versus complex code,
@@ -83,29 +86,22 @@ placeholder/redacted inputs versus inert credential material, and justified rela
 changes versus unrelated changes. `holdout/rationales-v1.yml` stays out of provider input.
 `holdout/source-v1.yml` freezes the candidate scoring values and rationale digest.
 Runtime tests check that this frozen candidate matches default scoring.
-The author knew the calibration results: this is a distinct held-out dataset, not blind
-independent authoring. Labels still require independent review before provider evaluation.
+The author knew the calibration results: this is a distinct previously held-out dataset,
+not blind independent authoring. Its provider attempt failed and consumed it; labels are
+preserved as historical evidence, not revised or promoted to fresh qualification.
 
 Keyless preparation can use `JEV_BENCH_FIXTURES=benchmarks/jev/holdout/fixtures-v1.yml`
 with the existing offline CLI command. Nested versioned inputs are allowed, but parent
 traversal, paths outside `benchmarks/jev/`, and symlink components remain rejected.
-Do not change labels or thresholds based on holdout scores. A failed holdout requires a
-new candidate and fresh independent validation rather than tuning against that set.
-No paid holdout run or repeat calibration is authorized by preparing these files.
-
-After label review and separate spending authorization, dispatch **Jev provider validation**
-from `main` with `mode=holdout`, `max_estimated_usd=0.25`, and
-`provider_spend_cap_confirmed=true`. Leave controlled provider modes false.
-This selects only the frozen `holdout/fixtures-v1.yml`, not the calibration corpus, and
-uploads `jev-holdout-aggregate-<source SHA>`. Environment approval is still required.
-The pending-policy execution flag permits measurement only; it does not authorize tuning
-against holdout scores or grant production acceptance. No automatic paid retry follows failure.
+Do not change labels or thresholds based on holdout scores. The failed consumed holdout
+requires a new candidate and fresh independent validation, not a retry or tuning on it.
+No paid repeat calibration or holdout is authorized by this repository change.
 
 Pre-run static label reviews found no blocking invalid labels, but identified coverage limits:
 two rigor convention cases rely on function-scoped interpretation of their rule; import cases
 do not exercise missing dependency context; drift labels correlate with changed-path count
 and explicit task naming, and do not exercise partial scope sprawl or unnamed justified edits.
-Passing this set does not establish performance on those untested shapes or broad production quality.
+These coverage limits were present before the failed run and remain relevant historical context.
 
 ## Keyless verification
 
@@ -193,6 +189,108 @@ Set `JEV_BENCH_CLIENT=http`, a positive `JEV_BENCH_MAX_ESTIMATED_USD`, and `JEV_
 A pending policy additionally requires `JEV_BENCH_CALIBRATE=1`.
 Calibration is explicitly nonaccepting until policy limits and labels receive approval.
 Never substitute fake-client results for provider evidence.
+
+## Proposal-aware guard proof and qualification
+
+The production MCP tool `truenorth_guard_change` and `truenorth-mcp guard` (reading the
+proposal on standard input) evaluate `{ "paths": ["src/example.rs"], "content": "fn
+area() {}", "task": "Update area" }`.
+`content` is **one proposed change**, not the existing contents of each target path.
+The guard reads bounded safe disk files for context, reports unavailable context, and
+never writes the proposal. New files and missing parent directories need not exist.
+Disk-only defects must not be mislabeled as defects in a clean proposal. No result is
+a compile-time or credential-validity proof. Deterministic protected-path and lexical
+denylist hits block with zero provider calls; model findings and provider failures remain
+visible, nonblocking advisories. Feature-off remains the default; changing the `jev`
+switch takes effect when MCP reconnects. Guard stdin accepts canonical normalized JSON
+with 1-100 paths, at most 1,000,000 bytes of UTF-8 content, and at most 8,000,000 bytes
+of total input.
+An actual CLI allow/annotate exits zero with empty stdout and advisory stderr; blocks
+exit one with stderr. Git `--staged` and `--range` modes only inspect metadata offline:
+they are not semantic commit gates. The scaffolded hook consumes this normalized JSON,
+including replacement proposals; arbitrary editor/tool envelopes are **not** guessed.
+MCP callers can invoke the tool directly. Automatic interception has not been verified
+against any real editing client, and is not claimed.
+
+### Guard proposal labeling rubric (guard-proposal-rubric-v1)
+
+Human labels judge the **proposed body** against only the safe context actually available
+to the guard. Existing files are evidence, never substitute proposal content.
+`hallucinated_import` is positive only where a supplied dependency manifest and local
+module context establish an unresolved import; missing/unsupported manifest or omitted
+dependency context does not prove an invented import. `violates_conventions` needs an
+explicit available project rule contradicted by the proposed code; absent rules do not
+establish a violation. `contains_secrets` includes synthetic inert credential-shaped
+literals in the proposed code, but excludes obvious placeholders, environment references
+and redactions. No real credential is included. The `complexity` Score is **ordinal**:
+trivial (straight-line), simple (one loop or branch), moderate (limited interacting
+branches), complex (nested interacting state and branches), very complex (multiple
+transitions/fallbacks/mutations). `complexity_high` means complex or very complex; it
+judges the most complex **proposed function**, not simple helpers or unchanged context.
+The current 62.5/100 boundary falls between the moderate and complex rubric levels,
+but a model's fractional Score is not a probability or human-level proof.
+`drift_out_of_scope` compares changed paths with the supplied task, otherwise cockpit
+active task, otherwise only protected paths; the scope request does **not** contain
+proposed or disk file bodies, so content-only scope sprawl is not proven. Absent task
+context cannot alone prove unrelated work. Model outputs are advisory even when wrong. For
+deterministic-only cases model labels are `null`, never inferred negatives. Rationale
+text is human-only; provider state never receives it.
+
+`guard-qualification/fixtures-v1.yml` binds 100 **new** proposed-change cases,
+50 rigor-focused and 50 scope-focused. All five signals are graded across all 100 cases,
+including findings outside a case's focus. Each signal has at least 20 positive and
+20 negative labels. Six deterministic-only cases are excluded from model sampling.
+Initial files and proposed content are distinct. `source-v1.yml` binds the separate
+`rationales-v1.yml` digest; neither
+source manifest nor rationales is sent to Jev. Human judgments are synthetic review
+candidates, **not** independent provider evidence. The old failed holdout is unchanged.
+The code and prompt/context boundaries must freeze before a separately authorized fresh
+validation; changing the corpus or policy invalidates its evidence.
+
+Run the new path keylessly with:
+
+```sh
+cargo build --locked --manifest-path runtime/Cargo.toml --features jev-http --bin truenorth-mcp
+cargo run --locked --manifest-path runtime/Cargo.toml --features jev-http --bin jev-bench -- guard-qualification
+node scripts/smoke-mcp-artifact.js --expected-version 1.2.1 -- ./runtime/target/debug/truenorth-mcp
+```
+
+The offline fake exercises control flow only; it cannot pass provider acceptance.
+The smoke command exercises MCP transport, not live provider compatibility. The
+guard-qualification runner calls the **shared production guard**, never independently
+reconstructs its final decision. Its guarded aggregate
+`.agent/telemetry/jev-guard-qualification.yml` records hashed case IDs, expected/actual
+deterministic and final decisions, raw observed finding scores and thresholds,
+context-unavailability status, full per-proposal latency, logical calls, HTTP attempts,
+token usage/cost provenance, unknown usage and budget interruptions. Failed or incomplete
+provider calls are not silently scored negative or free. Independent MCP and stdin
+interface regressions provide actual interface evidence; fixture `mcp`/`cli` labels alone
+are expectations, not proof those clients ran.
+
+`guard-qualification/policy-v1.yml` is **pending**. Its proposed, separately reviewable
+full-guard limits are 50 samples with 20 positive/20 negative per required signal,
+agreement at least 98%, no false negatives, at most one false positive, zero successful
+path errors, p95 including both calls and retries no more than 10,000 ms, combined
+estimated cost per proposal at most USD 0.002, and run estimate at most USD 0.25.
+The older evaluator-only limits are not reduced. `JEV_BENCH_CLIENT=http` additionally
+requires a positive reviewed `JEV_BENCH_MAX_ESTIMATED_USD`, a separately configured
+provider-side cap with `JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED=true`, and under a
+pending policy `JEV_BENCH_MEASURE_PENDING=1`. Pending-policy measurements always fail
+acceptance; fake responses, incomplete model identity, missing scores, retries with
+unobservable usage, and unknown cost cannot pass. The provider-side cap (operator
+reported USD 10) is **not** a spend authorization or a verified billing measurement.
+
+The manual protected workflow offers distinct fixed `guard-pilot` and
+`guard-qualification` choices, only from the immutable `main` SHA after Environment
+approval and separate spending authorization. `guard-pilot` invokes exactly ten reviewed
+proposals through the compiled **production MCP server** using the existing session
+client. It requires an estimated ceiling at most USD 0.05 and a zero-provider-call
+deterministic MCP preflight to establish accounting before any paid proposal. This
+integration pilot is not statistical qualification and never accepts production.
+`guard-qualification` selects only the new full-guard fixture and policy, with an
+estimated ceiling at most USD 0.25. In both modes secrets are injected only into the
+prebuilt executable step, no paid run is automatic, and retry/failed-call usage stops
+further proposals. Approval here authorizes neither workflow dispatch nor publication.
 
 ## Release acceptance
 

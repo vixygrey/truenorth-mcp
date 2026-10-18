@@ -1,26 +1,158 @@
-//! The secret-filtered state builder: assemble the evaluation state from a file set while
-//! keeping every secret out.
+//! Secret-filtered, descriptor-relative Jev state builders.
 //!
-//! A caller passes a set of paths to include in the Jev evaluation state. Every path is
-//! validated against the repository boundary and every existing file is opened without following
-//! symlinks before any content is read. Missing proposed files contribute no content. Secret
-//! paths are rejected; secret content lines are redacted from the JSON state. The assembled
-//! state is checked again before it can reach Jev.
-//!
-//! The builder makes no network call and never logs content. It reuses the shared denylist
-//! from [`crate::config`]. No API key appears anywhere in this module.
-//!
-//! Requirements: 9.1, 9.2, 9.6, 9.7. Design: jev-integration-eval, the secret-filter step,
-//! Property 31 (secret exclusion).
-
-// The direct convenience builder is exercised by its sibling tests; the guard evaluation
-// boundary uses pre-opened file handles to validate the entire set before reading.
+//! The shared file-set builder retains its standalone benchmark shape. The guard builder
+//! sends a separately labeled proposal plus bounded, redacted existing context. No
+//! optional context file is opened by following a symlink or walking a repository tree.
+//! Every assembled state is checked against the shared denylist before a provider call.
 
 use std::fs::File;
 use std::io::{ErrorKind, Read};
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
+
+/// Maximum bytes from any one existing file sent as model context.
+const MAX_CONTEXT_BYTES: u64 = 32_768;
+
+/// Filter a proposed change and bounded, explicitly identified existing context.
+///
+/// The proposal body belongs to the logical change, never implicitly to each path.
+/// Context comes only from the selected target files, root conventions, and one
+/// applicable manifest at the target's root or nearest ancestor. There is no tree scan.
+pub(crate) fn build_guard_rigor_state(
+    repo_root: &Path,
+    paths: &[PathBuf],
+    files: &mut [Option<File>],
+    content: &str,
+) -> Result<(Value, Vec<String>), super::JevError> {
+    let mut unavailable = Vec::new();
+    let mut existing = Vec::new();
+    for (path, file) in paths.iter().zip(files.iter_mut()) {
+        let Some(file) = file else {
+            continue;
+        };
+        let mut bytes = Vec::new();
+        file.take(MAX_CONTEXT_BYTES + 1)
+            .read_to_end(&mut bytes)
+            .map_err(|error| path_error(path, error))?;
+        if bytes.len() as u64 > MAX_CONTEXT_BYTES {
+            unavailable.push(format!(
+                "existing context for {} unavailable: exceeds 32768 bytes",
+                path.display()
+            ));
+            continue;
+        }
+        let Ok(text) = String::from_utf8(bytes) else {
+            unavailable.push(format!(
+                "existing context for {} unavailable: non-UTF-8",
+                path.display()
+            ));
+            continue;
+        };
+        existing.push(json!({"path": path.to_string_lossy(), "content": filter_lines(&text)}));
+    }
+
+    let mut context = Vec::new();
+    let mut candidates = vec![PathBuf::from("CONVENTIONS.md")];
+    let manifest = paths.iter().find_map(|path| {
+        let names: &[&str] = match path.extension().and_then(|extension| extension.to_str()) {
+            Some("rs") => &["Cargo.toml"],
+            Some("js" | "jsx" | "ts" | "tsx") => &["package.json"],
+            Some("py") => &["pyproject.toml", "requirements.txt"],
+            Some("go") => &["go.mod"],
+            _ => return None,
+        };
+        // Inspect only path ancestors, nearest first, then the repository root.
+        let mut candidates = Vec::new();
+        for ancestor in path.parent().into_iter().flat_map(Path::ancestors).take(8) {
+            if ancestor.as_os_str().is_empty() {
+                break;
+            }
+            candidates.extend(names.iter().map(|name| ancestor.join(name)));
+        }
+        candidates.extend(names.iter().map(|name| PathBuf::from(*name)));
+        Some(candidates)
+    });
+    if let Some(manifests) = manifest.as_ref() {
+        candidates.extend(manifests.iter().cloned());
+    }
+
+    // Reuse the descriptor-relative boundary for both path validation and symlink-safe opens.
+    // An inaccessible optional context is reported, not replaced with untrusted disk reads.
+    let mut has_manifest = false;
+    for candidate in candidates {
+        let name = candidate.to_string_lossy().into_owned();
+        match open_state_files(repo_root, std::slice::from_ref(&candidate)) {
+            Ok(mut opened) => {
+                let Some(file) = opened.pop().flatten() else {
+                    continue;
+                };
+                let mut bytes = Vec::new();
+                if file
+                    .take(MAX_CONTEXT_BYTES + 1)
+                    .read_to_end(&mut bytes)
+                    .is_err()
+                {
+                    unavailable.push(format!("{name} unavailable: unreadable"));
+                    continue;
+                }
+                if bytes.len() as u64 > MAX_CONTEXT_BYTES {
+                    unavailable.push(format!("{name} unavailable: exceeds 32768 bytes"));
+                    continue;
+                }
+                let Ok(text) = String::from_utf8(bytes) else {
+                    unavailable.push(format!("{name} unavailable: non-UTF-8"));
+                    continue;
+                };
+                context.push(json!({"path": name, "content": filter_lines(&text)}));
+                if candidate != Path::new("CONVENTIONS.md") {
+                    has_manifest = true;
+                    break;
+                }
+            }
+            Err(_) => unavailable.push(format!("{name} unavailable: unsafe or unreadable")),
+        }
+    }
+    if !context
+        .iter()
+        .any(|entry| entry["path"] == "CONVENTIONS.md")
+    {
+        unavailable.push("CONVENTIONS.md unavailable".to_string());
+    }
+    if manifest.is_some() && !has_manifest {
+        unavailable.push("dependency manifest unavailable".to_string());
+    }
+    if manifest.is_none() {
+        unavailable.push("dependency manifest unavailable: unsupported source type".to_string());
+    }
+    let state = json!({
+        "proposal": {"paths": paths.iter().map(|p| p.to_string_lossy().into_owned()).collect::<Vec<_>>(),
+                     "content": filter_lines(content)},
+        "existing_context": existing,
+        "project_context": context,
+        "unavailable_context": unavailable,
+    });
+    check_residual(&state)?;
+    Ok((state, unavailable))
+}
+
+fn filter_lines(text: &str) -> String {
+    let denylist = crate::config::secret_denylist();
+    text.lines()
+        .filter(|line| !denylist.iter().any(|pattern| pattern.is_match(line)))
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn check_residual(state: &Value) -> Result<(), super::JevError> {
+    if crate::config::secret_denylist()
+        .iter()
+        .any(|pattern| pattern.is_match(&state.to_string()))
+    {
+        return Err(super::JevError::SecretResidual);
+    }
+    Ok(())
+}
 
 /// Validate guard CLI paths without reading content or invoking Jev.
 ///
@@ -185,12 +317,12 @@ pub fn build_drift_scope_state(
     // The scope hint depends on whether a task is present. With a task, the model judges the
     // change against the task; without one, it judges against the protected paths only.
     let scope_note = if task.is_some() {
-        "A change is out of scope when it writes a protected path, or when it does work \
-         beyond the stated task. Judge the changed paths against the task and the protected \
-         paths."
+        "A change is out of scope when it writes a protected path, or when the \
+         changed paths do work beyond the stated task. Judge the changed paths \
+         against that task."
     } else {
-        "A change is out of scope when it writes a protected path or a path unrelated to the \
-         changed set. Judge the changed paths against the protected paths."
+        "No task was supplied. Judge only against protected paths; do not \
+         infer a scope violation from an absent task."
     };
 
     let mut state = json!({

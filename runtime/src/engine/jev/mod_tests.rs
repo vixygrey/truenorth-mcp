@@ -251,6 +251,9 @@ fn every_jev_error_variant_renders_a_nonempty_message() {
         JevError::MissingAnswer {
             id: "drift".to_string(),
         },
+        JevError::InvalidAnswer {
+            id: "complexity".to_string(),
+        },
         JevError::DuplicateAnswer {
             id: "drift".to_string(),
         },

@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "origin": "repository-authored synthetic proposed-change counterfactuals for issue 344",
+  "license": "repository-authored",
+  "selection": "10 candidate pilot proposals, not independent validation or statistical qualification; paired proposal-vs-disk, import, convention, complexity, scope, and inert placeholder cases",
+  "redaction": "Synthetic source only; no real credentials, customer data, repository snapshots or provider payloads",
+  "rubric": "guard-pilot-review-v1",
+  "rationales": "rationales-v1.json; operator-only and never sent to Jev",
+  "rationales_sha256": "14b14d32634e32135fa7e7cfdac7bf1e9fd737ea33473c65551f5efe5aec97b1",
+  "label_status": "candidate for operator review; pilot can never count as provider acceptance"
+}

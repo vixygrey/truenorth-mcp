@@ -34,17 +34,12 @@ const COMPLEXITY_ID: &str = "complexity";
 /// The question id for the contains-secrets Noul judgment (R4.6).
 const CONTAINS_SECRETS_ID: &str = "contains_secrets";
 
-/// The ordered complexity rubric levels. The Score answer returns an index on this scale.
-///
-/// The rubric has five levels, so the returned Score index is 0 through 4. The report
-/// normalizes the index to 0 to 100 with [`complexity_to_percent`].
+/// Five ordered complexity categories. The Score answer is a rubric position,
+/// not a probability or calibrated confidence value.
 const COMPLEXITY_LEVELS: [&str; 5] = ["trivial", "simple", "moderate", "complex", "very complex"];
 
-/// The report of one rigor evaluation (jev-integration-eval R4).
-///
-/// The three Noul fields carry a value from 0 to 1. The `complexity` field carries a value
-/// from 0 to 100, mapped from the Score index by [`complexity_to_percent`]. The `latency_ms`
-/// field is the wall-clock duration of the client call in milliseconds (R4.9).
+/// The report of one rigor evaluation. Complexity is the ordinal Score position
+/// linearly displayed on a 0–100 scale, not the probability of complexity.
 #[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct RigorReport {
@@ -60,13 +55,8 @@ pub struct RigorReport {
     pub latency_ms: u64,
 }
 
-/// Map a complexity Score index to a percentage from 0 to 100 (jev-integration-eval R4).
-///
-/// A Score answer returns a `score: f64` on the rubric index scale, from 0 to
-/// `levels - 1`. The report scale is 0 to 100. The mapping is
-/// `score / (levels - 1) * 100`, so index 0 maps to 0.0, the midpoint index maps to 50.0,
-/// and the top index maps to 100.0. The rubric has [`COMPLEXITY_LEVELS`] entries, so the
-/// divisor is that count minus one.
+/// Display the ordered complexity Score on a 0–100 scale. Its numerical
+/// position is not a probability, statistical percentage or confidence score.
 fn complexity_to_percent(score: f64) -> f64 {
     let top_index = (COMPLEXITY_LEVELS.len() - 1) as f64;
     score / top_index * 100.0
@@ -101,15 +91,12 @@ pub fn validate_answer_ids(ids: &[&str]) -> Result<(), JevError> {
 
 /// Read one Noul answer by its id, or return a typed error (R4.6, R4.7).
 ///
-/// A present Noul answer returns its value. A missing answer or a non-Noul answer under the
-/// id returns [`JevError::MissingAnswer`] naming the id.
-///
-/// # Errors
-///
-/// Returns [`JevError::MissingAnswer`] when the id is absent or its answer is not a Noul.
+/// A Noul value must be finite and in the closed interval 0–1. A missing
+/// or wrong-type answer is distinguished from an invalid numerical answer.
 fn read_noul(answers: &BTreeMap<String, Answer>, id: &str) -> Result<f64, JevError> {
     match answers.get(id) {
-        Some(Answer::Noul { noul }) => Ok(*noul),
+        Some(Answer::Noul { noul }) if noul.is_finite() && (0.0..=1.0).contains(noul) => Ok(*noul),
+        Some(Answer::Noul { .. }) => Err(JevError::InvalidAnswer { id: id.to_string() }),
         // A missing answer or a non-Noul answer under the id is a contract failure.
         _ => Err(JevError::MissingAnswer { id: id.to_string() }),
     }
@@ -117,16 +104,19 @@ fn read_noul(answers: &BTreeMap<String, Answer>, id: &str) -> Result<f64, JevErr
 
 /// Read the complexity Score answer and map it to 0 to 100, or return a typed error (R4.6).
 ///
-/// A present Score answer maps through [`complexity_to_percent`]. A missing answer or a
-/// non-Score answer under the complexity id returns [`JevError::MissingAnswer`] naming the id.
-///
-/// # Errors
-///
-/// Returns [`JevError::MissingAnswer`] when the complexity id is absent or its answer is not
-/// a Score.
+/// Score is an ordinal index over the configured levels. Reject a non-finite
+/// or out-of-range index before scaling it into the display range.
 fn read_complexity(answers: &BTreeMap<String, Answer>) -> Result<f64, JevError> {
     match answers.get(COMPLEXITY_ID) {
-        Some(Answer::Score { score, .. }) => Ok(complexity_to_percent(*score)),
+        Some(Answer::Score { score, .. })
+            if score.is_finite()
+                && (0.0..=(COMPLEXITY_LEVELS.len() - 1) as f64).contains(score) =>
+        {
+            Ok(complexity_to_percent(*score))
+        }
+        Some(Answer::Score { .. }) => Err(JevError::InvalidAnswer {
+            id: COMPLEXITY_ID.to_string(),
+        }),
         // A missing answer or a non-Score answer under the complexity id is a contract failure.
         _ => Err(JevError::MissingAnswer {
             id: COMPLEXITY_ID.to_string(),
@@ -169,40 +159,42 @@ pub async fn evaluate_rigor<C: JevClient>(
     questions.insert(
         HALLUCINATED_IMPORT_ID.to_string(),
         Question::noul(
-            "Does an import fail to resolve against the project files or dependency declarations \
-             explicitly supplied in this state? Answer 1 only when that context establishes an \
-             unresolved import; missing project or dependency context is not proof that an \
-             import is invented. Answer 0 otherwise.",
+            "Does an import in the proposed code fail to resolve against the existing project \
+             files or dependency declarations explicitly supplied as context? Answer 1 only \
+             when supplied context establishes it cannot resolve; unavailable context is not \
+             evidence of a hallucinated import. Answer 0 otherwise.",
             None,
         ),
     );
     questions.insert(
         VIOLATES_CONVENTIONS_ID.to_string(),
         Question::noul(
-            "Does the code violate an explicitly supplied project rule or convention in this \
-             state? Answer 1 only for a conflict with such a rule; do not treat general style \
-             preferences or missing project rules as violations. Answer 0 otherwise.",
+            "Does the proposed code violate an explicit project rule from the supplied \
+             project_context? Answer 1 only for a conflict with that rule; do not infer \
+             a rule from general style, unchanged files, or unavailable context. \
+             Answer 0 otherwise.",
             None,
         ),
     );
     questions.insert(
         CONTAINS_SECRETS_ID.to_string(),
         Question::noul(
-            "Does the supplied code contain embedded credential material? Answer 1 for a \
-             credential value, including inert credential-shaped test data. Answer 0 for obvious \
-             placeholders, environment-variable lookups, redactions, or no credential material. \
-             Judge only the supplied state, not content removed before this request.",
+            "Does the proposed code contain embedded credential material? Answer 1 for an \
+             inert credential-shaped value as well as a live-looking value; answer 0 for \
+             placeholders, environment references, redactions, or none. Existing context \
+             is not the change being judged.",
             None,
         ),
     );
     questions.insert(
         COMPLEXITY_ID.to_string(),
         Question::score(
-            "Rate the supplied code's control-flow and state complexity: trivial = straight-line; \
-             simple = one loop or conditional; moderate = branches or limited nesting with local \
-             state; complex = deep nesting plus interacting branches or state; very complex = \
-             multiple interacting state transitions, fallbacks, or mutations. Use the ordered \
-             levels, not code length or general style.",
+            "Rate the highest-complexity function in the proposed code, excluding existing \
+             context and simple helper functions: trivial = straight-line; simple = one loop \
+             or conditional; moderate = branches or limited nesting with local state; complex \
+             = deep nesting plus interacting branches or state; very complex = multiple \
+             interacting state transitions, fallbacks, or mutations. This ordered Score \
+             rates control flow, not length or probability.",
             COMPLEXITY_LEVELS
                 .iter()
                 .map(|s| serde_json::Value::from(*s))

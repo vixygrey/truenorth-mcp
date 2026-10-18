@@ -108,17 +108,25 @@ pub async fn evaluate_drift<C: JevClient>(
     questions.insert(
         DRIFT_QUESTION_ID.to_string(),
         Question::noul(
-            "Decide whether the plan is out of scope. The plan must not touch the protected \
-             paths. Answer 1 when the plan is out of scope and 0 when it is in scope.",
+            "Decide whether the changed paths are out of scope for the stated task. \
+             The plan must not touch protected paths. Answer 1 when the changed \
+             paths are out of scope and 0 when they are in scope. If no task is \
+             supplied, do not invent a task from unrelated repository files.",
             None,
         ),
     );
 
     let request = JevRequest::new(plan_state, questions);
+    super::guard_budget(&request)?;
     let response = client.evaluate(request).await?;
 
     let noul = match response.answers.get(DRIFT_QUESTION_ID) {
-        Some(Answer::Noul { noul }) => *noul,
+        Some(Answer::Noul { noul }) if noul.is_finite() && (0.0..=1.0).contains(noul) => *noul,
+        Some(Answer::Noul { .. }) => {
+            return Err(JevError::InvalidAnswer {
+                id: DRIFT_QUESTION_ID.to_string(),
+            });
+        }
         // A missing answer or a non-Noul answer under the drift id is a contract failure.
         _ => {
             return Err(JevError::MissingAnswer {

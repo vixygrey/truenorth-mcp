@@ -198,3 +198,54 @@ fn complexity_mapping_spans_zero_to_one_hundred() {
     assert_eq!(complexity_to_percent(4.0), 100.0);
     assert_eq!(complexity_to_percent(2.0), 50.0);
 }
+
+#[tokio::test]
+async fn rigor_questions_judge_only_proposed_functions_against_explicit_context() {
+    let fake = FakeClient::new();
+    fake.push_response(full_response(0.0, 0.0, 0.0, 2.0));
+    evaluate_rigor(
+        &fake,
+        serde_json::json!({
+            "proposal": {"content": "fn simple() {} fn complex() { if a { while b { if c {} } } }"},
+            "existing_context": [{"path": "src/old.rs", "content": "fn old() { deeply_nested() }"}],
+            "project_context": []
+        }),
+    )
+    .await
+    .unwrap();
+    let calls = fake.calls();
+    let questions = &calls[0].questions;
+    let complexity = serde_json::to_value(&questions["complexity"]).unwrap();
+    let instructions = complexity["instructions"].as_str().unwrap();
+    assert!(instructions.contains("highest-complexity function"));
+    assert!(instructions.contains("excluding existing"));
+    assert!(instructions.contains("simple helper functions"));
+    assert!(instructions.contains("not length or probability"));
+    let conventions = serde_json::to_value(&questions["violates_conventions"]).unwrap();
+    assert!(
+        conventions["instructions"]
+            .as_str()
+            .unwrap()
+            .contains("explicit project rule")
+    );
+}
+
+#[tokio::test]
+async fn invalid_noul_or_score_is_unavailable_not_a_clean_finding() {
+    for invalid in [f64::NAN, f64::INFINITY, -0.01, 1.01] {
+        let fake = FakeClient::new();
+        fake.push_response(full_response(invalid, 0.0, 0.0, 2.0));
+        assert!(matches!(
+            evaluate_rigor(&fake, serde_json::json!("proposal")).await,
+            Err(JevError::InvalidAnswer { id }) if id == "hallucinated_import"
+        ));
+    }
+    for invalid in [f64::NAN, f64::INFINITY, -0.01, 4.01] {
+        let fake = FakeClient::new();
+        fake.push_response(full_response(0.0, 0.0, 0.0, invalid));
+        assert!(matches!(
+            evaluate_rigor(&fake, serde_json::json!("proposal")).await,
+            Err(JevError::InvalidAnswer { id }) if id == "complexity"
+        ));
+    }
+}

@@ -22,9 +22,15 @@ use rmcp::{ErrorData, schemars, tool, tool_router};
 use serde::Deserialize;
 
 use crate::engine::jev::config::{resolve, resolve_protected_paths};
-use crate::engine::jev::guard::evaluate::evaluate_guard;
+use crate::engine::jev::guard::evaluate::{GuardObservation, evaluate_guard_observed};
 use crate::engine::jev::guard::{GuardDecision, ProposedChange};
 use crate::server::TrueNorthServer;
+
+#[path = "guard_accounting.rs"]
+mod accounting;
+#[cfg(all(test, feature = "jev-http"))]
+pub(crate) use accounting::AccountedClient;
+pub use accounting::GuardAccounting;
 
 /// The maximum number of target paths a single proposed change may carry.
 const MAX_PATHS: usize = 100;
@@ -93,8 +99,8 @@ impl TrueNorthServer {
             task: args.task,
         };
 
-        let decision = self.evaluate_change(&change).await?;
-        decision_to_result(decision, self.ctx.token_caps)
+        let (decision, accounting, observation) = self.evaluate_change(&change).await?;
+        decision_to_result(decision, self.ctx.token_caps, accounting, observation)
     }
 }
 
@@ -103,11 +109,14 @@ impl TrueNorthServer {
     ///
     /// The config and protected paths come from `.agent/config/rules.yml`. The production
     /// server validates Jev activation before advertising this tool.
-    async fn evaluate_change(&self, change: &ProposedChange) -> Result<GuardDecision, ErrorData> {
+    async fn evaluate_change(
+        &self,
+        change: &ProposedChange,
+    ) -> Result<(GuardDecision, GuardAccounting, GuardObservation), ErrorData> {
         let config = resolve(&self.ctx.repo_root).map_err(config_error)?;
         let protected = resolve_protected_paths(&self.ctx.repo_root).map_err(config_error)?;
 
-        run_decision(
+        run_accounted_decision(
             change,
             &protected,
             &config,
@@ -128,55 +137,23 @@ fn config_error(error: crate::engine::jev::JevError) -> ErrorData {
     )
 }
 
-/// Run the guardrail decision with the resolved inputs (default build: no client).
-///
-/// Under the default build there is no HTTP client, so the guardrail runs the deterministic
-/// layer and the fail-open probabilistic layer with no client. A deterministic block still
-/// holds; the probabilistic layer returns an allow with a note (R8.4).
-#[cfg(not(feature = "jev-http"))]
-async fn run_decision(
-    change: &ProposedChange,
-    protected: &[String],
-    config: &crate::engine::jev::config::JevConfig,
-    jev_enabled: bool,
-    _activation: Option<&crate::engine::jev::client_http::JevActivation>,
-    repo_root: &std::path::Path,
-) -> Result<GuardDecision, crate::engine::jev::JevError> {
-    use crate::engine::jev::client_fake::FakeClient;
-
-    // The default build compiles no HTTP client, so the type parameter is the fake and the
-    // argument is None. The probabilistic layer sees no client and fails open (R8.4).
-    evaluate_guard::<FakeClient>(
-        change,
-        protected,
-        config,
-        jev_enabled,
-        false,
-        None,
-        repo_root,
-    )
-    .await
-}
-
-/// Run the guardrail decision with the resolved inputs (jev-http build: real client).
-///
-/// The production constructor supplies validated activation. Dependency-injected test contexts
-/// without activation retain the offline fail-open path.
-#[cfg(feature = "jev-http")]
-async fn run_decision(
+/// Run the guardrail with sanitized per-call accounting; the sole decision entry point for
+/// both the MCP tool and the stdin CLI (R8.4).
+pub async fn run_accounted_decision(
     change: &ProposedChange,
     protected: &[String],
     config: &crate::engine::jev::config::JevConfig,
     jev_enabled: bool,
     activation: Option<&crate::engine::jev::client_http::JevActivation>,
     repo_root: &std::path::Path,
-) -> Result<GuardDecision, crate::engine::jev::JevError> {
-    use crate::engine::jev::client_fake::FakeClient;
-    use crate::engine::jev::client_http::HttpClient;
-
+) -> Result<(GuardDecision, GuardAccounting, GuardObservation), crate::engine::jev::JevError> {
+    let started = std::time::Instant::now();
+    #[cfg(feature = "jev-http")]
     if jev_enabled && let Some(activation) = activation {
-        let client = HttpClient::new(activation.clone(), config);
-        return evaluate_guard(
+        let client = accounting::AccountedClient::new(
+            crate::engine::jev::client_http::HttpClient::new(activation.clone(), config),
+        );
+        let (decision, observation) = evaluate_guard_observed(
             change,
             protected,
             config,
@@ -185,19 +162,30 @@ async fn run_decision(
             Some(&client),
             repo_root,
         )
-        .await;
+        .await?;
+        let elapsed_ms = u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX);
+        return Ok((decision, client.into_accounting(elapsed_ms), observation));
     }
-
-    evaluate_guard::<FakeClient>(
-        change,
-        protected,
-        config,
-        jev_enabled,
-        false,
-        None,
-        repo_root,
-    )
-    .await
+    let _ = activation;
+    let (decision, observation) =
+        evaluate_guard_observed::<crate::engine::jev::client_fake::FakeClient>(
+            change,
+            protected,
+            config,
+            jev_enabled,
+            false,
+            None,
+            repo_root,
+        )
+        .await?;
+    Ok((
+        decision,
+        GuardAccounting {
+            elapsed_ms: u64::try_from(started.elapsed().as_millis()).unwrap_or(u64::MAX),
+            ..GuardAccounting::default()
+        },
+        observation,
+    ))
 }
 
 /// Map a guard decision to a tool result (R1.4).
@@ -205,31 +193,43 @@ async fn run_decision(
 /// An `Allow` and an `Annotate` are success results carrying the notes. A `Block` is an MCP
 /// error carrying the neutralization packet as structured data. The packet carries no secret
 /// value and no API key (R6.3).
-fn decision_to_result(
+pub(crate) fn decision_to_result(
     decision: GuardDecision,
     caps: crate::engine::features::TokenCaps,
+    accounting: GuardAccounting,
+    observation: GuardObservation,
 ) -> Result<CallToolResult, ErrorData> {
-    match decision {
+    let findings = accounting::findings(&observation);
+    let response = match decision {
         GuardDecision::Allow { notes } => result::success(
             vec![ContentBlock::text(
-                serde_json::json!({ "decision": "allow", "notes": notes }).to_string(),
+                serde_json::json!({ "decision": "allow", "notes": notes, "accounting": accounting, "findings": findings }).to_string(),
             )],
             caps,
         ),
         GuardDecision::Annotate { notes } => result::success(
             vec![ContentBlock::text(
-                serde_json::json!({ "decision": "annotate", "notes": notes }).to_string(),
+                serde_json::json!({ "decision": "annotate", "notes": notes, "accounting": accounting, "findings": findings }).to_string(),
             )],
             caps,
         ),
         GuardDecision::Block(packet) => {
-            let data = serde_json::to_value(&packet).unwrap_or(serde_json::Value::Null);
-            Err(ErrorData::invalid_request(
+            let mut data = serde_json::to_value(&packet).unwrap_or(serde_json::Value::Null);
+            data["accounting"] = serde_json::json!(accounting);
+            data["findings"] = findings;
+            return Err(ErrorData::invalid_request(
                 format!("the guardrail blocked the change: {}", packet.remediation),
                 Some(data),
             ))
         }
-    }
+    };
+    response.map_err(|mut error| {
+        if error.data.is_none() {
+            error.data =
+                Some(serde_json::json!({ "accounting": accounting, "findings": findings }));
+        }
+        error
+    })
 }
 
 // Tests live in a sibling file to hold this module under the size guidance. The `#[path]`

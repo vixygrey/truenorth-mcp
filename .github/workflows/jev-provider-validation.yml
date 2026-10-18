@@ -13,6 +13,8 @@ on:
           - compatibility
           - calibration
           - holdout
+          - guard-pilot
+          - guard-qualification
       max_estimated_usd:
         description: "Reviewed ceiling for estimated successful-response cost in USD (provider-side spending cap separately required)"
         required: true
@@ -39,7 +41,7 @@ jobs:
   provider-validation:
     if: github.repository == 'vixygrey/truenorth-mcp' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: ${{ inputs.mode == 'guard-qualification' && 45 || 15 }}
     environment: jev-provider-validation
     steps:
       - name: Check out the dispatched immutable SHA
@@ -66,8 +68,12 @@ jobs:
         run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin jev-provider-smoke
 
       - name: Build secret-free benchmark binary
-        if: inputs.mode == 'calibration' || inputs.mode == 'holdout'
+        if: inputs.mode == 'calibration' || inputs.mode == 'holdout' || inputs.mode == 'guard-qualification'
         run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin jev-bench
+
+      - name: Build secret-free production MCP pilot binary
+        if: inputs.mode == 'guard-pilot'
+        run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin truenorth-mcp
 
       # Environment secrets exist only in this step's process. No cargo invocation, CLI argument,
       # trace, command echo, or uploaded raw provider response ever contains a credential.
@@ -94,6 +100,30 @@ jobs:
           JEV_BENCH_MAX_ESTIMATED_USD: ${{ inputs.max_estimated_usd }}
           JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED: ${{ inputs.provider_spend_cap_confirmed }}
         run: ./runtime/target/release/jev-bench bench
+      # The pilot invokes the production MCP process; it does not call the evaluators directly.
+      # Its protected-path preflight checks trustworthy accounting without a provider request.
+      - name: Run ten reviewed production MCP guard proposals
+        if: inputs.mode == 'guard-pilot'
+        env:
+          TRUENORTH_JEV_ENDPOINT: ${{ secrets.TRUENORTH_JEV_ENDPOINT }}
+          TRUENORTH_JEV_API_KEY: ${{ secrets.TRUENORTH_JEV_API_KEY }}
+          JEV_GUARD_PILOT_APPROVED: "true"
+          JEV_BENCH_MAX_ESTIMATED_USD: ${{ inputs.max_estimated_usd }}
+          JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED: ${{ inputs.provider_spend_cap_confirmed }}
+        run: node scripts/jev-guard-pilot.js --report "$RUNNER_TEMP/jev-guard-pilot.json" -- ./runtime/target/release/truenorth-mcp
+
+      - name: Run protected full-guard qualification candidate
+        if: inputs.mode == 'guard-qualification'
+        env:
+          TRUENORTH_JEV_ENDPOINT: ${{ secrets.TRUENORTH_JEV_ENDPOINT }}
+          TRUENORTH_JEV_API_KEY: ${{ secrets.TRUENORTH_JEV_API_KEY }}
+          JEV_BENCH_CLIENT: http
+          JEV_BENCH_MEASURE_PENDING: "1"
+          JEV_BENCH_FIXTURES: benchmarks/jev/guard-qualification/fixtures-v1.yml
+          JEV_BENCH_POLICY: benchmarks/jev/guard-qualification/policy-v1.yml
+          JEV_BENCH_MAX_ESTIMATED_USD: ${{ inputs.max_estimated_usd }}
+          JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED: ${{ inputs.provider_spend_cap_confirmed }}
+        run: ./runtime/target/release/jev-bench guard-qualification
 
       - name: Upload only sanitized aggregate evidence
         if: always() && inputs.mode == 'compatibility'
@@ -110,5 +140,14 @@ jobs:
         with:
           name: jev-${{ inputs.mode }}-aggregate-${{ github.sha }}
           path: .agent/telemetry/jev-benchmark.yml
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload sanitized full-guard evidence only
+        if: always() && (inputs.mode == 'guard-pilot' || inputs.mode == 'guard-qualification')
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jev-${{ inputs.mode }}-aggregate-${{ github.sha }}
+          path: ${{ inputs.mode == 'guard-pilot' && format('{0}/jev-guard-pilot.json', runner.temp) || '.agent/telemetry/jev-guard-qualification.yml' }}
           if-no-files-found: warn
           retention-days: 14

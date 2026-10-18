@@ -142,3 +142,20 @@ fn is_out_of_scope_applies_the_boundary() {
     assert!(!is_out_of_scope(0.49, boundary));
     assert!(!is_out_of_scope(0.0, boundary));
 }
+
+#[tokio::test]
+async fn malformed_drift_judgment_is_unavailable_not_in_scope() {
+    for value in [f64::NAN, f64::INFINITY, -0.01, 1.01] {
+        let fake = FakeClient::new();
+        fake.push_response(noul_response(value));
+        let result = evaluate_drift(
+            &fake,
+            serde_json::json!("scope"),
+            &["src/main.rs".to_string()],
+            &[],
+            0.5,
+        )
+        .await;
+        assert!(matches!(result, Err(JevError::InvalidAnswer { id }) if id == "drift"));
+    }
+}
