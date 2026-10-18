@@ -33,3 +33,8 @@ resource URI and notifies, so a client re-reads fresh content.
 A parse or validation failure on a backing file returns a resource read error that names
 the file and the cause. The runtime retains the last good content and keeps serving the
 other resources. It does not crash on a malformed file.
+
+Resource reads reject symlinked files and parent directories, including aliases to private
+files or telemetry. A symlinked repository root remains supported. An unsafe ADR entry fails
+the resource read rather than silently disappearing. Rejected reads leave the last good
+cache unchanged. Replace symlinked resource files with regular repository files.

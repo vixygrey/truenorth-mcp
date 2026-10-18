@@ -48,19 +48,105 @@ fn ignores_non_markdown_files() {
 }
 
 #[test]
-fn skips_a_secret_named_markdown_file() {
-    // Requirement 1.7: a stray file matching the secret denylist is never served, even
-    // when it carries the ADR `.md` extension.
+fn rejects_a_secret_named_markdown_file() {
     let repo = TempDir::new().expect("temp repo");
     seed_adr(&repo, "0001-first.md", "# First\n");
     seed_adr(&repo, "credentials.md", "SECRET=leak\n");
 
-    let content = read_adr_dir(&repo.path().join("specs").join("adr")).expect("read adr");
-    assert!(content.contains("# First"));
+    let error = read_adr_dir(&repo.path().join("specs/adr")).expect_err("secret ADR rejected");
     assert!(
-        !content.contains("SECRET=leak"),
-        "a secret-denylist file must not be served"
+        matches!(error, ResourceReadError::Invalid(message) if message.contains("credentials.md"))
     );
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_adr_symlinks_to_outside_secrets_and_retains_cache() {
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    let outside = TempDir::new().expect("outside");
+    fs::write(outside.path().join(".env"), "API_KEY=private\n").expect("write secret");
+    seed_adr(&repo, "0001-good.md", "# Good\n");
+    let cache = ResourceCache::new();
+    let good = cache
+        .read(ResourceDoc::Adr, repo.path())
+        .expect("safe read");
+    let alias = repo.path().join("specs/adr/0002-ordinary.md");
+    symlink(outside.path().join(".env"), &alias).expect("link secret");
+    let error = cache
+        .read(ResourceDoc::Adr, repo.path())
+        .expect_err("refuse alias");
+    assert!(
+        matches!(error, ResourceReadError::Invalid(message) if message.contains("0002-ordinary.md") && !message.contains("API_KEY"))
+    );
+    assert_eq!(
+        cache.last_good(ResourceDoc::Adr).as_deref(),
+        Some(good.as_str())
+    );
+    fs::remove_file(alias).expect("remove alias");
+    assert_eq!(
+        cache
+            .read(ResourceDoc::Adr, repo.path())
+            .expect("safe again"),
+        good
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_symlinked_adr_directory_and_parent() {
+    use std::os::unix::fs::symlink;
+
+    for parent in [false, true] {
+        let repo = TempDir::new().expect("temp repo");
+        let outside = TempDir::new().expect("outside");
+        fs::create_dir_all(outside.path().join("adr")).expect("outside adr");
+        fs::write(outside.path().join("adr/0001-note.md"), "outside\n").expect("outside note");
+        if parent {
+            symlink(outside.path(), repo.path().join("specs")).expect("link parent");
+        } else {
+            fs::create_dir(repo.path().join("specs")).expect("specs");
+            symlink(outside.path().join("adr"), repo.path().join("specs/adr")).expect("link adr");
+        }
+        assert!(matches!(
+            ResourceDoc::Adr.read_current(repo.path()),
+            Err(ResourceReadError::Invalid(_))
+        ));
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_telemetry_and_secret_aliases_inside_repo() {
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    seed_adr(&repo, "0001-safe.md", "# Safe\n");
+    fs::create_dir_all(repo.path().join(".agent/telemetry")).expect("telemetry");
+    fs::write(repo.path().join(".agent/telemetry/events.md"), "private\n")
+        .expect("write telemetry");
+    fs::write(repo.path().join(".env"), "private\n").expect("write secret");
+    for target in [".agent/telemetry/events.md", ".env"] {
+        let alias = repo.path().join("specs/adr/0002-note.md");
+        symlink(repo.path().join(target), &alias).expect("link private");
+        assert!(matches!(
+            ResourceDoc::Adr.read_current(repo.path()),
+            Err(ResourceReadError::Invalid(_))
+        ));
+        fs::remove_file(alias).expect("remove alias");
+    }
+}
+
+#[test]
+fn refuses_nonregular_markdown_entries() {
+    let repo = TempDir::new().expect("temp repo");
+    seed_adr(&repo, "0001-good.md", "# Good\n");
+    fs::create_dir(repo.path().join("specs/adr/0002-directory.md")).expect("directory entry");
+    assert!(matches!(
+        ResourceDoc::Adr.read_current(repo.path()),
+        Err(ResourceReadError::Invalid(message)) if message.contains("0002-directory.md")
+    ));
 }
 
 #[test]

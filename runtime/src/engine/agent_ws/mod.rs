@@ -1,14 +1,10 @@
-//! The agent workspace guard: the single write path under `.agent/`, the telemetry
-//! read exclusion, and the layout-contract read.
+//! The agent workspace write guards, protected filesystem access, and layout reads.
 //!
-//! The runtime writes only under `.agent/`. Every runtime write funnels through
-//! [`write_under_agent`], which normalizes the target, rejects any path that escapes
-//! `.agent/` (lexically and after symlink resolution), then delegates to the module's
-//! private atomic write. This is the load-bearing invariant of the feature (design ADR-6,
-//! Property 6). The atomic write is private to this module, so the guard is the only door
-//! to a byte write and cannot be bypassed by a direct call (#187). The scaffold is the one
-//! authorized exception: it seeds files outside `.agent/` through the audited
-//! [`write_repo_seed`] path, which the runtime tools never call.
+//! Machine-state writes stay under `.agent/` through [`write_under_agent`] or the
+//! descriptor-relative [`fs_boundary`] operations. Recovery, protected reads, and seeding
+//! reject repository symlinks at open time (design ADR-6, Property 6).
+//! Scaffolding and ownership-planned upgrades use the explicit [`write_repo_seed`]
+//! exception for authorized repository paths.
 //!
 //! [`is_excluded_read`] reports the telemetry read exclusion. [`read_layout`] parses
 //! `.agent/layout.yml` and confirms every required area and file is present, retaining
@@ -28,6 +24,8 @@ pub const AGENT_DIR: &str = ".agent";
 
 /// The telemetry area, excluded from agent reads (Requirement 1.9, 1.10).
 pub const TELEMETRY_AREA: &str = "telemetry";
+
+pub(crate) mod fs_boundary;
 
 mod layout;
 mod revision;

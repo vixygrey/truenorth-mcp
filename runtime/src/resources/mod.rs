@@ -11,6 +11,7 @@
 
 use std::path::PathBuf;
 
+use crate::engine::agent_ws::fs_boundary::RepositoryFs;
 use crate::engine::features::Features;
 use crate::engine::validate::{validate_release_plan, validate_state};
 
@@ -142,21 +143,20 @@ impl ResourceDoc {
         }
     }
 
-    /// Resolve the read path. Only ontology retains its legacy YAML fallback.
-    fn read_path(self, repo_root: &std::path::Path) -> Option<PathBuf> {
-        let primary = self.backing_path(repo_root);
-        if primary.is_file() {
-            return Some(primary);
-        }
-        match self.legacy_backing_path(repo_root) {
-            Some(legacy) if legacy.is_file() => Some(legacy),
-            _ => None,
-        }
-    }
-
     /// Whether reading this resource would create the ontology backing file.
     pub(crate) fn needs_seed(self, repo_root: &std::path::Path) -> bool {
-        self == ResourceDoc::Ontology && self.read_path(repo_root).is_none()
+        if self != ResourceDoc::Ontology {
+            return false;
+        }
+        let Ok(fs) = RepositoryFs::open(repo_root) else {
+            return false;
+        };
+        [".agent/ontology.yml", "specs/ontology.yaml"]
+            .iter()
+            .all(|path| {
+                fs.open_read(std::path::Path::new(path))
+                    .is_err_and(|error| error.kind() == std::io::ErrorKind::NotFound)
+            })
     }
 
     /// Read and validate the backing file's current content (Requirement 5.5).
@@ -176,33 +176,46 @@ impl ResourceDoc {
             return adr::read_adr_dir(&self.backing_path(repo_root));
         }
 
-        // The ontology resource creates its backing file under .agent/ on first read when
-        // it is absent, through the single write guard (Requirements 2.4, 2.5).
-        let path = match self.read_path(repo_root) {
-            Some(path) => path,
-            None if self == ResourceDoc::Ontology => create_ontology_on_read(repo_root)?,
-            None => return Err(ResourceReadError::NotFound(display_backing(self))),
+        // Only an absent primary ontology may use the legacy path or create a seed.
+        // A symlink or forbidden file is an error, never a reason to try a fallback.
+        let fs = RepositoryFs::open(repo_root)
+            .map_err(|e| ResourceReadError::Invalid(format!("could not open repository: {e}")))?;
+        let primary = self.backing_path(repo_root);
+        let relative = primary.strip_prefix(repo_root).map_err(|e| {
+            ResourceReadError::Invalid(format!("could not resolve {}: {e}", display_backing(self)))
+        })?;
+        let mut file = match fs.open_read(relative) {
+            Ok(file) => file,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                if let Some(legacy) = self.legacy_backing_path(repo_root) {
+                    let legacy_relative = legacy.strip_prefix(repo_root).map_err(|e| {
+                        ResourceReadError::Invalid(format!(
+                            "could not resolve legacy ontology: {e}"
+                        ))
+                    })?;
+                    match fs.open_read(legacy_relative) {
+                        Ok(file) => file,
+                        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                            create_ontology_on_read(repo_root)?;
+                            fs.open_read(relative).map_err(|e| read_error(self, e))?
+                        }
+                        Err(e) => {
+                            return Err(ResourceReadError::Invalid(format!(
+                                "could not read specs/ontology.yaml: {e}"
+                            )));
+                        }
+                    }
+                } else {
+                    return Err(ResourceReadError::NotFound(display_backing(self)));
+                }
+            }
+            Err(e) => return Err(read_error(self, e)),
         };
 
-        // Refuse a read that resolves under the telemetry area (Requirement 1.10) or that
-        // matches the secret denylist (Requirement 1.7). No served resource backs such a
-        // path today, so this is defense in depth against a future backing-path change.
-        reject_excluded_or_secret(repo_root, &path)?;
-
-        let text = std::fs::read_to_string(&path).map_err(|error| {
-            let backing = display_backing(self);
-            // The path resolved to an existing file just above, so a NotFound here is a
-            // race (the file was removed mid-read). Any other kind is a real I/O failure
-            // (permissions, not a regular file). Preserve the cause rather than reporting a
-            // bare "not found", so the message is actionable (#189).
-            match error.kind() {
-                std::io::ErrorKind::NotFound => ResourceReadError::NotFound(backing),
-                _ => ResourceReadError::Invalid(format!(
-                    "could not read {backing}: {error}. Check the file permissions and \
-                     that it is a regular file."
-                )),
-            }
-        })?;
+        let mut text = String::new();
+        use std::io::Read;
+        file.read_to_string(&mut text)
+            .map_err(|e| read_error(self, e))?;
 
         match self {
             ResourceDoc::State => {
@@ -250,55 +263,35 @@ fn ontology_seed() -> Result<String, ResourceReadError> {
 
 /// Create the ontology backing file under `.agent/` on first read (Requirements 2.4, 2.5).
 ///
-/// The write goes through the single write guard, so it stays under `.agent/`. On a
-/// create failure this returns an Invalid read error naming the ontology path, so the
-/// caller retains the last good ontology content and keeps serving other resources
-/// (Requirement 2.5).
+/// The descriptor-relative, no-clobber write keeps a concurrently created file intact.
+/// A failure leaves the last good content cached (Requirement 2.5).
 fn create_ontology_on_read(repo_root: &std::path::Path) -> Result<PathBuf, ResourceReadError> {
-    let rel = std::path::Path::new("ontology.yml");
-    let path = repo_root.join(".agent").join(rel);
-    let (existing, observed) =
-        crate::engine::agent_ws::ObservedFile::read_string(&path).map_err(|error| {
-            ResourceReadError::Invalid(format!("could not inspect .agent/ontology.yml: {error}"))
-        })?;
-    if existing.is_some() {
-        return Ok(path);
-    }
+    let fs = RepositoryFs::open(repo_root)
+        .map_err(|e| ResourceReadError::Invalid(format!("could not open repository: {e}")))?;
+    fs.create_dir_all(std::path::Path::new(".agent"))
+        .map_err(|e| ResourceReadError::Invalid(format!("could not create .agent/: {e}")))?;
+    let relative = std::path::Path::new(".agent/ontology.yml");
+    let path = repo_root.join(relative);
     let seed = ontology_seed()?;
-    let precondition = crate::engine::agent_ws::WritePrecondition::new(observed);
-    crate::engine::agent_ws::write_under_agent_if_unchanged(repo_root, rel, &seed, &precondition)
-        .map_err(|e| {
-        ResourceReadError::Invalid(format!(
+    match fs.write_new(relative, seed.as_bytes()) {
+        Ok(()) => Ok(path),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Ok(path),
+        Err(e) => Err(ResourceReadError::Invalid(format!(
             "could not create .agent/ontology.yml: {e}. No file was created."
-        ))
-    })?;
-    Ok(path)
+        ))),
+    }
 }
 
-/// Reject a resolved read path that is excluded or secret (Requirements 1.7, 1.10).
-///
-/// A path under `.agent/telemetry/` is excluded from agent reads (Requirement 1.10). A
-/// path matching the secret denylist (`.env`, `*.pem`, `secret`, `credentials`) is refused
-/// as defense in depth (Requirement 1.7). The telemetry check runs against the path
-/// relative to the repository root, so it matches the `.agent/telemetry/...` form.
-fn reject_excluded_or_secret(
-    repo_root: &std::path::Path,
-    path: &std::path::Path,
-) -> Result<(), ResourceReadError> {
-    let relative = path.strip_prefix(repo_root).unwrap_or(path);
-    if crate::engine::agent_ws::is_excluded_read(relative) {
-        return Err(ResourceReadError::Invalid(format!(
-            "refused to read `{}`: the telemetry area is excluded from reads.",
-            relative.display()
-        )));
+/// Map a guarded read failure to the resource's file name.
+fn read_error(doc: ResourceDoc, error: std::io::Error) -> ResourceReadError {
+    let backing = display_backing(doc);
+    match error.kind() {
+        std::io::ErrorKind::NotFound => ResourceReadError::NotFound(backing),
+        _ => ResourceReadError::Invalid(format!(
+            "could not read {backing}: {error}. Check the file permissions and \
+             that it is a regular file."
+        )),
     }
-    if crate::config::is_secret_path(path) {
-        return Err(ResourceReadError::Invalid(format!(
-            "refused to read `{}`: the path matches the secret denylist.",
-            relative.display()
-        )));
-    }
-    Ok(())
 }
 
 /// The backing file name for an error message.

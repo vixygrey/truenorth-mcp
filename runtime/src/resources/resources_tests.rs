@@ -42,21 +42,102 @@ fn uri_and_backing_paths_are_stable() {
     assert_eq!(ResourceDoc::from_uri("truenorth://nope"), None);
 }
 
+#[cfg(unix)]
 #[test]
-fn reject_excluded_or_secret_refuses_telemetry_and_secret_paths() {
-    let root = std::path::Path::new("/repo");
+fn refuses_resource_symlinks_without_losing_cache_or_other_resources() {
+    use std::os::unix::fs::symlink;
 
-    // A telemetry path is excluded from reads (Requirement 1.10).
-    let telemetry = root.join(".agent").join("telemetry").join("runs.yml");
-    assert!(reject_excluded_or_secret(root, &telemetry).is_err());
+    let dir = tempdir().expect("temp dir");
+    let outside = tempdir().expect("outside");
+    seed(dir.path(), "CONVENTIONS.md", "# Good\n");
+    seed(dir.path(), ".agent/tasks/state.json", "active_epic: e01\n");
+    fs::write(outside.path().join(".env"), "API_KEY=private\n").expect("write secret");
+    let cache = ResourceCache::new();
+    let good = cache
+        .read(ResourceDoc::Conventions, dir.path())
+        .expect("safe read");
+    fs::remove_file(dir.path().join("CONVENTIONS.md")).expect("remove conventions");
+    symlink(
+        outside.path().join(".env"),
+        dir.path().join("CONVENTIONS.md"),
+    )
+    .expect("link secret");
+    let error = cache
+        .read(ResourceDoc::Conventions, dir.path())
+        .expect_err("reject alias");
+    assert!(
+        matches!(error, ResourceReadError::Invalid(message) if message.contains("CONVENTIONS.md") && !message.contains("API_KEY"))
+    );
+    assert_eq!(cache.last_good(ResourceDoc::Conventions), Some(good));
+    assert!(ResourceDoc::State.read_current(dir.path()).is_ok());
+    fs::remove_file(dir.path().join("CONVENTIONS.md")).expect("remove alias");
+    seed(dir.path(), "CONVENTIONS.md", "# Edited\n");
+    assert!(
+        cache
+            .read(ResourceDoc::Conventions, dir.path())
+            .expect("read edit")
+            .contains("Edited")
+    );
+}
 
-    // A secret-denylist path is refused (Requirement 1.7).
-    let secret = root.join(".agent").join("config").join(".env");
-    assert!(reject_excluded_or_secret(root, &secret).is_err());
+#[cfg(unix)]
+#[test]
+fn refuses_parent_and_ontology_aliases_without_seeding() {
+    use std::os::unix::fs::symlink;
 
-    // An ordinary cockpit path is allowed.
-    let ok = root.join(".agent").join("tasks").join("state.json");
-    assert!(reject_excluded_or_secret(root, &ok).is_ok());
+    let repo = tempdir().expect("repo");
+    let outside = tempdir().expect("outside");
+    fs::write(outside.path().join("ontology.yml"), "domain: private\n").expect("outside ontology");
+    fs::create_dir(repo.path().join(".agent")).expect("agent");
+    symlink(outside.path(), repo.path().join(".agent/tasks")).expect("link parent");
+    assert!(matches!(
+        ResourceDoc::State.read_current(repo.path()),
+        Err(ResourceReadError::Invalid(_))
+    ));
+    symlink(
+        outside.path().join("ontology.yml"),
+        repo.path().join(".agent/ontology.yml"),
+    )
+    .expect("link ontology");
+    seed(repo.path(), "specs/ontology.yaml", "domain: safe\n");
+    assert!(!ResourceDoc::Ontology.needs_seed(repo.path()));
+    assert!(matches!(
+        ResourceDoc::Ontology.read_current(repo.path()),
+        Err(ResourceReadError::Invalid(_))
+    ));
+    assert_eq!(
+        fs::read_to_string(outside.path().join("ontology.yml")).expect("outside unchanged"),
+        "domain: private\n"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_in_repo_private_alias_and_allows_symlinked_repo_root() {
+    use std::os::unix::fs::symlink;
+
+    let dir = tempdir().expect("repo");
+    let alias_root = tempdir().expect("alias parent");
+    seed(dir.path(), ".agent/telemetry/events.md", "private\n");
+    symlink(
+        dir.path().join(".agent/telemetry/events.md"),
+        dir.path().join("CONVENTIONS.md"),
+    )
+    .expect("link telemetry");
+    assert!(matches!(
+        ResourceDoc::Conventions.read_current(dir.path()),
+        Err(ResourceReadError::Invalid(_))
+    ));
+    fs::remove_file(dir.path().join("CONVENTIONS.md")).expect("remove alias");
+    seed(dir.path(), "CONVENTIONS.md", "# Safe\n");
+    let root = alias_root.path().join("linked-repo");
+    symlink(dir.path(), &root).expect("link repo root");
+    assert_eq!(
+        ResourceDoc::Conventions
+            .read_current(&root)
+            .expect("root alias"),
+        "# Safe\n"
+    );
 }
 
 #[test]

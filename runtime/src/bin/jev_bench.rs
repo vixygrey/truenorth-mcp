@@ -152,7 +152,7 @@ mod imp {
         };
 
         let client = HttpClient::new(activation, &config);
-        let decision = runtime.block_on(evaluate_guard(
+        let decision = match runtime.block_on(evaluate_guard(
             &change,
             &protected,
             &config,
@@ -160,7 +160,10 @@ mod imp {
             true,
             Some(&client),
             &repo_root,
-        ));
+        )) {
+            Ok(decision) => decision,
+            Err(error) => return fail(&format!("invalid guard input: {error}")),
+        };
 
         // Print the block reason to standard error on a block; print nothing on a pass (R7.2).
         if let Some(message) = block_message(&decision) {

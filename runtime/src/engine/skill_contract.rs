@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::engine::agent_ws::fs_boundary::RepositoryFs;
 use crate::engine::skill::{SkillError, discover_skills, resolve_skill_path};
 
 const SCHEMA_VERSION: u8 = 1;
@@ -164,10 +165,22 @@ pub fn read_skill_contract(
     name: &str,
 ) -> Result<SkillContract, SkillContractError> {
     let path = resolve_skill_contract_path(repo_root, name)?;
-    let bytes = std::fs::read(&path).map_err(|source| SkillContractError::Read {
+    let relative = path
+        .strip_prefix(repo_root)
+        .map_err(|source| SkillContractError::Read {
+            name: name.to_string(),
+            source: std::io::Error::new(std::io::ErrorKind::InvalidInput, source),
+        })?;
+    let fs = RepositoryFs::open(repo_root).map_err(|source| SkillContractError::Read {
         name: name.to_string(),
         source,
     })?;
+    let bytes = fs
+        .read(relative)
+        .map_err(|source| SkillContractError::Read {
+            name: name.to_string(),
+            source,
+        })?;
     if bytes.len() > MAX_READ_SKILL_CONTRACT_BYTES {
         return Err(SkillContractError::TooLarge {
             name: name.to_string(),

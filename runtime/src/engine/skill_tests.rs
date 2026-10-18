@@ -121,6 +121,71 @@ fn read_raw_truncates_at_the_byte_cap() {
     assert!(raw.truncated);
     assert!(raw.markdown.len() <= MAX_READ_SKILL_BYTES);
 }
+#[cfg(unix)]
+#[test]
+fn read_raw_rejects_symlinked_file_and_parent_without_discovery() {
+    use std::os::unix::fs::symlink;
+
+    let repo = tempdir().expect("repo");
+    let outside = tempdir().expect("outside");
+    fs::write(outside.path().join(".env"), "API_KEY=private\n").expect("outside secret");
+    fs::create_dir(repo.path().join("skills")).expect("skills dir");
+    fs::create_dir(repo.path().join("skills/linked-file")).expect("skill dir");
+    symlink(
+        outside.path().join(".env"),
+        repo.path().join("skills/linked-file/SKILL.md"),
+    )
+    .expect("link file");
+    fs::create_dir(outside.path().join("linked-parent")).expect("outside parent");
+    fs::write(outside.path().join("linked-parent/SKILL.md"), "private\n").expect("outside skill");
+    symlink(
+        outside.path().join("linked-parent"),
+        repo.path().join("skills/linked-parent"),
+    )
+    .expect("link parent");
+    for name in ["linked-file", "linked-parent"] {
+        assert!(matches!(
+            read_skill_raw(repo.path(), name),
+            Err(SkillError::Read { .. })
+        ));
+    }
+    assert!(discover_skills(repo.path()).is_empty());
+}
+
+#[cfg(unix)]
+#[test]
+fn read_raw_rejects_in_repo_private_alias_and_accepts_linked_root() {
+    use std::os::unix::fs::symlink;
+
+    let repo = tempdir().expect("repo");
+    let root_alias = tempdir().expect("alias parent");
+    make_skill(repo.path(), "safe-skill", "# Safe\n");
+    fs::create_dir_all(repo.path().join(".agent/telemetry")).expect("telemetry");
+    fs::write(repo.path().join(".agent/telemetry/SKILL.md"), "private\n").expect("write telemetry");
+    fs::create_dir(repo.path().join("skills/unsafe-skill")).expect("unsafe skill dir");
+    symlink(
+        repo.path().join(".agent/telemetry/SKILL.md"),
+        repo.path().join("skills/unsafe-skill/SKILL.md"),
+    )
+    .expect("link telemetry");
+    assert!(matches!(
+        read_skill_raw(repo.path(), "unsafe-skill"),
+        Err(SkillError::Read { .. })
+    ));
+    let names: Vec<_> = discover_skills(repo.path())
+        .into_iter()
+        .map(|entry| entry.name)
+        .collect();
+    assert_eq!(names, vec!["safe-skill"]);
+    let linked = root_alias.path().join("repo");
+    symlink(repo.path(), &linked).expect("link root");
+    assert_eq!(
+        read_skill_raw(&linked, "safe-skill")
+            .expect("linked root")
+            .markdown,
+        "# Safe\n"
+    );
+}
 
 #[test]
 fn cap_bytes_backs_off_to_utf8_boundary() {

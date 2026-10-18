@@ -233,3 +233,29 @@ fn annotate_decision_returns_structured_success_and_obeys_payload_cap() {
     .expect_err("payload cap");
     assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
 }
+
+#[tokio::test]
+async fn unsafe_path_is_invalid_params_in_the_default_offline_build() {
+    let dir = tempdir().expect("temp dir");
+    for path in [
+        "../outside.rs",
+        "/etc/passwd",
+        ".env",
+        ".agent/telemetry/log.yml",
+    ] {
+        let error = server_with_jev(dir.path())
+            .truenorth_guard_change(Parameters(GuardChangeArgs {
+                paths: vec!["src/main.rs".to_string(), path.to_string()],
+                content: "clean".to_string(),
+                task: None,
+            }))
+            .await
+            .expect_err("unsafe path must not fail open");
+        assert_eq!(error.code, rmcp::model::ErrorCode::INVALID_PARAMS);
+        assert!(
+            error.message.contains(path),
+            "error names {path}: {}",
+            error.message
+        );
+    }
+}

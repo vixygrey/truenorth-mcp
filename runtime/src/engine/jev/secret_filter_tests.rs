@@ -1,8 +1,7 @@
 //! Example tests for the secret-filtered state builder.
 //!
 //! Included from `secret_filter.rs` via `#[path]`, so `super` is the secret_filter module.
-//! These pin the exclusion, the redaction, the read-error skip, and the fail-closed residual
-//! backstop (Requirement 9.1, 9.2, 9.7).
+//! These pin unsafe-path rejection, content redaction, and missing proposed files.
 
 use std::fs;
 use std::path::PathBuf;
@@ -21,18 +20,17 @@ fn write_file(repo: &TempDir, rel: &str, content: &str) {
 }
 
 #[test]
-fn a_secret_path_is_excluded_whole() {
+fn a_secret_path_is_rejected_before_clean_content_is_read() {
     let repo = TempDir::new().expect("temp repo");
     write_file(&repo, ".env", "API_TOKEN=abcdef");
     write_file(&repo, "readme.txt", "hello world");
-    let paths = vec![PathBuf::from(".env"), PathBuf::from("readme.txt")];
+    let paths = vec![PathBuf::from("readme.txt"), PathBuf::from(".env")];
 
-    let state = build_state_with_secret_filter(repo.path(), &paths).expect("builds");
-    let serialized = state.to_string();
-    assert!(!serialized.contains("API_TOKEN"), "excluded content leaked");
-    assert!(serialized.contains("hello world"), "clean content kept");
-    // Only the clean file made it into the array.
-    assert_eq!(state.as_array().map(Vec::len), Some(1));
+    let error = build_state_with_secret_filter(repo.path(), &paths).expect_err("secret path");
+    assert!(matches!(
+        error,
+        super::super::JevError::InvalidGuardPath { .. }
+    ));
 }
 
 #[test]
@@ -64,27 +62,15 @@ fn an_unreadable_file_is_skipped_not_failed() {
 }
 
 #[test]
-fn a_residual_secret_path_fails_closed() {
-    // The re-check is a fail-closed backstop (Requirement 9.7). A path segment that ends in
-    // `secret` is not caught by the end-anchored `.env`/`.pem` patterns, but the `secret`
-    // marker matches anywhere, so `is_secret_path` excludes it and no residual survives. To
-    // exercise the backstop itself, a path that carries a denylist marker only after JSON
-    // assembly must trip the re-check. The `credentials` marker in a path segment is caught
-    // on the way in, so a clean build never reaches the residual branch. This test proves the
-    // common exclusion instead, and the residual branch stays a defensive guard the type
-    // system cannot remove.
+fn a_secret_parent_path_is_rejected() {
     let repo = TempDir::new().expect("temp repo");
     write_file(&repo, "app/credentials/readme.txt", "safe text");
     let paths = vec![PathBuf::from("app/credentials/readme.txt")];
-
-    // The path carries `credentials`, so `is_secret_path` excludes it before any read.
-    let state = build_state_with_secret_filter(repo.path(), &paths).expect("builds");
-    assert_eq!(
-        state.as_array().map(Vec::len),
-        Some(0),
-        "secret path excluded"
-    );
-    assert!(!state.to_string().contains("credentials"));
+    let error = build_state_with_secret_filter(repo.path(), &paths).expect_err("secret parent");
+    assert!(matches!(
+        error,
+        super::super::JevError::InvalidGuardPath { .. }
+    ));
 }
 
 #[test]

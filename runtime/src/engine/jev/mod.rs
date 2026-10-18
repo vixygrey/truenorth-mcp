@@ -374,6 +374,18 @@ pub enum JevError {
         var: &'static str,
     },
 
+    /// A caller-supplied path cannot be safely evaluated inside the repository.
+    #[error(
+        "invalid guard path `{path}`: {detail}. Use a regular, non-secret \
+         repository-relative file path."
+    )]
+    InvalidGuardPath {
+        /// The offending path (or repository root when it cannot be opened).
+        path: String,
+        /// Why the path was rejected, without file content.
+        detail: String,
+    },
+
     /// The assembled state still matched the secret denylist after exclusion (Requirement
     /// 9.7). The message names no content, so it leaks no secret.
     #[error(

@@ -20,6 +20,8 @@ use truenorth_mcp::engine::features;
 use truenorth_mcp::engine::jev::config::resolve_protected_paths;
 use truenorth_mcp::engine::jev::drift::path_is_protected;
 use truenorth_mcp::engine::jev::guard::ProposedChange;
+use truenorth_mcp::engine::jev::secret_filter::validate_guard_paths;
+use truenorth_mcp::engine::mutation::acquire_worktree_lease;
 use truenorth_mcp::engine::workspace_upgrade::bundle::PackageBundle;
 use truenorth_mcp::tools::scaffold::{
     apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
@@ -155,6 +157,9 @@ pub fn guard(source: GuardSource) -> ExitCode {
         Ok(paths) => paths,
         Err(error) => return guard_fail(&error),
     };
+    if let Err(error) = validate_guard_paths(&root, &paths) {
+        return guard_fail(&error.to_string());
+    }
     let protected = match resolve_protected_paths(&root) {
         Ok(paths) => paths,
         Err(error) => return guard_fail(&error.to_string()),
@@ -360,6 +365,13 @@ pub fn recover_cockpit_json_migration(rollback: bool) -> ExitCode {
         Ok(root) => root,
         Err(error) => {
             eprintln!("truenorth-mcp: could not resolve the current directory: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let _lease = match acquire_worktree_lease(&root) {
+        Ok(lease) => lease,
+        Err(error) => {
+            eprintln!("truenorth-mcp: {error}");
             return ExitCode::FAILURE;
         }
     };

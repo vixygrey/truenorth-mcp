@@ -2,11 +2,9 @@
 //!
 //! Included from `secret_filter.rs` via `#[path]`, so `super` is the secret_filter module.
 //!
-//! Feature: jev-integration-eval, Property 31: secret exclusion. For a file set that mixes
-//! denylisted paths, denylisted content lines, and clean files, the returned state carries
-//! no substring matching the secret denylist. A denylisted path is excluded whole, so its
-//! content never appears. A denylisted content line is dropped, so a clean file keeps only
-//! its clean lines.
+//! Feature: jev-integration-eval, Property 31: secret exclusion. A denylisted path rejects
+//! the entire set; otherwise content lines matching the denylist are dropped and clean lines
+//! survive in the state.
 
 use std::fs;
 use std::path::PathBuf;
@@ -38,9 +36,8 @@ fn write_file(repo: &TempDir, rel: &str, content: &str) {
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(128))]
 
-    /// The returned Ok-state carries no denylist substring, and a clean line survives while
-    /// a secret line is dropped. The generators mix secret paths, secret content, and clean
-    /// files, so every branch runs across cases.
+    /// Unsafe paths reject the entire set; otherwise clean lines survive and denylisted
+    /// content lines are dropped.
     #[test]
     fn state_carries_no_secret(
         clean_line in "[a-z ]{1,20}",
@@ -58,8 +55,7 @@ proptest! {
         write_file(&repo, "notes.txt", &format!("intro\n{clean_line}\nend"));
         paths.push(PathBuf::from("notes.txt"));
 
-        // A denylisted-path file. Its content is a secret that must never appear, because the
-        // whole file is excluded by path (Requirement 9.1).
+        // A denylisted-path file must reject the entire input before assembly.
         if include_secret_path {
             write_file(&repo, ".env", "API_TOKEN=abcdef123456");
             write_file(&repo, "config/secret.txt", "top secret material");
@@ -83,8 +79,12 @@ proptest! {
             paths.push(PathBuf::from("mixed.txt"));
         }
 
-        let state = build_state_with_secret_filter(repo.path(), &paths)
-            .expect("clean and redacted input builds a state");
+        let outcome = build_state_with_secret_filter(repo.path(), &paths);
+        if include_secret_path {
+            prop_assert!(matches!(outcome, Err(super::super::JevError::InvalidGuardPath { .. })), "private input must be rejected");
+            return Ok(());
+        }
+        let state = outcome.expect("safe, redacted input builds a state");
         let serialized = state.to_string();
 
         // No denylist substring survives anywhere in the returned state (Requirement 9.7).
@@ -99,10 +99,5 @@ proptest! {
             "the clean line must survive: {serialized}"
         );
 
-        // No excluded file's content appears.
-        if include_secret_path {
-            prop_assert!(!serialized.contains("API_TOKEN"), "excluded .env content leaked");
-            prop_assert!(!serialized.contains("BEGIN KEY"), "excluded .pem content leaked");
-        }
     }
 }

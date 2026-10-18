@@ -38,15 +38,17 @@ fn run_guard(
     let runtime = tokio::runtime::Builder::new_current_thread()
         .build()
         .expect("build a current-thread runtime");
-    runtime.block_on(evaluate_guard(
-        change,
-        &protected_set(),
-        &JevConfig::default(),
-        jev_enabled,
-        api_key_present,
-        fake,
-        repo_root,
-    ))
+    runtime
+        .block_on(evaluate_guard(
+            change,
+            &protected_set(),
+            &JevConfig::default(),
+            jev_enabled,
+            api_key_present,
+            fake,
+            repo_root,
+        ))
+        .expect("generated paths are safe")
 }
 
 proptest! {

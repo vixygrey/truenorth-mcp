@@ -254,3 +254,158 @@ fn map_status_covers_the_mapped_set_under_the_feature() {
         StatusAction::Terminal(JevError::UnexpectedStatus { .. })
     ));
 }
+
+#[tokio::test]
+async fn guard_path_rejections_send_no_http_request_but_valid_change_is_evaluated() {
+    use crate::engine::jev::guard::evaluate::evaluate_guard;
+    use crate::engine::jev::guard::{GuardDecision, ProposedChange};
+
+    let _guard = ENV_LOCK.lock().await;
+    let repo = tempfile::tempdir().expect("temp repo");
+    std::fs::write(repo.path().join("good.rs"), "safe source").expect("file");
+    let outside = tempfile::tempdir().expect("outside");
+    std::fs::write(outside.path().join("private.rs"), "private").expect("outside file");
+    std::os::unix::fs::symlink(
+        outside.path().join("private.rs"),
+        repo.path().join("linked.rs"),
+    )
+    .expect("file symlink");
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("loopback listener");
+    let endpoint = format!("http://{}/jev", listener.local_addr().expect("address"));
+    let client = super::HttpClient::new_for_test(endpoint, &fast_config());
+    unsafe { std::env::set_var(JEV_API_KEY_VAR, "fake-test-key-only") };
+    let protected = Vec::new();
+    let config = fast_config();
+
+    for bad in [
+        "../outside.rs",
+        "/etc/passwd",
+        "src\\outside.rs",
+        ".env",
+        ".agent/telemetry/log.yml",
+        "linked.rs",
+    ] {
+        let change = ProposedChange {
+            paths: vec!["good.rs".to_string(), bad.to_string()],
+            content: "clean".to_string(),
+            task: None,
+        };
+        let result = evaluate_guard(
+            &change,
+            &protected,
+            &config,
+            true,
+            true,
+            Some(&client),
+            repo.path(),
+        )
+        .await;
+        assert!(
+            matches!(&result, Err(JevError::InvalidGuardPath { .. })),
+            "unsafe {bad} must be rejected: {result:?}"
+        );
+    }
+    assert!(
+        tokio::time::timeout(Duration::from_millis(30), listener.accept())
+            .await
+            .is_err(),
+        "no HTTP request may leave the guard for rejected paths"
+    );
+
+    let server = tokio::spawn(async move {
+        let bodies = [
+            serde_json::json!({
+                "model": "jev-latest",
+                "answers": {
+                    "hallucinated_import": {"type": "noul", "noul": 0.0},
+                    "violates_conventions": {"type": "noul", "noul": 0.0},
+                    "contains_secrets": {"type": "noul", "noul": 0.0},
+                    "complexity": {"type": "score", "score": 0.0, "confidence": 0.9,
+                                   "legend": {}, "probabilities": {}}
+                },
+                "usage": {"input_tokens": 1, "output_tokens": 1}
+            })
+            .to_string(),
+            serde_json::json!({
+                "model": "jev-latest",
+                "answers": {"drift": {"type": "noul", "noul": 0.1}},
+                "usage": {"input_tokens": 1, "output_tokens": 1}
+            })
+            .to_string(),
+        ];
+        let mut captured = Vec::new();
+        for body in bodies {
+            use tokio::io::{AsyncBufReadExt, BufReader};
+
+            let (socket, _) = listener.accept().await.expect("valid guard HTTP request");
+            let mut socket = BufReader::new(socket);
+            let mut length = None;
+            loop {
+                let mut line = String::new();
+                assert_ne!(
+                    socket.read_line(&mut line).await.expect("request header"),
+                    0
+                );
+                if line == "\r\n" {
+                    break;
+                }
+                if let Some((name, value)) = line.split_once(':') {
+                    if name.eq_ignore_ascii_case("content-length") {
+                        length = Some(value.trim().parse::<usize>().expect("content length"));
+                    }
+                }
+            }
+            let mut request = vec![0; length.expect("request has content length")];
+            socket
+                .read_exact(&mut request)
+                .await
+                .expect("complete request body");
+            captured
+                .push(serde_json::from_slice::<serde_json::Value>(&request).expect("request JSON"));
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            );
+            socket
+                .get_mut()
+                .write_all(response.as_bytes())
+                .await
+                .expect("response");
+        }
+        captured
+    });
+    let change = ProposedChange {
+        paths: vec!["good.rs".to_string(), "new.rs".to_string()],
+        content: "clean".to_string(),
+        task: None,
+    };
+    let result = evaluate_guard(
+        &change,
+        &protected,
+        &config,
+        true,
+        true,
+        Some(&client),
+        repo.path(),
+    )
+    .await;
+    unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
+    assert_eq!(
+        result.expect("valid evaluation"),
+        GuardDecision::Allow { notes: Vec::new() }
+    );
+    let requests = tokio::time::timeout(Duration::from_secs(5), server)
+        .await
+        .expect("server served both aspects")
+        .expect("server task");
+    assert_eq!(
+        requests[0]["state"],
+        serde_json::json!([{"path": "good.rs", "content": "safe source"}])
+    );
+    assert_eq!(
+        requests[1]["state"]["changed_paths"],
+        serde_json::json!(["good.rs", "new.rs"])
+    );
+}

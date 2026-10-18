@@ -2,6 +2,7 @@
 
 use std::fs;
 
+use crate::engine::agent_ws::AGENT_DIR;
 use tempfile::TempDir;
 
 use super::*;
@@ -161,7 +162,6 @@ fn lease_rejects_runtime_directory_that_escapes_agent_root() {
 
     let error = acquire_worktree_lease(repo.path()).expect_err("escaped runtime rejected");
     assert!(matches!(error, MutationError::Unavailable { .. }));
-    assert!(error.to_string().contains("escapes `.agent/`"));
     assert!(!outside.path().join("writer.lock").exists());
 }
 
@@ -180,11 +180,26 @@ fn lease_rejects_a_symlinked_lock_file_without_changing_its_target() {
 
     let error = acquire_worktree_lease(repo.path()).expect_err("symlink rejected");
     assert!(matches!(error, MutationError::Unavailable { .. }));
-    assert!(error.to_string().contains("writer lock path is a symlink"));
     assert_eq!(
         fs::read_to_string(outside_lock).expect("outside bytes"),
         "external bytes"
     );
+}
+
+#[cfg(unix)]
+#[test]
+fn lease_rejects_agent_symlink_before_creating_runtime_directory() {
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    let outside = TempDir::new().expect("outside dir");
+    symlink(outside.path(), repo.path().join(AGENT_DIR)).expect("agent symlink");
+
+    assert!(matches!(
+        acquire_worktree_lease(repo.path()),
+        Err(MutationError::Unavailable { .. })
+    ));
+    assert!(!outside.path().join("runtime").exists());
 }
 
 #[test]
@@ -194,7 +209,7 @@ fn holder_metadata_without_a_usable_pid_is_reported_as_unknown() {
 
     for contents in ["not json", r#"{"pid":"text"}"#, r#"{"pid":4294967296}"#] {
         fs::write(&path, contents).expect("holder metadata");
-        assert_eq!(read_holder(&path).holder_pid, None);
+        let mut file = fs::File::open(&path).expect("open holder");
+        assert_eq!(read_holder(&mut file).holder_pid, None);
     }
-    assert_eq!(read_holder(&repo.path().join("missing")).holder_pid, None);
 }

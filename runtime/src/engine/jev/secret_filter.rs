@@ -1,64 +1,92 @@
 //! The secret-filtered state builder: assemble the evaluation state from a file set while
 //! keeping every secret out.
 //!
-//! A caller passes a set of paths to include in the Jev evaluation state. The builder reads
-//! each file, excludes any file whose path matches the secret denylist, redacts any content
-//! line that matches the denylist, and assembles a JSON array of `{ path, content }`
-//! objects. Before it returns, the builder re-checks the whole assembled state against the
-//! denylist and fails closed if any secret survived.
+//! A caller passes a set of paths to include in the Jev evaluation state. Every path is
+//! validated against the repository boundary and every existing file is opened without following
+//! symlinks before any content is read. Missing proposed files contribute no content. Secret
+//! paths are rejected; secret content lines are redacted from the JSON state. The assembled
+//! state is checked again before it can reach Jev.
 //!
-//! The builder reads files but makes no network call and never logs content. It reuses the
-//! shared denylist from [`crate::config`], so the path check and the content check match the
-//! same patterns as the rest of the runtime. No API key appears anywhere in this module.
+//! The builder makes no network call and never logs content. It reuses the shared denylist
+//! from [`crate::config`]. No API key appears anywhere in this module.
 //!
 //! Requirements: 9.1, 9.2, 9.6, 9.7. Design: jev-integration-eval, the secret-filter step,
 //! Property 31 (secret exclusion).
 
-// The builder has no non-test caller until the client and aspect modules land (later
-// issues). It carries a narrow non-test `allow` with this reason, per the repo dead-code
-// policy (main.rs). The task that adds the first caller removes the attribute. The test
-// build exercises the exclusion, redaction, and fail-closed paths through the sibling
-// property tests.
+// The direct convenience builder is exercised by its sibling tests; the guard evaluation
+// boundary uses pre-opened file handles to validate the entire set before reading.
 
+use std::fs::File;
+use std::io::{ErrorKind, Read};
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 
-/// Build the evaluation state from a file set, keeping every secret out (Requirement 9.1,
-/// 9.2, 9.7).
-///
-/// For each path: a path that matches the secret denylist is excluded (Requirement 9.1). A
-/// file that cannot be read is skipped, so one unreadable file does not fail the whole build.
-/// A content line that matches the denylist is dropped (Requirement 9.2). The builder then
-/// assembles a JSON array of `{ path, content }` objects.
-///
-/// After assembly, the builder serializes the state and re-checks it against the denylist. A
-/// residual match returns [`super::JevError::SecretResidual`] and makes no call (Requirement
-/// 9.7). This is fail-closed: the builder prefers a rejection over a leak.
+/// Validate guard CLI paths without reading content or invoking Jev.
 ///
 /// # Errors
 ///
-/// Returns [`super::JevError::SecretResidual`] when a secret survives the exclusion and
-/// redaction steps.
-#[cfg_attr(not(test), allow(dead_code))]
-pub fn build_state_with_secret_filter(
+/// Returns an invalid-path error for unsafe or inaccessible repository targets.
+pub fn validate_guard_paths(repo_root: &Path, paths: &[String]) -> Result<(), super::JevError> {
+    open_state_files(repo_root, paths).map(|_| ())
+}
+
+/// Open every existing safe path before any file content is read or sent to Jev.
+///
+/// A missing file is legitimate for a proposed new file; every other failure is an input
+/// error. Lexical validation runs over the entire set before opening any file.
+pub(crate) fn open_state_files(
     repo_root: &Path,
+    paths: &[impl AsRef<Path>],
+) -> Result<Vec<Option<File>>, super::JevError> {
+    use crate::engine::agent_ws::fs_boundary::RepositoryFs;
+
+    for path in paths {
+        let path = path.as_ref();
+        RepositoryFs::validate_path(path).map_err(|error| path_error(path, error))?;
+    }
+    let fs = RepositoryFs::open(repo_root).map_err(|error| super::JevError::InvalidGuardPath {
+        path: "repository root".to_string(),
+        detail: error.to_string(),
+    })?;
+    paths
+        .iter()
+        .map(|path| {
+            let path = path.as_ref();
+            match fs.open_read(path) {
+                Ok(file) => Ok(Some(file)),
+                Err(error) if error.kind() == ErrorKind::NotFound => Ok(None),
+                Err(error) => Err(path_error(path, error)),
+            }
+        })
+        .collect()
+}
+
+fn path_error(path: &Path, error: std::io::Error) -> super::JevError {
+    super::JevError::InvalidGuardPath {
+        path: path.display().to_string(),
+        detail: error.to_string(),
+    }
+}
+
+/// Build a filtered Jev state from protected file handles.
+///
+/// Each file handle was opened by [`open_state_files`] before any content read. Missing proposed
+/// files carry `None`. Secret content lines are redacted and the assembled state is re-checked.
+pub(crate) fn build_state_from_open_files(
     paths: &[PathBuf],
+    files: &mut [Option<File>],
 ) -> Result<Value, super::JevError> {
     let denylist = crate::config::secret_denylist();
     let mut entries: Vec<Value> = Vec::new();
 
-    for path in paths {
-        // Exclude a secret path outright (Requirement 9.1).
-        if crate::config::is_secret_path(path) {
-            continue;
-        }
-
-        let absolute = repo_root.join(path);
-        // A read error skips the file rather than failing the whole build.
-        let Ok(content) = std::fs::read_to_string(&absolute) else {
+    for (path, file) in paths.iter().zip(files) {
+        let Some(file) = file else {
             continue;
         };
+        let mut content = String::new();
+        file.read_to_string(&mut content)
+            .map_err(|error| path_error(path, error))?;
 
         // Drop any line that matches the denylist (Requirement 9.2).
         let redacted: String = content
@@ -82,6 +110,20 @@ pub fn build_state_with_secret_filter(
     }
 
     Ok(state)
+}
+
+/// Build the evaluation state from a file set using protected repository reads.
+///
+/// Missing proposed files contribute no content. Unsafe paths and read errors are rejected
+/// before any Jev request; callers that evaluate changes should use [`open_state_files`] first
+/// so every file is opened before any content is read.
+#[cfg_attr(not(test), allow(dead_code))]
+pub fn build_state_with_secret_filter(
+    repo_root: &Path,
+    paths: &[PathBuf],
+) -> Result<Value, super::JevError> {
+    let mut files = open_state_files(repo_root, paths)?;
+    build_state_from_open_files(paths, &mut files)
 }
 
 /// Build a lightweight drift-scope state from the changed paths and the protected set (#328).
