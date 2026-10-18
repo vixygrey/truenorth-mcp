@@ -63,6 +63,12 @@ jobs:
       - name: Run keyless deterministic regression checks
         run: cargo test --locked --manifest-path runtime/Cargo.toml --features jev-http
 
+      - name: Check guard pilot v2 import labels offline
+        if: inputs.mode == 'guard-pilot'
+        run: |
+          node scripts/check-jev-guard-pilot-imports.js
+          node --test scripts/jev-guard-pilot.test.js
+
       - name: Build secret-free provider validation binary
         if: inputs.mode == 'compatibility'
         run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin jev-provider-smoke

@@ -292,6 +292,42 @@ estimated ceiling at most USD 0.25. In both modes secrets are injected only into
 prebuilt executable step, no paid run is automatic, and retry/failed-call usage stops
 further proposals. Approval here authorizes neither workflow dispatch nor publication.
 
+### Guard pilot revision 2
+
+The active pilot uses `guard-pilot/fixtures-v2.json`, `source-v2.json`, and
+`rationales-v2.json`. Version 1 remains unchanged as failed, unaccepted evidence.
+Version 2 remains a review candidate, not independent provider qualification.
+The pending `policy-v1.yml`, scoring boundaries, and spending limits remain unchanged.
+
+The four import cases supply complete proposed crate roots with explicit Cargo targets.
+Case 03 retains the new-file case with an absent parent directory.
+Case 04 uses a declared local path dependency, without registry access or a cached package.
+The convention and complexity pairs put stale code in the selected existing target.
+Only the proposed replacement determines the expected finding.
+
+Run the import checks without provider credentials:
+
+```sh
+node scripts/check-jev-guard-pilot-imports.js
+node --test scripts/jev-guard-pilot.test.js
+```
+
+The compiler checks cover baseline and proposed import cases.
+Only an `E0432` diagnostic for `absent_codec` supports a positive import label.
+Other compiler or setup failures do not count as evidence.
+Required artifact checks and the protected pilot workflow run these commands before credential injection.
+
+Pilot report schema 2 records `fixture_version: "2"` and per-case `rigor_scores`.
+The score object contains only validated numeric import, convention, credential, and complexity values.
+Complexity uses the guard's 0 to 100 scale.
+Invalid or absent rigor scores produce `null`, never inferred negatives.
+A finding mismatch retains valid scores for inspection and stops further proposals.
+No raw provider payload or proposed source enters the report.
+
+Review the revised fixtures and provenance before another paid pilot.
+That pilot needs separate spending authorization and human Environment approval on the merged, immutable `main` SHA.
+Do not dispatch the full qualification from these keyless results.
+
 ## Release acceptance
 
 Require approved thresholds, complete aspect coverage, the expected responder, known accounting, and passing independent provider results.

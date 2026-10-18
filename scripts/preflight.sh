@@ -105,6 +105,10 @@ run_artifact_smoke() {
   node --test scripts/certify-vscode.test.js
   echo "preflight: [artifact-smoke] Zed evidence tests"
   node --test scripts/certify-zed.test.js
+  echo "preflight: [artifact-smoke] guard pilot report regressions"
+  node --test scripts/jev-guard-pilot.test.js
+  echo "preflight: [artifact-smoke] guard pilot import labels"
+  node scripts/check-jev-guard-pilot-imports.js
   echo "preflight: [artifact-smoke] Jev HTTP release build for $package"
   cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http
 

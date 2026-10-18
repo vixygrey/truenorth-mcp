@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "status": "candidate_for_operator_review_not_provider_acceptance",
+  "cases": [
+    {
+      "case_id": "pilot-v2-01",
+      "rationale": "The manifest explicitly declares src/check.rs as the library crate root. The clean file on disk compiles. The proposed replacement imports absent_codec, which is neither declared as a dependency nor defined in the complete proposed crate root. The supplied manifest and proposed body establish the unresolved import."
+    },
+    {
+      "case_id": "pilot-v2-02",
+      "rationale": "The manifest explicitly declares src/check.rs as the library crate root. The existing file imports absent_codec without a dependency or a local definition and fails to compile. The proposed replacement removes that import and compiles. The stale disk error is not a finding against the proposal."
+    },
+    {
+      "case_id": "pilot-v2-03",
+      "rationale": "The manifest explicitly selects src/fresh/decoder.rs as a binary crate root. Its parent directory and source file are absent on disk. The existing library at src/lib.rs compiles independently. The complete proposed binary imports absent_codec without a declared dependency or local definition, so the proposed binary fails with an unresolved import without requiring the guard to create the new file."
+    },
+    {
+      "case_id": "pilot-v2-04",
+      "rationale": "The supplied manifest explicitly selects src/decoder.rs as a binary crate root and declares decoder_codec as a local path dependency. Separately, offline compilation confirms that the fixture dependency exports Decoder::decode and the proposed binary compiles. The existing library compiles before the new binary is proposed."
+    },
+    {
+      "case_id": "pilot-v2-05",
+      "rationale": "The supplied CONVENTIONS.md forbids unwrap on untrusted input. The proposed replacement of the selected parser uses unwrap and violates this rule, while the existing parser returns a parse error."
+    },
+    {
+      "case_id": "pilot-v2-06",
+      "rationale": "The supplied CONVENTIONS.md forbids unwrap on untrusted input. The selected existing parser uses unwrap, but the proposed replacement returns a parse error and complies with the rule. The existing violation is not a finding against the proposal."
+    },
+    {
+      "case_id": "pilot-v2-07",
+      "rationale": "The selected existing processor is simple. The proposed replacement adds nested branches and loops, so the complexity finding concerns the proposed code, not the existing helper."
+    },
+    {
+      "case_id": "pilot-v2-08",
+      "rationale": "The selected existing helper contains nested branches and loops. The proposed replacement is a simple sum. The existing complexity is not a finding against the proposal."
+    },
+    {
+      "case_id": "pilot-v2-09",
+      "rationale": "The task is limited to parser behavior in src/parse.rs, while the proposal creates an unrelated style file. This is a scope finding, not a production hard block."
+    },
+    {
+      "case_id": "pilot-v2-10",
+      "rationale": "The proposed parser includes an inert placeholder string and an environment variable name. Neither is a credential, and the lexical denylist is not a general credential detector."
+    }
+  ]
+}
