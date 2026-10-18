@@ -119,8 +119,17 @@ Failed attempts can have unknown billed usage. An estimated successful-response 
 
 ## Paid calibration
 
+Dispatch **Jev provider validation** from `main` with `mode=calibration`,
+`max_estimated_usd=0.25`, and `provider_spend_cap_confirmed=true`.
+Leave `provider_control_modes_approved=false`; calibration does not execute compatibility probes.
+Approve the protected Environment deployment when GitHub requests it.
+The workflow builds the benchmark without secrets and injects credentials only into the
+prebuilt calibration executable. It uploads `jev-calibration-aggregate-<source SHA>`.
+A pending policy deliberately returns nonzero even after calibration produces measurements;
+do not rerun a paid job solely because production acceptance was not granted.
+
 Use the prebuilt benchmark binary in a trusted operator environment with protected endpoint and key injection.
-Set `JEV_BENCH_CLIENT=http`, a positive `JEV_BENCH_MAX_ESTIMATED_USD`, and `JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED=1`.
+Set `JEV_BENCH_CLIENT=http`, a positive `JEV_BENCH_MAX_ESTIMATED_USD`, and `JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED=true`.
 A pending policy additionally requires `JEV_BENCH_CALIBRATE=1`.
 Calibration is explicitly nonaccepting until policy limits and labels receive approval.
 Never substitute fake-client results for provider evidence.

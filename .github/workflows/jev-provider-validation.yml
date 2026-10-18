@@ -1,9 +1,17 @@
 name: Jev provider validation
 
-# Paid compatibility checks are never run by PR, push, schedule, or reusable workflow.
+# Paid evaluations are never run by PR, push, schedule, or reusable workflow.
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: "Select the separately authorized provider evaluation"
+        required: true
+        default: compatibility
+        type: choice
+        options:
+          - compatibility
+          - calibration
       max_estimated_usd:
         description: "Reviewed ceiling for estimated successful-response cost in USD (provider-side spending cap separately required)"
         required: true
@@ -53,11 +61,17 @@ jobs:
         run: cargo test --locked --manifest-path runtime/Cargo.toml --features jev-http
 
       - name: Build secret-free provider validation binary
+        if: inputs.mode != 'calibration'
         run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin jev-provider-smoke
+
+      - name: Build secret-free calibration binary
+        if: inputs.mode == 'calibration'
+        run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin jev-bench
 
       # Environment secrets exist only in this step's process. No cargo invocation, CLI argument,
       # trace, command echo, or uploaded raw provider response ever contains a credential.
       - name: Probe protected provider contract
+        if: inputs.mode != 'calibration'
         env:
           TRUENORTH_JEV_ENDPOINT: ${{ secrets.TRUENORTH_JEV_ENDPOINT }}
           TRUENORTH_JEV_API_KEY: ${{ secrets.TRUENORTH_JEV_API_KEY }}
@@ -68,11 +82,31 @@ jobs:
           JEV_SMOKE_PROVIDER_SPEND_CAP_CONFIRMED: ${{ inputs.provider_spend_cap_confirmed }}
         run: ./runtime/target/release/jev-provider-smoke
 
+      - name: Run protected calibration candidate
+        if: inputs.mode == 'calibration'
+        env:
+          TRUENORTH_JEV_ENDPOINT: ${{ secrets.TRUENORTH_JEV_ENDPOINT }}
+          TRUENORTH_JEV_API_KEY: ${{ secrets.TRUENORTH_JEV_API_KEY }}
+          JEV_BENCH_CLIENT: http
+          JEV_BENCH_CALIBRATE: "1"
+          JEV_BENCH_MAX_ESTIMATED_USD: ${{ inputs.max_estimated_usd }}
+          JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED: ${{ inputs.provider_spend_cap_confirmed }}
+        run: ./runtime/target/release/jev-bench bench
+
       - name: Upload only sanitized aggregate evidence
-        if: always()
+        if: always() && inputs.mode != 'calibration'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: jev-provider-aggregate-${{ github.sha }}
           path: .agent/telemetry/jev-provider-validation-${{ github.sha }}-*.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload only aggregate calibration evidence
+        if: always() && inputs.mode == 'calibration'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jev-calibration-aggregate-${{ github.sha }}
+          path: .agent/telemetry/jev-benchmark.yml
           if-no-files-found: warn
           retention-days: 14
