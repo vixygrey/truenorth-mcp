@@ -22,6 +22,8 @@ Version 2.0.0 removes the `truenorth_guard_change` MCP tool and every
 replace either with a guard service or filename-policy system. The independent
 `guard-git` credential scanner remains available.
 
+Build support on `main` does not establish compatibility for an older published artifact.
+
 A rename, removal, incompatible field-type change, altered required field, changed
 success or error semantics, or removed resource URI is a breaking change. Breaking
 changes require a new major version, release notes, a replacement when one exists,

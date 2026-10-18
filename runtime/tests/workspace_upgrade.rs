@@ -349,6 +349,22 @@ const HISTORICAL_HOOK: &str = concat!(
     "}\n",
 );
 
+// The later supported seed changed only its input-contract description.
+const LATER_HISTORICAL_HOOK: &str = concat!(
+    "{\n",
+    "  \"version\": \"v1\",\n",
+    "  \"hooks\": [\n",
+    "    {\n",
+    "      \"name\": \"Jev active guardrail\",\n",
+    "      \"description\": \"Runs the TrueNorth guardrail before a write tool. The client must normalize stdin to JSON containing paths, proposed content, and optional task, including replacement-tool proposals. Raw client tool envelopes are not accepted. Automatic interception depends on the client honoring the PreToolUse hook and supplying this input contract. Otherwise call truenorth_guard_change before a write. TrueNorth cannot force-intercept writes to foreign tools.\",\n",
+    "      \"trigger\": \"PreToolUse\",\n",
+    "      \"matcher\": \"write_to_file|fs_write|str_replace\",\n",
+    "      \"action\": { \"type\": \"command\", \"command\": \"truenorth-mcp guard\" }\n",
+    "    }\n",
+    "  ]\n",
+    "}\n",
+);
+
 fn hook_action(output: Output) -> serde_json::Value {
     assert!(
         output.status.success(),
@@ -510,6 +526,22 @@ fn modified_and_unowned_hooks_remain_visible_after_upgrade() {
 
 #[test]
 fn manifestless_exact_legacy_hook_is_adopted_and_retired() {
+    for (hook_bytes, digest) in [
+        (
+            HISTORICAL_HOOK,
+            "961deba14bc14be3ff69c5e730c2b192ee6d3b929744686377fa04650e64c18b",
+        ),
+        (
+            LATER_HISTORICAL_HOOK,
+            "70801cbf33a523a9d529fef20099dd7b87c26b08e63d27970536e02c6dcb1e9b",
+        ),
+    ] {
+        assert_eq!(sha256(hook_bytes.as_bytes()), digest);
+        assert_manifestless_hook_retired(hook_bytes);
+    }
+}
+
+fn assert_manifestless_hook_retired(hook_bytes: &str) {
     let package = tempdir().expect("package");
     write_package(package.path(), b"skill\n", &["0.9.0"]);
     let mut current: serde_json::Value =
@@ -536,7 +568,7 @@ fn manifestless_exact_legacy_hook_is_adopted_and_retired() {
     fs::remove_file(repo.path().join(".agent/workspace-manifest.yml")).unwrap();
     let hook = repo.path().join(RETIRED_GUARD_HOOK);
     fs::create_dir_all(hook.parent().unwrap()).unwrap();
-    fs::write(&hook, HISTORICAL_HOOK).unwrap();
+    fs::write(&hook, hook_bytes).unwrap();
     commit_fixture(repo.path());
     let check = hook_action(hook_upgrade(repo.path(), package.path(), true));
     assert_eq!(check["action"], "remove");

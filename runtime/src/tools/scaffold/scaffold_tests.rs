@@ -268,7 +268,6 @@ async fn scaffold_does_not_emit_retired_guard_hook_for_any_profile() {
         assert!(!repo.path().join(".kiro/hooks/jev-guard.json").exists());
     }
 }
-
 #[test]
 fn profile_name_boundaries_reject_empty_and_overlong_values() {
     for invalid in ["".to_string(), "p".repeat(MAX_PROFILE_NAME + 1)] {
