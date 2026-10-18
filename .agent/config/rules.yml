@@ -15,14 +15,6 @@ runtime:
     tool_payload_tokens: 4000
     skill_lean_tokens: 1200
 
-protected_paths:
-  # The Jev change guard reads this list when enabled. The write guard independently
-  # confines runtime writes to `.agent/`; this list does not authorize other writes.
-  - specs/
-  - specs/adr/
-  - LICENSE
-  - .github/workflows/
-
 # Documented human and team conventions (explicitly advisory, not runtime-enforced).
 advisory:
   # The development methodology. The runtime resolves the workflow shape from

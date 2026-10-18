@@ -7,6 +7,7 @@ use thiserror::Error;
 
 use super::bundle::DesiredFile;
 use super::manifest::{MANIFEST_VERSION, ManagedFile, WorkspaceManifest, sha256};
+pub const RETIRED_GUARD_HOOK: &str = ".kiro/hooks/jev-guard.json";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -75,12 +76,20 @@ pub fn build_plan(
         .map(|manifest| &manifest.managed)
         .cloned()
         .unwrap_or_default();
-    let paths: BTreeSet<String> = desired.keys().chain(old_managed.keys()).cloned().collect();
+    let mut paths: BTreeSet<String> = desired.keys().chain(old_managed.keys()).cloned().collect();
+    paths.insert(RETIRED_GUARD_HOOK.to_string());
     let mut actions = Vec::with_capacity(paths.len());
     let mut next_managed = BTreeMap::new();
 
     for path in paths {
         let local = inspect_local(repo_root, &path)?;
+        if path == RETIRED_GUARD_HOOK
+            && !old_managed.contains_key(&path)
+            && !desired.contains_key(&path)
+            && local.is_none()
+        {
+            continue;
+        }
         let old = old_managed.get(&path);
         let new = desired.get(&path);
         let entry = classify(&path, old, local.as_ref(), new);
@@ -165,6 +174,10 @@ fn classify(
             (PlanAction::Preserve, "locally_modified_bundle_unchanged")
         }
         (Some(_), Some(_), Some(_)) => (PlanAction::Conflict, "local_and_bundle_changed"),
+        (None, Some(_), None) if path == RETIRED_GUARD_HOOK => (
+            PlanAction::Preserve,
+            "retired_unowned_hook_requires_manual_removal",
+        ),
         (None, _, None) => (PlanAction::Preserve, "unmanaged_absent_path"),
     };
     PlanEntry {
@@ -183,6 +196,10 @@ fn local_matches(new: &DesiredFile, local: &LocalFile) -> bool {
 }
 
 fn inspect_local(repo_root: &Path, relative: &str) -> Result<Option<LocalFile>, PlanError> {
+    validate_upgrade_parent(repo_root, relative).map_err(|source| PlanError::Inspect {
+        path: relative.to_string(),
+        source,
+    })?;
     let path = repo_root.join(relative);
     let metadata = match fs::symlink_metadata(&path) {
         Ok(metadata) => metadata,
@@ -210,6 +227,29 @@ fn inspect_local(repo_root: &Path, relative: &str) -> Result<Option<LocalFile>, 
         mode: normalized_mode(&metadata),
         regular: true,
     }))
+}
+
+pub(crate) fn validate_upgrade_parent(repo_root: &Path, relative: &str) -> std::io::Result<()> {
+    let mut parent = repo_root.to_path_buf();
+    for part in Path::new(relative)
+        .parent()
+        .into_iter()
+        .flat_map(Path::components)
+    {
+        parent.push(part);
+        match fs::symlink_metadata(&parent) {
+            Ok(metadata) if metadata.is_dir() && !metadata.file_type().is_symlink() => {}
+            Ok(_) => {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::PermissionDenied,
+                    "upgrade path has a symlink or non-directory parent",
+                ));
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => break,
+            Err(error) => return Err(error),
+        }
+    }
+    Ok(())
 }
 
 fn count(actions: &[PlanEntry], action: PlanAction) -> usize {

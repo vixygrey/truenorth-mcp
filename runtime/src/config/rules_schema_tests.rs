@@ -17,7 +17,7 @@ fn malformed_yaml_and_non_mapping_roots_are_rejected() {
 }
 
 #[test]
-fn accepted_v2_configuration_classifies_every_public_block() {
+fn accepted_v2_configuration_classifies_current_public_blocks() {
     let inspected = RulesConfigInspection::inspect_yaml(
         r#"
 version: 2
@@ -27,11 +27,6 @@ runtime:
     tool_payload_tokens: 1024
 features:
   ontology: true
-  jev: false
-protected_paths:
-  - .agent
-jev:
-  endpoint: local
 advisory:
   methodology: spec-driven
 "#,
@@ -44,13 +39,32 @@ advisory:
         BTreeMap::from([
             ("advisory".to_string(), BlockEnforcement::Advisory),
             ("features".to_string(), BlockEnforcement::Enforced),
-            ("jev".to_string(), BlockEnforcement::Enforced),
-            ("protected_paths".to_string(), BlockEnforcement::Enforced),
             ("runtime".to_string(), BlockEnforcement::Enforced),
         ])
     );
     assert!(inspected.warnings.is_empty());
     assert!(inspected.errors.is_empty());
+}
+
+#[test]
+fn retired_configuration_is_unknown_in_lenient_and_strict_inspection() {
+    let yaml = "version: 2\nfeatures:\n  jev: true\njev:\n  endpoint: local\nprotected_paths:\n  - .agent\n";
+    let lenient = RulesConfigInspection::inspect_yaml(yaml, false);
+    assert!(lenient.errors.is_empty());
+    assert_eq!(
+        lenient.warnings,
+        [
+            "unknown key `features.jev`",
+            "unknown configuration key `jev`",
+            "unknown configuration key `protected_paths`",
+        ]
+    );
+    assert_eq!(lenient.blocks["jev"], BlockEnforcement::Unknown);
+    assert_eq!(lenient.blocks["protected_paths"], BlockEnforcement::Unknown);
+
+    let strict = RulesConfigInspection::inspect_yaml(yaml, true);
+    assert!(strict.warnings.is_empty());
+    assert_eq!(strict.errors, lenient.warnings);
 }
 
 #[test]
@@ -154,7 +168,6 @@ runtime:
   timeout: 30
 features:
   ontology: enabled
-  jev: 1
   ontolgy: true
   preview: false
 "#,
@@ -162,10 +175,7 @@ features:
     );
     assert_eq!(
         lenient.errors,
-        [
-            "`features.ontology` must be a boolean (true or false)",
-            "`features.jev` must be a boolean (true or false)",
-        ]
+        ["`features.ontology` must be a boolean (true or false)",]
     );
     assert_eq!(
         lenient.warnings,

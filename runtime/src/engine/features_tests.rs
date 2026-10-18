@@ -38,7 +38,6 @@ fn absent_agent_dir_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -54,7 +53,6 @@ fn absent_config_dir_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -70,7 +68,6 @@ fn absent_rules_file_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -86,7 +83,6 @@ fn no_features_block_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -100,7 +96,6 @@ fn features_block_without_ontology_key_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -114,7 +109,6 @@ fn ontology_true_resolves_enabled() {
         resolved,
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -128,7 +122,6 @@ fn ontology_false_resolves_disabled() {
         resolved,
         Features {
             ontology: false,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -171,7 +164,6 @@ fn unrelated_key_alongside_ontology_still_resolves_and_is_left_on_disk() {
         resolved,
         Features {
             ontology: false,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -219,7 +211,6 @@ fn resolve_needs_no_layout_contract() {
         resolved,
         Features {
             ontology: false,
-            jev: false,
             senior_developer: true,
         }
     );
@@ -231,65 +222,25 @@ fn default_features_are_enabled() {
         Features::default(),
         Features {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     );
 }
 
-// ── The Jev feature flag: default off (jev-integration-eval Requirement 1.2, 1.3) ──────
-
 #[test]
-fn jev_defaults_off_when_agent_dir_absent() {
-    // An existing project with no scaffolding resolves the Jev feature to off.
-    let repo = TempDir::new().expect("temp repo");
-    let resolved = resolve(repo.path()).expect("absent .agent resolves");
-    assert!(
-        !resolved.jev,
-        "an absent .agent/ resolves the Jev feature to off"
-    );
-}
-
-#[test]
-fn jev_defaults_off_when_features_block_omits_the_key() {
-    // A present features block with no `jev` key resolves the Jev feature to off.
-    let repo = seed_rules("features:\n  ontology: true\n");
-    let resolved = resolve(repo.path()).expect("no jev key resolves");
-    assert!(
-        !resolved.jev,
-        "an absent `jev` key resolves the Jev feature to off"
-    );
-}
-
-#[test]
-fn jev_true_resolves_on() {
-    let repo = seed_rules("features:\n  jev: true\n");
-    let resolved = resolve(repo.path()).expect("jev true resolves");
-    assert!(resolved.jev, "`jev: true` resolves the Jev feature to on");
-}
-
-#[test]
-fn jev_false_resolves_off() {
-    let repo = seed_rules("features:\n  jev: false\n");
-    let resolved = resolve(repo.path()).expect("jev false resolves");
-    assert!(
-        !resolved.jev,
-        "`jev: false` resolves the Jev feature to off"
-    );
-}
-
-#[test]
-fn ontology_and_jev_resolve_independently() {
-    // The two flags read from the same block without cross-talk: ontology off, jev on.
-    let repo = seed_rules("features:\n  ontology: false\n  jev: true\n");
-    let resolved = resolve(repo.path()).expect("both keys resolve");
+fn retired_configuration_does_not_activate_a_feature_or_change_rules() {
+    let body = "features:\n  ontology: false\n  jev: true\njev:\n  endpoint: local\nprotected_paths:\n  - .agent\n";
+    let repo = seed_rules(body);
     assert_eq!(
-        resolved,
+        resolve(repo.path()).expect("unknown fields do not activate capabilities"),
         Features {
             ontology: false,
-            jev: true,
             senior_developer: true,
         }
+    );
+    assert_eq!(
+        fs::read_to_string(rules_path(&repo)).expect("read rules"),
+        body
     );
 }
 
@@ -326,7 +277,6 @@ fn token_caps_reject_zero_and_preserve_unrelated_keys() {
         resolve(repo.path()).expect("features still resolve"),
         Features {
             ontology: false,
-            jev: false,
             senior_developer: true,
         }
     );

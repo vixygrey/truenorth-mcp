@@ -1,11 +1,11 @@
 # Compatibility
 
-This page defines the TrueNorth-MCP v1 compatibility contract. It applies to the
+This page defines the TrueNorth-MCP v2 compatibility contract. It applies to the
 runtime, the npm wrapper, the `.agent/` workspace, MCP tools, and MCP resources.
 
 ## Compatibility scope
 
-Within v1, a patch or minor release preserves existing supported workspace inputs,
+Within v2, a patch or minor release preserves existing supported workspace inputs,
 advertised MCP tool names, resource URIs, required request fields, and documented
 success and error semantics. A minor release can add an optional field, tool, or
 resource. Clients must use MCP discovery and ignore additive fields they do not
@@ -13,19 +13,14 @@ need.
 
 A tool or resource can be conditional on a feature flag. It is supported only when
 it appears in `tools/list` or `resources/list` for that workspace. The ontology
-tools and `truenorth://ontology` depend on `features.ontology`. The Jev guardrail
-tool depends on `features.jev`.
+tools and `truenorth://ontology` depend on `features.ontology`. The independent
+`features.senior_developer` setting controls automatic baseline delivery; explicit
+skill retrieval remains available.
 
-Jev remains disabled by default. To expose `truenorth_guard_change`, set `features.jev: true`
-and provide `TRUENORTH_JEV_ENDPOINT` plus `TRUENORTH_JEV_API_KEY` through the operator
-environment. The runtime rejects missing or unsafe activation before it advertises the tool.
-The endpoint must be an absolute HTTPS URL with no embedded credentials, query, or fragment.
-The API key remains outside repository configuration and is read for each request. Set
-`features.jev: false` and reconnect to disable Jev.
-
-Jev evaluates changes as an advisory layer. A network, authentication, parsing, timeout, or
-overload failure returns an annotation and never bypasses deterministic protected-path or secret
-blocks.
+Version 2.0.0 removes the `truenorth_guard_change` MCP tool and every
+`truenorth-mcp guard` command form (stdin, `--staged`, and `--range`). It does not
+replace either with a guard service or filename-policy system. The independent
+`guard-git` credential scanner remains available.
 
 A rename, removal, incompatible field-type change, altered required field, changed
 success or error semantics, or removed resource URI is a breaking change. Breaking
@@ -41,14 +36,14 @@ mutation rights. Additional servers may read, but their mutations return
 is the durable collaboration and history boundary.
 
 Shared network-filesystem mutation, multi-user hosting, centralized policy enforcement,
-authentication or authorization, and compliance-record guarantees are outside the v1
+authentication or authorization, and compliance-record guarantees are outside the v2
 compatibility contract. Operation receipts are bounded call results, not retained audit
 records. See the canonical [operating model](../README.md#operating-model).
 
 ## Supported runtimes
 
 The npm wrapper supports macOS ARM64/x64 and Linux ARM64/x64. Native Windows is
-unsupported in v1; Windows users must run the wrapper and native binary in WSL.
+unsupported; Windows users must run the wrapper and native binary in WSL.
 
 The wrapper requires Node.js 18 or newer. CI exercises Node.js 18, 20, 22, 24, and 26. Compatibility with an end-of-life Node.js release does not extend that release's
 upstream security support. Production installations should use a Node.js release that
@@ -81,7 +76,7 @@ The runtime logs an invalid layout as a warning and preserves its last valid lay
 cache. A missing layout remains valid for an unscaffolded workspace.
 
 `.agent/telemetry/runs.yml` is no longer required or scaffolded. Existing telemetry
-directories and files remain accepted as extra v1 content, but the runtime does not
+directories and files remain accepted as extra workspace content, but the runtime does not
 write them. Before downgrading to a runtime that requires the placeholder, recreate it
 if absent:
 
@@ -90,7 +85,7 @@ mkdir -p .agent/telemetry
 test -e .agent/telemetry/runs.yml || printf 'runs: []\n' >.agent/telemetry/runs.yml
 ```
 
-`profile.yml` has no independent version field. Its v1 contract is one of these fixed
+`profile.yml` has no independent version field. Its contract is one of these fixed
 profile names:
 
 | Profile           | Grouping requirement        |
@@ -163,7 +158,7 @@ them to a current lifecycle phase. `truenorth_record_task` continues to accept
 
 ## MCP tools and resources
 
-The following resource URIs are stable throughout v1:
+The following resource URIs are stable throughout v2:
 
 - `truenorth://state`
 - `truenorth://cockpit`
@@ -171,7 +166,7 @@ The following resource URIs are stable throughout v1:
 - `truenorth://adr`
 - `truenorth://ontology`, when the ontology feature is enabled
 
-These active tool names are stable throughout v1:
+These active tool names are stable throughout v2:
 
 - `truenorth_advance_phase`
 - `truenorth_record_task`
@@ -181,7 +176,6 @@ These active tool names are stable throughout v1:
 - `truenorth_record_bug`
 - `truenorth_generate_ontology` and `truenorth_verify_ontology`, when the ontology
   feature is enabled
-- `truenorth_guard_change`, when the Jev feature is enabled
 
 The catalog tools `index_skills`, `get_skill`, `read_skill`, `search_skills`,
 `build_skill_graph`, `read_graph`, `search_nodes`, `open_nodes`,
@@ -270,6 +264,41 @@ interoperability. [Issue #406](https://github.com/vixygrey/truenorth-mcp/issues/
 tracks the assessment, and
 [croft#685](https://github.com/vitali87/croft/issues/685) tracks forced sidecar
 shutdown.
+
+## Upgrade from 1.x to 2.0.0
+
+The 2.0.0 bundle supports managed upgrades from bundle versions `1.0.2`,
+`1.0.4`, `1.0.5`, and `1.2.1`; their historical bundle manifests remain
+available. A workspace without verifiable managed ownership may report collisions
+instead of removing files. Do not infer upgrade support for another origin from a
+similar version number.
+
+Install the 2.0.0 runtime and package bundle, commit or back up the project, then
+run from the governed Git worktree:
+
+```sh
+truenorth-mcp upgrade --check --bundle-dir <new-package-bundle>
+truenorth-mcp upgrade --bundle-dir <new-package-bundle>
+truenorth-mcp --check-config --strict
+```
+
+The check previews changes without writing. Before apply, ensure the Git worktree
+and index are clean and no other server holds the worktree writer lease. Apply
+uses the existing managed-file transaction: an unchanged, owned retired
+`.kiro/hooks/jev-guard.json` is removed; a modified hook is preserved as a
+conflict. A manifestless copy matching verified historical seed bytes and mode can
+be adopted and retired. Unowned, unverifiable, or locally changed hooks are
+preserved and reported; their owners must disable or remove them before running
+the new runtime. Other hook files and unrelated settings are not removed.
+
+Remove obsolete `features.jev`, top-level `jev`, and guard-only
+`protected_paths` from the project's `.agent/config/rules.yml` without
+overwriting unrelated settings. Non-strict configuration inspection warns on
+these now-unknown keys; strict inspection rejects them. Remove client
+registrations and hooks invoking `truenorth_guard_change` or
+`truenorth-mcp guard`, then reconnect MCP clients. Jev endpoint and API-key
+environment settings have no runtime consumer. No automatic Jev-report
+transformation or telemetry deletion is part of this upgrade.
 
 ## JSON cockpit migration
 

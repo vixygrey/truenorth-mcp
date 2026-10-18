@@ -5,9 +5,8 @@
 //! intentional mutating mode: it seeds a fresh language-agnostic workspace from an explicit,
 //! versioned skills bundle.
 
-use std::io::Read;
 use std::path::PathBuf;
-use std::process::{Command, ExitCode};
+use std::process::ExitCode;
 
 use serde::Serialize;
 
@@ -17,19 +16,13 @@ use truenorth_mcp::engine::backlog;
 use truenorth_mcp::engine::cockpit_json_migration::analyze as analyze_cockpit_json_migration;
 use truenorth_mcp::engine::cockpit_json_transaction;
 use truenorth_mcp::engine::features;
-use truenorth_mcp::engine::jev::config::resolve_protected_paths;
-use truenorth_mcp::engine::jev::drift::path_is_protected;
-use truenorth_mcp::engine::jev::guard::ProposedChange;
-use truenorth_mcp::engine::jev::secret_filter::{
-    validate_guard_metadata_paths, validate_guard_paths,
-};
 use truenorth_mcp::engine::mutation::acquire_worktree_lease;
 use truenorth_mcp::engine::workspace_upgrade::bundle::PackageBundle;
 use truenorth_mcp::tools::scaffold::{
     apply_workspace_upgrade, bootstrap_project, plan_workspace_upgrade,
 };
 
-const USAGE: &str = "usage: truenorth-mcp [--version | --check-config [--strict] | guard [--staged | --range <base>..<head>] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | migrate-cockpit-json (--check | --resume | --rollback) | skills list --bundle-dir <path>]";
+const USAGE: &str = "usage: truenorth-mcp [--version | --check-config [--strict] | init --bundle-dir <path> [--profile <name>] [--skill-set <name>]... | upgrade [--check] --bundle-dir <path> [--add-skill-set <name>]... [--remove-skill-set <name>]... | migrate-cockpit-json (--check | --resume | --rollback) | skills list --bundle-dir <path>]";
 
 /// The operation requested by the process arguments.
 #[derive(Debug, PartialEq, Eq)]
@@ -42,11 +35,6 @@ pub enum Mode {
     CheckConfig {
         /// Enforce strict configuration schema with no unknown or deprecated keys.
         strict: bool,
-    },
-    /// Run the deterministic guard over an explicit or Git-derived change.
-    Guard {
-        /// The source of the proposed change.
-        source: GuardSource,
     },
     /// Seed a fresh project from an explicit package bundle before MCP startup.
     Init {
@@ -81,17 +69,6 @@ pub enum Mode {
     },
 }
 
-/// The source of a guard evaluation.
-#[derive(Debug, PartialEq, Eq)]
-pub enum GuardSource {
-    /// Read a `ProposedChange` JSON object from standard input.
-    Stdin,
-    /// Read the staged Git index.
-    Staged,
-    /// Read the changes between two Git revisions.
-    Range(String),
-}
-
 /// Parse the supported command-line modes.
 pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String> {
     let args: Vec<String> = args.into_iter().collect();
@@ -102,16 +79,6 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
         [flag, opt] if flag == "--check-config" && opt == "--strict" => {
             Ok(Mode::CheckConfig { strict: true })
         }
-        [command] if command == "guard" => Ok(Mode::Guard {
-            source: GuardSource::Stdin,
-        }),
-        [command, option] if command == "guard" && option == "--staged" => Ok(Mode::Guard {
-            source: GuardSource::Staged,
-        }),
-        [command, option, range] if command == "guard" && option == "--range" => Ok(Mode::Guard {
-            source: GuardSource::Range(range.clone()),
-        }),
-        [command, ..] if command == "guard" => Err(USAGE.to_string()),
         [command, rest @ ..] if command == "init" => parse_init(rest),
         [command, rest @ ..] if command == "upgrade" => parse_upgrade(rest),
         [command, option] if command == "migrate-cockpit-json" && option == "--check" => {
@@ -128,82 +95,6 @@ pub fn parse_args(args: impl IntoIterator<Item = String>) -> Result<Mode, String
         }
         _ => Err(USAGE.to_string()),
     }
-}
-
-/// Evaluate protected paths from an explicit change or a Git diff.
-pub fn guard(source: GuardSource) -> ExitCode {
-    let root = match config::get_repo_root() {
-        Ok(root) => root,
-        Err(error) => return guard_fail(&error.to_string()),
-    };
-    let metadata_only = !matches!(&source, GuardSource::Stdin);
-    let paths = match source {
-        GuardSource::Stdin => {
-            let mut input = String::new();
-            if let Err(error) = std::io::stdin().read_to_string(&mut input) {
-                return guard_fail(&format!("could not read proposed change: {error}"));
-            }
-            serde_json::from_str::<ProposedChange>(&input)
-                .map(|change| change.paths)
-                .map_err(|error| format!("could not parse proposed change JSON: {error}"))
-        }
-        GuardSource::Staged => git_paths(
-            &root,
-            &["diff", "--cached", "--no-renames", "--name-only", "-z"],
-        ),
-        GuardSource::Range(range) => git_paths(
-            &root,
-            &["diff", "--no-renames", "--name-only", "-z", &range],
-        ),
-    };
-    let paths = match paths {
-        Ok(paths) => paths,
-        Err(error) => return guard_fail(&error),
-    };
-    let validation = if metadata_only {
-        validate_guard_metadata_paths(&root, &paths)
-    } else {
-        validate_guard_paths(&root, &paths)
-    };
-    if let Err(error) = validation {
-        return guard_fail(&error.to_string());
-    }
-    let protected = match resolve_protected_paths(&root) {
-        Ok(paths) => paths,
-        Err(error) => return guard_fail(&error.to_string()),
-    };
-    if let Some(path) = paths
-        .iter()
-        .find(|path| path_is_protected(path, &protected))
-    {
-        return guard_fail(&format!("guard blocked protected path `{path}`"));
-    }
-    ExitCode::SUCCESS
-}
-
-fn git_paths(root: &std::path::Path, args: &[&str]) -> Result<Vec<String>, String> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(root)
-        .output()
-        .map_err(|error| format!("could not run git diff: {error}"))?;
-    if !output.status.success() {
-        return Err(format!(
-            "git diff failed: {}",
-            String::from_utf8_lossy(&output.stderr).trim()
-        ));
-    }
-    Ok(output
-        .stdout
-        .split(|byte| *byte == 0)
-        .filter(|path| !path.is_empty())
-        .map(|path| String::from_utf8_lossy(path).into_owned())
-        .collect())
-}
-
-fn guard_fail(message: &str) -> ExitCode {
-    eprintln!("truenorth-mcp guard: {message}");
-    ExitCode::FAILURE
 }
 
 /// Print the package version without reading the workspace.
@@ -645,18 +536,16 @@ fn backlog_report(root: &std::path::Path) -> CheckReport {
 struct FeaturesReport {
     status: Status,
     ontology: Option<bool>,
-    jev: Option<bool>,
     senior_developer: Option<bool>,
     error: Option<ErrorReport>,
     reason: Option<&'static str>,
 }
 
 impl FeaturesReport {
-    fn ok(ontology: bool, jev: bool, senior_developer: bool) -> Self {
+    fn ok(ontology: bool, senior_developer: bool) -> Self {
         Self {
             status: Status::Ok,
             ontology: Some(ontology),
-            jev: Some(jev),
             senior_developer: Some(senior_developer),
             error: None,
             reason: None,
@@ -667,7 +556,6 @@ impl FeaturesReport {
         Self {
             status: Status::Error,
             ontology: None,
-            jev: None,
             senior_developer: None,
             error: Some(ErrorReport::new(
                 message,
@@ -681,7 +569,6 @@ impl FeaturesReport {
         Self {
             status: Status::Skipped,
             ontology: None,
-            jev: None,
             senior_developer: None,
             error: None,
             reason: Some(reason),
@@ -691,9 +578,7 @@ impl FeaturesReport {
 
 fn features_report(root: &std::path::Path) -> FeaturesReport {
     match features::resolve(root) {
-        Ok(features) => {
-            FeaturesReport::ok(features.ontology, features.jev, features.senior_developer)
-        }
+        Ok(features) => FeaturesReport::ok(features.ontology, features.senior_developer),
         Err(error) => FeaturesReport::error(error.to_string()),
     }
 }

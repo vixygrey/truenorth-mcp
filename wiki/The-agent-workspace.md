@@ -1,8 +1,9 @@
 # The .agent workspace
 
-The `.agent/` directory is the machine-facing layer. The runtime reads, watches, and writes
-only under `.agent/`. A single write guard rejects any write outside it (ADR-0008). The
-human-facing `specs/` layer holds narrative the runtime reads but never mutates.
+The `.agent/` directory is the machine-facing layer. Normal cockpit mutations use
+the guarded `.agent/` path. Scaffold, fresh initialization, and managed upgrade
+have separate, enumerated repository-seed authority (ADR-0019); they do not grant
+general write access to human-facing `specs/` narrative.
 
 ## The layout contract
 
@@ -11,7 +12,7 @@ language-agnostic data, so a reader in any language can parse it. The runtime va
 contract at startup. A missing required entry logs a warning that names the absent path,
 and the runtime keeps serving on the last valid state.
 
-V1 supports `version: "1"` only. See [Compatibility](Compatibility) for the complete
+The runtime supports layout `version: "1"` only. See [Compatibility](Compatibility) for the complete
 workspace contract, legacy cockpit migration behavior, and upgrade steps.
 
 ## The required entries
@@ -21,7 +22,7 @@ named files.
 
 | Area        | Required entries            | Purpose                                                                                    |
 | ----------- | --------------------------- | ------------------------------------------------------------------------------------------ |
-| `config/`   | `rules.yml`                 | Token caps, approval gates, protected paths, flags                                         |
+| `config/`   | `rules.yml`                 | Token caps and runtime feature settings                                                    |
 | `spec/`     | `requirements.md`           | The feature narrative                                                                      |
 | `tasks/`    | `state.json`                | Cockpit state, the phase, the TDD step <!-- truenorth-lint: allow-relative-layout-path --> |
 | `memories/` | `lessons.md`, `glossary.md` | Durable lessons and the working glossary                                                   |
@@ -51,13 +52,12 @@ source. Stocktake usage analysis stores no raw prompts, repository file contents
 secrets, or user identifiers. This follows the receipt and no-journal decision in
 [issue #436](https://github.com/vixygrey/truenorth-mcp/issues/436).
 
-## The single write guard
+## Filesystem write boundaries
 
-Every runtime write funnels through one guarded path. It normalizes the target, rejects any
-path that escapes `.agent/`, and writes nothing on rejection. This is the load-bearing
-invariant of the machine-facing layer. The scaffold is the one authorized exception: it
-seeds files outside `.agent/` (root docs, git hooks, `.github/`) through an audited seed
-path that the runtime tools never call.
+Normal cockpit writes stay under `.agent/`. Repository-seed writes are limited
+to enumerated scaffold, fresh-init, and managed-upgrade targets, with containment,
+ownership, and transaction checks. They do not edit existing human narrative
+under `specs/`; see [ADR-0019](../specs/adr/0019-scoped-repository-seed-write-authority.md).
 
 ## One writer per worktree
 

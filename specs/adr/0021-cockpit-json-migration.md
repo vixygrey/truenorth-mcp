@@ -81,4 +81,5 @@ decision is scoped to the three mutable cockpit documents named above.
 
 The safe-YAML-parser remediation from issue #527 remains independently required: the
 runtime still reads and writes YAML for configuration, frontmatter, the backlog,
-the ontology, Jev reports, and workspace manifests.
+the ontology, and workspace manifests. The Jev-report entry in the original
+decision describes the earlier release; Jev reports are retired in 2.0.0.

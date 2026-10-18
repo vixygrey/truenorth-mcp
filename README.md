@@ -141,8 +141,10 @@ Managed files that still match their installed source are updated or removed; lo
 unowned path collisions are preserved. Configuration is validated again before the transaction
 journal is removed, and a failed post-apply validation restores every preimage. Interrupted
 upgrades resume from the journal under `.agent/runtime/upgrade`. Selection is committed only after
-the transaction succeeds. Existing 1.0.2 and v1 manifest workspaces migrate with every set
-selected, preserving their installed catalog. Neither command mutates `specs/`.
+the transaction succeeds. Supported managed upgrade origins are `1.0.2`, `1.0.4`,
+`1.0.5`, and `1.2.1`. The selection preserves installed catalog sets; neither command
+mutates `specs/`. For the 2.0.0 guard retirement, follow the
+[operator migration steps](wiki/Compatibility.md#upgrade-from-1x-to-200).
 
 Then register the wrapper as an MCP server in your client:
 
@@ -267,7 +269,6 @@ The business set includes `runtime/src/config.rs` and production code under
 Test files, inline test modules, the test-only server implementation, dependencies,
 build output, and developer-only `runtime/src/bin/` entrypoints are excluded.
 Feature-only code absent from both measured builds is not part of their denominator.
-Compiled Jev code remains included. The `jev-http` build is not in this matrix.
 
 Native reports and metadata are retained in `runtime/target/coverage/`.
 The checker recomputes coverage from those reports and binds them to Git HEAD,
@@ -334,7 +335,7 @@ tools and the `truenorth://ontology` resource are absent.
 
 ## Support
 
-TrueNorth-MCP v1 supports the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
+TrueNorth-MCP v2 supports the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
 Native Windows is unsupported; use
 [WSL](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
 The wrapper requires Node.js 18 or newer. Use a Node.js release that still receives
@@ -539,7 +540,7 @@ privately through the [security policy](SECURITY.md).
   manual: install and connect, the `.agent/` workspace, the lifecycle, the resources,
   the ontology feature, and troubleshooting.
 - The [compatibility policy](https://github.com/vixygrey/truenorth-mcp/wiki/Compatibility)
-  defines the v1 workspace, MCP, migration, and upgrade contract.
+  defines the v2 workspace, MCP, migration, and upgrade contract.
 
 ## Contributing
 

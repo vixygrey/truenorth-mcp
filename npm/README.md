@@ -58,6 +58,10 @@ files, and preserves local edits or unowned collisions. Configuration is validat
 transaction cleanup; failure restores every preimage. The runtime does not mutate `specs/`. An
 interrupted apply resumes from its local transaction journal.
 
+For a 1.x workspace moving to 2.0.0, follow the
+[guard-retirement migration](https://github.com/vixygrey/truenorth-mcp/wiki/Compatibility#upgrade-from-1x-to-200)
+to resolve legacy hooks and obsolete configuration before connecting clients.
+
 ## Connect an MCP client
 
 Register the wrapper as a stdio MCP server:
@@ -90,7 +94,7 @@ cannot guarantee client exposure or model compliance.
 
 The wrapper supports Node.js 18 or newer on macOS ARM64/x64 and Linux ARM64/x64. Use a
 Node.js release that still receives upstream security fixes for production. Native Windows
-is unsupported in v1; follow the
+is unsupported; follow the
 [WSL installation path](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
 
 ## Documentation and support

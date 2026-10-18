@@ -37,9 +37,8 @@ pub use bootstrap::bootstrap_project;
 pub use upgrade::{apply_workspace_upgrade, plan_workspace_upgrade};
 
 use templates::{
-    COMMIT_TEMPLATE, EXECUTION_STATUS_SEED, ISSUE_TEMPLATE_CONFIG, JEV_GUARD_HOOK,
-    PULL_REQUEST_TEMPLATE, STATE_SEED, agents_md, bug_form, conventions_md, feature_form,
-    layout_contract, starter_seed,
+    COMMIT_TEMPLATE, EXECUTION_STATUS_SEED, ISSUE_TEMPLATE_CONFIG, PULL_REQUEST_TEMPLATE,
+    STATE_SEED, agents_md, bug_form, conventions_md, feature_form, layout_contract, starter_seed,
 };
 
 /// The command the scaffold prints for the human to run. The scaffold never runs it
@@ -168,7 +167,6 @@ pub fn scaffold_sources(profile: Profile) -> Vec<ScaffoldSource> {
         source("CONVENTIONS.md", conventions_md(profile)),
         source(".githooks/commit-msg", commit_msg_hook(profile)),
         source(".githooks/post-merge", post_merge_hook(profile)),
-        source(".kiro/hooks/jev-guard.json", JEV_GUARD_HOOK),
         source(".github/commit-template.md", COMMIT_TEMPLATE),
         source(".github/pull-request-template.md", PULL_REQUEST_TEMPLATE),
         source(".github/ISSUE_TEMPLATE/bug.md", bug_form(profile)),

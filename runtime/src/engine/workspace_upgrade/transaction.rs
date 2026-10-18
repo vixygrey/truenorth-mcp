@@ -6,7 +6,7 @@ use thiserror::Error;
 
 use super::bundle::DesiredFile;
 use super::manifest::{MANIFEST_REL_PATH, sha256, validate_relative_path};
-use super::plan::{PlanAction, UpgradePlan};
+use super::plan::{PlanAction, UpgradePlan, validate_upgrade_parent};
 use crate::engine::agent_ws::{write_repo_seed_bytes, write_under_agent};
 
 const TRANSACTION_REL: &str = "runtime/upgrade/transaction.json";
@@ -230,6 +230,12 @@ fn apply_operation(
             detail,
         })?;
     } else {
+        validate_upgrade_parent(repo_root, &operation.path).map_err(|error| {
+            TransactionError::Apply {
+                path: operation.path.clone(),
+                detail: error.to_string(),
+            }
+        })?;
         fs::remove_file(repo_root.join(&operation.path)).map_err(|error| {
             TransactionError::Apply {
                 path: operation.path.clone(),
@@ -327,6 +333,10 @@ fn validate_transaction_reference(kind: &str, value: &str) -> Result<(), Transac
 }
 
 fn inspect(repo_root: &Path, relative: &str) -> Result<Option<FileState>, TransactionError> {
+    validate_upgrade_parent(repo_root, relative).map_err(|error| TransactionError::Apply {
+        path: relative.to_string(),
+        detail: error.to_string(),
+    })?;
     let path = repo_root.join(relative);
     let metadata = match fs::symlink_metadata(&path) {
         Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => metadata,

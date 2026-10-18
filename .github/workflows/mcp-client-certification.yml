@@ -34,7 +34,7 @@ jobs:
           workspaces: runtime
 
       - name: Build the release artifact
-        run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http
+        run: cargo build --locked --release --manifest-path runtime/Cargo.toml
 
       - name: Stage the platform package
         run: |

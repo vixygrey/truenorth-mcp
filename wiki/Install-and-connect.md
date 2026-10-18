@@ -35,7 +35,7 @@ tree, CI workflow, or verify command.
 
 ## Windows
 
-Native Windows is unsupported in v1. Use WSL 2 so the npm wrapper and native Linux
+Native Windows is unsupported. Use WSL 2 so the npm wrapper and native Linux
 binary run in the same environment.
 
 1. Install WSL 2 from an elevated PowerShell terminal with `wsl --install`.

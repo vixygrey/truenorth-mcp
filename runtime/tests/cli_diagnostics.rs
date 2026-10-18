@@ -99,6 +99,28 @@ fn version_needs_no_repository() {
 }
 
 #[test]
+fn retired_guard_forms_fail_as_unknown_commands_without_mutating_workspace() {
+    let repo = seed_complete_repo();
+    let before = snapshot(repo.path());
+    for args in [
+        vec!["guard"],
+        vec!["guard", "--staged"],
+        vec!["guard", "--range", "HEAD..HEAD"],
+    ] {
+        let output = run(repo.path(), &args, Some("true"));
+        assert!(!output.status.success(), "{args:?} must fail");
+        assert!(output.stdout.is_empty(), "unknown command has no stdout");
+        let error = String::from_utf8(output.stderr).expect("usage is UTF-8");
+        assert!(error.contains("usage: truenorth-mcp"), "{error}");
+        assert!(
+            !error.contains("guard ["),
+            "retired command is absent from usage"
+        );
+    }
+    assert_eq!(snapshot(repo.path()), before);
+}
+
+#[test]
 fn complete_configuration_reports_ready_without_mutation() {
     let repo = seed_complete_repo();
     let before = snapshot(repo.path());
@@ -113,6 +135,7 @@ fn complete_configuration_reports_ready_without_mutation() {
     assert_eq!(report["features"]["status"], "ok");
     assert_eq!(report["features"]["ontology"], false);
     assert_eq!(report["features"]["senior_developer"], true);
+    assert!(report["features"].get("jev").is_none());
     assert_eq!(report["token_caps"]["status"], "ok");
     assert_eq!(report["token_caps"]["skill_lean_tokens"], 1500);
     assert_eq!(report["token_caps"]["tool_payload_tokens"], 4000);
@@ -199,6 +222,7 @@ fn missing_root_reports_actionable_remediation() {
             .contains("TRUENORTH_ROOT")
     );
     assert_eq!(report["layout"]["status"], "skipped");
+    assert!(report["features"].get("jev").is_none());
 }
 
 #[test]
@@ -359,6 +383,47 @@ fn strict_mode_rejects_unknown_keys_and_legacy_unnamespaced_blocks() {
             .unwrap()
             .contains("unknown configuration key `unknown_section`")
     );
+}
+
+#[test]
+fn retired_rules_warn_in_lenient_inspection_and_fail_strict_inspection() {
+    let repo = seed_complete_repo();
+    let rules = repo.path().join(".agent/config/rules.yml");
+    fs::write(
+        &rules,
+        "version: 2\nfeatures:\n  ontology: false\n  jev: true\njev:\n  endpoint: https://example.invalid\nprotected_paths:\n  - .agent\n",
+    )
+    .expect("write stale rules");
+    let before = snapshot(repo.path());
+    let expected = [
+        "unknown key `features.jev`",
+        "unknown configuration key `jev`",
+        "unknown configuration key `protected_paths`",
+    ];
+    let lenient = run(repo.path(), &["--check-config"], Some("true"));
+    assert!(
+        lenient.status.success(),
+        "unknown keys only warn in non-strict mode"
+    );
+    let report = parse_report(&lenient);
+    assert_eq!(report["features"]["status"], "ok");
+    assert!(report["features"].get("jev").is_none());
+    assert_eq!(
+        report["rules_config"]["warnings"],
+        serde_json::json!(expected)
+    );
+    assert_eq!(report["rules_config"]["errors"], serde_json::json!([]));
+
+    let strict = run(repo.path(), &["--check-config", "--strict"], Some("true"));
+    assert!(!strict.status.success(), "strict mode rejects retired keys");
+    let report = parse_report(&strict);
+    assert_eq!(report["features"]["status"], "ok");
+    assert!(report["features"].get("jev").is_none());
+    assert_eq!(
+        report["rules_config"]["errors"],
+        serde_json::json!(expected)
+    );
+    assert_eq!(snapshot(repo.path()), before);
 }
 
 #[test]
