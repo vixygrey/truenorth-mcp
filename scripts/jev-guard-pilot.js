@@ -7,9 +7,9 @@ const path = require('node:path');
 const { McpError, startSession } = require('./lib/mcp-session.js');
 
 const ROOT = path.resolve(__dirname, '..');
-const FIXTURES = path.join(ROOT, 'benchmarks/jev/guard-pilot/fixtures-v1.json');
-const SOURCE = path.join(ROOT, 'benchmarks/jev/guard-pilot/source-v1.json');
-const RATIONALES = path.join(ROOT, 'benchmarks/jev/guard-pilot/rationales-v1.json');
+const FIXTURES = path.join(ROOT, 'benchmarks/jev/guard-pilot/fixtures-v2.json');
+const SOURCE = path.join(ROOT, 'benchmarks/jev/guard-pilot/source-v2.json');
+const RATIONALES = path.join(ROOT, 'benchmarks/jev/guard-pilot/rationales-v2.json');
 const POLICY = path.join(ROOT, 'benchmarks/jev/guard-pilot/policy-v1.yml');
 const CLIENT_META = {
   'io.modelcontextprotocol/protocolVersion': '2026-07-28',
@@ -51,7 +51,16 @@ function loadFixtures() {
   if (
     fixtures.schema_version !== 1 ||
     source.schema_version !== 1 ||
+    source.name !== 'guard-pilot-issue344' ||
+    source.version !== '2' ||
+    fixtures.source?.name !== 'guard-pilot-issue344' ||
+    fixtures.source?.version !== '2' ||
+    source.rubric !== 'guard-pilot-review-v2' ||
+    source.supersedes?.source !== 'source-v1.json' ||
+    source.supersedes?.rubric !== 'guard-pilot-review-v1' ||
+    source.supersedes?.status !== 'failed_unaccepted' ||
     rationales.schema_version !== 1 ||
+    rationales.status !== 'candidate_for_operator_review_not_provider_acceptance' ||
     fixtures.source?.sha256 !== sha256(SOURCE) ||
     source.rationales_sha256 !== sha256(RATIONALES) ||
     !Array.isArray(fixtures.cases) ||
@@ -300,18 +309,41 @@ function parseAccounting(body, pricing) {
 
 function classifyFindings(body, expected) {
   const findings = body.findings;
+  const rigor = findings?.rigor;
+  const score = (number, maximum) =>
+    typeof number === 'number' && Number.isFinite(number) && number >= 0 && number <= maximum;
+  const rigor_scores =
+    rigor &&
+    score(rigor.hallucinated_import, 1) &&
+    score(rigor.violates_conventions, 1) &&
+    score(rigor.contains_secrets, 1) &&
+    score(rigor.complexity, 100)
+      ? {
+          hallucinated_import: rigor.hallucinated_import,
+          violates_conventions: rigor.violates_conventions,
+          contains_secrets: rigor.contains_secrets,
+          complexity: rigor.complexity,
+        }
+      : null;
   const notes = body.notes;
   if (
     !Array.isArray(notes) ||
     notes.length > 12 ||
     notes.some((note) => typeof note !== 'string' || note.length > 1_000)
   ) {
-    return { observed: null, matches: false, visible_notes: [], unavailable: 'invalid_notes' };
+    return {
+      observed: null,
+      matches: false,
+      rigor_scores,
+      visible_notes: [],
+      unavailable: 'invalid_notes',
+    };
   }
   if (body.decision === 'annotate' && notes.length === 0) {
     return {
       observed: null,
       matches: false,
+      rigor_scores,
       visible_notes: notes,
       unavailable: 'missing_advisory',
     };
@@ -324,27 +356,28 @@ function classifyFindings(body, expected) {
       (context) => typeof context !== 'string' || !/^[a-zA-Z0-9_./: -]{1,80}$/.test(context),
     )
   ) {
-    return { observed: null, matches: false, visible_notes: notes, unavailable: 'invalid_context' };
+    return {
+      observed: null,
+      matches: false,
+      rigor_scores,
+      visible_notes: notes,
+      unavailable: 'invalid_context',
+    };
   }
-  const rigor = findings.rigor;
   const drift = findings.drift;
   if (findings.unavailable !== null || !rigor || !drift) {
     return {
       observed: null,
       matches: false,
+      rigor_scores,
       visible_notes: notes,
       unavailable:
         typeof findings.unavailable === 'string' ? 'model_unavailable' : 'incomplete_findings',
       unavailable_context: contexts,
     };
   }
-  const score = (number, maximum) =>
-    typeof number === 'number' && Number.isFinite(number) && number >= 0 && number <= maximum;
   if (
-    !score(rigor.hallucinated_import, 1) ||
-    !score(rigor.violates_conventions, 1) ||
-    !score(rigor.contains_secrets, 1) ||
-    !score(rigor.complexity, 100) ||
+    !rigor_scores ||
     !score(drift.noul, 1) ||
     typeof drift.out_of_scope !== 'boolean' ||
     typeof drift.forced_by_path_match !== 'boolean' ||
@@ -353,6 +386,7 @@ function classifyFindings(body, expected) {
     return {
       observed: null,
       matches: false,
+      rigor_scores,
       visible_notes: notes,
       unavailable: 'invalid_scores',
       unavailable_context: contexts,
@@ -373,6 +407,7 @@ function classifyFindings(body, expected) {
         Object.hasOwn(observed, key) && typeof value === 'boolean' && observed[key] === value,
     );
   return {
+    rigor_scores,
     observed,
     matches,
     visible_notes: notes,
@@ -452,6 +487,7 @@ async function runCase(testCase, binary, pricing) {
       observed_decision: body.decision,
       decision_matches: testCase.expected.decision === body.decision,
       expected_findings: testCase.expected.findings,
+      rigor_scores: classified.rigor_scores,
       observed_findings: classified.observed,
       findings_match: classified.matches,
       findings_unavailable: classified.unavailable,
@@ -471,7 +507,8 @@ async function main() {
   const fixtures = loadFixtures();
   const pricing = loadPricing();
   const evidence = {
-    schema_version: 1,
+    schema_version: 2,
+    fixture_version: '2',
     stage: 'guard_pilot',
     accepted: false,
     policy_approval: 'pending',
@@ -553,10 +590,14 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  // Never print caught transport errors: they can carry stderr or an untrusted provider payload.
-  console.error(
-    `Guard pilot stopped before dispatch: ${error.message.includes('pilot') || error.message.includes('budget') ? error.message : 'invalid preflight or source manifest'}`,
-  );
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    // Never print caught transport errors: they can carry stderr or an untrusted provider payload.
+    console.error(
+      `Guard pilot stopped before dispatch: ${error.message.includes('pilot') || error.message.includes('budget') ? error.message : 'invalid preflight or source manifest'}`,
+    );
+    process.exitCode = 1;
+  });
+}
+
+module.exports = { classifyFindings, loadFixtures };

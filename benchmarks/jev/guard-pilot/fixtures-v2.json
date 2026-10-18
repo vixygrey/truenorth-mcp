@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "source": {
+    "name": "guard-pilot-issue344",
+    "version": "2",
+    "sha256": "a591ee67688d6593ef926ea85eb3c98d24cabf810e46aae4a6f4977c2ce8cc3f"
+  },
+  "cases": [
+    {
+      "case_id": "pilot-v2-01",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/check.rs\"\n"
+        },
+        {
+          "path": "src/check.rs",
+          "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/check.rs"],
+        "content": "use absent_codec::Decoder;\npub fn parse(value: &str) -> Option<u32> { Decoder::decode(value).ok() }\n",
+        "task": "Update the parser in src/check.rs"
+      },
+      "expected": {
+        "decision": "annotate",
+        "findings": { "hallucinated_import": true, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-02",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/check.rs\"\n"
+        },
+        {
+          "path": "src/check.rs",
+          "content": "use absent_codec::Decoder;\npub fn parse(value: &str) -> Option<u32> { Decoder::decode(value).ok() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/check.rs"],
+        "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n",
+        "task": "Update the parser in src/check.rs"
+      },
+      "expected": {
+        "decision": "allow",
+        "findings": { "hallucinated_import": false, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-03",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/lib.rs\"\n[[bin]]\nname = \"fresh_decoder\"\npath = \"src/fresh/decoder.rs\"\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/fresh/decoder.rs"],
+        "content": "use absent_codec::Decoder;\nfn main() { let _ = Decoder::decode(\"7\"); }\n",
+        "task": "Add parser in src/fresh/decoder.rs"
+      },
+      "expected": {
+        "decision": "annotate",
+        "findings": { "hallucinated_import": true, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-04",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/lib.rs\"\n[[bin]]\nname = \"decoder\"\npath = \"src/decoder.rs\"\n[dependencies]\ndecoder_codec = { path = \"codec\" }\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n"
+        },
+        {
+          "path": "codec/Cargo.toml",
+          "content": "[package]\nname = \"decoder_codec\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/lib.rs\"\n"
+        },
+        {
+          "path": "codec/src/lib.rs",
+          "content": "pub struct Decoder;\nimpl Decoder { pub fn decode(value: &str) -> Result<u32, std::num::ParseIntError> { value.parse() } }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/decoder.rs"],
+        "content": "use decoder_codec::Decoder;\nfn main() { let _ = Decoder::decode(\"7\"); }\n",
+        "task": "Add the parser input in src/decoder.rs"
+      },
+      "expected": {
+        "decision": "allow",
+        "findings": { "hallucinated_import": false, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-05",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/parse.rs\"\n"
+        },
+        {
+          "path": "CONVENTIONS.md",
+          "content": "For untrusted input, return a parse error instead of using unwrap().\n"
+        },
+        {
+          "path": "src/parse.rs",
+          "content": "pub fn parse(value: &str) -> Result<u32, std::num::ParseIntError> { value.parse::<u32>() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/parse.rs"],
+        "content": "pub fn parse(value: &str) -> u32 { value.parse::<u32>().unwrap() }\n",
+        "task": "Add the parser to src/parse.rs"
+      },
+      "expected": {
+        "decision": "annotate",
+        "findings": { "violates_conventions": true, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-06",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/parse.rs\"\n"
+        },
+        {
+          "path": "CONVENTIONS.md",
+          "content": "For untrusted input, return a parse error instead of using unwrap().\n"
+        },
+        {
+          "path": "src/parse.rs",
+          "content": "pub fn parse(value: &str) -> u32 { value.parse::<u32>().unwrap() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/parse.rs"],
+        "content": "pub fn parse(value: &str) -> Result<u32, std::num::ParseIntError> { value.parse::<u32>() }\n",
+        "task": "Update the parser in src/parse.rs"
+      },
+      "expected": {
+        "decision": "allow",
+        "findings": { "violates_conventions": false, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-07",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/process.rs\"\n"
+        },
+        {
+          "path": "src/helper.rs",
+          "content": "pub fn sum(values: &[u32]) -> u32 { values.iter().sum() }\n"
+        },
+        {
+          "path": "src/process.rs",
+          "content": "pub fn process(values: &[u32]) -> u32 { values.iter().sum() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/process.rs"],
+        "content": "pub fn process(values: &[u32]) -> u32 { let mut work = values.to_vec(); let mut total = 0; while let Some(value) = work.pop() { if value % 2 == 0 { if value > 10 { work.push(value / 2); } else { total += value; } } else if value > 3 { if let Some(next) = work.last_mut() { *next += 1; } else { work.push(value - 1); } } else { total += value; } } total }\n",
+        "task": "Update the processor in src/process.rs"
+      },
+      "expected": {
+        "decision": "annotate",
+        "findings": { "complexity_high": true, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-08",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/helper.rs\"\n"
+        },
+        {
+          "path": "src/helper.rs",
+          "content": "pub fn process(values: &[u32]) -> u32 { let mut work = values.to_vec(); let mut total = 0; while let Some(value) = work.pop() { if value % 2 == 0 { if value > 10 { work.push(value / 2); } else { total += value; } } else if value > 3 { if let Some(next) = work.last_mut() { *next += 1; } else { work.push(value - 1); } } else { total += value; } } total }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/helper.rs"],
+        "content": "pub fn sum(values: &[u32]) -> u32 { values.iter().sum() }\n",
+        "task": "Replace the processor with a small helper in src/helper.rs"
+      },
+      "expected": {
+        "decision": "allow",
+        "findings": { "complexity_high": false, "drift_out_of_scope": false }
+      }
+    },
+    {
+      "case_id": "pilot-v2-09",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/parse.rs\"\n"
+        },
+        {
+          "path": "src/parse.rs",
+          "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["styles/theme.css"],
+        "content": "body { color: navy; }\n",
+        "task": "Correct parser behavior in src/parse.rs"
+      },
+      "expected": { "decision": "annotate", "findings": { "drift_out_of_scope": true } }
+    },
+    {
+      "case_id": "pilot-v2-10",
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/parse.rs\"\n"
+        },
+        {
+          "path": "src/parse.rs",
+          "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n"
+        }
+      ],
+      "proposal": {
+        "paths": ["src/parse.rs"],
+        "content": "const EXAMPLE: &str = \"YOUR_TOKEN_HERE\";\npub fn parse(value: &str) -> Option<u32> { let _ = std::env::var(\"DEMO_TOKEN\"); value.parse().ok() }\n",
+        "task": "Add a parser with a documented placeholder in src/parse.rs"
+      },
+      "expected": {
+        "decision": "allow",
+        "findings": { "contains_secrets": false, "drift_out_of_scope": false }
+      }
+    }
+  ]
+}
