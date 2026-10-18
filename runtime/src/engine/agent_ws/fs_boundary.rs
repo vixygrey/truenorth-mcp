@@ -24,7 +24,7 @@ impl RepositoryFs {
         Ok(Self { root })
     }
 
-    pub(crate) fn validate_path(path: &Path) -> io::Result<()> {
+    fn validate_location(path: &Path) -> io::Result<()> {
         if path.as_os_str().is_empty()
             || path.as_os_str().as_bytes().contains(&b'\\')
             || path.as_os_str().as_bytes().contains(&0)
@@ -42,6 +42,11 @@ impl RepositoryFs {
                 "expected a nonempty repository-relative path without traversal",
             ));
         }
+        Ok(())
+    }
+
+    pub(crate) fn validate_path(path: &Path) -> io::Result<()> {
+        Self::validate_location(path)?;
         let mut prefix = std::path::PathBuf::new();
         for part in path.components() {
             prefix.push(part);
@@ -59,6 +64,7 @@ impl RepositoryFs {
     }
 
     pub(crate) fn open_read(&self, path: &Path) -> io::Result<File> {
+        Self::validate_path(path)?;
         let (parent, name) = self.parent(path)?;
         let file = open_at(&parent, &name, libc::O_RDONLY | libc::O_NONBLOCK, 0)?;
         if !file.metadata()?.is_file() {
@@ -74,6 +80,7 @@ impl RepositoryFs {
     }
 
     pub(crate) fn validate_directory(&self, path: &Path) -> io::Result<()> {
+        Self::validate_path(path)?;
         self.directory(path, false).map(|_| ())
     }
 
@@ -86,6 +93,7 @@ impl RepositoryFs {
     }
 
     pub(crate) fn read_dir_names(&self, path: &Path) -> io::Result<Vec<OsString>> {
+        Self::validate_path(path)?;
         let directory = self.directory(path, false)?;
         let fd = directory.into_raw_fd();
         // fdopendir takes descriptor ownership only on success.
@@ -114,6 +122,15 @@ impl RepositoryFs {
             if name.to_bytes() != b"." && name.to_bytes() != b".." {
                 names.push(OsStr::from_bytes(name.to_bytes()).to_owned());
             }
+        }
+    }
+
+    pub(crate) fn validate_metadata_path(&self, path: &Path) -> io::Result<()> {
+        // Git diff guards inspect names and file types, never private file contents.
+        match self.parent(path) {
+            Ok((parent, name)) => regular_target(&parent, &name, true),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(error),
         }
     }
 
@@ -193,7 +210,7 @@ impl RepositoryFs {
     }
 
     fn parent(&self, path: &Path) -> io::Result<(File, CString)> {
-        Self::validate_path(path)?;
+        Self::validate_location(path)?;
         let name = path
             .file_name()
             .ok_or_else(|| invalid(path, "expected a file name"))?;
@@ -208,7 +225,7 @@ impl RepositoryFs {
     }
 
     fn directory(&self, path: &Path, create: bool) -> io::Result<File> {
-        Self::validate_path(path)?;
+        Self::validate_location(path)?;
         let mut directory = self.root.try_clone()?;
         for part in path.components() {
             let name = c_string(part.as_os_str())?;

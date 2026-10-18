@@ -31,6 +31,25 @@ pub fn validate_guard_paths(repo_root: &Path, paths: &[String]) -> Result<(), su
     open_state_files(repo_root, paths).map(|_| ())
 }
 
+/// Validate Git diff paths without opening file contents or applying read exclusions.
+///
+/// # Errors
+///
+/// Returns an invalid-path error for traversal, symlinks, or inaccessible targets.
+pub fn validate_guard_metadata_paths(
+    repo_root: &Path,
+    paths: &[String],
+) -> Result<(), super::JevError> {
+    use crate::engine::agent_ws::fs_boundary::RepositoryFs;
+
+    let fs = RepositoryFs::open(repo_root).map_err(|error| path_error(repo_root, error))?;
+    for path in paths {
+        fs.validate_metadata_path(Path::new(path))
+            .map_err(|error| path_error(Path::new(path), error))?;
+    }
+    Ok(())
+}
+
 /// Open every existing safe path before any file content is read or sent to Jev.
 ///
 /// A missing file is legitimate for a proposed new file; every other failure is an input

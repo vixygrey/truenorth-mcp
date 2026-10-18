@@ -54,6 +54,9 @@ Invalid paths are input errors, not probabilistic fail-open decisions.
 Jev validates every path before reading evaluation content or sending a request.
 Missing proposed files remain supported. The default build makes no Jev HTTP requests.
 
+Git diff guard modes inspect path metadata only.
+They enforce containment and protected paths without applying content-read exclusions.
+
 ## Support boundaries
 
 Supported v1 distributions are the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.

@@ -20,7 +20,9 @@ use truenorth_mcp::engine::features;
 use truenorth_mcp::engine::jev::config::resolve_protected_paths;
 use truenorth_mcp::engine::jev::drift::path_is_protected;
 use truenorth_mcp::engine::jev::guard::ProposedChange;
-use truenorth_mcp::engine::jev::secret_filter::validate_guard_paths;
+use truenorth_mcp::engine::jev::secret_filter::{
+    validate_guard_metadata_paths, validate_guard_paths,
+};
 use truenorth_mcp::engine::mutation::acquire_worktree_lease;
 use truenorth_mcp::engine::workspace_upgrade::bundle::PackageBundle;
 use truenorth_mcp::tools::scaffold::{
@@ -134,6 +136,7 @@ pub fn guard(source: GuardSource) -> ExitCode {
         Ok(root) => root,
         Err(error) => return guard_fail(&error.to_string()),
     };
+    let metadata_only = !matches!(&source, GuardSource::Stdin);
     let paths = match source {
         GuardSource::Stdin => {
             let mut input = String::new();
@@ -157,7 +160,12 @@ pub fn guard(source: GuardSource) -> ExitCode {
         Ok(paths) => paths,
         Err(error) => return guard_fail(&error),
     };
-    if let Err(error) = validate_guard_paths(&root, &paths) {
+    let validation = if metadata_only {
+        validate_guard_metadata_paths(&root, &paths)
+    } else {
+        validate_guard_paths(&root, &paths)
+    };
+    if let Err(error) = validation {
         return guard_fail(&error.to_string());
     }
     let protected = match resolve_protected_paths(&root) {
