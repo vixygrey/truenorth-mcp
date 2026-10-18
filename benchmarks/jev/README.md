@@ -93,6 +93,20 @@ Do not change labels or thresholds based on holdout scores. A failed holdout req
 new candidate and fresh independent validation rather than tuning against that set.
 No paid holdout run or repeat calibration is authorized by preparing these files.
 
+After label review and separate spending authorization, dispatch **Jev provider validation**
+from `main` with `mode=holdout`, `max_estimated_usd=0.25`, and
+`provider_spend_cap_confirmed=true`. Leave controlled provider modes false.
+This selects only the frozen `holdout/fixtures-v1.yml`, not the calibration corpus, and
+uploads `jev-holdout-aggregate-<source SHA>`. Environment approval is still required.
+The pending-policy execution flag permits measurement only; it does not authorize tuning
+against holdout scores or grant production acceptance. No automatic paid retry follows failure.
+
+Pre-run static label reviews found no blocking invalid labels, but identified coverage limits:
+two rigor convention cases rely on function-scoped interpretation of their rule; import cases
+do not exercise missing dependency context; drift labels correlate with changed-path count
+and explicit task naming, and do not exercise partial scope sprawl or unnamed justified edits.
+Passing this set does not establish performance on those untested shapes or broad production quality.
+
 ## Keyless verification
 
 ```sh
