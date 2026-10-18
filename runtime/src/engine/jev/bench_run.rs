@@ -9,7 +9,10 @@ use super::super::config::JevConfig;
 use super::super::config::JevPrice;
 use super::super::secret_filter::{build_drift_scope_state, build_state_with_secret_filter};
 use super::super::{JevClient, JevError, JevRequest, JevResponse};
-use super::{AspectMetrics, Fixture, FixtureSet, Pricing, SignalMetrics, agreement, cost_estimate};
+use super::{
+    AspectMetrics, CaseDiagnostic, Fixture, FixtureSet, Pricing, SignalDiagnostic, SignalMetrics,
+    agreement, cost_estimate,
+};
 
 #[derive(Default, Clone, Copy)]
 struct UsageTotals {
@@ -186,6 +189,7 @@ pub struct BenchmarkMeasurements {
     pub models: Vec<String>,
     pub maximum_fixture_cost: Option<f64>,
     pub budget_interrupted: bool,
+    pub case_diagnostics: Vec<CaseDiagnostic>,
 }
 
 /// The returned model identities come from actual response bodies, never from requested aliases.
@@ -251,8 +255,11 @@ pub async fn run_benchmark_with_budget<C: JevClient>(
     let mut maximum_fixture_cost: Option<f64> = None;
     let mut budget_interrupted = false;
     let mut partial_case_start = None;
+    let mut case_diagnostics = Vec::new();
 
-    'cases: for (case, (rigor_state, drift_state)) in fixtures.cases.iter().zip(states) {
+    'cases: for (index, (case, (rigor_state, drift_state))) in
+        fixtures.cases.iter().zip(states).enumerate()
+    {
         let case_start = recorder.totals();
         partial_case_start = Some(case_start);
         if let (Some(expected), Some(state)) = (&case.expected.rigor, rigor_state) {
@@ -268,35 +275,74 @@ pub async fn run_benchmark_with_budget<C: JevClient>(
             let before = recorder.totals();
             let started = Instant::now();
             let outcome = super::super::rigor::evaluate_rigor(&recorder, state).await;
+            let elapsed = elapsed(started);
+            let mut diagnostic = CaseDiagnostic {
+                case_index: index + 1,
+                case_id_sha256: crate::engine::digest::sha256(case.case_id.as_bytes()),
+                aspect: "rigor",
+                signals: BTreeMap::new(),
+                error: None,
+            };
+            if let Ok(result) = outcome {
+                let scores = [
+                    (
+                        "hallucinated_import",
+                        expected.hallucinated_import,
+                        result.hallucinated_import,
+                        config.rigor_failure_boundary,
+                        result.hallucinated_import >= config.rigor_failure_boundary,
+                    ),
+                    (
+                        "violates_conventions",
+                        expected.violates_conventions,
+                        result.violates_conventions,
+                        config.rigor_failure_boundary,
+                        result.violates_conventions >= config.rigor_failure_boundary,
+                    ),
+                    (
+                        "complexity_high",
+                        expected.complexity_high,
+                        result.complexity / 100.0,
+                        config.complexity_boundary / 100.0,
+                        result.complexity >= config.complexity_boundary,
+                    ),
+                    (
+                        "contains_secrets",
+                        expected.contains_secrets,
+                        result.contains_secrets,
+                        config.rigor_failure_boundary,
+                        result.contains_secrets >= config.rigor_failure_boundary,
+                    ),
+                ];
+                if scores.iter().all(|(_, _, score, threshold, _)| {
+                    super::unit(*score) && super::unit(*threshold)
+                }) {
+                    for (name, expected, score, threshold, actual) in scores {
+                        rigor.signal(name, expected, actual);
+                        diagnostic.signals.insert(
+                            name,
+                            SignalDiagnostic {
+                                expected,
+                                score,
+                                threshold,
+                                actual,
+                            },
+                        );
+                    }
+                } else {
+                    diagnostic.error = Some("evaluation_failed");
+                }
+            } else {
+                diagnostic.error = Some("evaluation_failed");
+            }
             rigor.record_call(
-                elapsed(started),
+                elapsed,
                 before,
                 recorder.totals(),
-                outcome.is_ok(),
+                diagnostic.error.is_none(),
                 price,
             );
-            if let Ok(result) = outcome {
-                rigor.signal(
-                    "hallucinated_import",
-                    expected.hallucinated_import,
-                    result.hallucinated_import >= config.rigor_failure_boundary,
-                );
-                rigor.signal(
-                    "violates_conventions",
-                    expected.violates_conventions,
-                    result.violates_conventions >= config.rigor_failure_boundary,
-                );
-                rigor.signal(
-                    "complexity_high",
-                    expected.complexity_high,
-                    result.complexity >= config.complexity_boundary,
-                );
-                rigor.signal(
-                    "contains_secrets",
-                    expected.contains_secrets,
-                    result.contains_secrets >= config.rigor_failure_boundary,
-                );
-            }
+            case_diagnostics.push(diagnostic);
         }
         if let (Some(scope), Some(expected), Some(state)) =
             (&case.drift, case.expected.drift_out_of_scope, drift_state)
@@ -320,16 +366,40 @@ pub async fn run_benchmark_with_budget<C: JevClient>(
                 config.drift_boundary,
             )
             .await;
+            let elapsed = elapsed(started);
+            let mut diagnostic = CaseDiagnostic {
+                case_index: index + 1,
+                case_id_sha256: crate::engine::digest::sha256(case.case_id.as_bytes()),
+                aspect: "drift",
+                signals: BTreeMap::new(),
+                error: None,
+            };
+            if let Ok(result) = outcome {
+                if super::unit(result.noul) && super::unit(config.drift_boundary) {
+                    drift.signal("out_of_scope", expected, result.out_of_scope);
+                    diagnostic.signals.insert(
+                        "out_of_scope",
+                        SignalDiagnostic {
+                            expected,
+                            score: result.noul,
+                            threshold: config.drift_boundary,
+                            actual: result.out_of_scope,
+                        },
+                    );
+                } else {
+                    diagnostic.error = Some("evaluation_failed");
+                }
+            } else {
+                diagnostic.error = Some("evaluation_failed");
+            }
             drift.record_call(
-                elapsed(started),
+                elapsed,
                 before,
                 recorder.totals(),
-                outcome.is_ok(),
+                diagnostic.error.is_none(),
                 price,
             );
-            if let Ok(result) = outcome {
-                drift.signal("out_of_scope", expected, result.out_of_scope);
-            }
+            case_diagnostics.push(diagnostic);
         }
         if let Some(expected) = &case.expected.routing {
             if budget_reached(
@@ -427,6 +497,7 @@ pub async fn run_benchmark_with_budget<C: JevClient>(
     }
     Ok(BenchmarkMeasurements {
         metrics,
+        case_diagnostics,
         models: recorder.models(),
         maximum_fixture_cost,
         budget_interrupted,
