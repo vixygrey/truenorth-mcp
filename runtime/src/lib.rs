@@ -2,8 +2,7 @@
 //!
 //! This library holds the whole runtime: the config resolution, the tools, the resources,
 //! the server assembly, and the engine. The `truenorth-mcp` binary (`src/main.rs`) is a
-//! thin entrypoint over this library. The `jev-bench` and `jev-provider-smoke` binaries
-//! reuse the same engine and transport without duplicating runtime modules.
+//! thin entrypoint over this library.
 //!
 //! The crate name is `truenorth-mcp`, so a binary imports this library as `truenorth_mcp`.
 //! The module tree matches the design (§1). The modules stay `pub` so a binary target can

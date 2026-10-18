@@ -15,50 +15,37 @@ async function main() {
   }
 
   await smokeCommand(options.expectedVersion, options.command, options.args);
-  smokeInvalidJevActivation(options.command, options.args);
+  smokeRemovedGuardCommand(options.command, options.args);
 }
 
 async function smokePackedWrapper(expectedVersion, platformPackage) {
   const fixture = createPackedWrapperFixture(platformPackage, 'tn-packed-mcp-smoke-');
   try {
     await smokeCommand(expectedVersion, fixture.command, fixture.args, fixture.project, true);
+    smokeRemovedGuardCommand(fixture.command, fixture.args, fixture.project);
   } finally {
     fixture.cleanup();
   }
 }
 
-function smokeInvalidJevActivation(command, args) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-jev-config-smoke-'));
+function smokeRemovedGuardCommand(command, args, root) {
   const executable = command.includes(path.sep) ? path.resolve(command) : command;
-  const endpoint = 'https://api.typesafe.ai/v1/systemone?api_key=endpoint-secret';
-  const apiKey = 'api-key-secret';
-  try {
-    fs.mkdirSync(path.join(root, '.agent', 'config'), { recursive: true });
-    fs.mkdirSync(path.join(root, 'specs'));
-    fs.mkdirSync(path.join(root, 'skills'));
-    fs.writeFileSync(path.join(root, '.agent', 'config', 'rules.yml'), 'features:\n  jev: true\n');
-    const result = spawnSync(executable, args, {
+  for (const mode of [[], ['--staged'], ['--range', 'HEAD~1..HEAD']]) {
+    const result = spawnSync(executable, [...args, 'guard', ...mode], {
       cwd: root,
+      input: '{"path":"example.txt"}\n',
       encoding: 'utf8',
-      env: {
-        ...process.env,
-        TRUENORTH_ROOT: root,
-        TRUENORTH_JEV_ENDPOINT: endpoint,
-        TRUENORTH_JEV_API_KEY: apiKey,
-      },
+      timeout: 10_000,
     });
     if (result.error) {
       throw result.error;
     }
-    if (result.status === 0) {
-      throw new Error('enabled Jev with an unsafe endpoint started successfully');
+    const invocation = `guard ${mode.join(' ')}`.trim();
+    if (result.status !== 1) {
+      throw new Error(`${invocation} exited with ${result.status}, expected command usage failure`);
     }
     const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
-    assertIncludesText(output, 'TRUENORTH_JEV_ENDPOINT', 'invalid Jev activation');
-    assertExcludesText(output, endpoint, 'invalid Jev activation');
-    assertExcludesText(output, apiKey, 'invalid Jev activation');
-  } finally {
-    fs.rmSync(root, { recursive: true, force: true });
+    assertIncludesText(output, 'usage: truenorth-mcp', invocation);
   }
 }
 
@@ -114,6 +101,11 @@ async function smokeCommand(
 
     const tools = await session.request('tools/list', params());
     assertContains(tools.tools, 'name', 'truenorth_verify_gate', 'tools/list');
+    assertExcludes(tools.tools, 'name', 'truenorth_guard_change', 'tools/list');
+    const unknownTool = await callUnknownTool(session, params, 'truenorth_nonexistent_smoke_tool');
+    const removedTool = await callUnknownTool(session, params, 'truenorth_guard_change');
+    assertEqual(removedTool.kind, unknownTool.kind, 'removed tool error kind');
+    assertEqual(removedTool.code, unknownTool.code, 'removed tool error code');
 
     const resources = await session.request('resources/list', params());
     assertContains(resources.resources, 'uri', 'truenorth://state', 'resources/list');
@@ -144,6 +136,19 @@ async function smokeCommand(
     if (ownsRoot) {
       fs.rmSync(root, { recursive: true, force: true });
     }
+  }
+}
+
+async function callUnknownTool(session, params, name) {
+  try {
+    const result = await session.request('tools/call', params({ name, arguments: {} }));
+    assertEqual(result.isError, true, `${name} isError`);
+    return { kind: 'tool', code: result.content?.[0]?.type };
+  } catch (error) {
+    if (error.method !== 'tools/call') {
+      throw error;
+    }
+    return { kind: 'protocol', code: error.code };
   }
 }
 
@@ -195,15 +200,15 @@ function assertIncludes(items, expected, method) {
   }
 }
 
-function assertIncludesText(value, expected, method) {
-  if (!value.includes(expected)) {
-    throw new Error(`${method} does not include ${expected}`);
+function assertExcludes(items, field, unexpected, method) {
+  if (!Array.isArray(items) || items.some((item) => item?.[field] === unexpected)) {
+    throw new Error(`${method} unexpectedly includes ${unexpected}`);
   }
 }
 
-function assertExcludesText(value, unexpected, method) {
-  if (value.includes(unexpected)) {
-    throw new Error(`${method} leaks a protected value`);
+function assertIncludesText(value, expected, method) {
+  if (!value.includes(expected)) {
+    throw new Error(`${method} does not include ${expected}`);
   }
 }
 

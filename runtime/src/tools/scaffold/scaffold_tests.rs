@@ -253,6 +253,21 @@ async fn scaffold_unknown_profile_makes_no_file_change() {
     assert!(!repo.path().join("AGENTS.md").exists());
 }
 
+#[tokio::test]
+async fn scaffold_does_not_emit_retired_guard_hook_for_any_profile() {
+    for profile in [
+        "epic-based",
+        "issue-per-task",
+        "kanban",
+        "milestone-based",
+        "generic",
+    ] {
+        let repo = TempDir::new().expect("temp repo");
+        let srv = server(&repo);
+        scaffold(&srv, Some(profile)).await.expect("scaffold");
+        assert!(!repo.path().join(".kiro/hooks/jev-guard.json").exists());
+    }
+}
 #[test]
 fn profile_name_boundaries_reject_empty_and_overlong_values() {
     for invalid in ["".to_string(), "p".repeat(MAX_PROFILE_NAME + 1)] {

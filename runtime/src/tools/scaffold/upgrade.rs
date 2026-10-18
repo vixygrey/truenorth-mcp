@@ -8,9 +8,16 @@ use crate::engine::mutation::acquire_worktree_lease;
 use crate::engine::profile;
 use crate::engine::workspace_upgrade::bundle::{DesiredFile, PackageBundle};
 use crate::engine::workspace_upgrade::manifest::{ManagedFile, WorkspaceManifest, sha256};
-use crate::engine::workspace_upgrade::plan::{UpgradePlan, build_plan};
+use crate::engine::workspace_upgrade::plan::{
+    RETIRED_GUARD_HOOK, UpgradePlan, build_plan, validate_upgrade_parent,
+};
 use crate::engine::workspace_upgrade::transaction;
 use crate::engine::workspace_validation::validate_workspace;
+// SHA-256 of supported retired hook seeds; no executable template is retained.
+const RETIRED_GUARD_HOOK_SHA256: [&str; 2] = [
+    "961deba14bc14be3ff69c5e730c2b192ee6d3b929744686377fa04650e64c18b",
+    "70801cbf33a523a9d529fef20099dd7b87c26b08e63d27970536e02c6dcb1e9b",
+];
 
 pub fn plan_workspace_upgrade(
     repo_root: &Path,
@@ -171,6 +178,8 @@ fn adopt_legacy(
         .ok_or_else(|| format!("bundle has no historical manifest for `{version}`"))?;
     let mut managed = BTreeMap::new();
     for record in history.files {
+        validate_upgrade_parent(repo_root, &record.path)
+            .map_err(|error| format!("could not inspect `{}`: {error}", record.path))?;
         let path = repo_root.join(&record.path);
         let metadata = match fs::symlink_metadata(&path) {
             Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => metadata,
@@ -197,6 +206,17 @@ fn adopt_legacy(
         };
         adopt_exact(repo_root, &source.path, record, &mut managed)?;
     }
+    for digest in RETIRED_GUARD_HOOK_SHA256 {
+        adopt_exact(
+            repo_root,
+            RETIRED_GUARD_HOOK,
+            ManagedFile {
+                source_sha256: digest.to_string(),
+                mode: "0644".to_string(),
+            },
+            &mut managed,
+        )?;
+    }
     Ok(WorkspaceManifest {
         manifest_version: "1".to_string(),
         bundle_version: version.clone(),
@@ -213,6 +233,8 @@ fn adopt_exact(
     record: ManagedFile,
     managed: &mut BTreeMap<String, ManagedFile>,
 ) -> Result<(), String> {
+    validate_upgrade_parent(repo_root, relative)
+        .map_err(|error| format!("could not inspect `{relative}`: {error}"))?;
     let path = repo_root.join(relative);
     let metadata = match fs::symlink_metadata(&path) {
         Ok(metadata) if metadata.is_file() && !metadata.file_type().is_symlink() => metadata,

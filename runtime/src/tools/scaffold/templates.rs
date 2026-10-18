@@ -76,32 +76,6 @@ pub(super) fn conventions_md(profile: Profile) -> String {
     )
 }
 
-/// The emitted `PreToolUse` hook that calls the guardrail on a write tool (R7.1, R7.4).
-///
-/// The hook is profile-independent: the guardrail is the same regardless of the methodology,
-/// so this is a constant, not a templated function. It matches the common write tools and runs
-/// the guard CLI on standard input. The `description` field states the honest boundary: the
-/// automatic interception holds only where the client honors the `PreToolUse` hook, and the
-/// `truenorth_guard_change` tool is the fallback everywhere else (R7.4, R9.4).
-///
-/// The command accepts normalized `paths`, proposed `content`, and optional `task` JSON.
-/// A replacement tool must supply its proposed payload, not an untranslated client envelope.
-/// Client-specific interception remains unverified unless that client supplies this contract.
-pub(super) const JEV_GUARD_HOOK: &str = "\
-{
-  \"version\": \"v1\",
-  \"hooks\": [
-    {
-      \"name\": \"Jev active guardrail\",
-      \"description\": \"Runs the TrueNorth guardrail before a write tool. The client must normalize stdin to JSON containing paths, proposed content, and optional task, including replacement-tool proposals. Raw client tool envelopes are not accepted. Automatic interception depends on the client honoring the PreToolUse hook and supplying this input contract. Otherwise call truenorth_guard_change before a write. TrueNorth cannot force-intercept writes to foreign tools.\",
-      \"trigger\": \"PreToolUse\",
-      \"matcher\": \"write_to_file|fs_write|str_replace\",
-      \"action\": { \"type\": \"command\", \"command\": \"truenorth-mcp guard\" }
-    }
-  ]
-}
-";
-
 /// The neutral commit-message template, identical for every profile (Requirement 5.8).
 pub(super) const COMMIT_TEMPLATE: &str = "\
 # type(scope): description

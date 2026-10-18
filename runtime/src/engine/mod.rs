@@ -17,7 +17,6 @@ pub mod gate_diagnostics;
 pub mod gate_runner;
 pub mod git;
 pub mod graph;
-pub mod jev;
 pub mod mutation;
 pub mod ontology_scan;
 pub mod phase;

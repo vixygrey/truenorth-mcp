@@ -125,15 +125,6 @@ impl RepositoryFs {
         }
     }
 
-    pub(crate) fn validate_metadata_path(&self, path: &Path) -> io::Result<()> {
-        // Git diff guards inspect names and file types, never private file contents.
-        match self.parent(path) {
-            Ok((parent, name)) => regular_target(&parent, &name, true),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
-            Err(error) => Err(error),
-        }
-    }
-
     pub(crate) fn open_lock(&self, path: &Path) -> io::Result<File> {
         require_agent(path)?;
         let (parent, name) = self.parent(path)?;

@@ -56,9 +56,13 @@ test('catalog JSON diagnostics name the canonical source', (t) => {
   assert.throws(() => parseCatalog(fixtureRoot), /skills\/catalog\.json:/);
 });
 
-test('current bundle supports the previous release for managed upgrades', () => {
+test('current bundle retains older supported origins and the preceding release', () => {
   const manifest = buildManifest(root);
-  assert.ok(manifest.supported_from.includes('1.0.5'));
+  assert.deepStrictEqual(manifest.supported_from, ['1.0.2', '1.0.4', '1.0.5', '1.2.1']);
+  const previous = JSON.parse(fs.readFileSync(path.join(root, 'npm/bundle/history/1.2.1.json')));
+  assert.strictEqual(previous.bundle_version, '1.2.1');
+  assert.strictEqual(previous.workspace_schema_version, '3');
+  assert.deepStrictEqual(previous.supported_from, ['1.0.2', '1.0.4', '1.0.5']);
 });
 
 test('planning artifacts have one canonical writer and path', () => {

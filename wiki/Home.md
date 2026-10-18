@@ -43,7 +43,7 @@ Read the pages in this order for a first run.
 5. [Resources](Resources): the live `truenorth://` resources.
 6. [The ontology feature](The-ontology-feature): the optional ontology surface.
 7. [Troubleshooting](Troubleshooting): repo-root resolution and a broken layout contract.
-8. [Compatibility](Compatibility): the v1 workspace, migration, MCP, and upgrade policy.
+8. [Compatibility](Compatibility): the v2 workspace, migration, MCP, and upgrade policy.
 
 ## The skill reference
 

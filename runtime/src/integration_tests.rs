@@ -420,6 +420,57 @@ async fn connect_with(
 }
 
 #[tokio::test]
+async fn retired_guard_is_never_advertised_or_callable_with_stale_rules() -> anyhow::Result<()> {
+    for stale_rules in [false, true] {
+        let dir = tempdir().expect("temp dir");
+        let root = dir.path().to_path_buf();
+        seed_repo(&root);
+        if stale_rules {
+            fs::create_dir_all(root.join(".agent/config"))?;
+            fs::write(
+                root.join(".agent/config/rules.yml"),
+                "features:\n  jev: true\njev:\n  endpoint: https://example.invalid\nprotected_paths:\n  - .agent\n",
+            )?;
+        }
+
+        let (server_transport, client_transport) = tokio::io::duplex(8192);
+        let server = TrueNorthServer::resolve(root)?;
+        let handle = tokio::spawn(async move {
+            server.serve(server_transport).await?.waiting().await?;
+            anyhow::Ok(())
+        });
+        let client = ().serve(client_transport).await?;
+        let tools = client.list_all_tools().await?;
+        assert!(
+            !tools
+                .iter()
+                .any(|tool| tool.name == "truenorth_guard_change"),
+            "retired tool must not be advertised"
+        );
+        assert!(
+            tools
+                .iter()
+                .any(|tool| tool.name == "truenorth_record_task")
+        );
+        assert!(
+            client
+                .call_tool(CallToolRequestParams::new("truenorth_guard_change"))
+                .await
+                .is_err(),
+            "retired tool uses normal unknown-tool error"
+        );
+        assert!(
+            read_text(&client, "truenorth://state")
+                .await?
+                .contains("active_epic")
+        );
+        client.cancel().await?;
+        handle.abort();
+    }
+    Ok(())
+}
+
+#[tokio::test]
 async fn reads_the_adr_resource_over_the_client() -> anyhow::Result<()> {
     // Requirement 9.2: the read-only ADR resource serves specs/adr/ content.
     let dir = tempdir().expect("temp dir");

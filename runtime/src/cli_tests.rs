@@ -171,31 +171,17 @@ fn skill_set_options_are_repeatable_and_catalog_is_read_only() {
 }
 
 #[test]
-fn guard_selects_each_supported_source() {
-    assert_eq!(
-        parse_args(["guard".to_string()]).expect("parse stdin guard"),
-        Mode::Guard {
-            source: GuardSource::Stdin
-        }
-    );
-    assert_eq!(
-        parse_args(["guard".to_string(), "--staged".to_string()]).expect("parse staged guard"),
-        Mode::Guard {
-            source: GuardSource::Staged
-        }
-    );
-    assert_eq!(
-        parse_args([
-            "guard".to_string(),
-            "--range".to_string(),
-            "base..head".to_string()
-        ])
-        .expect("parse range guard"),
-        Mode::Guard {
-            source: GuardSource::Range("base..head".to_string())
-        }
-    );
-    assert!(parse_args(["guard".to_string(), "--range".to_string()]).is_err());
+fn removed_guard_forms_return_normal_unknown_command_usage() {
+    for args in [
+        vec!["guard"],
+        vec!["guard", "--staged"],
+        vec!["guard", "--range", "base..head"],
+    ] {
+        assert_eq!(
+            parse_args(args.into_iter().map(str::to_string)).expect_err("guard is retired"),
+            USAGE
+        );
+    }
 }
 
 #[test]

@@ -4,11 +4,12 @@
 
 | Version line | Security support |
 | ------------ | ---------------- |
-| `1.x`        | Supported        |
+| `2.x`        | Supported        |
+| `1.x`        | Unsupported      |
 | `0.x`        | Unsupported      |
 
-Security fixes target the latest supported `1.x` release. No stable security-fix
-commitment exists for `0.x`.
+Security fixes target the latest supported `2.x` release. No stable security-fix
+commitment exists for older release lines.
 
 ## Report a vulnerability privately
 
@@ -32,6 +33,8 @@ TrueNorth-MCP uses these controls:
 - GitHub Dependabot alerts and weekly dependency and GitHub Actions updates.
 - GitHub CodeQL default setup.
 - A weekly OSV-Scanner dependency scan that uploads SARIF results to GitHub Code Scanning.
+- The independent `guard-git` Git credential scanner checks added content in pre-commit
+  and CI; it does not provide the retired path-metadata guard policy.
 - npm OIDC trusted publishing, provenance, staging, and maintainer 2FA approval.
 
 These controls reduce risk. They do not guarantee that every vulnerability is detected or
@@ -49,18 +52,10 @@ Cockpit recovery validates every journal entry and target revision before changi
 Only `state`, `release-plan`, and `bugs` files under `.agent/tasks/`, with `.yml` or `.json` extensions, are permitted.
 Recovery acquires the worktree writer lease and rejects symlinked journals, targets, and parent directories.
 
-Guard inputs require repository-relative paths without traversal or symlinks.
-Invalid paths are input errors, not probabilistic fail-open decisions.
-Jev validates every path before reading evaluation content or sending a request.
-Missing proposed files remain supported. The default build makes no Jev HTTP requests.
-
-Git diff guard modes inspect path metadata only.
-They enforce containment and protected paths without applying content-read exclusions.
-
 ## Support boundaries
 
-Supported v1 distributions are the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
-Native Windows is unsupported in v1; use the documented
+Supported distributions are the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.
+Native Windows is unsupported; use the documented
 [WSL installation path](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#windows).
 The wrapper requires Node.js 18 or newer, but TrueNorth-MCP does not provide security
 support for end-of-life Node.js releases. Source builds require Rust 1.88 or newer. The

@@ -2,7 +2,7 @@
 //!
 //! Feature flags gate runtime capabilities or automatic instruction delivery per project.
 //! They are read from `.agent/config/rules.yml` under a `features` block. Ontology and
-//! Senior Developer delivery default on; the optional Jev integration defaults off.
+//! Senior Developer delivery default on.
 //!
 //! `resolve` reads the flags once at startup. An absent `.agent/`, an absent
 //! `.agent/config/`, or an absent `rules.yml` resolves every flag to its documented
@@ -33,21 +33,15 @@ use crate::engine::agent_ws::AGENT_DIR;
 pub struct Features {
     /// Whether the ontology feature is enabled (Requirement 1).
     pub ontology: bool,
-    /// Whether the Jev evaluation harness is enabled (jev-integration-eval Requirement
-    /// 1). Unlike `ontology`, the default is off: Jev is an optional network dependency on
-    /// an external service, so a project must opt in (jev-integration-eval ADR-J1).
-    pub jev: bool,
     /// Whether the Senior Developer baseline is delivered during MCP initialization.
     pub senior_developer: bool,
 }
 
 impl Default for Features {
-    /// The default resolution enables ontology and Senior Developer instruction delivery,
-    /// while the optional Jev integration remains off.
+    /// The default resolution enables ontology and Senior Developer instruction delivery.
     fn default() -> Self {
         Self {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     }
@@ -97,14 +91,6 @@ pub enum FeaturesError {
     InvalidTokenCap {
         /// The dotted rules.yml key.
         key: &'static str,
-    },
-
-    /// Jev was enabled without valid operator configuration.
-    #[error("invalid Jev activation: {source}")]
-    JevActivation {
-        /// The redacted Jev activation error.
-        #[source]
-        source: crate::engine::jev::JevError,
     },
 }
 
@@ -165,10 +151,6 @@ struct FeaturesBlock {
     /// The ontology feature. An absent key resolves to enabled (Requirement 1.4).
     #[serde(default = "default_true")]
     ontology: bool,
-    /// The Jev feature. An absent key resolves to off, so a `bool` default of `false`
-    /// applies (jev-integration-eval Requirement 1.2).
-    #[serde(default)]
-    jev: bool,
     /// Senior Developer instruction delivery. An absent key resolves to enabled.
     #[serde(default = "default_true")]
     senior_developer: bool,
@@ -179,7 +161,6 @@ impl Default for FeaturesBlock {
     fn default() -> Self {
         Self {
             ontology: true,
-            jev: false,
             senior_developer: true,
         }
     }
@@ -228,15 +209,14 @@ pub fn resolve(repo_root: &Path) -> Result<Features, FeaturesError> {
 
     Ok(Features {
         ontology: view.features.ontology,
-        jev: view.features.jev,
         senior_developer: view.features.senior_developer,
     })
 }
 
 /// Resolve token caps from `.agent/config/rules.yml`.
 ///
-/// Missing configuration preserves [`TokenCaps::default`]. Unknown rules remain ignored so
-/// feature and optional-harness configuration retain their independent contracts.
+/// Missing configuration preserves [`TokenCaps::default`]. Unknown rules remain ignored
+/// so unrelated configuration retains its independent contract.
 pub fn resolve_token_caps(repo_root: &Path) -> Result<TokenCaps, FeaturesError> {
     let config_path = repo_root.join(AGENT_DIR).join("config").join("rules.yml");
     let text = match std::fs::read_to_string(&config_path) {

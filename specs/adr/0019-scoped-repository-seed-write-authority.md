@@ -4,6 +4,8 @@
 **Date:** 2026-10-10
 **Supersedes in part:** ADR-0008 blanket write-confinement clauses
 **Related:** ADR-0011, ADR-0016
+**Forward clarification:** In 2.0.0 the Jev hook seed in item 1 is retired;
+the remaining scoped repository-seed authority is unchanged.
 
 ## Context
 
@@ -63,3 +65,12 @@ A P6 result does not prove that every runtime write is confined to `.agent/`.
 Historical 1.0.4 observations remain evidence of that release.
 They do not certify the prepared 1.0.5 contract or a whole-repository invariant.
 Current verification must exercise the affected scaffold, fresh-init, and managed-upgrade paths at the evaluated revision.
+
+## Forward clarification
+
+The `.kiro/hooks/jev-guard.json` seed listed above records the original
+decision, not a current scaffold target. Version 2.0.0 retires that seed and
+uses ADR-0016's existing ownership and transaction rules to remove verified
+unchanged old hooks during managed upgrade. Modified and unowned hooks are
+preserved for their owners to resolve. All other repository-seed write
+boundaries remain in force.

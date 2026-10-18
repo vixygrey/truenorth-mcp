@@ -12,14 +12,7 @@ use std::collections::{BTreeMap, BTreeSet};
 pub const CURRENT_SCHEMA_VERSION: u32 = 2;
 
 /// Known top-level blocks in rules.yml v2.
-pub const V2_TOP_LEVEL_BLOCKS: [&str; 6] = [
-    "version",
-    "runtime",
-    "features",
-    "protected_paths",
-    "jev",
-    "advisory",
-];
+pub const V2_TOP_LEVEL_BLOCKS: [&str; 4] = ["version", "runtime", "features", "advisory"];
 
 /// Known legacy top-level blocks from v1 that belong under advisory in v2.
 pub const V1_ADVISORY_BLOCKS: [&str; 5] = [
@@ -128,12 +121,6 @@ impl RulesConfigInspection {
                         validate_token_caps_block(tc_val, "token_caps", &mut warnings, &mut errors);
                     }
                 }
-                "protected_paths" => {
-                    blocks.insert("protected_paths".to_string(), BlockEnforcement::Enforced);
-                }
-                "jev" => {
-                    blocks.insert("jev".to_string(), BlockEnforcement::Enforced);
-                }
                 "advisory" => {
                     blocks.insert("advisory".to_string(), BlockEnforcement::Advisory);
                     if let Some(adv_val) = mapping.get(Value::from("advisory")) {
@@ -220,7 +207,7 @@ fn validate_features_block(
         for (k, v) in map {
             if let Some(k_str) = k.as_str() {
                 match k_str {
-                    "ontology" | "jev" | "senior_developer" => {
+                    "ontology" | "senior_developer" => {
                         if !v.is_bool() {
                             errors.push(format!(
                                 "`features.{k_str}` must be a boolean (true or false)"
@@ -311,15 +298,7 @@ fn validate_advisory_block(
 }
 
 fn suggest_similar(name: &str) -> Option<&'static str> {
-    let candidates = [
-        "version",
-        "runtime",
-        "features",
-        "protected_paths",
-        "jev",
-        "advisory",
-        "token_caps",
-    ];
+    let candidates = ["version", "runtime", "features", "advisory", "token_caps"];
     candidates
         .into_iter()
         .find(|&c| levenshtein_distance(name, c) <= 2)

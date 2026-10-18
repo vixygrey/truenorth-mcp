@@ -78,46 +78,15 @@ jobs:
         if: steps.crate.outputs.present == 'true'
         run: bash scripts/preflight.sh check
 
-  jev_http:
-    name: Jev HTTP feature
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Install the pinned Rust toolchain
-        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          toolchain: "1.88.0"
-          components: clippy
-
-      - name: Cache cargo artifacts
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
-        with:
-          workspaces: runtime
-
-      - name: Lint the Jev HTTP feature
-        run: cargo clippy --locked --manifest-path runtime/Cargo.toml --features jev-http --all-targets -- -D warnings
-
-      - name: Test the Jev HTTP feature
-        run: cargo test --locked --manifest-path runtime/Cargo.toml --features jev-http
-
-      - name: Build the Jev HTTP release artifact
-        run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http
-
   guardrail:
-    name: commit-boundary guardrail
+    name: credential scanning guardrail
     runs-on: ubuntu-24.04
     steps:
       - name: Check out the repository with diff history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
-      - name: Install the pinned Rust toolchain
-        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          toolchain: "1.88.0"
-      - name: Report protected paths and block added credential patterns
+      - name: Block added credential patterns
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -126,18 +95,6 @@ jobs:
             exit 0
           fi
           range="$BASE_SHA..$HEAD_SHA"
-          git show "$BASE_SHA:.agent/config/rules.yml" > .agent/config/rules.yml
-          if ! guard_output=$(cargo run --locked --manifest-path runtime/Cargo.toml --bin truenorth-mcp -- guard --range "$range" 2>&1); then
-            printf '%s\n' "$guard_output"
-            case "$guard_output" in
-              *"guard blocked protected path"*)
-                echo "::notice title=Protected path change::$guard_output"
-                ;;
-              *)
-                exit 1
-                ;;
-            esac
-          fi
           bash skills/guard-git/scripts/pre-commit-secret-scan.sh --range "$range"
 
   coverage:
@@ -372,7 +329,6 @@ jobs:
     needs:
       [
         check,
-        jev_http,
         guardrail,
         wrapper,
         artifact-smoke,
@@ -388,7 +344,6 @@ jobs:
       - name: Confirm every required CI job passed
         run: |
           check_result="${{ needs.check.result }}"
-          jev_http_result="${{ needs.jev_http.result }}"
           guardrail_result="${{ needs.guardrail.result }}"
           wrapper_result="${{ needs.wrapper.result }}"
           artifact_smoke_result="${{ needs.artifact-smoke.result }}"
@@ -400,7 +355,6 @@ jobs:
           coverage_result="${{ needs.coverage.result }}"
           echo "guardrail job result: ${guardrail_result}"
           echo "check job result: ${check_result}"
-          echo "Jev HTTP feature job result: ${jev_http_result}"
           echo "wrapper job result: ${wrapper_result}"
           echo "artifact smoke job result: ${artifact_smoke_result}"
           echo "format job result: ${format_result}"
@@ -410,7 +364,6 @@ jobs:
           echo "license policy job result: ${licenses_result}"
           echo "production coverage job result: ${coverage_result}"
           if [ "${check_result}" != "success" ] \
-            || [ "${jev_http_result}" != "success" ] \
             || [ "${guardrail_result}" != "success" ] \
             || [ "${wrapper_result}" != "success" ] \
             || [ "${artifact_smoke_result}" != "success" ] \
