@@ -39,6 +39,7 @@ mod imp {
 
     use truenorth_mcp::config::get_repo_root;
     use truenorth_mcp::engine::jev::bench;
+    use truenorth_mcp::engine::jev::bench::guard_qualification;
     use truenorth_mcp::engine::jev::client_fake::FakeClient;
     use truenorth_mcp::engine::jev::client_http::{HttpClient, JevActivation};
     use truenorth_mcp::engine::jev::config::{resolve, resolve_protected_paths};
@@ -55,8 +56,9 @@ mod imp {
     pub fn run() -> ExitCode {
         match std::env::args().nth(1).as_deref() {
             Some("guard") => run_guard(),
+            Some("guard-qualification") => run_guard_qualification(),
             None | Some("bench") => run_bench(),
-            _ => fail("unknown subcommand. Use `bench` or `guard`."),
+            _ => fail("unknown subcommand. Use `bench`, `guard`, or `guard-qualification`."),
         }
     }
 
@@ -197,6 +199,155 @@ mod imp {
                     ExitCode::SUCCESS
                 } else {
                     fail("production acceptance failed; see aggregate report")
+                }
+            }
+            Err(error) => fail(&error.to_string()),
+        }
+    }
+    /// Execute versioned proposed changes through the shared production guard in isolated
+    /// projects. A pending policy permits measurement only, never provider acceptance.
+    fn run_guard_qualification() -> ExitCode {
+        let repo_root = match get_repo_root() {
+            Ok(root) => root,
+            Err(error) => return fail(&format!("could not resolve the repository root: {error}")),
+        };
+        let config = match resolve(&repo_root) {
+            Ok(config) => config,
+            Err(error) => return fail(&format!("could not resolve the Jev config: {error}")),
+        };
+        let policy_path = match input_path(
+            &repo_root,
+            POLICY_VAR,
+            "benchmarks/jev/guard-qualification/policy-v1.yml",
+        ) {
+            Ok(path) => path,
+            Err(message) => return fail(&message),
+        };
+        let fixtures_path = match input_path(
+            &repo_root,
+            FIXTURES_VAR,
+            "benchmarks/jev/guard-qualification/fixtures-v1.yml",
+        ) {
+            Ok(path) => path,
+            Err(message) => return fail(&message),
+        };
+        // Historical calibration/holdout inputs are not full-guard proposals.
+        if !fixtures_path.starts_with(repo_root.join("benchmarks/jev/guard-qualification"))
+            || !policy_path.starts_with(repo_root.join("benchmarks/jev/guard-qualification"))
+        {
+            return fail("guard qualification requires versioned guard-qualification inputs");
+        }
+        let (policy, policy_sha256) = match bench::load_policy(&policy_path) {
+            Ok(value) => value,
+            Err(error) => return fail(&error.to_string()),
+        };
+        let (fixtures, fixture_sha256) =
+            match guard_qualification::load_guard_fixtures(&fixtures_path, &policy) {
+                Ok(value) => value,
+                Err(error) => return fail(&error.to_string()),
+            };
+        let client_kind = std::env::var(CLIENT_VAR).unwrap_or_else(|_| "fake".into());
+        if !["fake", "http"].contains(&client_kind.as_str()) {
+            return fail("unknown JEV_BENCH_CLIENT; use `fake` or `http`");
+        }
+        if client_kind == "http"
+            && policy.approval != "approved"
+            && std::env::var("JEV_BENCH_MEASURE_PENDING").as_deref() != Ok("1")
+        {
+            return fail(
+                "pending guard policy requires explicit JEV_BENCH_MEASURE_PENDING=1; no call was made",
+            );
+        }
+        let estimated_budget = if client_kind == "http" {
+            let Some(budget) = std::env::var("JEV_BENCH_MAX_ESTIMATED_USD")
+                .ok()
+                .and_then(|value| value.parse::<f64>().ok())
+                .filter(|value| value.is_finite() && *value > 0.0)
+            else {
+                return fail(
+                    "HTTP qualification requires a positive reviewed JEV_BENCH_MAX_ESTIMATED_USD; no call was made",
+                );
+            };
+            if std::env::var("JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED").as_deref() != Ok("true") {
+                return fail(
+                    "HTTP qualification requires JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED=true; no call was made",
+                );
+            }
+            if budget
+                > policy
+                    .limits
+                    .as_ref()
+                    .expect("validated guard limits")
+                    .maximum_total_cost
+            {
+                return fail(
+                    "HTTP qualification reviewed budget exceeds the whole-run limit; no call was made",
+                );
+            }
+            Some(budget)
+        } else {
+            None
+        };
+        let provenance = guard_qualification::provenance(
+            &fixtures,
+            fixture_sha256,
+            policy_sha256,
+            &policy,
+            &config,
+        );
+        let runtime = match tokio::runtime::Runtime::new() {
+            Ok(runtime) => runtime,
+            Err(error) => return fail(&format!("could not start the async runtime: {error}")),
+        };
+        let result = match client_kind.as_str() {
+            "fake" => {
+                let client = FakeClient::new();
+                runtime.block_on(guard_qualification::run_guard_qualification(
+                    &client,
+                    &fixtures,
+                    &config,
+                    None,
+                    provenance,
+                    "fake",
+                    || None,
+                ))
+            }
+            "http" => {
+                let activation = match JevActivation::resolve() {
+                    Ok(activation) => activation,
+                    Err(error) => {
+                        return fail(&format!("could not resolve the Jev activation: {error}"));
+                    }
+                };
+                let client = HttpClient::new(activation, &config);
+                runtime.block_on(guard_qualification::run_guard_qualification(
+                    &client,
+                    &fixtures,
+                    &config,
+                    estimated_budget,
+                    provenance,
+                    "http",
+                    || Some(client.attempt_count()),
+                ))
+            }
+            _ => unreachable!("validated client kind"),
+        };
+        let mut report = match result {
+            Ok(report) => report,
+            Err(error) => {
+                return fail(&format!(
+                    "could not prepare full-guard qualification: {error}"
+                ));
+            }
+        };
+        guard_qualification::evaluate_guard_acceptance(&mut report, &policy);
+        match guard_qualification::write_guard_report(&repo_root, &report) {
+            Ok(path) => {
+                println!("{path}");
+                if report.accepted {
+                    ExitCode::SUCCESS
+                } else {
+                    fail("full-guard qualification is not accepted; see aggregate report")
                 }
             }
             Err(error) => fail(&error.to_string()),

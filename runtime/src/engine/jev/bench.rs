@@ -11,6 +11,8 @@ use super::config::JevPrice;
 #[path = "bench_run.rs"]
 mod run;
 pub use run::{BenchmarkMeasurements, run_benchmark, run_benchmark_with_budget};
+#[path = "bench_guard_qualification.rs"]
+pub mod guard_qualification;
 
 const REPORT_REL_PATH: &str = "telemetry/jev-benchmark.yml";
 const TOKENS_PER_MILLION: f64 = 1_000_000.0;
