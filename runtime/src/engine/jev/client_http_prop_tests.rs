@@ -11,8 +11,49 @@
 
 use proptest::prelude::*;
 
-use super::{JEV_API_KEY_VAR, StatusAction, map_status};
+use super::{JEV_API_KEY_VAR, JEV_ENDPOINT_VAR, JevActivation, StatusAction, map_status};
 use crate::engine::jev::JevError;
+
+#[test]
+fn activation_requires_redacted_https_endpoint_and_api_key() {
+    let endpoint = "https://api.typesafe.ai/v1/systemone";
+    let activation =
+        JevActivation::from_values(Some(endpoint), Some("test-key")).expect("valid activation");
+    assert_eq!(activation.endpoint(), endpoint);
+
+    for invalid_endpoint in [
+        "",
+        "http://api.typesafe.ai/v1/systemone",
+        "https://operator:password@api.typesafe.ai/v1/systemone",
+        "https://api.typesafe.ai/v1/systemone?api_key=secret",
+    ] {
+        let error = JevActivation::from_values(Some(invalid_endpoint), Some("test-key"))
+            .expect_err("unsafe endpoint must be rejected");
+        assert!(
+            matches!(
+                error,
+                JevError::MissingEndpoint { .. } | JevError::InvalidEndpoint { .. }
+            ),
+            "unexpected error: {error:?}"
+        );
+        if !invalid_endpoint.is_empty() {
+            assert!(
+                !error.to_string().contains(invalid_endpoint),
+                "endpoint must not appear in the error: {error}"
+            );
+        }
+    }
+
+    let error =
+        JevActivation::from_values(Some(endpoint), None).expect_err("missing API key must fail");
+    assert!(matches!(
+        error,
+        JevError::MissingApiKey {
+            var: JEV_API_KEY_VAR
+        }
+    ));
+    assert_eq!(JEV_ENDPOINT_VAR, "TRUENORTH_JEV_ENDPOINT");
+}
 
 /// Assert one status maps to its documented action.
 ///

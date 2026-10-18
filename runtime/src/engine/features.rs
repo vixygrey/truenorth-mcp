@@ -98,6 +98,14 @@ pub enum FeaturesError {
         /// The dotted rules.yml key.
         key: &'static str,
     },
+
+    /// Jev was enabled without valid operator configuration.
+    #[error("invalid Jev activation: {source}")]
+    JevActivation {
+        /// The redacted Jev activation error.
+        #[source]
+        source: crate::engine::jev::JevError,
+    },
 }
 
 /// The subset of `.agent/config/rules.yml` this reader needs.

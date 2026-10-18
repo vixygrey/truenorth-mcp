@@ -117,7 +117,7 @@ jobs:
 
       - name: Build the release binary
         working-directory: runtime
-        run: cargo build --locked --release --target ${{ matrix.target }}
+        run: cargo build --locked --release --features jev-http --target ${{ matrix.target }}
 
       - name: Capture native builder evidence
         run: |

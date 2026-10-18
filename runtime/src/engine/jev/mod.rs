@@ -344,6 +344,26 @@ pub struct Usage {
 #[cfg_attr(not(test), allow(dead_code))]
 #[derive(Debug, Clone, PartialEq, Error)]
 pub enum JevError {
+    /// The Jev endpoint is absent while the feature is enabled.
+    #[error(
+        "the Jev endpoint is not set. Set the `{var}` environment variable to an absolute HTTPS \
+         endpoint, then reconnect. No network call was made."
+    )]
+    MissingEndpoint {
+        /// The environment variable that holds the endpoint.
+        var: &'static str,
+    },
+
+    /// The Jev endpoint is unsafe or malformed.
+    #[error(
+        "the `{var}` endpoint is invalid. Use an absolute HTTPS URL with a DNS host and no \
+         embedded credentials, query, or fragment, then reconnect. No network call was made."
+    )]
+    InvalidEndpoint {
+        /// The environment variable that holds the endpoint.
+        var: &'static str,
+    },
+
     /// The API-key environment variable is absent (Requirement 2.6, 9.4).
     #[error(
         "the Jev API key is not set. Set the `{var}` environment variable to your Jev \

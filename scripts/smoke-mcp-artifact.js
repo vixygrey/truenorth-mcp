@@ -1,5 +1,6 @@
 'use strict';
 
+const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -10,9 +11,11 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.platformPackage) {
     await smokePackedWrapper(options.expectedVersion, options.platformPackage);
-  } else {
-    await smokeCommand(options.expectedVersion, options.command, options.args);
+    return;
   }
+
+  await smokeCommand(options.expectedVersion, options.command, options.args);
+  smokeInvalidJevActivation(options.command, options.args);
 }
 
 async function smokePackedWrapper(expectedVersion, platformPackage) {
@@ -21,6 +24,41 @@ async function smokePackedWrapper(expectedVersion, platformPackage) {
     await smokeCommand(expectedVersion, fixture.command, fixture.args, fixture.project, true);
   } finally {
     fixture.cleanup();
+  }
+}
+
+function smokeInvalidJevActivation(command, args) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-jev-config-smoke-'));
+  const endpoint = 'https://api.typesafe.ai/v1/systemone?api_key=endpoint-secret';
+  const apiKey = 'api-key-secret';
+  try {
+    fs.mkdirSync(path.join(root, '.agent', 'config'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'specs'));
+    fs.mkdirSync(path.join(root, 'skills'));
+    fs.writeFileSync(path.join(root, '.agent', 'config', 'rules.yml'), 'features:\n  jev: true\n');
+
+    const result = spawnSync(command, args, {
+      cwd: root,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        TRUENORTH_ROOT: root,
+        TRUENORTH_JEV_ENDPOINT: endpoint,
+        TRUENORTH_JEV_API_KEY: apiKey,
+      },
+    });
+    if (result.error) {
+      throw result.error;
+    }
+    if (result.status === 0) {
+      throw new Error('enabled Jev with an unsafe endpoint started successfully');
+    }
+    const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+    assertIncludesText(output, 'TRUENORTH_JEV_ENDPOINT', 'invalid Jev activation');
+    assertExcludesText(output, endpoint, 'invalid Jev activation');
+    assertExcludesText(output, apiKey, 'invalid Jev activation');
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 }
 
@@ -154,6 +192,18 @@ function assertContains(items, field, expected, method) {
 function assertIncludes(items, expected, method) {
   if (!Array.isArray(items) || !items.includes(expected)) {
     throw new Error(`${method} does not include ${expected}`);
+  }
+}
+
+function assertIncludesText(value, expected, method) {
+  if (!value.includes(expected)) {
+    throw new Error(`${method} does not include ${expected}`);
+  }
+}
+
+function assertExcludesText(value, unexpected, method) {
+  if (value.includes(unexpected)) {
+    throw new Error(`${method} leaks a protected value`);
   }
 }
 

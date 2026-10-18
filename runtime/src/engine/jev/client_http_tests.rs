@@ -99,7 +99,7 @@ async fn missing_key_returns_missing_api_key_and_makes_no_request() {
     unsafe {
         std::env::remove_var(JEV_API_KEY_VAR);
     }
-    let client = super::HttpClient::new("http://127.0.0.1:1/unused", &fast_config());
+    let client = super::HttpClient::new_for_test("http://127.0.0.1:1/unused", &fast_config());
     let result = client.evaluate(a_request()).await;
     match result {
         Err(JevError::MissingApiKey { var }) => assert_eq!(var, JEV_API_KEY_VAR),
@@ -113,7 +113,7 @@ async fn empty_key_returns_missing_api_key() {
     unsafe {
         std::env::set_var(JEV_API_KEY_VAR, "");
     }
-    let client = super::HttpClient::new("http://127.0.0.1:1/unused", &fast_config());
+    let client = super::HttpClient::new_for_test("http://127.0.0.1:1/unused", &fast_config());
     let result = client.evaluate(a_request()).await;
     unsafe {
         std::env::remove_var(JEV_API_KEY_VAR);
@@ -132,7 +132,8 @@ async fn a_401_maps_to_unauthorized() {
         body: "{}",
     }])
     .await;
-    let client = super::HttpClient::new(format!("http://127.0.0.1:{port}/jev"), &fast_config());
+    let client =
+        super::HttpClient::new_for_test(format!("http://127.0.0.1:{port}/jev"), &fast_config());
     let result = client.evaluate(a_request()).await;
     unsafe {
         std::env::remove_var(JEV_API_KEY_VAR);
@@ -151,7 +152,8 @@ async fn a_422_maps_to_validation_with_the_body_field() {
         body: r#"{"field":"questions"}"#,
     }])
     .await;
-    let client = super::HttpClient::new(format!("http://127.0.0.1:{port}/jev"), &fast_config());
+    let client =
+        super::HttpClient::new_for_test(format!("http://127.0.0.1:{port}/jev"), &fast_config());
     let result = client.evaluate(a_request()).await;
     unsafe {
         std::env::remove_var(JEV_API_KEY_VAR);
@@ -181,7 +183,8 @@ async fn a_429_then_200_retries_and_parses() {
         },
     ])
     .await;
-    let client = super::HttpClient::new(format!("http://127.0.0.1:{port}/jev"), &fast_config());
+    let client =
+        super::HttpClient::new_for_test(format!("http://127.0.0.1:{port}/jev"), &fast_config());
     let result = client.evaluate(a_request()).await;
     unsafe {
         std::env::remove_var(JEV_API_KEY_VAR);
@@ -214,7 +217,8 @@ async fn exhausted_retries_return_rate_limited_or_overloaded() {
         },
     ])
     .await;
-    let client = super::HttpClient::new(format!("http://127.0.0.1:{port}/jev"), &fast_config());
+    let client =
+        super::HttpClient::new_for_test(format!("http://127.0.0.1:{port}/jev"), &fast_config());
     let result = client.evaluate(a_request()).await;
     unsafe {
         std::env::remove_var(JEV_API_KEY_VAR);
