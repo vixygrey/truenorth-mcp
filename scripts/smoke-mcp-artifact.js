@@ -29,6 +29,7 @@ async function smokePackedWrapper(expectedVersion, platformPackage) {
 
 function smokeInvalidJevActivation(command, args) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tn-jev-config-smoke-'));
+  const executable = command.includes(path.sep) ? path.resolve(command) : command;
   const endpoint = 'https://api.typesafe.ai/v1/systemone?api_key=endpoint-secret';
   const apiKey = 'api-key-secret';
   try {
@@ -36,8 +37,7 @@ function smokeInvalidJevActivation(command, args) {
     fs.mkdirSync(path.join(root, 'specs'));
     fs.mkdirSync(path.join(root, 'skills'));
     fs.writeFileSync(path.join(root, '.agent', 'config', 'rules.yml'), 'features:\n  jev: true\n');
-
-    const result = spawnSync(command, args, {
+    const result = spawnSync(executable, args, {
       cwd: root,
       encoding: 'utf8',
       env: {
