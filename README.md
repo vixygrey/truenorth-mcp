@@ -182,6 +182,10 @@ authority, authentication or authorization layer, or compliance record system.
 Operation receipts are bounded results returned to the caller, not retained audit or
 compliance records.
 
+Resource and skill reads, guard path validation, and cockpit recovery reject symlinks beneath
+the repository root. A symlinked repository root remains supported. Use regular repository
+files and relative guard paths without traversal. See [Filesystem boundaries](SECURITY.md#filesystem-boundaries).
+
 See the [install guide](https://github.com/vixygrey/truenorth-mcp/wiki/Install-and-connect#one-mutating-server-per-worktree)
 for setup and the [troubleshooting guide](https://github.com/vixygrey/truenorth-mcp/wiki/Troubleshooting#a-mutating-tool-reports-writer_lease_conflict)
 for second-writer recovery.

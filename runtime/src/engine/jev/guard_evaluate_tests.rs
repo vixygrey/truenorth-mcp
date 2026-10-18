@@ -110,7 +110,8 @@ async fn a_deterministic_block_short_circuits_before_any_jev_call() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Block(NeutralizationPacket { violated_check, .. }) => {
@@ -139,7 +140,8 @@ async fn the_flag_off_returns_allow_with_a_note_and_no_call() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Allow { notes } => {
@@ -164,7 +166,8 @@ async fn an_absent_key_returns_allow_with_a_note_and_no_call() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Allow { notes } => {
@@ -188,7 +191,8 @@ async fn an_absent_client_returns_allow_with_a_note() {
         None,
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Allow { notes } => {
@@ -215,7 +219,8 @@ async fn a_rigor_timeout_fails_open_with_a_note() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Allow { notes } => {
@@ -247,7 +252,8 @@ async fn a_clean_change_with_low_signals_allows() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     assert_eq!(decision, GuardDecision::Allow { notes: Vec::new() });
     assert_eq!(fake.call_count(), 2, "one rigor call and one drift call");
@@ -272,7 +278,8 @@ async fn a_confident_rigor_failure_blocks() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Block(packet) => assert_eq!(packet.violated_check, "rigor"),
@@ -299,7 +306,8 @@ async fn an_unconfident_rigor_failure_annotates() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     match decision {
         GuardDecision::Annotate { notes } => {
@@ -341,7 +349,8 @@ async fn each_aspect_receives_its_own_secret_filtered_state() {
         Some(&fake),
         repo.path(),
     )
-    .await;
+    .await
+    .expect("safe paths");
 
     assert_eq!(decision, GuardDecision::Allow { notes: Vec::new() });
 
@@ -418,4 +427,127 @@ fn resolve_scope_task_is_none_when_neither_is_present() {
         task: None,
     };
     assert_eq!(resolve_scope_task(&change, repo.path()), None);
+}
+
+#[tokio::test]
+async fn mixed_unsafe_paths_reject_before_any_client_call_even_offline() {
+    let repo = TempDir::new().expect("temp repo");
+    write_file(&repo, "src/good.rs", "safe source");
+    let fake = FakeClient::new();
+    for bad in [
+        "/etc/passwd",
+        "../outside.rs",
+        "src/../../outside.rs",
+        "src\\outside.rs",
+        ".env",
+        "config/.env",
+        "config/credentials/key.txt",
+        ".agent/telemetry/jev-report.yml",
+    ] {
+        let change = ProposedChange {
+            paths: vec!["src/good.rs".to_string(), bad.to_string()],
+            content: "clean".to_string(),
+            task: None,
+        };
+        for enabled in [false, true] {
+            let result = evaluate_guard(
+                &change,
+                &protected(),
+                &JevConfig::default(),
+                enabled,
+                true,
+                Some(&fake),
+                repo.path(),
+            )
+            .await;
+            assert!(
+                matches!(
+                    &result,
+                    Err(super::super::super::JevError::InvalidGuardPath { .. })
+                ),
+                "must reject {bad:?} before any client call: {result:?}"
+            );
+            assert_eq!(fake.call_count(), 0);
+        }
+    }
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn symlink_file_and_directory_reject_before_any_client_call() {
+    use std::os::unix::fs::symlink;
+
+    let repo = TempDir::new().expect("temp repo");
+    let outside = TempDir::new().expect("outside");
+    write_file(&repo, "src/good.rs", "safe source");
+    std::fs::write(outside.path().join("private.rs"), "private").expect("outside file");
+    symlink(
+        outside.path().join("private.rs"),
+        repo.path().join("shortcut.rs"),
+    )
+    .expect("file symlink");
+    symlink(outside.path(), repo.path().join("linked")).expect("directory symlink");
+    let fake = FakeClient::new();
+
+    for bad in ["shortcut.rs", "linked/private.rs"] {
+        let change = ProposedChange {
+            paths: vec!["src/good.rs".to_string(), bad.to_string()],
+            content: "clean".to_string(),
+            task: None,
+        };
+        let result = evaluate_guard(
+            &change,
+            &protected(),
+            &JevConfig::default(),
+            true,
+            true,
+            Some(&fake),
+            repo.path(),
+        )
+        .await;
+        assert!(
+            matches!(
+                &result,
+                Err(super::super::super::JevError::InvalidGuardPath { .. })
+            ),
+            "symlink {bad} must fail before a call: {result:?}"
+        );
+        assert_eq!(fake.call_count(), 0);
+    }
+}
+
+#[tokio::test]
+async fn valid_file_and_missing_proposed_file_make_correct_state() {
+    let repo = TempDir::new().expect("temp repo");
+    write_file(&repo, "src/good.rs", "safe source");
+    let fake = FakeClient::new();
+    fake.push_response(rigor_response(0.0, 0.0, 0.0, 0.0));
+    fake.push_response(drift_response(0.1));
+    let change = ProposedChange {
+        paths: vec!["src/good.rs".to_string(), "src/new.rs".to_string()],
+        content: "clean".to_string(),
+        task: None,
+    };
+    let decision = evaluate_guard(
+        &change,
+        &protected(),
+        &JevConfig::default(),
+        true,
+        true,
+        Some(&fake),
+        repo.path(),
+    )
+    .await
+    .expect("missing proposed file is legitimate");
+    assert_eq!(decision, GuardDecision::Allow { notes: Vec::new() });
+    let calls = fake.calls();
+    assert_eq!(calls.len(), 2);
+    assert_eq!(
+        calls[0].state,
+        serde_json::json!([{"path": "src/good.rs", "content": "safe source"}])
+    );
+    assert_eq!(
+        calls[1].state["changed_paths"],
+        serde_json::json!(["src/good.rs", "src/new.rs"])
+    );
 }

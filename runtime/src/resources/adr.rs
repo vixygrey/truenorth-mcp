@@ -15,6 +15,8 @@
 
 use std::path::Path;
 
+use crate::engine::agent_ws::fs_boundary::RepositoryFs;
+
 use super::ResourceReadError;
 
 /// The file extension the ADR reader includes.
@@ -28,36 +30,46 @@ const ADR_EXTENSION: &str = "md";
 /// [`ResourceReadError::Invalid`] when a file under `dir` cannot be read (Requirement
 /// 9.6).
 pub fn read_adr_dir(dir: &Path) -> Result<String, ResourceReadError> {
-    if !dir.is_dir() {
-        return Err(ResourceReadError::NotFound("specs/adr/".to_string()));
-    }
+    let root = dir
+        .parent()
+        .and_then(Path::parent)
+        .ok_or_else(|| ResourceReadError::Invalid("invalid specs/adr/ path".to_string()))?;
+    let fs = RepositoryFs::open(root)
+        .map_err(|e| ResourceReadError::Invalid(format!("could not open repository: {e}")))?;
+    let relative_dir = Path::new("specs/adr");
+    fs.validate_directory(relative_dir)
+        .map_err(|e| match e.kind() {
+            std::io::ErrorKind::NotFound => ResourceReadError::NotFound("specs/adr/".to_string()),
+            _ => ResourceReadError::Invalid(format!("could not read specs/adr/: {e}")),
+        })?;
 
-    // Collect the markdown ADR files, then sort by file name for a stable read order.
-    let mut files: Vec<_> = std::fs::read_dir(dir)
-        .map_err(|e| ResourceReadError::Invalid(format!("could not read specs/adr/: {e}")))?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.is_file()
-                && path
-                    .extension()
-                    .and_then(|ext| ext.to_str())
-                    .is_some_and(|ext| ext.eq_ignore_ascii_case(ADR_EXTENSION))
-                // Skip any file matching the secret denylist as defense in depth, so a
-                // stray secret dropped under specs/adr/ is never served (Requirement 1.7).
-                && !crate::config::is_secret_path(path)
-        })
-        .collect();
+    // Sort eligible filenames before opening them; every entry is checked by the same
+    // descriptor-relative guard as a direct resource read.
+    let mut files = fs
+        .read_dir_names(relative_dir)
+        .map_err(|e| ResourceReadError::Invalid(format!("could not list specs/adr/: {e}")))?;
+    files.retain(|name| {
+        Path::new(name)
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case(ADR_EXTENSION))
+    });
     files.sort();
 
     let mut sections = Vec::with_capacity(files.len());
-    for path in &files {
-        let name = path
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        let text = std::fs::read_to_string(path).map_err(|e| {
-            ResourceReadError::Invalid(format!("could not read ADR file `specs/adr/{name}`: {e}"))
+    for name in files {
+        let relative = relative_dir.join(&name);
+        let bytes = fs.read(&relative).map_err(|e| {
+            ResourceReadError::Invalid(format!(
+                "could not read ADR file `{}`: {e}",
+                relative.display()
+            ))
+        })?;
+        let text = String::from_utf8(bytes).map_err(|e| {
+            ResourceReadError::Invalid(format!(
+                "could not read ADR file `{}`: {e}",
+                relative.display()
+            ))
         })?;
         sections.push(text);
     }

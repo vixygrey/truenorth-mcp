@@ -7,11 +7,13 @@
 //!
 //! Requirements: 6.1, 6.3, 7.1. Design: Part II §1.
 
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 use thiserror::Error;
 
 use crate::config::MAX_READ_SKILL_BYTES;
+use crate::engine::agent_ws::fs_boundary::RepositoryFs;
 use crate::engine::phase::phase_for_skill;
 
 /// A skill index entry (ports `SkillIndexEntry`).
@@ -80,22 +82,25 @@ pub enum SkillError {
 /// A directory without a `SKILL.md` is skipped. When `skills/` is absent, the result is
 /// empty.
 pub fn discover_skills(repo_root: &Path) -> Vec<SkillIndexEntry> {
-    let skills_dir = repo_root.join("skills");
-    let Ok(entries) = std::fs::read_dir(&skills_dir) else {
+    let Ok(fs) = RepositoryFs::open(repo_root) else {
+        return Vec::new();
+    };
+    let skills_dir = Path::new("skills");
+    if fs.validate_directory(skills_dir).is_err() {
+        return Vec::new();
+    }
+    let Ok(entries) = fs.read_dir_names(skills_dir) else {
         return Vec::new();
     };
 
     let mut skills: Vec<SkillIndexEntry> = entries
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_ok_and(|t| t.is_dir()))
+        .into_iter()
         .filter_map(|entry| {
-            let name = entry.file_name().to_string_lossy().into_owned();
-            let skill_file = entry.path().join("SKILL.md");
-            if !skill_file.is_file() {
-                return None;
-            }
+            let name = entry.into_string().ok()?;
+            let skill_file = skills_dir.join(&name).join("SKILL.md");
+            fs.open_read(&skill_file).ok()?;
             Some(SkillIndexEntry {
-                path: relative_to(repo_root, &skill_file),
+                path: skill_file,
                 phase: phase_for_skill(&name),
                 name,
             })
@@ -142,19 +147,33 @@ pub fn resolve_skill_path(repo_root: &Path, name: &str) -> Result<PathBuf, Skill
 /// failure.
 pub fn read_skill_raw(repo_root: &Path, name: &str) -> Result<RawSkill, SkillError> {
     let path = resolve_skill_path(repo_root, name)?;
-    if !path.is_file() {
-        return Err(SkillError::NotFound(name.to_string()));
-    }
-
-    let bytes = std::fs::read(&path).map_err(|source| SkillError::Read {
+    let relative = relative_to(repo_root, &path);
+    let fs = RepositoryFs::open(repo_root).map_err(|source| SkillError::Read {
         name: name.to_string(),
         source,
     })?;
-
+    let mut file = fs.open_read(&relative).map_err(|source| {
+        if source.kind() == std::io::ErrorKind::NotFound {
+            SkillError::NotFound(name.to_string())
+        } else {
+            SkillError::Read {
+                name: name.to_string(),
+                source,
+            }
+        }
+    })?;
+    let mut bytes = Vec::new();
+    file.by_ref()
+        .take(MAX_READ_SKILL_BYTES as u64 + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|source| SkillError::Read {
+            name: name.to_string(),
+            source,
+        })?;
     let (markdown, truncated) = cap_bytes(&bytes, MAX_READ_SKILL_BYTES);
     Ok(RawSkill {
         name: name.to_string(),
-        path: relative_to(repo_root, &path),
+        path: relative,
         markdown,
         truncated,
     })

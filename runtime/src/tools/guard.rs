@@ -107,7 +107,7 @@ impl TrueNorthServer {
         let config = resolve(&self.ctx.repo_root).map_err(config_error)?;
         let protected = resolve_protected_paths(&self.ctx.repo_root).map_err(config_error)?;
 
-        Ok(run_decision(
+        run_decision(
             change,
             &protected,
             &config,
@@ -115,7 +115,8 @@ impl TrueNorthServer {
             self.ctx.jev_activation.as_ref(),
             &self.ctx.repo_root,
         )
-        .await)
+        .await
+        .map_err(|error| ErrorData::invalid_params(error.to_string(), None))
     }
 }
 
@@ -140,7 +141,7 @@ async fn run_decision(
     jev_enabled: bool,
     _activation: Option<&crate::engine::jev::client_http::JevActivation>,
     repo_root: &std::path::Path,
-) -> GuardDecision {
+) -> Result<GuardDecision, crate::engine::jev::JevError> {
     use crate::engine::jev::client_fake::FakeClient;
 
     // The default build compiles no HTTP client, so the type parameter is the fake and the
@@ -169,7 +170,7 @@ async fn run_decision(
     jev_enabled: bool,
     activation: Option<&crate::engine::jev::client_http::JevActivation>,
     repo_root: &std::path::Path,
-) -> GuardDecision {
+) -> Result<GuardDecision, crate::engine::jev::JevError> {
     use crate::engine::jev::client_fake::FakeClient;
     use crate::engine::jev::client_http::HttpClient;
 

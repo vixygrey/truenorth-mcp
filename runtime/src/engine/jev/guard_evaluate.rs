@@ -2,22 +2,17 @@
 //!
 //! Included from `guard.rs` via `#[path]`, so `super` is the `guard` module. This module ties
 //! the deterministic layer (`guard.rs`) and the pure combine step (`guard_combine.rs`) into one
-//! decision function. It runs the deterministic layer first, then the probabilistic layer.
+//! decision function. It validates the entire path set before the deterministic and
+//! probabilistic layers.
 //!
-//! The probabilistic layer always fails open (ADR-G3). It returns `Allow` with a note, never a
-//! `Block`, when the flag is off, the client is absent, the API key is absent, the secret
-//! filter rejects a residual secret, or a Jev call times out, fails on the network, or returns
-//! a non-success status (R4). It never turns a Jev outage into a block (R4.5, P37).
+//! Unsafe caller paths are input errors even when the Jev feature is off. Every safe existing
+//! file is opened before any content is read; a missing proposed file is allowed. The
+//! probabilistic layer still fails open (ADR-G3) for unavailable clients, a residual content
+//! secret, timeout, network errors, or non-success responses (R4).
 //!
-//! The layer sends no secret to Jev: it builds the state through the secret filter, so a
-//! denylisted path or content is excluded before the call, and a residual secret fails closed
-//! (R3.2, R3.3, P40). No neutralization packet and no note carries a secret value or the API
-//! key (P40).
-//!
-//! The entry point has no non-test caller until the tool lands (issue #296). Each staged public
-//! item carries a narrow non-test `allow` with this reason, per the repo dead-code policy
-//! (main.rs). The test build exercises every path through the sibling `guard_evaluate_tests.rs`
-//! and `guard_evaluate_prop_tests.rs`.
+//! The layer sends no secret to Jev: it builds content state from protected file handles,
+//! filters denylisted content, and checks the assembled state before a call (R3.2, R3.3, P40).
+//! No neutralization packet or note carries a secret value or the API key (P40).
 //!
 //! Requirements: 1.3, 1.4, 3.1, 3.2, 3.3, 3.5, 4.1, 4.2, 4.3, 4.5.
 //! Design: jev-active-guardrail, the evaluate_guard function, P36, P37, P40.
@@ -28,7 +23,9 @@ use super::super::JevClient;
 use super::super::config::JevConfig;
 use super::super::drift::{DriftOutcome, evaluate_drift};
 use super::super::rigor::{RigorReport, evaluate_rigor};
-use super::super::secret_filter::{build_drift_scope_state, build_state_with_secret_filter};
+use super::super::secret_filter::{
+    build_drift_scope_state, build_state_from_open_files, open_state_files,
+};
 use super::combine::{CandidateSignal, combine};
 use super::{GuardDecision, ProposedChange, deterministic_layer};
 use crate::engine::cockpit::read_active_task;
@@ -42,11 +39,11 @@ const NOTE_NO_CLIENT: &str = "probabilistic layer did not run: no jev client is 
 /// The note an absent-key evaluation returns (R4.2).
 const NOTE_NO_KEY: &str = "probabilistic layer did not run: no jev API key is set";
 
-/// Evaluate a proposed change and return one decision (R1.3, R1.4).
+/// Evaluate a proposed change and return one decision, or reject an unsafe caller path.
 ///
-/// The function runs the deterministic layer first, with no Jev call. A deterministic block
-/// returns immediately (R1.3). When the deterministic layer passes, the function runs the
-/// probabilistic layer, which always fails open (ADR-G3).
+/// Every path is checked and every existing safe file opened before any file content is read
+/// or Jev is called, including when the probabilistic layer is disabled. A missing proposed
+/// file is allowed. The deterministic layer then runs first, with no Jev call.
 ///
 /// The probabilistic layer returns `Allow` with a note, and makes no Jev call, when:
 ///
@@ -77,43 +74,48 @@ pub async fn evaluate_guard<C: JevClient>(
     api_key_present: bool,
     client: Option<&C>,
     repo_root: &std::path::Path,
-) -> GuardDecision {
-    // The deterministic layer runs first, with no Jev call (R1.3). A block returns now.
+) -> Result<GuardDecision, super::super::JevError> {
+    if change.paths.is_empty() {
+        return Err(super::super::JevError::InvalidGuardPath {
+            path: "paths".to_string(),
+            detail: "at least one repository-relative path is required".to_string(),
+        });
+    }
+    let paths: Vec<PathBuf> = change.paths.iter().map(PathBuf::from).collect();
+    let mut files = open_state_files(repo_root, &paths)?;
     if let Some(decision) = deterministic_layer(change, protected_paths) {
-        return decision;
+        return Ok(decision);
     }
 
     // The probabilistic layer fails open on every unavailability (ADR-G3, R4).
     if !jev_enabled {
-        return allow_with_note(NOTE_FLAG_OFF);
+        return Ok(allow_with_note(NOTE_FLAG_OFF));
     }
     let Some(client) = client else {
-        return allow_with_note(NOTE_NO_CLIENT);
+        return Ok(allow_with_note(NOTE_NO_CLIENT));
     };
     if !api_key_present {
-        return allow_with_note(NOTE_NO_KEY);
+        return Ok(allow_with_note(NOTE_NO_KEY));
     }
 
-    // Build a Jev state per aspect through the secret filter, so no secret reaches Jev (R3.2,
-    // P40) and each question receives its own curated state rather than one shared blob
-    // (issue #304). Each builder runs the secret filter independently, so the security
-    // boundary holds on every state. Both builders currently assemble the same content view,
-    // so the wire content is unchanged. Trimming the drift state to a lighter view is the
-    // measured follow-up in issue #328, which needs a live benchmark to confirm calibration.
-    let paths: Vec<PathBuf> = change.paths.iter().map(PathBuf::from).collect();
-
-    // Score rigor over its own state. Rigor judges the code content (imports, conventions,
-    // complexity, secrets), so its state carries the file content. A Jev unavailability fails
-    // open with a note naming the cause (R4.3, P37).
-    let rigor_state = match build_state_with_secret_filter(repo_root, &paths) {
+    // Rigor needs file content; all protected handles are already opened. A residual
+    // content secret remains a probabilistic fail-open, without making a Jev call.
+    let rigor_state = match build_state_from_open_files(&paths, &mut files) {
         Ok(state) => state,
-        // A residual secret makes no call. The probabilistic layer fails open with a note; the
-        // deterministic secret scan already blocks a plain secret (R3.3).
-        Err(cause) => return allow_with_note(&format!("probabilistic layer did not run: {cause}")),
+        Err(cause @ super::super::JevError::InvalidGuardPath { .. }) => return Err(cause),
+        Err(cause) => {
+            return Ok(allow_with_note(&format!(
+                "probabilistic layer did not run: {cause}"
+            )));
+        }
     };
     let rigor = match evaluate_rigor(client, rigor_state).await {
         Ok(report) => report,
-        Err(cause) => return allow_with_note(&format!("rigor scoring did not complete: {cause}")),
+        Err(cause) => {
+            return Ok(allow_with_note(&format!(
+                "rigor scoring did not complete: {cause}"
+            )));
+        }
     };
 
     // Resolve the scope task: prefer the caller-supplied task on the change, then fall back
@@ -129,7 +131,11 @@ pub async fn evaluate_guard<C: JevClient>(
     // needs. The written paths and the protected set also drive the model-free path layer.
     let drift_state = match build_drift_scope_state(&paths, protected_paths, task.as_deref()) {
         Ok(state) => state,
-        Err(cause) => return allow_with_note(&format!("probabilistic layer did not run: {cause}")),
+        Err(cause) => {
+            return Ok(allow_with_note(&format!(
+                "probabilistic layer did not run: {cause}"
+            )));
+        }
     };
     let drift = match evaluate_drift(
         client,
@@ -141,13 +147,24 @@ pub async fn evaluate_guard<C: JevClient>(
     .await
     {
         Ok(outcome) => outcome,
-        Err(cause) => return allow_with_note(&format!("drift scoring did not complete: {cause}")),
+        Err(cause) => {
+            return Ok(allow_with_note(&format!(
+                "drift scoring did not complete: {cause}"
+            )));
+        }
     };
 
     // Both aspects succeeded. Gate the signals through the pure combine step (R1.4).
     let rigor_signal = rigor_candidate(&rigor, config);
     let drift_signal = drift_candidate(&drift);
-    combine(&rigor, rigor_signal, &drift, drift_signal, None, config)
+    Ok(combine(
+        &rigor,
+        rigor_signal,
+        &drift,
+        drift_signal,
+        None,
+        config,
+    ))
 }
 
 /// Build an `Allow` decision carrying one advisory note.

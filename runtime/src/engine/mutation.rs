@@ -4,7 +4,7 @@
 //! read-modify-write transaction in that process. Production coordinators also retain an
 //! advisory OS lock for the lifetime of the server, so only one server mutates a worktree.
 
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -12,7 +12,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use thiserror::Error;
 use tokio::sync::{Mutex, MutexGuard};
 
-use crate::engine::agent_ws::AGENT_DIR;
+use crate::engine::agent_ws::fs_boundary::RepositoryFs;
 
 /// The worktree-relative writer lease path.
 pub const WRITER_LOCK_REL_PATH: &str = ".agent/runtime/writer.lock";
@@ -199,39 +199,15 @@ fn try_acquire_lease(repo_root: &Path) -> Result<WorktreeLease, AcquireError> {
 
     #[cfg(unix)]
     {
-        use std::os::unix::fs::OpenOptionsExt;
         use std::os::unix::io::AsRawFd;
 
-        let agent_root = repo_root.join(AGENT_DIR);
-        let runtime_dir = agent_root.join("runtime");
-        std::fs::create_dir_all(&runtime_dir)
+        let filesystem = RepositoryFs::open(repo_root)
             .map_err(|error| AcquireError::Unavailable(error.to_string()))?;
-
-        let canonical_agent = agent_root
-            .canonicalize()
+        filesystem
+            .create_dir_all(Path::new(".agent/runtime"))
             .map_err(|error| AcquireError::Unavailable(error.to_string()))?;
-        let canonical_runtime = runtime_dir
-            .canonicalize()
-            .map_err(|error| AcquireError::Unavailable(error.to_string()))?;
-        if !canonical_runtime.starts_with(&canonical_agent) {
-            return Err(AcquireError::Unavailable(
-                "the runtime lease directory escapes `.agent/` through a symlink".to_string(),
-            ));
-        }
-
-        let lock_path = runtime_dir.join("writer.lock");
-        if std::fs::symlink_metadata(&lock_path).is_ok_and(|metadata| metadata.is_symlink()) {
-            return Err(AcquireError::Unavailable(
-                "the writer lock path is a symlink".to_string(),
-            ));
-        }
-
-        let mut file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .custom_flags(libc::O_NOFOLLOW)
-            .open(&lock_path)
+        let mut file = filesystem
+            .open_lock(Path::new(WRITER_LOCK_REL_PATH))
             .map_err(|error| AcquireError::Unavailable(error.to_string()))?;
 
         // SAFETY: `file` owns a valid open descriptor for the lock file. `flock` does not
@@ -241,7 +217,7 @@ fn try_acquire_lease(repo_root: &Path) -> Result<WorktreeLease, AcquireError> {
         if locked != 0 {
             let error = std::io::Error::last_os_error();
             if error.raw_os_error() == Some(libc::EWOULDBLOCK) {
-                return Err(AcquireError::Contended(read_holder(&lock_path)));
+                return Err(AcquireError::Contended(read_holder(&mut file)));
             }
             return Err(AcquireError::Unavailable(error.to_string()));
         }
@@ -265,10 +241,11 @@ fn try_acquire_lease(repo_root: &Path) -> Result<WorktreeLease, AcquireError> {
     }
 }
 
-fn read_holder(path: &Path) -> LeaseConflict {
+fn read_holder(file: &mut File) -> LeaseConflict {
     let mut text = String::new();
-    let holder_pid = File::open(path)
-        .and_then(|mut file| file.read_to_string(&mut text))
+    let holder_pid = file
+        .seek(SeekFrom::Start(0))
+        .and_then(|_| file.read_to_string(&mut text))
         .ok()
         .and_then(|_| serde_json::from_str::<serde_json::Value>(&text).ok())
         .and_then(|value| value.get("pid").and_then(serde_json::Value::as_u64))

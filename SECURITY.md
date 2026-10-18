@@ -39,6 +39,24 @@ that every supported configuration is secure.
 
 Merge, release, and emergency-bypass authority are defined in [GOVERNANCE.md](GOVERNANCE.md).
 
+## Filesystem boundaries
+
+Resource and skill reads reject symlinked files and parent directories beneath the repository root.
+The repository root itself may be a symlink. Reads exclude private paths and `.agent/telemetry/`.
+Protected operations use directory descriptors, so replacing a path with a symlink cannot redirect an open.
+
+Cockpit recovery validates every journal entry and target revision before changing any migration target.
+Only `state`, `release-plan`, and `bugs` files under `.agent/tasks/`, with `.yml` or `.json` extensions, are permitted.
+Recovery acquires the worktree writer lease and rejects symlinked journals, targets, and parent directories.
+
+Guard inputs require repository-relative paths without traversal or symlinks.
+Invalid paths are input errors, not probabilistic fail-open decisions.
+Jev validates every path before reading evaluation content or sending a request.
+Missing proposed files remain supported. The default build makes no Jev HTTP requests.
+
+Git diff guard modes inspect path metadata only.
+They enforce containment and protected paths without applying content-read exclusions.
+
 ## Support boundaries
 
 Supported v1 distributions are the npm wrapper on macOS ARM64/x64 and Linux ARM64/x64.

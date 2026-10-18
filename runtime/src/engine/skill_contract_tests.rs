@@ -17,6 +17,36 @@ fn valid_contract(name: &str) -> String {
     )
 }
 
+#[cfg(unix)]
+#[test]
+fn rejects_contract_symlinks_to_outside_and_private_paths() {
+    use std::os::unix::fs::symlink;
+
+    let repo = tempdir().expect("repo");
+    let outside = tempdir().expect("outside");
+    write_skill(repo.path(), "example");
+    fs::write(outside.path().join(".env"), valid_contract("example")).expect("outside secret");
+    let contract = repo.path().join("skills/example/contract.yml");
+    for target in [outside.path().join(".env"), repo.path().join(".env")] {
+        if target == repo.path().join(".env") {
+            fs::write(&target, valid_contract("example")).expect("repo secret");
+        }
+        symlink(&target, &contract).expect("link contract");
+        assert!(matches!(
+            read_skill_contract(repo.path(), "example"),
+            Err(SkillContractError::Read { .. })
+        ));
+        fs::remove_file(&contract).expect("remove alias");
+    }
+    fs::write(&contract, valid_contract("example")).expect("safe contract");
+    assert_eq!(
+        read_skill_contract(repo.path(), "example")
+            .expect("safe read")
+            .name,
+        "example"
+    );
+}
+
 #[test]
 fn reads_and_validates_a_v1_contract() {
     let dir = tempdir().expect("temp directory");
