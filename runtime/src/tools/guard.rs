@@ -101,20 +101,18 @@ impl TrueNorthServer {
 impl TrueNorthServer {
     /// Resolve the config and the protected paths, then run the guardrail decision.
     ///
-    /// The config and the protected paths come from `.agent/config/rules.yml`. A config read or
-    /// parse failure is an MCP internal error, because the guardrail cannot decide without the
-    /// thresholds. The feature flag comes from the server context. The client and the key are
-    /// resolved by the build-specific `run_decision` helper.
+    /// The config and protected paths come from `.agent/config/rules.yml`. The production
+    /// server validates Jev activation before advertising this tool.
     async fn evaluate_change(&self, change: &ProposedChange) -> Result<GuardDecision, ErrorData> {
         let config = resolve(&self.ctx.repo_root).map_err(config_error)?;
         let protected = resolve_protected_paths(&self.ctx.repo_root).map_err(config_error)?;
-        let jev_enabled = self.ctx.features.jev;
 
         Ok(run_decision(
             change,
             &protected,
             &config,
-            jev_enabled,
+            self.ctx.features.jev,
+            self.ctx.jev_activation.as_ref(),
             &self.ctx.repo_root,
         )
         .await)
@@ -140,6 +138,7 @@ async fn run_decision(
     protected: &[String],
     config: &crate::engine::jev::config::JevConfig,
     jev_enabled: bool,
+    _activation: Option<&crate::engine::jev::client_http::JevActivation>,
     repo_root: &std::path::Path,
 ) -> GuardDecision {
     use crate::engine::jev::client_fake::FakeClient;
@@ -160,52 +159,40 @@ async fn run_decision(
 
 /// Run the guardrail decision with the resolved inputs (jev-http build: real client).
 ///
-/// The client is built only when the flag is on and the key is present, so a flag-off or a
-/// keyless project makes no network call. The key presence is read once here and passed to
-/// `evaluate_guard`, so the decision function holds no environment read.
+/// The production constructor supplies validated activation. Dependency-injected test contexts
+/// without activation retain the offline fail-open path.
 #[cfg(feature = "jev-http")]
 async fn run_decision(
     change: &ProposedChange,
     protected: &[String],
     config: &crate::engine::jev::config::JevConfig,
     jev_enabled: bool,
+    activation: Option<&crate::engine::jev::client_http::JevActivation>,
     repo_root: &std::path::Path,
 ) -> GuardDecision {
     use crate::engine::jev::client_fake::FakeClient;
     use crate::engine::jev::client_http::HttpClient;
-    use crate::engine::jev::client_http::JEV_API_KEY_VAR;
 
-    /// The environment variable that holds the Jev endpoint URL for the tool's client.
-    const JEV_ENDPOINT_VAR: &str = "TRUENORTH_JEV_ENDPOINT";
-
-    let api_key_present = std::env::var(JEV_API_KEY_VAR)
-        .map(|v| !v.is_empty())
-        .unwrap_or(false);
-
-    // Build the client only when the flag is on and the key is present, so a flag-off or a
-    // keyless project makes no network call and needs no endpoint.
-    if jev_enabled && api_key_present {
-        let endpoint = std::env::var(JEV_ENDPOINT_VAR).unwrap_or_default();
-        let client = HttpClient::new(endpoint, config);
+    if jev_enabled && let Some(activation) = activation {
+        let client = HttpClient::new(activation.clone(), config);
         return evaluate_guard(
             change,
             protected,
             config,
-            jev_enabled,
-            api_key_present,
+            true,
+            true,
             Some(&client),
             repo_root,
         )
         .await;
     }
 
-    // Flag off or key absent: no client, so the probabilistic layer fails open with a note.
     evaluate_guard::<FakeClient>(
         change,
         protected,
         config,
         jev_enabled,
-        api_key_present,
+        false,
         None,
         repo_root,
     )

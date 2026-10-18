@@ -221,6 +221,12 @@ fn every_jev_error_variant_renders_a_nonempty_message() {
     // is dead code. The list is the full set from the design's error handling. Each message
     // names its offending value, expected shape, or remediation (Requirement 10).
     let all = [
+        JevError::MissingEndpoint {
+            var: "TRUENORTH_JEV_ENDPOINT",
+        },
+        JevError::InvalidEndpoint {
+            var: "TRUENORTH_JEV_ENDPOINT",
+        },
         JevError::MissingApiKey {
             var: "TRUENORTH_JEV_API_KEY",
         },

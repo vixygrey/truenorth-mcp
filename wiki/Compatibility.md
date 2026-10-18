@@ -16,6 +16,17 @@ it appears in `tools/list` or `resources/list` for that workspace. The ontology
 tools and `truenorth://ontology` depend on `features.ontology`. The Jev guardrail
 tool depends on `features.jev`.
 
+Jev remains disabled by default. To expose `truenorth_guard_change`, set `features.jev: true`
+and provide `TRUENORTH_JEV_ENDPOINT` plus `TRUENORTH_JEV_API_KEY` through the operator
+environment. The runtime rejects missing or unsafe activation before it advertises the tool.
+The endpoint must be an absolute HTTPS URL with no embedded credentials, query, or fragment.
+The API key remains outside repository configuration and is read for each request. Set
+`features.jev: false` and reconnect to disable Jev.
+
+Jev evaluates changes as an advisory layer. A network, authentication, parsing, timeout, or
+overload failure returns an annotation and never bypasses deterministic protected-path or secret
+blocks.
+
 A rename, removal, incompatible field-type change, altered required field, changed
 success or error semantics, or removed resource URI is a breaking change. Breaking
 changes require a new major version, release notes, a replacement when one exists,

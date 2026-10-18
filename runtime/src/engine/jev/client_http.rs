@@ -18,20 +18,102 @@
 
 use super::JevError;
 
+/// The environment variable that holds the Jev endpoint URL.
+pub const JEV_ENDPOINT_VAR: &str = "TRUENORTH_JEV_ENDPOINT";
+
 /// The environment variable that holds the Jev API key (Requirement 2.6, 9.4).
-///
-/// The transport reads this variable at call time and names it in the [`JevError::MissingApiKey`]
-/// and [`JevError::Unauthorized`] messages. The const is always compiled, because the pure
-/// mapper and the [`JevError::MissingApiKey`] construction both name it. Under the default
-/// build the transport is absent, so the only callers are tests, and the const carries a
-/// narrow non-test `allow` naming the future consumer.
-///
-/// The first non-test caller is the [`HttpClient`] transport under the `jev-http` feature
-/// and the benchmark bin (task 12). Under the default build only tests reference it, so it
-/// carries a narrow non-test `allow`, per the repo dead-code policy (main.rs).
-#[cfg_attr(not(test), allow(dead_code))]
 pub const JEV_API_KEY_VAR: &str = "TRUENORTH_JEV_API_KEY";
 
+/// Validated operator configuration for one Jev HTTP client.
+///
+/// The activation retains only the endpoint. The API key is checked during activation and read
+/// again for each request, so key rotation takes effect without storing a secret in the client.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct JevActivation {
+    endpoint: String,
+}
+
+impl JevActivation {
+    /// Resolve the endpoint and API key from the operator environment.
+    pub fn resolve() -> Result<Self, JevError> {
+        let endpoint = std::env::var(JEV_ENDPOINT_VAR).ok();
+        let api_key = std::env::var(JEV_API_KEY_VAR).ok();
+        Self::from_values(endpoint.as_deref(), api_key.as_deref())
+    }
+
+    /// Validate the supplied environment values without retaining the API key.
+    pub fn from_values(endpoint: Option<&str>, api_key: Option<&str>) -> Result<Self, JevError> {
+        let endpoint =
+            endpoint
+                .filter(|value| !value.is_empty())
+                .ok_or(JevError::MissingEndpoint {
+                    var: JEV_ENDPOINT_VAR,
+                })?;
+        if !is_valid_https_endpoint(endpoint) {
+            return Err(JevError::InvalidEndpoint {
+                var: JEV_ENDPOINT_VAR,
+            });
+        }
+        if api_key.is_none_or(|value| value.is_empty()) {
+            return Err(JevError::MissingApiKey {
+                var: JEV_API_KEY_VAR,
+            });
+        }
+        Ok(Self {
+            endpoint: endpoint.to_string(),
+        })
+    }
+
+    /// Return the validated endpoint URL.
+    pub fn endpoint(&self) -> &str {
+        &self.endpoint
+    }
+
+    #[cfg(feature = "jev-http")]
+    fn into_endpoint(self) -> String {
+        self.endpoint
+    }
+}
+
+/// Accept a conservative absolute HTTPS endpoint without credentials, query data, or fragments.
+fn is_valid_https_endpoint(endpoint: &str) -> bool {
+    if endpoint
+        .chars()
+        .any(|character| character.is_whitespace() || character.is_control())
+    {
+        return false;
+    }
+    let Some(remainder) = endpoint.strip_prefix("https://") else {
+        return false;
+    };
+    if remainder.is_empty() || remainder.contains(['?', '#']) {
+        return false;
+    }
+    let (authority, _) = remainder.split_once('/').unwrap_or((remainder, ""));
+    if authority.is_empty() || authority.contains('@') {
+        return false;
+    }
+    let (host, port) = authority
+        .rsplit_once(':')
+        .map_or((authority, None), |(host, port)| (host, Some(port)));
+    if host.contains(':') || !is_valid_dns_host(host) {
+        return false;
+    }
+    port.is_none_or(|value| value.parse::<u16>().is_ok_and(|parsed| parsed != 0))
+}
+
+/// Accept an ASCII DNS host. This intentionally rejects IP literals and internationalized names.
+fn is_valid_dns_host(host: &str) -> bool {
+    !host.is_empty()
+        && host.split('.').all(|label| {
+            !label.is_empty()
+                && !label.starts_with('-')
+                && !label.ends_with('-')
+                && label
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
+        })
+}
 /// The decision for one HTTP status: parse the body, retry, or a terminal error.
 ///
 /// The mapper returns this decision so the transport stays a thin dispatcher. The pure
@@ -95,7 +177,7 @@ mod transport {
 
     use serde::Deserialize;
 
-    use super::{JEV_API_KEY_VAR, StatusAction, map_status};
+    use super::{JEV_API_KEY_VAR, JevActivation, StatusAction, map_status};
     use crate::engine::jev::config::JevConfig;
     use crate::engine::jev::{JevClient, JevError, JevRequest, JevResponse};
 
@@ -147,18 +229,28 @@ mod transport {
     // (task 12). They carry a narrow non-test `allow`, per the repo dead-code policy.
     #[cfg_attr(not(test), allow(dead_code))]
     impl HttpClient {
-        /// Build a client for `endpoint` from the resolved config (Requirement 2.5).
+        /// Build a client from validated operator activation and the resolved configuration.
         ///
         /// The reqwest client is built with the config timeout, so a slow call is cut at the
         /// wall-clock bound. A client build failure falls back to the default client, so the
         /// constructor never panics.
-        pub fn new(endpoint: impl Into<String>, config: &JevConfig) -> Self {
+        pub fn new(activation: JevActivation, config: &JevConfig) -> Self {
+            Self::from_endpoint(activation.into_endpoint(), config)
+        }
+
+        /// Build a loopback client for transport tests only.
+        #[cfg(test)]
+        pub fn new_for_test(endpoint: impl Into<String>, config: &JevConfig) -> Self {
+            Self::from_endpoint(endpoint.into(), config)
+        }
+
+        fn from_endpoint(endpoint: String, config: &JevConfig) -> Self {
             let http = reqwest::Client::builder()
                 .timeout(config.timeout)
                 .build()
                 .unwrap_or_default();
             Self {
-                endpoint: endpoint.into(),
+                endpoint,
                 http,
                 retry_limit: config.retry_limit,
                 max_backoff: config.max_backoff,

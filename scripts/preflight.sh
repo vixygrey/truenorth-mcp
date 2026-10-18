@@ -105,8 +105,8 @@ run_artifact_smoke() {
   node --test scripts/certify-vscode.test.js
   echo "preflight: [artifact-smoke] Zed evidence tests"
   node --test scripts/certify-zed.test.js
-  echo "preflight: [artifact-smoke] release build for $package"
-  cargo build --locked --release --manifest-path runtime/Cargo.toml
+  echo "preflight: [artifact-smoke] Jev HTTP release build for $package"
+  cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http
 
   stage_dir=$(mktemp -d "${TMPDIR:-/tmp}/truenorth-preflight.XXXXXX")
   TEMP_DIRS+=("$stage_dir")

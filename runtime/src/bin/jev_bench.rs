@@ -43,8 +43,7 @@ mod imp {
     use truenorth_mcp::config::get_repo_root;
     use truenorth_mcp::engine::jev::bench;
     use truenorth_mcp::engine::jev::client_fake::FakeClient;
-    use truenorth_mcp::engine::jev::client_http::HttpClient;
-    use truenorth_mcp::engine::jev::client_http::JEV_API_KEY_VAR;
+    use truenorth_mcp::engine::jev::client_http::{HttpClient, JevActivation};
     use truenorth_mcp::engine::jev::config::{resolve, resolve_protected_paths};
     use truenorth_mcp::engine::jev::guard::ProposedChange;
     use truenorth_mcp::engine::jev::guard::evaluate::evaluate_guard;
@@ -54,13 +53,8 @@ mod imp {
     const CLIENT_VAR: &str = "JEV_BENCH_CLIENT";
     /// The environment variable that holds the fixture-set path.
     const FIXTURES_VAR: &str = "JEV_BENCH_FIXTURES";
-    /// The environment variable that holds the Jev endpoint URL for the `http` client.
-    const ENDPOINT_VAR: &str = "JEV_BENCH_ENDPOINT";
     /// The default fixture path under the repository root, when `JEV_BENCH_FIXTURES` is unset.
     const DEFAULT_FIXTURES: &str = ".agent/telemetry/jev-fixtures.yml";
-
-    /// The environment variable that holds the Jev endpoint URL for the guard subcommand.
-    const GUARD_ENDPOINT_VAR: &str = "TRUENORTH_JEV_ENDPOINT";
 
     /// Dispatch on the first argument: `guard` runs the guardrail on stdin, else the benchmark.
     ///
@@ -114,15 +108,8 @@ mod imp {
     /// Run the guardrail over a proposed change on standard input, returning the exit code.
     ///
     /// The steps run in order: read the proposed change JSON on standard input, resolve the
-    /// repository root, the config, and the protected paths, build the client only when the
-    /// jev feature flag and the API key are both present, run the guardrail, print the block
-    /// reason to standard error on a block, and exit non-zero on a block and zero on an allow
-    /// (R7.2, R7.3). The deterministic layer runs regardless of the client, so a protected-path
-    /// or a secret block holds even with no client (R7.5).
-    ///
-    /// The guardrail flag is on for this subcommand, because a caller who invokes `guard` opts
-    /// in. The probabilistic layer still fails open when the key is absent, so a keyless call
-    /// runs the deterministic layer and allows otherwise.
+    /// repository root, config, protected paths, and validated Jev activation, then run the
+    /// guardrail. An invalid activation exits non-zero before any HTTP request.
     fn run_guard() -> ExitCode {
         let mut input = String::new();
         if let Err(error) = std::io::stdin().read_to_string(&mut input) {
@@ -154,40 +141,26 @@ mod imp {
             Err(error) => return fail(&format!("could not resolve the protected paths: {error}")),
         };
 
-        let api_key_present = std::env::var(JEV_API_KEY_VAR)
-            .map(|v| !v.is_empty())
-            .unwrap_or(false);
+        let activation = match JevActivation::resolve() {
+            Ok(activation) => activation,
+            Err(error) => return fail(&format!("could not resolve the Jev activation: {error}")),
+        };
 
         let runtime = match tokio::runtime::Runtime::new() {
             Ok(runtime) => runtime,
             Err(error) => return fail(&format!("could not start the async runtime: {error}")),
         };
 
-        // The guard subcommand opts into the flag. Build the client only when the key is
-        // present, so a keyless call runs the deterministic layer and fails open otherwise.
-        let decision = if api_key_present {
-            let endpoint = std::env::var(GUARD_ENDPOINT_VAR).unwrap_or_default();
-            let client = HttpClient::new(endpoint, &config);
-            runtime.block_on(evaluate_guard(
-                &change,
-                &protected,
-                &config,
-                true,
-                api_key_present,
-                Some(&client),
-                &repo_root,
-            ))
-        } else {
-            runtime.block_on(evaluate_guard::<FakeClient>(
-                &change,
-                &protected,
-                &config,
-                true,
-                api_key_present,
-                None,
-                &repo_root,
-            ))
-        };
+        let client = HttpClient::new(activation, &config);
+        let decision = runtime.block_on(evaluate_guard(
+            &change,
+            &protected,
+            &config,
+            true,
+            true,
+            Some(&client),
+            &repo_root,
+        ));
 
         // Print the block reason to standard error on a block; print nothing on a pass (R7.2).
         if let Some(message) = block_message(&decision) {
@@ -204,11 +177,9 @@ mod imp {
         }
     }
 
-    /// Run the selected client over the fixtures, returning the metrics or an error message.
-    ///
-    /// The `fake` client makes no network call (R11.2, R11.7). The `http` client reads the
-    /// endpoint from `JEV_BENCH_ENDPOINT` and reads the API key at call time. An unknown
-    /// client name is an error, so a typo does not silently fall back.
+    /// The `fake` client makes no network call (R11.2, R11.7). The `http` client uses the
+    /// validated `TRUENORTH_JEV_ENDPOINT` and reads the API key at call time. An unknown client
+    /// name is an error, so a typo does not silently fall back.
     fn run_client(
         kind: &str,
         fixtures: &[bench::Fixture],
@@ -223,13 +194,9 @@ mod imp {
                 Ok(runtime.block_on(bench::run_benchmark(&client, fixtures, config)))
             }
             "http" => {
-                let endpoint = std::env::var(ENDPOINT_VAR).map_err(|_| {
-                    format!(
-                        "the `{ENDPOINT_VAR}` environment variable is not set. Set it to the \
-                         Jev endpoint URL for the `http` client."
-                    )
-                })?;
-                let client = HttpClient::new(endpoint, config);
+                let activation = JevActivation::resolve()
+                    .map_err(|error| format!("could not resolve the Jev activation: {error}"))?;
+                let client = HttpClient::new(activation, config);
                 Ok(runtime.block_on(bench::run_benchmark(&client, fixtures, config)))
             }
             other => Err(format!(

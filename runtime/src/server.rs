@@ -47,6 +47,8 @@ pub struct ServerContext {
     pub features: Features,
     /// The resolved token budgets for Lean skill rendering and tool responses.
     pub token_caps: TokenCaps,
+    /// Validated Jev endpoint configuration when the production constructor enables Jev.
+    pub jev_activation: Option<crate::engine::jev::client_http::JevActivation>,
     /// The last-good `.agent/` layout contract (Requirement 1.12).
     ///
     /// [`ServerContext::resolve`] validates the contract at startup. A later broken read
@@ -59,12 +61,14 @@ pub struct ServerContext {
 impl ServerContext {
     /// Build a context, resolving feature flags and token caps from disk.
     ///
-    /// Reads `.agent/config/rules.yml`. An absent file resolves to defaults.
-    /// An invalid configured value returns a typed error naming the offending rule.
+    /// Reads `.agent/config/rules.yml`. An absent file resolves to defaults. An invalid
+    /// configured value or enabled Jev feature without valid operator configuration returns a
+    /// typed error before the server advertises the Jev guardrail.
     ///
     /// # Errors
     ///
-    /// Returns [`FeaturesError`] when a present `rules.yml` cannot be read or parsed.
+    /// Returns [`FeaturesError`] when a present `rules.yml` cannot be read or parsed, or when
+    /// an enabled Jev feature has invalid operator configuration.
     ///
     /// The layout-contract validation is non-fatal. An absent `.agent/layout.yml` (a legacy
     /// `specs/` cockpit or an unscaffolded repo) is skipped. A present-but-incomplete
@@ -72,6 +76,14 @@ impl ServerContext {
     /// valid contract (Requirement 1.12).
     pub fn resolve(repo_root: PathBuf) -> Result<Self, FeaturesError> {
         let features = features::resolve(&repo_root)?;
+        let jev_activation = if features.jev {
+            Some(
+                crate::engine::jev::client_http::JevActivation::resolve()
+                    .map_err(|source| FeaturesError::JevActivation { source })?,
+            )
+        } else {
+            None
+        };
         let token_caps = features::resolve_token_caps(&repo_root)?;
         let mutations = MutationCoordinator::for_repo(repo_root.clone());
         tracing::info!(
@@ -79,6 +91,7 @@ impl ServerContext {
             "resolved the worktree writer lease"
         );
         let mut ctx = Self::with_config(repo_root, features, token_caps);
+        ctx.jev_activation = jev_activation;
         ctx.mutations = mutations;
         ctx.validate_layout();
         Ok(ctx)
@@ -94,6 +107,7 @@ impl ServerContext {
             resource_cache: ResourceCache::new(),
             features,
             token_caps,
+            jev_activation: None,
             layout: LayoutCache::new(),
         }
     }
