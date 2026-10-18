@@ -337,6 +337,11 @@ The failed v2 pilot remains unaccepted evidence for the prior question.
 Keyless request and compiler checks do not establish improved model accuracy.
 Review the new rigor-source digest before a separately authorized pilot.
 
+The clarified pilot also missed the unchanged import boundary.
+The [provider reproduction package](guard-pilot/provider-reproduction-v1/README.md)
+contains reconstructed requests, sanitized reports, and offline compiler evidence for owner review.
+It is not a raw paid-response replay or a provider submission.
+
 ## Release acceptance
 
 Require approved thresholds, complete aspect coverage, the expected responder, known accounting, and passing independent provider results.

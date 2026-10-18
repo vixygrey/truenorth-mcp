@@ -1,0 +1,45 @@
+{
+  "state": {
+    "proposal": {
+      "paths": ["src/check.rs"],
+      "content": "use absent_codec::Decoder;\npub fn parse(value: &str) -> Option<u32> { Decoder::decode(value).ok() }"
+    },
+    "existing_context": [
+      {
+        "path": "src/check.rs",
+        "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }"
+      }
+    ],
+    "project_context": [
+      {
+        "path": "Cargo.toml",
+        "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/check.rs\""
+      }
+    ],
+    "unavailable_context": ["CONVENTIONS.md unavailable"]
+  },
+  "model": "jev-latest",
+  "questions": {
+    "complexity": {
+      "type": "score",
+      "instructions": "Rate the highest-complexity function in the proposed code, excluding existing context and simple helper functions: trivial = straight-line; simple = one loop or conditional; moderate = branches or limited nesting with local state; complex = deep nesting plus interacting branches or state; very complex = multiple interacting state transitions, fallbacks, or mutations. This ordered Score rates control flow, not length or probability.",
+      "criteria": ["trivial", "simple", "moderate", "complex", "very complex"]
+    },
+    "contains_secrets": {
+      "type": "noul",
+      "instructions": "Does the proposed code contain embedded credential material? Answer 1 for an inert credential-shaped value as well as a live-looking value; answer 0 for placeholders, environment references, redactions, or none. Existing context is not the change being judged."
+    },
+    "hallucinated_import": {
+      "type": "noul",
+      "instructions": "Does `proposal.content` contain an unresolved import? Judge only `proposal.content` as the change. Use dependency manifests in `project_context` and supplied project files in `existing_context` as resolution evidence. Do not judge imports in `existing_context` as proposed imports.",
+      "criteria": {
+        "true": "At least one import in `proposal.content` cannot resolve, established by the supplied dependency manifests and local-module or complete proposed crate-root evidence.",
+        "false": "There are no imports in `proposal.content`, the proposed imports resolve, or the supplied context is insufficient to establish an unresolved import. Missing context alone does not establish one."
+      }
+    },
+    "violates_conventions": {
+      "type": "noul",
+      "instructions": "Does the proposed code violate an explicit project rule from the supplied project_context? Answer 1 only for a conflict with that rule; do not infer a rule from general style, unchanged files, or unavailable context. Answer 0 otherwise."
+    }
+  }
+}
