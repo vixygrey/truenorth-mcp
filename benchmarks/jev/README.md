@@ -73,7 +73,24 @@ cargo run --locked --manifest-path runtime/Cargo.toml --features jev-http --bin 
 ```
 
 The last command defaults to the offline fake. Its unseeded evaluations and pending policy fail acceptance with a nonzero exit.
-Reports contain aggregate measurements under `.agent/telemetry/`, never fixture content or credentials.
+The guarded report at `.agent/telemetry/jev-benchmark.yml` uses schema version **2**. It retains aggregate
+measurements and adds `case_diagnostics` for attempted production rigor and drift evaluations only.
+Each entry contains a 1-based `case_index` (ordinal in the versioned fixture), `case_id_sha256`
+(SHA-256 of the raw fixture `case_id`), the controlled `aspect` (`rigor` or `drift`), and controlled
+signal names mapped to `expected`, normalized `score`, normalized `threshold`, and production
+`actual` classification. Rigor complexity's score and threshold are divided by 100; the
+classification still uses the original 0–100 boundary. Other scores and thresholds are already
+on the 0–1 scale. Both boundaries are inclusive; diagnostics do not change the scoring policy.
+Use the report's `provenance.fixture_sha256` to select the exact fixture version, then join an
+entry to its `cases[case_index - 1]`; verify its `case_id_sha256` by hashing that fixture case's
+raw ID. Neither the raw case ID nor fixture content belongs in the report.
+Partial/missing answers, failed evaluations, or malformed scores produce an empty `signals` map
+and the controlled `evaluation_failed` error, not partial scores or provider error text.
+An estimated-budget interruption produces no entry for evaluations it skipped; do not interpret
+an absent entry as a negative classification. Deferred routing/self-heal remain aggregate-only.
+Earlier schema-1 aggregate reports cannot be retroactively expanded into case diagnostics:
+collect new evidence only after separately authorizing any paid provider requests, subject to
+the existing spending cap. This diagnostic change requests no paid rerun or holdout run.
 Empty, unsupported, or incomplete fixture sets fail before provider calls.
 
 ## Protected credential store

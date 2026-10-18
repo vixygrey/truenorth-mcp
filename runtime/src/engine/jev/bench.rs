@@ -213,11 +213,29 @@ pub struct Provenance {
 }
 
 #[derive(Debug, Clone, Serialize)]
+pub struct SignalDiagnostic {
+    pub expected: bool,
+    pub score: f64,
+    pub threshold: f64,
+    pub actual: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CaseDiagnostic {
+    pub case_index: usize,
+    pub case_id_sha256: String,
+    pub aspect: &'static str,
+    pub signals: BTreeMap<&'static str, SignalDiagnostic>,
+    pub error: Option<&'static str>,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkReport {
     pub schema_version: u32,
     pub provenance: Provenance,
     pub client_kind: String,
     pub metrics: Vec<AspectMetrics>,
+    pub case_diagnostics: Vec<CaseDiagnostic>,
     /// HTTP sends include retries; absent for the offline fake.
     pub transport_attempts: Option<u64>,
     /// Maximum combined cost of every aspect labeled on one fixture (not a bill).
@@ -673,3 +691,7 @@ mod tests;
 #[cfg(test)]
 #[path = "bench_validation_tests.rs"]
 mod validation_tests;
+
+#[cfg(test)]
+#[path = "bench_case_diagnostics_tests.rs"]
+mod case_diagnostics_tests;

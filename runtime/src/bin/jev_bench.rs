@@ -164,7 +164,7 @@ mod imp {
         .map(|(k, v)| (k.to_string(), v))
         .collect();
         let mut report = bench::BenchmarkReport {
-            schema_version: 1,
+            schema_version: 2,
             provenance: bench::Provenance {
                 source_name: fixtures.source.name.clone(),
                 source_version: fixtures.source.version.clone(),
@@ -180,6 +180,7 @@ mod imp {
             },
             client_kind,
             metrics: measurements.metrics,
+            case_diagnostics: measurements.case_diagnostics,
             transport_attempts,
             maximum_fixture_cost: measurements.maximum_fixture_cost,
             run_estimated_budget_usd: estimated_budget_usd,

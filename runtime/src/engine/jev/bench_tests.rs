@@ -98,7 +98,7 @@ fn report(
         maximum_fixture_cost
     };
     BenchmarkReport {
-        schema_version: 1,
+        schema_version: 2,
         provenance: Provenance {
             source_name: fixtures.source.name.clone(),
             source_version: fixtures.source.version.clone(),
@@ -122,6 +122,7 @@ fn report(
         },
         client_kind: "http".into(),
         metrics,
+        case_diagnostics: Vec::new(),
         transport_attempts,
         maximum_fixture_cost,
         run_estimated_budget_usd: Some(1.0),
