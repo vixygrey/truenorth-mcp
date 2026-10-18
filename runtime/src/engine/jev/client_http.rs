@@ -140,8 +140,7 @@ pub enum StatusAction {
 ///
 /// - 200 returns [`StatusAction::Parse`].
 /// - 401 returns [`StatusAction::Terminal`] with [`JevError::Unauthorized`].
-/// - 422 returns [`StatusAction::Terminal`] with [`JevError::Validation`]. The field name
-///   comes from `validation_field`, or `"unknown"` when the caller extracted none.
+/// - 422 returns [`StatusAction::Terminal`] with a redacted [`JevError::Validation`].
 /// - 429 or 529 returns [`StatusAction::Retry`].
 /// - Any other status returns [`StatusAction::Terminal`] with [`JevError::UnexpectedStatus`].
 ///
@@ -152,17 +151,11 @@ pub enum StatusAction {
 /// and the benchmark bin (task 12). Under the default build only the property test
 /// references it, so it carries a narrow non-test `allow`, per the repo dead-code policy.
 #[cfg_attr(not(test), allow(dead_code))]
-pub fn map_status(
-    status: u16,
-    var: &'static str,
-    validation_field: Option<String>,
-) -> StatusAction {
+pub fn map_status(status: u16, var: &'static str) -> StatusAction {
     match status {
         200 => StatusAction::Parse,
         401 => StatusAction::Terminal(JevError::Unauthorized { var }),
-        422 => StatusAction::Terminal(JevError::Validation {
-            field: validation_field.unwrap_or_else(|| "unknown".to_string()),
-        }),
+        422 => StatusAction::Terminal(JevError::Validation),
         429 | 529 => StatusAction::Retry,
         other => StatusAction::Terminal(JevError::UnexpectedStatus { status: other }),
     }
@@ -173,9 +166,8 @@ pub fn map_status(
 // "jev-http"))]`.
 #[cfg(feature = "jev-http")]
 mod transport {
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::Duration;
-
-    use serde::Deserialize;
 
     use super::{JEV_API_KEY_VAR, JevActivation, StatusAction, map_status};
     use crate::engine::jev::config::JevConfig;
@@ -194,16 +186,11 @@ mod transport {
     /// environment on each call, so a rotated key takes effect with no rebuild. It never
     /// stores, writes, echoes, or logs the key (Requirement 9.5, 9.6).
     ///
-    /// The transport has no non-test caller until the benchmark bin lands (task 12), so it
-    /// carries a narrow non-test `allow` naming that consumer, per the repo dead-code
-    /// policy (main.rs). The feature-gated test build exercises the missing-key path, the
-    /// mapped statuses, and the retry loop.
-    #[cfg_attr(not(test), allow(dead_code))]
     pub struct HttpClient {
         /// The Jev endpoint URL the POST targets.
         endpoint: String,
-        /// The configured reqwest client, built with the call timeout.
-        http: reqwest::Client,
+        /// The configured client, absent if its secure construction failed.
+        http: Option<reqwest::Client>,
         /// The retry limit for a rate-limited or overloaded status.
         retry_limit: u32,
         /// The cap on each backoff sleep.
@@ -212,28 +199,16 @@ mod transport {
         timeout: Duration,
         /// The API-key environment variable name.
         api_key_var: &'static str,
+        /// Cumulative wire send attempts (not logical evaluations).
+        attempts: AtomicU64,
     }
 
-    /// The 422 error body shape, read best-effort to name the offending field.
-    ///
-    /// The endpoint can return a JSON body naming the invalid field. The transport reads
-    /// this shape best-effort; an absent or unparsable body leaves the field as `None`, so
-    /// the mapper substitutes `"unknown"`.
-    #[derive(Debug, Deserialize)]
-    struct ValidationBody {
-        /// The offending field name, when the body carries one.
-        field: Option<String>,
-    }
-
-    // The inherent methods below have no non-test caller until the benchmark bin lands
-    // (task 12). They carry a narrow non-test `allow`, per the repo dead-code policy.
-    #[cfg_attr(not(test), allow(dead_code))]
     impl HttpClient {
         /// Build a client from validated operator activation and the resolved configuration.
         ///
-        /// The reqwest client is built with the config timeout, so a slow call is cut at the
-        /// wall-clock bound. A client build failure falls back to the default client, so the
-        /// constructor never panics.
+        /// The reqwest client is built with the config timeout and no redirects.
+        /// Construction failure leaves the client unable to send rather than falling back
+        /// to insecure defaults.
         pub fn new(activation: JevActivation, config: &JevConfig) -> Self {
             Self::from_endpoint(activation.into_endpoint(), config)
         }
@@ -247,8 +222,9 @@ mod transport {
         fn from_endpoint(endpoint: String, config: &JevConfig) -> Self {
             let http = reqwest::Client::builder()
                 .timeout(config.timeout)
+                .redirect(reqwest::redirect::Policy::none())
                 .build()
-                .unwrap_or_default();
+                .ok();
             Self {
                 endpoint,
                 http,
@@ -256,36 +232,39 @@ mod transport {
                 max_backoff: config.max_backoff,
                 timeout: config.timeout,
                 api_key_var: JEV_API_KEY_VAR,
+                attempts: AtomicU64::new(0),
             }
+        }
+
+        /// Count every HTTP send, including retries and attempts without usage.
+        pub fn attempt_count(&self) -> u64 {
+            self.attempts.load(Ordering::Relaxed)
         }
 
         /// The configured timeout in milliseconds, for a [`JevError::Timeout`] message.
         fn timeout_ms(&self) -> u64 {
             u64::try_from(self.timeout.as_millis()).unwrap_or(u64::MAX)
         }
-
-        /// The backoff for retry attempt `attempt`, capped at [`HttpClient::max_backoff`].
-        ///
-        /// The backoff doubles from [`BASE_BACKOFF`] on each attempt. The cap holds the sleep
-        /// at the configured maximum, so a high retry count does not sleep without bound.
-        fn backoff_for(&self, attempt: u32) -> Duration {
+        /// Bound the retry delay by the operator-configured maximum.
+        fn backoff_for(&self, attempt: u32, retry_after: Option<Duration>) -> Duration {
             let factor = 2u32.saturating_pow(attempt);
             let scaled = BASE_BACKOFF.checked_mul(factor).unwrap_or(self.max_backoff);
-            scaled.min(self.max_backoff)
+            retry_after
+                .map_or(scaled, |delay| delay.max(scaled))
+                .min(self.max_backoff)
         }
 
-        /// Send one request and return the raw status and body text.
-        ///
-        /// A send error that is a timeout maps to [`JevError::Timeout`]. Any other send error
-        /// maps to [`JevError::Network`]. The `key` is never placed in an error detail, so no
-        /// message leaks it (Requirement 9.6).
+        /// Send one request, retaining only its status, bounded retry hint and body.
         async fn send_once(
             &self,
             key: &str,
             request: &JevRequest,
-        ) -> Result<(u16, String), JevError> {
-            let response = self
-                .http
+        ) -> Result<(u16, Option<Duration>, String), JevError> {
+            let http = self.http.as_ref().ok_or_else(|| JevError::Network {
+                detail: "transport unavailable (details redacted)".to_string(),
+            })?;
+            self.attempts.fetch_add(1, Ordering::Relaxed);
+            let response = http
                 .post(&self.endpoint)
                 .bearer_auth(key)
                 .json(request)
@@ -294,11 +273,21 @@ mod transport {
                 .map_err(|error| self.map_send_error(error))?;
 
             let status = response.status().as_u16();
-            let body = response
-                .text()
-                .await
-                .map_err(|error| self.map_send_error(error))?;
-            Ok((status, body))
+            let retry_after = response
+                .headers()
+                .get(reqwest::header::RETRY_AFTER)
+                .and_then(|value| value.to_str().ok())
+                .and_then(|value| value.parse::<u64>().ok())
+                .map(Duration::from_secs);
+            let body = if status == 200 {
+                response
+                    .text()
+                    .await
+                    .map_err(|error| self.map_send_error(error))?
+            } else {
+                String::new()
+            };
+            Ok((status, retry_after, body))
         }
 
         /// Map a reqwest send error to a typed [`JevError`], never leaking the key.
@@ -308,25 +297,17 @@ mod transport {
                     timeout_ms: self.timeout_ms(),
                 };
             }
-            // reqwest's Display can name the URL, but never the bearer token, so the detail
-            // carries no secret (Requirement 9.6).
+            // reqwest errors can include the URL, including its path or credentials.
             JevError::Network {
-                detail: error.to_string(),
+                detail: "transport failure (details redacted)".to_string(),
             }
         }
 
-        /// Parse a 200 body into a [`JevResponse`], mapping a deser error to [`JevError::Network`].
+        /// Never include the provider's response bytes or field names in diagnostics.
         fn parse_body(body: &str) -> Result<JevResponse, JevError> {
-            serde_json::from_str::<JevResponse>(body).map_err(|error| JevError::Network {
-                detail: format!("could not parse the Jev response body: {error}"),
+            serde_json::from_str::<JevResponse>(body).map_err(|_| JevError::Network {
+                detail: "invalid Jev response (details redacted)".to_string(),
             })
-        }
-
-        /// Extract the offending field name from a 422 body, best-effort.
-        fn field_from_body(body: &str) -> Option<String> {
-            serde_json::from_str::<ValidationBody>(body)
-                .ok()
-                .and_then(|parsed| parsed.field)
         }
     }
 
@@ -343,43 +324,38 @@ mod transport {
                 }
             };
 
-            let mut last_status = STATUS_RATE_LIMITED;
-            // One initial attempt plus `retry_limit` retries.
-            for attempt in 0..=self.retry_limit {
-                let (status, body) = self.send_once(&key, &request).await?;
-                let field = if status == 422 {
-                    Self::field_from_body(&body)
-                } else {
-                    None
-                };
-                match map_status(status, self.api_key_var, field) {
-                    StatusAction::Parse => return Self::parse_body(&body),
-                    StatusAction::Terminal(error) => return Err(error),
-                    StatusAction::Retry => {
-                        last_status = status;
-                        if attempt < self.retry_limit {
-                            let sleep = self.backoff_for(attempt);
-                            tokio::time::sleep(sleep).await;
+            let call = async {
+                let mut last_status = STATUS_RATE_LIMITED;
+                // One initial attempt plus `retry_limit` retries.
+                for attempt in 0..=self.retry_limit {
+                    let (status, retry_after, body) = self.send_once(&key, &request).await?;
+                    match map_status(status, self.api_key_var) {
+                        StatusAction::Parse => return Self::parse_body(&body),
+                        StatusAction::Terminal(error) => return Err(error),
+                        StatusAction::Retry => {
+                            last_status = status;
+                            if attempt < self.retry_limit {
+                                tokio::time::sleep(self.backoff_for(attempt, retry_after)).await;
+                            }
                         }
                     }
                 }
-            }
-
-            // Every attempt returned a retriable status (Requirement 10.5).
-            Err(JevError::RateLimitedOrOverloaded {
-                last_status,
-                attempts: self.retry_limit + 1,
-            })
+                Err(JevError::RateLimitedOrOverloaded {
+                    last_status,
+                    attempts: self.retry_limit.saturating_add(1),
+                })
+            };
+            tokio::time::timeout(self.timeout, call)
+                .await
+                .unwrap_or(Err(JevError::Timeout {
+                    timeout_ms: self.timeout_ms(),
+                }))
         }
     }
 }
 
 // Re-export the transport at the module root, so a caller uses `client_http::HttpClient`.
-// The first non-test caller is the benchmark bin (task 12); under the feature build with no
-// bench, only the feature-gated tests reference it, so the re-export carries a narrow
-// non-test `allow`, per the repo dead-code policy (main.rs).
 #[cfg(feature = "jev-http")]
-#[cfg_attr(not(test), allow(unused_imports))]
 pub use transport::HttpClient;
 
 // The Property 32 test is always compiled and runs offline, because the mapper is always

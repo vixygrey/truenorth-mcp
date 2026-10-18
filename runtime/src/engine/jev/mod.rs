@@ -39,6 +39,8 @@ pub mod config;
 pub mod drift;
 pub mod guard;
 pub mod guard_cli;
+#[cfg(feature = "jev-http")]
+pub mod provider_smoke;
 pub mod pruning;
 pub mod rigor;
 pub mod routing;
@@ -404,12 +406,9 @@ pub enum JevError {
         var: &'static str,
     },
 
-    /// The endpoint returned 422 and named a field (Requirement 10.2).
-    #[error("the Jev endpoint rejected the request (422): the field `{field}` is invalid.")]
-    Validation {
-        /// The offending field the response body named.
-        field: String,
-    },
+    /// The endpoint rejected the request. The provider's field name is never retained.
+    #[error("the Jev endpoint rejected the request (422). Provider details redacted.")]
+    Validation,
 
     /// The retry limit was reached for 429 or 529 (Requirement 10.5).
     #[error(

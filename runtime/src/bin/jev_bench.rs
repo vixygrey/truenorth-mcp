@@ -1,18 +1,15 @@
 //! The Jev benchmark bin (`jev-bench`).
 //!
-//! This bin runs the Jev evaluation benchmark and writes the report under
-//! `.agent/telemetry/`. It builds only under the `jev-http` feature (see the `[[bin]]`
-//! `required-features` entry in `Cargo.toml`), so `cargo test` on the default build neither
-//! compiles nor runs it (R11.10). It reuses the `truenorth_mcp` library crate to reach the
-//! benchmark runner in `engine::jev::bench`.
-//!
-//! The bin selects the client from the `JEV_BENCH_CLIENT` environment variable: `fake`
-//! (the default) drives the named fake and makes no network call (R11.2, R11.7); `http`
-//! drives the real HTTP client, which reads the API key at call time. It reads the fixture
-//! path from `JEV_BENCH_FIXTURES`, or a default under the repository root. It resolves the
-//! `JevConfig` from `.agent/config/rules.yml`.
-//!
-//! Requirements: 11.2, 11.7, 11.10. Design: jev-integration-eval, the benchmark bin.
+//! Runs anonymized versioned rigor/drift cases using the production state builders and
+//! evaluator contracts. The default fake client makes no network request and cannot pass
+//! production acceptance. An explicit `JEV_BENCH_CLIENT=http` requires a positive reviewed
+//! `JEV_BENCH_MAX_ESTIMATED_USD` and `JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED=true`;
+//! pending policies also require `JEV_BENCH_CALIBRATE=1` and always fail acceptance.
+//! The estimate stops further calls after known usage reaches the limit; only the
+//! provider-side cap bounds billing, including failed calls and hidden transport retries.
+//! Inputs default to `benchmarks/jev/fixtures-v1.yml` and `policy-v1.yml` under the repo
+//! root; override with `JEV_BENCH_FIXTURES` and `JEV_BENCH_POLICY`. Only aggregate reports
+//! are written through the guarded `.agent/telemetry/` writer.
 
 // The whole body is guarded on the feature. The `required-features` entry already limits the
 // bin to the feature build, and this guard makes the intent explicit at the file level.
@@ -48,58 +45,157 @@ mod imp {
     use truenorth_mcp::engine::jev::guard::ProposedChange;
     use truenorth_mcp::engine::jev::guard::evaluate::evaluate_guard;
     use truenorth_mcp::engine::jev::guard_cli::{block_message, exit_code_for};
-
-    /// The environment variable that selects the client: `fake` or `http`.
+    /// Offline fake remains the default; an HTTP run requires an explicit operator choice.
     const CLIENT_VAR: &str = "JEV_BENCH_CLIENT";
-    /// The environment variable that holds the fixture-set path.
     const FIXTURES_VAR: &str = "JEV_BENCH_FIXTURES";
-    /// The default fixture path under the repository root, when `JEV_BENCH_FIXTURES` is unset.
-    const DEFAULT_FIXTURES: &str = ".agent/telemetry/jev-fixtures.yml";
+    const POLICY_VAR: &str = "JEV_BENCH_POLICY";
+    const DEFAULT_FIXTURES: &str = "benchmarks/jev/fixtures-v1.yml";
+    const DEFAULT_POLICY: &str = "benchmarks/jev/policy-v1.yml";
 
-    /// Dispatch on the first argument: `guard` runs the guardrail on stdin, else the benchmark.
-    ///
-    /// The `guard` subcommand reads a proposed change on standard input and runs the guardrail,
-    /// exiting non-zero on a block and zero on an allow (ADR-G4, R7.2, R7.3). Any other first
-    /// argument, or none, runs the benchmark.
     pub fn run() -> ExitCode {
         match std::env::args().nth(1).as_deref() {
             Some("guard") => run_guard(),
-            _ => run_bench(),
+            None | Some("bench") => run_bench(),
+            _ => fail("unknown subcommand. Use `bench` or `guard`."),
         }
     }
 
-    /// Run the benchmark and write the report, returning the process exit code.
-    ///
-    /// The steps run in order: resolve the repository root, resolve the config, load the
-    /// fixtures, run the chosen client over the fixtures, write the report, and print the
-    /// report path. Any step failure prints the named cause to stderr and exits non-zero.
+    /// Validate all versioned inputs before any network call. Invalid input leaves prior
+    /// aggregate reports untouched. Acceptance failure writes the rejected report first.
     fn run_bench() -> ExitCode {
         let repo_root = match get_repo_root() {
             Ok(root) => root,
             Err(error) => return fail(&format!("could not resolve the repository root: {error}")),
         };
-
         let config = match resolve(&repo_root) {
             Ok(config) => config,
             Err(error) => return fail(&format!("could not resolve the Jev config: {error}")),
         };
-
-        let fixtures_path = fixtures_path(&repo_root);
-        let fixtures = match bench::load_fixtures(&fixtures_path) {
-            Ok(fixtures) => fixtures,
-            Err(error) => return fail(&error.to_string()),
-        };
-
-        let client_kind = std::env::var(CLIENT_VAR).unwrap_or_else(|_| "fake".to_string());
-        let metrics = match run_client(&client_kind, &fixtures, &config) {
-            Ok(metrics) => metrics,
+        let fixtures_path = match input_path(&repo_root, FIXTURES_VAR, DEFAULT_FIXTURES) {
+            Ok(path) => path,
             Err(message) => return fail(&message),
         };
-
-        match bench::write_report(&repo_root, &metrics) {
+        let policy_path = match input_path(&repo_root, POLICY_VAR, DEFAULT_POLICY) {
+            Ok(path) => path,
+            Err(message) => return fail(&message),
+        };
+        let (fixtures, fixture_sha256) = match bench::load_fixtures(&fixtures_path) {
+            Ok(value) => value,
+            Err(error) => return fail(&error.to_string()),
+        };
+        if let Err(error) = bench::verify_source(&fixtures_path, &fixtures.source) {
+            return fail(&error.to_string());
+        }
+        let (policy, policy_sha256) = match bench::load_policy(&policy_path) {
+            Ok(value) => value,
+            Err(error) => return fail(&error.to_string()),
+        };
+        if let Err(error) = bench::validate_coverage(&fixtures, &policy, &fixtures_path) {
+            return fail(&error.to_string());
+        }
+        let client_kind = std::env::var(CLIENT_VAR).unwrap_or_else(|_| "fake".into());
+        // Calibration is explicitly operator-authorized and cannot pass production
+        // acceptance while approval remains pending.
+        if client_kind == "http"
+            && policy.approval != "approved"
+            && std::env::var("JEV_BENCH_CALIBRATE").as_deref() != Ok("1")
+        {
+            return fail(
+                "HTTP calibration under a pending policy requires JEV_BENCH_CALIBRATE=1; no call was made",
+            );
+        }
+        let estimated_budget_usd = if client_kind == "http" {
+            let budget = match std::env::var("JEV_BENCH_MAX_ESTIMATED_USD")
+                .ok()
+                .and_then(|value| value.parse::<f64>().ok())
+                .filter(|value| value.is_finite() && *value > 0.0)
+            {
+                Some(value) => value,
+                None => {
+                    return fail(
+                        "HTTP benchmark requires a positive reviewed JEV_BENCH_MAX_ESTIMATED_USD; no call was made",
+                    );
+                }
+            };
+            if std::env::var("JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED").as_deref() != Ok("true") {
+                return fail(
+                    "HTTP benchmark requires JEV_BENCH_PROVIDER_SPEND_CAP_CONFIRMED=true; no call was made",
+                );
+            }
+            Some(
+                policy
+                    .limits
+                    .as_ref()
+                    .map_or(budget, |limits| budget.min(limits.maximum_total_cost)),
+            )
+        } else {
+            None
+        };
+        let (measurements, transport_attempts) = match run_client(
+            &client_kind,
+            &fixtures,
+            &config,
+            &policy.pricing,
+            estimated_budget_usd,
+        ) {
+            Ok(value) => value,
+            Err(message) => return fail(&message),
+        };
+        let scoring = [
+            ("rigor_failure_boundary", config.rigor_failure_boundary),
+            ("complexity_boundary", config.complexity_boundary),
+            ("drift_boundary", config.drift_boundary),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect();
+        let transport = [
+            ("retry_limit", u64::from(config.retry_limit)),
+            (
+                "max_backoff_ms",
+                u64::try_from(config.max_backoff.as_millis()).unwrap_or(u64::MAX),
+            ),
+            (
+                "timeout_ms",
+                u64::try_from(config.timeout.as_millis()).unwrap_or(u64::MAX),
+            ),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect();
+        let mut report = bench::BenchmarkReport {
+            schema_version: 1,
+            provenance: bench::Provenance {
+                source_name: fixtures.source.name.clone(),
+                source_version: fixtures.source.version.clone(),
+                source_sha256: fixtures.source.sha256.clone(),
+                fixture_sha256,
+                policy_sha256,
+                requested_model: policy.requested_model.clone(),
+                concrete_model: policy.concrete_model.clone(),
+                observed_models: measurements.models,
+                pricing: policy.pricing.clone(),
+                scoring,
+                transport,
+            },
+            client_kind,
+            metrics: measurements.metrics,
+            transport_attempts,
+            maximum_fixture_cost: measurements.maximum_fixture_cost,
+            run_estimated_budget_usd: estimated_budget_usd,
+            budget_interrupted: measurements.budget_interrupted,
+            accepted: false,
+            failures: Vec::new(),
+        };
+        bench::evaluate_acceptance(&mut report, &policy);
+        match bench::write_report(&repo_root, &report) {
             Ok(rel_path) => {
                 println!("{rel_path}");
-                ExitCode::SUCCESS
+                if report.accepted {
+                    ExitCode::SUCCESS
+                } else {
+                    fail("production acceptance failed; see aggregate report")
+                }
             }
             Err(error) => fail(&error.to_string()),
         }
@@ -172,35 +268,74 @@ mod imp {
         ExitCode::from(exit_code_for(&decision))
     }
 
-    /// The fixture path from `JEV_BENCH_FIXTURES`, or the default under the repository root.
-    fn fixtures_path(repo_root: &std::path::Path) -> PathBuf {
-        match std::env::var(FIXTURES_VAR) {
-            Ok(path) => PathBuf::from(path),
-            Err(_) => repo_root.join(DEFAULT_FIXTURES),
+    fn input_path(
+        repo_root: &std::path::Path,
+        variable: &str,
+        default: &str,
+    ) -> Result<PathBuf, String> {
+        let selected = std::env::var(variable).unwrap_or_else(|_| default.into());
+        let path = PathBuf::from(selected);
+        let path = if path.is_absolute() {
+            path
+        } else {
+            repo_root.join(path)
+        };
+        let base = repo_root.join("benchmarks/jev");
+        if path.parent() != Some(base.as_path())
+            || path
+                .components()
+                .any(|part| matches!(part, std::path::Component::ParentDir))
+        {
+            return Err(format!(
+                "{variable} must name an input directly under benchmarks/jev/"
+            ));
         }
+        // Inputs stay in the versioned benchmark directory, outside telemetry. Refuse
+        // symlinks at each boundary rather than following a redirected manifest.
+        for part in [repo_root.join("benchmarks"), base.clone(), path.clone()] {
+            if std::fs::symlink_metadata(part).is_ok_and(|m| m.file_type().is_symlink()) {
+                return Err(format!("{variable} must not traverse a symlink"));
+            }
+        }
+        if !path.is_file() {
+            return Err(format!(
+                "{variable} must name an existing regular file under benchmarks/jev/"
+            ));
+        }
+        Ok(path)
     }
 
-    /// The `fake` client makes no network call (R11.2, R11.7). The `http` client uses the
-    /// validated `TRUENORTH_JEV_ENDPOINT` and reads the API key at call time. An unknown client
-    /// name is an error, so a typo does not silently fall back.
     fn run_client(
         kind: &str,
-        fixtures: &[bench::Fixture],
+        fixtures: &bench::FixtureSet,
         config: &truenorth_mcp::engine::jev::config::JevConfig,
-    ) -> Result<Vec<bench::AspectMetrics>, String> {
+        pricing: &bench::Pricing,
+        estimated_budget_usd: Option<f64>,
+    ) -> Result<(bench::BenchmarkMeasurements, Option<u64>), String> {
         let runtime = tokio::runtime::Runtime::new()
             .map_err(|error| format!("could not start the async runtime: {error}"))?;
-
         match kind {
             "fake" => {
                 let client = FakeClient::new();
-                Ok(runtime.block_on(bench::run_benchmark(&client, fixtures, config)))
+                let measurements = runtime
+                    .block_on(bench::run_benchmark(&client, fixtures, config, pricing))
+                    .map_err(|_| "could not build anonymized production state".to_string())?;
+                Ok((measurements, None))
             }
             "http" => {
                 let activation = JevActivation::resolve()
                     .map_err(|error| format!("could not resolve the Jev activation: {error}"))?;
                 let client = HttpClient::new(activation, config);
-                Ok(runtime.block_on(bench::run_benchmark(&client, fixtures, config)))
+                let measurements = runtime
+                    .block_on(bench::run_benchmark_with_budget(
+                        &client,
+                        fixtures,
+                        config,
+                        pricing,
+                        estimated_budget_usd,
+                    ))
+                    .map_err(|_| "could not build anonymized production state".to_string())?;
+                Ok((measurements, Some(client.attempt_count())))
             }
             other => Err(format!(
                 "unknown `{CLIENT_VAR}` value `{other}`. Use `fake` or `http`."
