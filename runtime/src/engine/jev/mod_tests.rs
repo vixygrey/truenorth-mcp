@@ -234,9 +234,7 @@ fn every_jev_error_variant_renders_a_nonempty_message() {
         JevError::Unauthorized {
             var: "TRUENORTH_JEV_API_KEY",
         },
-        JevError::Validation {
-            field: "questions".to_string(),
-        },
+        JevError::Validation,
         JevError::RateLimitedOrOverloaded {
             last_status: 529,
             attempts: 3,

@@ -142,14 +142,14 @@ async fn a_401_maps_to_unauthorized() {
 }
 
 #[tokio::test]
-async fn a_422_maps_to_validation_with_the_body_field() {
+async fn a_422_maps_to_validation_without_provider_field() {
     let _guard = ENV_LOCK.lock().await;
     unsafe {
         std::env::set_var(JEV_API_KEY_VAR, "test-key");
     }
     let port = spawn_stub(vec![Canned {
         status: 422,
-        body: r#"{"field":"questions"}"#,
+        body: r#"{"field":"https://secret.example?key=do-not-print"}"#,
     }])
     .await;
     let client =
@@ -159,9 +159,37 @@ async fn a_422_maps_to_validation_with_the_body_field() {
         std::env::remove_var(JEV_API_KEY_VAR);
     }
     match result {
-        Err(JevError::Validation { field }) => assert_eq!(field, "questions"),
+        Err(JevError::Validation) => {}
         other => panic!("expected Validation, got {other:?}"),
     }
+}
+
+#[tokio::test]
+async fn invalid_response_and_network_error_redact_provider_details() {
+    let _guard = ENV_LOCK.lock().await;
+    unsafe { std::env::set_var(JEV_API_KEY_VAR, "fake-test-key-only") };
+    let port = spawn_stub(vec![Canned {
+        status: 200,
+        body: r#"{"model":"private-provider-field","answers":{"secret":"key"},"usage":{}}"#,
+    }])
+    .await;
+    let client =
+        super::HttpClient::new_for_test(format!("http://127.0.0.1:{port}/jev"), &fast_config());
+    let result = client
+        .evaluate(a_request())
+        .await
+        .expect_err("invalid response");
+    let detail = result.to_string();
+    assert!(!detail.contains("private-provider-field"));
+    assert!(!detail.contains("secret"));
+    let client = super::HttpClient::new_for_test(
+        "http://127.0.0.1:1/private?key=do-not-print",
+        &fast_config(),
+    );
+    let error = client.evaluate(a_request()).await.expect_err("closed port");
+    unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
+    assert!(!error.to_string().contains("do-not-print"));
+    assert!(!error.to_string().contains("/private"));
 }
 
 #[tokio::test]
@@ -192,6 +220,7 @@ async fn a_429_then_200_retries_and_parses() {
     let response = result.expect("a 429-then-200 sequence must parse the 200 body");
     assert_eq!(response.model, "jev-latest");
     assert!(response.answers.is_empty());
+    assert_eq!(client.attempt_count(), 2);
 }
 
 #[tokio::test]
@@ -233,24 +262,89 @@ async fn exhausted_retries_return_rate_limited_or_overloaded() {
         }
         other => panic!("expected RateLimitedOrOverloaded, got {other:?}"),
     }
+    assert_eq!(client.attempt_count(), 3);
+}
+
+#[tokio::test]
+async fn retry_after_is_bounded_and_entire_call_has_a_timeout() {
+    let _guard = ENV_LOCK.lock().await;
+    unsafe { std::env::set_var(JEV_API_KEY_VAR, "fake-test-key-only") };
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind loopback");
+    let endpoint = format!("http://{}/jev", listener.local_addr().expect("address"));
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.expect("first request");
+        let mut buf = [0u8; 1024];
+        assert_ne!(socket.read(&mut buf).await.expect("read request"), 0);
+        socket
+            .write_all(b"HTTP/1.1 429 STATUS\r\nRetry-After: 99999\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+            .await
+            .expect("write retry");
+        let (mut socket, _) = listener.accept().await.expect("retry request");
+        assert_ne!(socket.read(&mut buf).await.expect("read retry"), 0);
+        socket
+            .write_all(
+                format!(
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{OK_BODY}",
+                    OK_BODY.len()
+                )
+                .as_bytes(),
+            )
+            .await
+            .expect("write success");
+    });
+    let mut config = fast_config();
+    config.retry_limit = 1;
+    config.max_backoff = Duration::from_millis(10);
+    config.timeout = Duration::from_millis(200);
+    let result = super::HttpClient::new_for_test(endpoint, &config)
+        .evaluate(a_request())
+        .await;
+    unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
+    assert_eq!(
+        result.expect("Retry-After capped at 10ms").model,
+        "jev-latest"
+    );
+    server.await.expect("server");
+}
+
+#[tokio::test]
+async fn timeout_covers_retry_backoff() {
+    let _guard = ENV_LOCK.lock().await;
+    unsafe { std::env::set_var(JEV_API_KEY_VAR, "fake-test-key-only") };
+    let port = spawn_stub(vec![Canned {
+        status: 429,
+        body: "{}",
+    }])
+    .await;
+    let mut config = fast_config();
+    config.retry_limit = 1;
+    config.max_backoff = Duration::from_millis(500);
+    config.timeout = Duration::from_millis(10);
+    let result = super::HttpClient::new_for_test(format!("http://127.0.0.1:{port}/jev"), &config)
+        .evaluate(a_request())
+        .await;
+    unsafe { std::env::remove_var(JEV_API_KEY_VAR) };
+    assert!(matches!(result, Err(JevError::Timeout { .. })));
 }
 
 #[test]
 fn map_status_covers_the_mapped_set_under_the_feature() {
     // The mapped statuses under the feature build match the offline property test.
-    assert_eq!(map_status(200, JEV_API_KEY_VAR, None), StatusAction::Parse);
+    assert_eq!(map_status(200, JEV_API_KEY_VAR), StatusAction::Parse);
     assert!(matches!(
-        map_status(401, JEV_API_KEY_VAR, None),
+        map_status(401, JEV_API_KEY_VAR),
         StatusAction::Terminal(JevError::Unauthorized { .. })
     ));
     assert!(matches!(
-        map_status(422, JEV_API_KEY_VAR, None),
-        StatusAction::Terminal(JevError::Validation { .. })
+        map_status(422, JEV_API_KEY_VAR),
+        StatusAction::Terminal(JevError::Validation)
     ));
-    assert_eq!(map_status(429, JEV_API_KEY_VAR, None), StatusAction::Retry);
-    assert_eq!(map_status(529, JEV_API_KEY_VAR, None), StatusAction::Retry);
+    assert_eq!(map_status(429, JEV_API_KEY_VAR), StatusAction::Retry);
+    assert_eq!(map_status(529, JEV_API_KEY_VAR), StatusAction::Retry);
     assert!(matches!(
-        map_status(503, JEV_API_KEY_VAR, None),
+        map_status(503, JEV_API_KEY_VAR),
         StatusAction::Terminal(JevError::UnexpectedStatus { .. })
     ));
 }

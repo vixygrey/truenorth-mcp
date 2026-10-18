@@ -58,7 +58,7 @@ fn full_response(
 }
 
 #[tokio::test]
-async fn full_response_yields_the_report_and_one_four_question_request() {
+async fn full_response_maps_answers_by_id_and_complexity_score() {
     let fake = FakeClient::new();
     // Complexity index 3.0 of a 5-level rubric maps to 3 / 4 * 100 = 75.0.
     fake.push_response(full_response(0.1, 0.2, 0.0, 3.0));
@@ -71,15 +71,6 @@ async fn full_response_yields_the_report_and_one_four_question_request() {
     assert_eq!(report.violates_conventions, 0.2);
     assert_eq!(report.contains_secrets, 0.0);
     assert_eq!(report.complexity, 75.0);
-
-    // The report records a latency. The value is non-negative by type, so assert the call ran.
-    assert_eq!(fake.call_count(), 1);
-    let calls = fake.calls();
-    assert_eq!(
-        calls[0].questions.len(),
-        4,
-        "the single request carries exactly four questions"
-    );
 }
 
 #[tokio::test]

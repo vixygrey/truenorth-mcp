@@ -27,6 +27,12 @@ Jev evaluates changes as an advisory layer. A network, authentication, parsing, 
 overload failure returns an annotation and never bypasses deterministic protected-path or secret
 blocks.
 
+Jev release validation uses versioned fixtures and an explicit acceptance policy.
+The checked-in policy remains pending and cannot pass production acceptance.
+Provider credentials belong in the protected `jev-provider-validation` GitHub Environment.
+See the [validation operator guide](../benchmarks/jev/README.md) for secret loading, spending controls, and manual execution.
+Build support on `main` does not establish compatibility for an older published artifact.
+
 A rename, removal, incompatible field-type change, altered required field, changed
 success or error semantics, or removed resource URI is a breaking change. Breaking
 changes require a new major version, release notes, a replacement when one exists,

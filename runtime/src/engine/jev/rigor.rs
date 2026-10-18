@@ -169,31 +169,40 @@ pub async fn evaluate_rigor<C: JevClient>(
     questions.insert(
         HALLUCINATED_IMPORT_ID.to_string(),
         Question::noul(
-            "Decide whether the code imports a module that does not exist. Answer 1 when an \
-             import is hallucinated and 0 when every import is real.",
+            "Does an import fail to resolve against the project files or dependency declarations \
+             explicitly supplied in this state? Answer 1 only when that context establishes an \
+             unresolved import; missing project or dependency context is not proof that an \
+             import is invented. Answer 0 otherwise.",
             None,
         ),
     );
     questions.insert(
         VIOLATES_CONVENTIONS_ID.to_string(),
         Question::noul(
-            "Decide whether the code violates the project conventions. Answer 1 when it \
-             violates a convention and 0 when it obeys them.",
+            "Does the code violate an explicitly supplied project rule or convention in this \
+             state? Answer 1 only for a conflict with such a rule; do not treat general style \
+             preferences or missing project rules as violations. Answer 0 otherwise.",
             None,
         ),
     );
     questions.insert(
         CONTAINS_SECRETS_ID.to_string(),
         Question::noul(
-            "Decide whether the code contains a secret value. Answer 1 when a secret is \
-             present and 0 when none is present.",
+            "Does the supplied code contain embedded credential material? Answer 1 for a \
+             credential value, including inert credential-shaped test data. Answer 0 for obvious \
+             placeholders, environment-variable lookups, redactions, or no credential material. \
+             Judge only the supplied state, not content removed before this request.",
             None,
         ),
     );
     questions.insert(
         COMPLEXITY_ID.to_string(),
         Question::score(
-            "Rate the complexity of the code across the ordered levels.",
+            "Rate the supplied code's control-flow and state complexity: trivial = straight-line; \
+             simple = one loop or conditional; moderate = branches or limited nesting with local \
+             state; complex = deep nesting plus interacting branches or state; very complex = \
+             multiple interacting state transitions, fallbacks, or mutations. Use the ordered \
+             levels, not code length or general style.",
             COMPLEXITY_LEVELS
                 .iter()
                 .map(|s| serde_json::Value::from(*s))

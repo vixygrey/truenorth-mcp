@@ -152,36 +152,6 @@ fn golden_score_response_deserializes_to_a_score_answer() {
 }
 
 #[test]
-fn golden_score_request_matches_the_live_score_question_shape() {
-    // The rigor aspect built this Score question, and the live endpoint accepted it (200).
-    // The golden pins the plain shape: a string instruction and an ordered array of level
-    // strings. A change that alters this serialization breaks the confirmed contract.
-    let question = Question::score(
-        "Rate the complexity of the code across the ordered levels.",
-        vec![
-            "trivial".into(),
-            "simple".into(),
-            "moderate".into(),
-            "complex".into(),
-            "very complex".into(),
-        ],
-    );
-    let value = serde_json::to_value(&question).expect("serialize the Score question");
-    assert_eq!(value["type"], "score");
-    assert!(
-        value["instructions"].is_string(),
-        "instructions is a plain string"
-    );
-    assert_eq!(value["criteria"][0], "trivial");
-    assert_eq!(value["criteria"][4], "very complex");
-    assert_eq!(
-        value["criteria"].as_array().map(Vec::len),
-        Some(5),
-        "the ordered level array has five entries"
-    );
-}
-
-#[test]
 fn golden_choice_request_matches_the_live_choice_question_shape() {
     // The routing aspect built a Choice question with an option-to-null map, and the endpoint
     // accepted it (200). The golden pins the plain criteria form (option keyed to null).

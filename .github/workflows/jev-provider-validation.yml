@@ -1,0 +1,78 @@
+name: Jev provider validation
+
+# Paid compatibility checks are never run by PR, push, schedule, or reusable workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      max_estimated_usd:
+        description: "Reviewed ceiling for estimated successful-response cost in USD (provider-side spending cap separately required)"
+        required: true
+        type: string
+      provider_spend_cap_confirmed:
+        description: "Confirm the separately reviewed provider-side spending cap is configured; the per-run estimated ceiling is set above"
+        required: true
+        default: false
+        type: boolean
+      provider_control_modes_approved:
+        description: "Confirm provider-supported timeout/retry control paths and credential scope have been reviewed; otherwise leave false"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jev-provider-validation
+  cancel-in-progress: false
+
+jobs:
+  provider-validation:
+    if: github.repository == 'vixygrey/truenorth-mcp' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: jev-provider-validation
+    steps:
+      - name: Check out the dispatched immutable SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Verify source is precisely the dispatched main SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_REF" = 'refs/heads/main'
+
+      - name: Install pinned Rust
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.88.0"
+
+      - name: Run keyless deterministic regression checks
+        run: cargo test --locked --manifest-path runtime/Cargo.toml --features jev-http
+
+      - name: Build secret-free provider validation binary
+        run: cargo build --locked --release --manifest-path runtime/Cargo.toml --features jev-http --bin jev-provider-smoke
+
+      # Environment secrets exist only in this step's process. No cargo invocation, CLI argument,
+      # trace, command echo, or uploaded raw provider response ever contains a credential.
+      - name: Probe protected provider contract
+        env:
+          TRUENORTH_JEV_ENDPOINT: ${{ secrets.TRUENORTH_JEV_ENDPOINT }}
+          TRUENORTH_JEV_API_KEY: ${{ secrets.TRUENORTH_JEV_API_KEY }}
+          TRUENORTH_JEV_TIMEOUT_ENDPOINT: ${{ secrets.TRUENORTH_JEV_TIMEOUT_ENDPOINT }}
+          TRUENORTH_JEV_RETRY_ENDPOINT: ${{ secrets.TRUENORTH_JEV_RETRY_ENDPOINT }}
+          JEV_SMOKE_CONTROL_APPROVED: ${{ inputs.provider_control_modes_approved }}
+          JEV_SMOKE_MAX_ESTIMATED_USD: ${{ inputs.max_estimated_usd }}
+          JEV_SMOKE_PROVIDER_SPEND_CAP_CONFIRMED: ${{ inputs.provider_spend_cap_confirmed }}
+        run: ./runtime/target/release/jev-provider-smoke
+
+      - name: Upload only sanitized aggregate evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jev-provider-aggregate-${{ github.sha }}
+          path: .agent/telemetry/jev-provider-validation-${{ github.sha }}-*.json
+          if-no-files-found: warn
+          retention-days: 14

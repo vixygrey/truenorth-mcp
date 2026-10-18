@@ -60,7 +60,7 @@ fn activation_requires_redacted_https_endpoint_and_api_key() {
 /// The mapper takes the shared [`JEV_API_KEY_VAR`], so the default test build has a caller
 /// for the const and the mapper alike.
 fn assert_mapping(status: u16) {
-    let action = map_status(status, JEV_API_KEY_VAR, Some("field".to_string()));
+    let action = map_status(status, JEV_API_KEY_VAR);
     match status {
         200 => assert_eq!(action, StatusAction::Parse),
         401 => assert!(matches!(
@@ -69,7 +69,7 @@ fn assert_mapping(status: u16) {
         )),
         422 => assert!(matches!(
             action,
-            StatusAction::Terminal(JevError::Validation { .. })
+            StatusAction::Terminal(JevError::Validation)
         )),
         429 | 529 => assert_eq!(action, StatusAction::Retry),
         _ => assert!(matches!(

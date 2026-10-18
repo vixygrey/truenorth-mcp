@@ -19,6 +19,11 @@ name = "jev-bench"
 path = "src/bin/jev_bench.rs"
 required-features = ["jev-http"]
 
+[[bin]]
+name = "jev-provider-smoke"
+path = "src/bin/jev_provider_smoke.rs"
+required-features = ["jev-http"]
+
 [features]
 # Off by default. The regex baseline is the shipped, language-agnostic analyzer. Enable
 # `tree-sitter` to add the AST analyzer for languages with a bundled grammar (Rust today).
