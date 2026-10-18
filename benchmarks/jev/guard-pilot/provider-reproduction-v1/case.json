@@ -1,0 +1,25 @@
+{
+  "case_id": "pilot-v2-01",
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "content": "[package]\nname = \"pilot_case\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/check.rs\"\n"
+    },
+    {
+      "path": "src/check.rs",
+      "content": "pub fn parse(value: &str) -> Option<u32> { value.parse().ok() }\n"
+    }
+  ],
+  "proposal": {
+    "paths": ["src/check.rs"],
+    "content": "use absent_codec::Decoder;\npub fn parse(value: &str) -> Option<u32> { Decoder::decode(value).ok() }\n",
+    "task": "Update the parser in src/check.rs"
+  },
+  "expected": {
+    "decision": "annotate",
+    "findings": {
+      "hallucinated_import": true,
+      "drift_out_of_scope": false
+    }
+  }
+}
