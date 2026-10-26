@@ -42,6 +42,22 @@ that every supported configuration is secure.
 
 Merge, release, and emergency-bypass authority are defined in [GOVERNANCE.md](GOVERNANCE.md).
 
+## Development tooling dependencies
+
+The root npm package contains development tooling, separate from the published wrapper.
+Security updates still apply to this dependency tree.
+
+For CVE-2026-109869, update the transitive `undici` dependency to `8.12.3` or a later patched release.
+The Inspector dependency range permits this update without a manifest change or override:
+
+```sh
+npm update undici --package-lock-only --ignore-scripts --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
+```
+
+Confirm that only the intended dependency entries change, then run the MCP Inspector certification procedure.
+The published wrapper does not inherit the root development dependency tree.
+
 ## Filesystem boundaries
 
 Resource and skill reads reject symlinked files and parent directories beneath the repository root.
