@@ -15,7 +15,7 @@
     "preflight": "bash scripts/preflight.sh"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "2.11.0",
+    "@modelcontextprotocol/inspector": "2.12.0",
     "prettier": "3.9.10",
     "puppeteer": "25.15.0"
   },
